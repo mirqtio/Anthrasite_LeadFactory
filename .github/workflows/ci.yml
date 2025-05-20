@@ -2,9 +2,9 @@ name: Anthrasite Lead-Factory CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   workflow_dispatch:
     inputs:
       environment:
