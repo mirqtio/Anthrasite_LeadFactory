@@ -1,0 +1,43 @@
+# Backup configuration for Anthrasite Lead-Factory
+backup:
+  # Remote server details
+  remote:
+    host: backup.example.com
+    user: backup
+    port: 22
+    key_file: ~/.ssh/backup_key
+  
+  # Directories to backup
+  directories:
+    - db
+    - logs
+    - etc
+    - bin
+    - utils
+  
+  # Files to backup
+  files:
+    - .env
+    - README.md
+    - requirements.txt
+  
+  # Exclude patterns
+  exclude:
+    - "*.tmp"
+    - "*.log.gz"
+    - "__pycache__"
+    - ".git"
+    - ".github"
+    - "*.pyc"
+    - ".DS_Store"
+  
+  # Retention policy
+  retention:
+    daily: 7
+    weekly: 4
+    monthly: 3
+  
+  # Notification settings
+  notify:
+    email: alerts@anthrasite.com
+    slack_webhook: https://hooks.slack.com/services/XXXX/YYYY/ZZZZ

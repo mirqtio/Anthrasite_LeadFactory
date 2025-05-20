@@ -1,0 +1,72 @@
+# Task ID: 1
+# Title: Initialize Database Schema and Seed Helpers
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Create SQL schema and seed ZIP/vertical helpers as specified in §4
+# Details:
+Implement the initial database schema with all required tables for the lead factory pipeline. Create seed files for zip codes and verticals mapping. This task corresponds to the schema_init task in the Next-Step Blueprint.
+
+# Test Strategy:
+Verify schema creation with test data insertion. Ensure the zip_queue table is properly populated with the required zip codes. Test that the verticals mapping works correctly.
+
+# Subtasks:
+## 1. Create database migration script [done]
+### Dependencies: None
+### Description: Implement the initial SQL migration script with all required tables
+### Details:
+<info added on 2025-05-20T00:45:36.865Z>
+The database migration script has been successfully implemented with a comprehensive schema design that supports all core functionality of the system. The script is located at db/migrations/2025-05-19_init.sql and includes the following key components:
+
+1. Core Tables:
+   - zip_queue: Tracks zip codes that need to be processed for lead generation
+   - verticals: Stores business categories/industries for classification
+   - businesses: Contains all lead information and business details
+   - features: Stores technical stack information and performance metrics
+   - mockups: Houses generated website improvement suggestions
+   - emails: Tracks all outreach communication
+   - cost_tracking: Monitors budget allocation and expenditure
+
+2. Database Optimizations:
+   - Appropriate indexes for query performance
+   - Foreign key constraints to maintain data integrity
+   - Triggers for automated data management
+
+3. Analytical Views:
+   - Candidate duplicate pairs view for deduplication
+   - High-score businesses view for prioritization
+   - Email-ready businesses view for streamlined outreach
+
+4. Testing:
+   - BDD (Behavior-Driven Development) tests implemented to verify schema integrity
+
+The schema design follows best practices for relational database modeling and provides a solid foundation for the application's data layer.
+</info added on 2025-05-20T00:45:36.865Z>
+
+## 2. Create zip codes seed file [done]
+### Dependencies: None
+### Description: Create CSV file with target zip codes (NY 10002, WA 98908, Carmel IN)
+### Details:
+<info added on 2025-05-20T00:46:04.986Z>
+Created etc/zips.csv file containing the three required metropolitan areas:
+- NY 10002 (New York)
+- WA 98908 (Yakima)
+- IN 46032 (Carmel)
+
+The CSV includes metadata columns for metro name and state to provide additional context for each zip code. The file structure allows for easy database seeding and has been verified to work correctly with the test_seed_helpers.py BDD test suite.
+</info added on 2025-05-20T00:46:04.986Z>
+
+## 3. Create verticals mapping file [done]
+### Dependencies: None
+### Description: Create YAML file mapping user-friendly vertical names to Yelp/Google categories
+### Details:
+<info added on 2025-05-20T00:46:31.753Z>
+Created etc/verticals.yml file containing mappings for the three required verticals (HVAC, Plumbers, and Vets). Each vertical includes:
+
+1. Appropriate Yelp and Google category identifiers for accurate API queries
+2. Search parameters optimized for both Yelp and Google APIs
+3. Descriptive information for each vertical to provide context
+
+The mapping structure ensures consistent categorization across different data sources and enables proper filtering of business listings. The file was successfully tested with the test_seed_helpers.py BDD test to verify integration with the application.
+</info added on 2025-05-20T00:46:31.753Z>
+

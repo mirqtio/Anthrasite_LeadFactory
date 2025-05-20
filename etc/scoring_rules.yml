@@ -1,0 +1,242 @@
+# Anthrasite Lead-Factory Scoring Rules
+# This file defines the rules used to score leads based on their attributes.
+# Each rule has a name, condition, score adjustment, and optional description.
+
+# Global Settings
+settings:
+  base_score: 50  # Starting score for all leads
+  min_score: 0    # Minimum possible score
+  max_score: 100  # Maximum possible score
+  high_score_threshold: 75  # Threshold for high-score businesses view
+
+# Scoring Rules
+rules:
+  # Tech Stack Rules
+  - name: modern_frontend_framework
+    description: "Business uses a modern frontend framework"
+    condition:
+      tech_stack_contains_any:
+        - React
+        - Vue
+        - Angular
+        - Svelte
+        - Next.js
+        - Nuxt.js
+    score: +15
+    
+  - name: outdated_jquery
+    description: "Business uses outdated jQuery"
+    condition:
+      tech_stack_contains: jQuery
+      tech_stack_version_lt:
+        technology: jQuery
+        version: "3.0.0"
+    score: +10
+    
+  - name: any_jquery
+    description: "Business uses any version of jQuery"
+    condition:
+      tech_stack_contains: jQuery
+    score: +5
+    
+  - name: wordpress
+    description: "Business uses WordPress"
+    condition:
+      tech_stack_contains: WordPress
+    score: +10
+    
+  - name: wix_or_squarespace
+    description: "Business uses Wix or Squarespace"
+    condition:
+      tech_stack_contains_any:
+        - Wix
+        - Squarespace
+    score: -10
+    
+  - name: shopify
+    description: "Business uses Shopify"
+    condition:
+      tech_stack_contains: Shopify
+    score: +5
+    
+  - name: outdated_html
+    description: "Business uses outdated HTML elements"
+    condition:
+      tech_stack_contains: "Outdated HTML"
+    score: +15
+    
+  # Performance Rules
+  - name: poor_performance
+    description: "Business website has poor performance score"
+    condition:
+      performance_score_lt: 50
+    score: +20
+    
+  - name: mediocre_performance
+    description: "Business website has mediocre performance score"
+    condition:
+      performance_score_between:
+        min: 50
+        max: 70
+    score: +10
+    
+  - name: good_performance
+    description: "Business website has good performance score"
+    condition:
+      performance_score_gt: 70
+    score: -15
+    
+  - name: slow_lcp
+    description: "Business website has slow Largest Contentful Paint"
+    condition:
+      lcp_gt: 2500
+    score: +10
+    
+  - name: high_cls
+    description: "Business website has high Cumulative Layout Shift"
+    condition:
+      cls_gt: 0.25
+    score: +10
+    
+  # Business Category Rules
+  - name: restaurant_category
+    description: "Business is in the restaurant category"
+    condition:
+      category_contains_any:
+        - restaurant
+        - cafe
+        - bakery
+        - coffee
+    score: +10
+    
+  - name: retail_category
+    description: "Business is in the retail category"
+    condition:
+      category_contains_any:
+        - retail
+        - store
+        - shop
+    score: +5
+    
+  - name: professional_service_category
+    description: "Business is in the professional service category"
+    condition:
+      category_contains_any:
+        - law
+        - accounting
+        - consulting
+        - insurance
+    score: +15
+    
+  # Website Presence Rules
+  - name: no_website
+    description: "Business has no website"
+    condition:
+      website_missing: true
+    score: -50
+    
+  - name: has_social_media
+    description: "Business has social media links on website"
+    condition:
+      website_contains_any:
+        - facebook.com
+        - instagram.com
+        - twitter.com
+        - linkedin.com
+    score: -5
+    
+  # Location Rules
+  - name: new_york_location
+    description: "Business is located in New York"
+    condition:
+      state_equals: "NY"
+    score: +5
+    
+  - name: washington_location
+    description: "Business is located in Washington"
+    condition:
+      state_equals: "WA"
+    score: +3
+    
+  - name: indiana_location
+    description: "Business is located in Indiana"
+    condition:
+      state_equals: "IN"
+    score: +2
+    
+  # Size and Revenue Indicators
+  - name: multiple_locations
+    description: "Business has multiple locations"
+    condition:
+      has_multiple_locations: true
+    score: -10
+    
+  - name: high_review_count
+    description: "Business has many reviews"
+    condition:
+      review_count_gt: 100
+    score: -5
+    
+  - name: low_review_count
+    description: "Business has few reviews"
+    condition:
+      review_count_lt: 10
+    score: +5
+    
+  # Tier-specific Rules (for businesses with Tier 2+ enrichment)
+  - name: poor_seo_score
+    description: "Business website has poor SEO score (Tier 2+)"
+    condition:
+      seo_score_lt: 50
+      tier_gt: 1
+    score: +15
+    
+  - name: poor_accessibility
+    description: "Business website has poor accessibility score (Tier 2+)"
+    condition:
+      accessibility_score_lt: 50
+      tier_gt: 1
+    score: +10
+    
+  # Tier 3 Rules (for businesses with Tier 3 enrichment)
+  - name: semrush_high_errors
+    description: "Business website has many SEMrush errors (Tier 3)"
+    condition:
+      semrush_errors_gt: 10
+      tier_equals: 3
+    score: +15
+    
+  - name: semrush_low_score
+    description: "Business website has low SEMrush score (Tier 3)"
+    condition:
+      semrush_score_lt: 50
+      tier_equals: 3
+    score: +10
+
+# Multipliers (applied after all rules)
+multipliers:
+  - name: high_value_vertical
+    description: "Business is in a high-value vertical"
+    condition:
+      vertical_in:
+        - restaurants
+        - retail
+        - professional_services
+    multiplier: 1.2
+    
+  - name: low_value_vertical
+    description: "Business is in a low-value vertical"
+    condition:
+      vertical_in:
+        - entertainment
+        - recreation
+    multiplier: 0.8
+    
+  - name: tech_stack_perfect_match
+    description: "Business tech stack is a perfect match for our services"
+    condition:
+      tech_stack_contains_any:
+        - jQuery
+        - "Outdated HTML"
+      performance_score_lt: 60
+    multiplier: 1.5

@@ -1,0 +1,30 @@
+# Anthrasite Lead-Factory Verticals Mapping
+# Maps user-friendly vertical names to Yelp Fusion and Google Places API category identifiers
+
+verticals:
+  - name: HVAC
+    description: Heating, Ventilation, and Air Conditioning services
+    yelp_alias: hvac
+    google_alias: heating_contractor,air_conditioning_contractor
+    
+  - name: Plumbers
+    description: Plumbing services and contractors
+    yelp_alias: plumbing
+    google_alias: plumber
+    
+  - name: Vets
+    description: Veterinary services and animal hospitals
+    yelp_alias: veterinarians
+    google_alias: veterinary_care
+
+# Category search parameters
+search_params:
+  yelp:
+    radius: 40000  # meters (25 miles)
+    limit: 50      # results per request
+    sort_by: best_match
+    
+  google:
+    radius: 40000  # meters (25 miles)
+    type: business
+    rankby: prominence

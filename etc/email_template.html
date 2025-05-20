@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Website Improvement Proposal</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin: 0;
+        }
+        .logo {
+            max-width: 180px;
+            margin-bottom: 15px;
+        }
+        .mockup-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        .mockup {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        .improvements {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+        }
+        .improvements h2 {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-top: 0;
+        }
+        .improvements ul {
+            margin: 15px 0 0;
+            padding-left: 20px;
+        }
+        .improvements li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 5px;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 35px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .cta-button:hover {
+            background-color: #2980b9;
+        }
+        .signature {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #95a5a6;
+            text-align: center;
+        }
+        .footer a {
+            color: #7f8c8d;
+            text-decoration: underline;
+        }
+        @media only screen and (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .cta-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://anthrasite.com/logo.png" alt="Anthrasite Web Services" class="logo">
+            <h1>Website Improvement Proposal</h1>
+            <p>For {{business_name}}</p>
+        </div>
+        
+        <p>Hello {{contact_name}},</p>
+        
+        <p>I noticed your website at <a href="{{business_website}}">{{business_website}}</a> and wanted to reach out with some ideas for improvement.</p>
+        
+        <p>Our team at Anthrasite Web Services specializes in helping {{business_category}} businesses like yours improve their online presence and attract more customers through modern, conversion-focused website design.</p>
+        
+        <div class="mockup-container">
+            <p><strong>Here's a custom mockup we've created showing how your website could look:</strong></p>
+            <img src="cid:website-mockup.png" alt="Website Mockup for {{business_name}}" class="mockup">
+        </div>
+        
+        <div class="improvements">
+            <h2>Key improvements we're suggesting:</h2>
+            <ul>
+                {{#each improvements}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+        </div>
+        
+        <p>These improvements could help your business:</p>
+        <ul>
+            <li>Attract more visitors through better search engine visibility</li>
+            <li>Convert more visitors into customers with clear calls-to-action</li>
+            <li>Create a more professional impression of your business</li>
+            <li>Provide a better experience for mobile users</li>
+        </ul>
+        
+        <div class="cta-section">
+            <p><strong>I'd love to discuss these ideas with you. Would you be available for a quick 15-minute call this week?</strong></p>
+            <a href="https://calendly.com/anthrasite/website-consultation" class="cta-button">Schedule a Free Consultation</a>
+        </div>
+        
+        <div class="signature">
+            <p>Best regards,<br>
+            {{sender_name}}<br>
+            Anthrasite Web Services<br>
+            {{sender_email}}<br>
+            {{sender_phone}}</p>
+        </div>
+        
+        <div class="footer">
+            <p>This email was sent to {{to_email}}. If you'd prefer not to receive these emails, you can <a href="{{unsubscribe_link}}">unsubscribe</a>.</p>
+            <p>&copy; 2025 Anthrasite Web Services. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

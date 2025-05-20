@@ -1,0 +1,73 @@
+# Alert rules for Anthrasite Lead-Factory
+# Monitors critical metrics and triggers alerts when thresholds are breached
+
+groups:
+- name: leadfactory
+  rules:
+  # Budget-related alerts
+  - alert: MonthlyBudgetWarning
+    expr: leadfactory_monthly_cost_percentage > 75
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      summary: "Monthly budget threshold warning"
+      description: "Monthly budget usage has reached {{ $value }}% of the limit"
+
+  - alert: MonthlyBudgetCritical
+    expr: leadfactory_monthly_cost_percentage > 90
+    for: 30m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Monthly budget critical warning"
+      description: "Monthly budget usage has reached {{ $value }}% of the limit"
+
+  # Pipeline health alerts
+  - alert: PipelineStageFailed
+    expr: leadfactory_pipeline_stage_failed > 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Pipeline stage failure"
+      description: "A pipeline stage has failed: {{ $labels.stage }}"
+
+  # System resource alerts
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+      description: "CPU usage is at {{ $value }}%"
+
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High memory usage on {{ $labels.instance }}"
+      description: "Memory usage is at {{ $value }}%"
+
+  # Email queue alerts
+  - alert: EmailQueueBacklog
+    expr: leadfactory_email_queue_size > 100
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      summary: "Email queue backlog"
+      description: "Email queue has {{ $value }} pending emails"
+
+  # API health alerts
+  - alert: APIFailureRate
+    expr: rate(leadfactory_api_errors_total[5m]) / rate(leadfactory_api_requests_total[5m]) > 0.05
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: "High API failure rate"
+      description: "API failure rate is at {{ $value }}"

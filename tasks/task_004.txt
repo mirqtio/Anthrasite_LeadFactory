@@ -1,0 +1,118 @@
+# Task ID: 4
+# Title: Implement Deduplication Logic (03_dedupe.py)
+# Status: done
+# Dependencies: 3
+# Priority: high
+# Description: Build the third pipeline stage for Ollama-driven duplicate merging
+# Details:
+Develop the deduplication script that uses Llama-3 8B to identify and merge duplicate business records. Implement Levenshtein distance pre-filtering for name+phone combinations. This task corresponds to the dedupe_prompt task in the Next-Step Blueprint.
+
+# Test Strategy:
+Verify that the deduplication process correctly identifies and merges duplicate records as specified in acceptance test F 3.1.
+
+# Subtasks:
+## 1. Implement Levenshtein distance pre-filtering [done]
+### Dependencies: None
+### Description: Create functions to pre-filter potential duplicates using Levenshtein distance
+### Details:
+<info added on 2025-05-20T01:26:02.350Z>
+The Levenshtein distance pre-filtering implementation has been successfully completed with the following components:
+
+1. Created a LevenshteinMatcher class that efficiently identifies potential duplicate businesses based on string similarity metrics.
+
+2. Implemented specialized string normalization functions for business names, addresses, and phone numbers to ensure consistent comparison regardless of formatting variations.
+
+3. Added similarity calculation functionality using Levenshtein distance with proper normalization to accurately measure the edit distance between strings.
+
+4. Implemented a weighted similarity scoring system that prioritizes different business attributes:
+   - 50% weight for business name similarity
+   - 30% weight for phone number similarity
+   - 20% weight for address similarity
+
+5. Added configurable threshold settings via environment variables and command-line arguments, allowing for easy tuning of the deduplication sensitivity.
+
+6. Implemented comprehensive error handling and logging to ensure robust operation and facilitate debugging.
+
+7. Added detailed documentation for all functions and methods following best practices.
+
+The implementation adheres to the Windsurf Global AI Rules v1.1 and significantly optimizes the deduplication process by reducing the number of candidate pairs that require verification through more computationally expensive LLM-based methods.
+</info added on 2025-05-20T01:26:02.350Z>
+
+## 2. Implement Ollama LLM integration [done]
+### Dependencies: None
+### Description: Create functions to verify potential duplicates using Llama-3 8B
+### Details:
+<info added on 2025-05-20T01:26:31.842Z>
+The OllamaVerifier class has been implemented to integrate with Llama-3 8B via the Ollama API for duplicate verification. The implementation includes:
+
+1. A structured approach to prompt generation specifically designed for business comparison
+2. Response parsing functionality that extracts verification decisions, confidence scores, and reasoning
+3. Token usage tracking and cost calculation for monitoring resource utilization
+4. Configurable parameters including model selection, API URL, and confidence thresholds
+5. Comprehensive error handling with appropriate timeout configurations
+6. Detailed logging system that captures verification decisions and reasoning
+
+The implementation adheres to Windsurf Global AI Rules v1.1, ensuring robust error handling, appropriate logging levels, and explicit timeouts for all API operations. The LLM-based verification system provides high-quality duplicate detection capabilities with detailed reasoning for each decision, enhancing the overall deduplication logic.
+</info added on 2025-05-20T01:26:31.842Z>
+
+## 3. Implement database integration for deduplication [done]
+### Dependencies: None
+### Description: Create functions to fetch potential duplicates and merge records
+### Details:
+<info added on 2025-05-20T01:27:04.896Z>
+The database integration for deduplication has been successfully implemented with the following components:
+
+1. A `get_potential_duplicates` function that queries the database to identify candidate pairs of business records that might be duplicates based on similarity criteria.
+
+2. A `get_business_by_id` function that retrieves complete business records from the database for processing.
+
+3. A `merge_businesses` function with transaction support to ensure data integrity during the merging process. This prevents partial merges that could corrupt data.
+
+4. Helper functions:
+   - `select_primary_business` to determine which record should be kept as the primary record
+   - `calculate_completeness_score` to evaluate which record contains more complete information
+
+5. Reference update mechanisms for related tables (features, mockups, and emails) to maintain data consistency after merges.
+
+6. A dry-run mode implementation that allows testing the deduplication logic without making actual changes to the database.
+
+7. Comprehensive error handling with transaction rollback capabilities to ensure the database remains in a consistent state even when errors occur.
+
+8. Detailed logging for all merge operations to provide an audit trail and assist with troubleshooting.
+
+The implementation adheres to the Windsurf Global AI Rules v1.1, incorporating robust error handling, appropriate logging levels, and proper database security practices. The database integration ensures that duplicate business records are identified and merged correctly while preserving all associated data and relationships.
+</info added on 2025-05-20T01:27:04.896Z>
+
+## 4. Implement main function and CLI [done]
+### Dependencies: None
+### Description: Create main function and command-line interface for the deduplication script
+### Details:
+<info added on 2025-05-20T01:27:42.423Z>
+The main function and CLI implementation for the deduplication script has been completed with the following features:
+
+1. Command-line interface using argparse with the following parameters:
+   - `--limit`: Controls the number of duplicate pairs to process
+   - `--threshold`: Adjusts the Levenshtein similarity threshold for matching
+   - `--dry-run`: Allows testing the deduplication process without making actual database changes
+
+2. Main function implementation includes:
+   - Proper initialization of resources and connections
+   - Comprehensive error handling with try/except blocks
+   - Clean resource cleanup in finally blocks
+   - Appropriate exit code handling for different scenarios
+
+3. Process management features:
+   - Progress tracking to show completion percentage
+   - Sequential processing of duplicate pairs with status updates
+   - Summary reporting of processed items, successful deduplications, and errors
+   - Detailed logging throughout the execution process
+
+4. Code quality:
+   - Follows Windsurf Global AI Rules v1.1
+   - Comprehensive docstrings for functions and modules
+   - Clear help text for CLI arguments
+   - Appropriate comments for complex logic sections
+
+The implementation provides a flexible interface for running the deduplication process in various modes, allowing for testing, limited runs, and adjustment of matching sensitivity.
+</info added on 2025-05-20T01:27:42.423Z>
+

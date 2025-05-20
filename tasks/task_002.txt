@@ -1,0 +1,100 @@
+# Task ID: 2
+# Title: Implement Lead Scraper (01_scrape.py)
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Build the first pipeline stage to scrape business listings from Yelp and Google
+# Details:
+Develop the scraper script that fetches business listings from Yelp Fusion and Google Places APIs based on zip codes and verticals. Store the results in the businesses table. This task corresponds to the scraper_poc task in the Next-Step Blueprint.
+
+# Test Strategy:
+Verify that the scraper can successfully fetch HVAC leads for zip code 10002 as specified in acceptance test F 1.1.
+
+# Subtasks:
+## 1. Implement Yelp API integration [done]
+### Dependencies: None
+### Description: Create functions to fetch business listings from Yelp Fusion API
+### Details:
+<info added on 2025-05-20T01:10:44.401Z>
+The Yelp API integration has been successfully implemented for the Lead Scraper. The implementation includes:
+
+1. A YelpAPI class with core functionality:
+   - search_businesses method that searches for businesses by term and location
+   - get_business_details method that retrieves detailed information about a specific business
+
+2. Robust error handling and retry logic to handle API rate limits and temporary failures
+
+3. Cost tracking functionality to monitor API usage and associated costs
+
+4. Data processing functions that:
+   - Extract all required business fields (name, address, zip code, category, etc.)
+   - Transform the data into the appropriate format
+   - Save the processed business data to the database
+
+5. Compliance with Windsurf Global AI Rules v1.1, including:
+   - Structured JSON logging
+   - Explicit timeouts for all network operations
+   - Comprehensive error handling
+
+The implementation is complete and ready for integration with the rest of the Lead Scraper system.
+</info added on 2025-05-20T01:10:44.401Z>
+
+## 2. Implement Google Places API integration [done]
+### Dependencies: None
+### Description: Create functions to fetch business listings from Google Places API
+### Details:
+<info added on 2025-05-20T01:11:16.124Z>
+The Google Places API integration has been successfully implemented with the following components:
+
+1. Created a GooglePlacesAPI class with core functionality:
+   - search_places method that searches for businesses by query and location
+   - get_place_details method that retrieves comprehensive information for specific places
+
+2. Implemented robust error handling and retry logic to handle API rate limits and temporary failures
+
+3. Added cost tracking functionality to monitor API usage expenses:
+   - Search queries: $0.03 per request
+   - Place details: $0.17 per request
+
+4. Developed data processing functions to transform API responses and save to database
+
+5. Implemented ZIP code to coordinate conversion to enable location-based searches
+
+6. Ensured all business data fields are properly extracted and stored, including:
+   - Business name, address, phone number
+   - Website URL, business hours
+   - Rating and review information
+   - Geographic coordinates
+   - Business category data
+
+The implementation adheres to Windsurf Global AI Rules v1.1 standards, featuring comprehensive error handling, appropriate logging levels, and explicit timeouts for all network operations to prevent hanging requests.
+</info added on 2025-05-20T01:11:16.124Z>
+
+## 3. Implement database storage logic [done]
+### Dependencies: None
+### Description: Create functions to store scraped data in the businesses table
+### Details:
+<info added on 2025-05-20T01:11:49.447Z>
+The database storage logic for the Lead Scraper has been implemented with the following components:
+
+1. Created a DatabaseConnection context manager in utils/io.py to ensure safe database operations with proper connection handling and automatic closing.
+
+2. Implemented the save_business function that stores scraped business data in the businesses table with comprehensive error handling to prevent data loss.
+
+3. Developed utility functions to retrieve configuration data:
+   - get_active_zip_codes: Retrieves zip codes that need to be processed
+   - get_verticals: Retrieves business verticals for targeting
+
+4. Added mark_zip_done function to update the processing status of zip codes after completion, preventing redundant scraping.
+
+5. Implemented track_api_cost function to monitor API usage costs, supporting budget management and cost optimization.
+
+6. Created data transformation functions:
+   - process_yelp_business: Transforms Yelp API response data into the database schema format
+   - process_google_place: Transforms Google Places API data into the database schema format
+
+7. Ensured data integrity by wrapping all database operations in transactions and implementing proper exception handling with specific error responses.
+
+The implementation adheres to Windsurf Global AI Rules v1.1, featuring structured logging, robust error handling, and efficient database connection management. All database interactions use parameterized queries to prevent SQL injection vulnerabilities.
+</info added on 2025-05-20T01:11:49.447Z>
+

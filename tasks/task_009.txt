@@ -1,0 +1,102 @@
+# Task ID: 9
+# Title: Implement Cron Wrapper
+# Status: done
+# Dependencies: 8
+# Priority: medium
+# Description: Create nightly batch script as specified in §6
+# Details:
+Develop the run_nightly.sh script that orchestrates the execution of all pipeline stages. Implement error handling to abort on first non-zero exit code.
+
+# Test Strategy:
+Verify that the cron wrapper correctly executes all pipeline stages in sequence and handles errors appropriately.
+
+# Subtasks:
+## 1. Create run_nightly.sh script [done]
+### Dependencies: None
+### Description: Implement the main nightly batch script with pipeline orchestration
+### Details:
+<info added on 2025-05-20T09:02:44.631Z>
+The run_nightly.sh script has been successfully implemented with the following features:
+
+1. Comprehensive bash script for orchestrating the entire pipeline
+2. Robust error handling with immediate exit on failures
+3. Detailed logging with timestamps and log levels
+4. Metrics tracking for performance monitoring
+5. Flexible command-line options:
+   - Debug mode for verbose output
+   - Stage skipping for targeted execution
+   - Lead limits for controlled processing
+   - Dry run mode for testing without API calls
+6. Virtual environment auto-detection and activation
+7. Environment variable loading from .env file
+8. Help documentation and usage examples
+9. Proper executable permissions
+
+The implementation adheres to the Windsurf Global AI Rules v1.1, ensuring robust error handling, appropriate logging, and clear documentation. The script provides a flexible and reliable way to run the entire pipeline as a nightly batch process.
+</info added on 2025-05-20T09:02:44.631Z>
+
+## 2. Implement cron job setup [done]
+### Dependencies: None
+### Description: Create script for setting up the nightly cron job
+### Details:
+<info added on 2025-05-20T09:05:06.525Z>
+The cron job setup implementation has been completed with the following features:
+
+1. A comprehensive setup script for configuring the nightly cron job that works in conjunction with the run_nightly.sh script.
+
+2. Flexible command-line options for customization:
+   - Custom time scheduling with validation to ensure proper cron format
+   - User selection with existence checking to verify valid system users
+   - Options to modify existing cron jobs or create new ones
+
+3. Robust error handling and validation:
+   - Checks for required dependencies and permissions
+   - Validates input parameters before attempting to modify crontab
+   - Provides meaningful error messages for troubleshooting
+
+4. Crontab management capabilities:
+   - Can add/modify cron jobs for the current user
+   - Supports setting up cron jobs for different users (with appropriate permissions)
+   - Prevents duplicate entries
+
+5. Log rotation configuration:
+   - Automatically sets up logrotate configuration
+   - Prevents log files from consuming excessive disk space
+   - Maintains historical logs for troubleshooting
+
+6. Comprehensive documentation:
+   - Detailed help documentation (-h/--help option)
+   - Usage examples for common scenarios
+   - Comments throughout the code for maintainability
+
+7. Permission handling:
+   - Checks for and requests necessary permissions
+   - Handles sudo requirements when needed
+   - Secures created files with appropriate permissions
+
+8. Executable script:
+   - Set with appropriate execute permissions (chmod +x)
+   - Can be run directly or sourced from other scripts
+
+The implementation complies with Windsurf Global AI Rules v1.1 standards and provides a reliable way to schedule the nightly batch process as a cron job.
+</info added on 2025-05-20T09:05:06.525Z>
+
+## 3. Document cron wrapper [done]
+### Dependencies: None
+### Description: Update project documentation with cron wrapper usage
+### Details:
+<info added on 2025-05-20T09:07:02.157Z>
+The cron wrapper documentation has been completed with comprehensive coverage of all aspects. The documentation includes:
+
+1. A complete overview of the cron wrapper functionality in the README.md
+2. Detailed documentation for all available command-line options and parameters
+3. Practical examples demonstrating common usage scenarios to help users get started quickly
+4. Step-by-step instructions for configuring automated nightly runs
+5. Thorough documentation of the cron job setup process with concrete examples for various environments
+6. Information about log file locations, rotation policies, and management best practices
+7. Documentation that adheres to the project's established style guidelines and formatting conventions
+8. Strategic placement within the README to ensure logical flow and easy discoverability
+
+The documentation now provides team members with clear, actionable guidance on implementing and utilizing the cron wrapper functionality, with special emphasis on automated scheduling. All documentation has been reviewed for clarity, completeness, and accuracy.
+</info added on 2025-05-20T09:07:02.157Z>
+

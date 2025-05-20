@@ -1,0 +1,498 @@
+{
+  "id": "leadfactory_phase0_plan",
+  "title": "Anthrasite Lead-Factory Phase 0 Execution Plan",
+  "description": "Complete implementation plan for the Anthrasite Lead-Factory pipeline as specified in v1.3 of the specification document.",
+  "tasks": [
+    {
+      "id": "schema_init",
+      "title": "Initialize Database Schema and Seed Helpers",
+      "description": "Create SQL schema and seed ZIP/vertical helpers as specified in \u00a74",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "db/migrations/2025-05-19_init.sql",
+        "etc/zips.csv",
+        "etc/verticals.yml"
+      ],
+      "tests": [
+        "F SeedHelpers"
+      ],
+      "subtasks": [
+        {
+          "id": "schema_init.1",
+          "title": "Create database migration script",
+          "description": "Implement the initial SQL migration script with all required tables",
+          "status": "completed"
+        },
+        {
+          "id": "schema_init.2",
+          "title": "Create zip codes seed file",
+          "description": "Create CSV file with target zip codes (NY 10002, WA 98908, Carmel IN)",
+          "status": "completed"
+        },
+        {
+          "id": "schema_init.3",
+          "title": "Create verticals mapping file",
+          "description": "Create YAML file mapping user-friendly vertical names to Yelp/Google categories",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "scraper_poc",
+      "title": "Implement Lead Scraper (01_scrape.py)",
+      "description": "Build the first pipeline stage to scrape business listings from Yelp and Google",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "bin/01_scrape.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 1.1"
+      ],
+      "subtasks": [
+        {
+          "id": "scraper_poc.1",
+          "title": "Implement Yelp API integration",
+          "description": "Create functions to fetch business listings from Yelp Fusion API",
+          "status": "completed"
+        },
+        {
+          "id": "scraper_poc.2",
+          "title": "Implement Google Places API integration",
+          "description": "Create functions to fetch business listings from Google Places API",
+          "status": "completed"
+        },
+        {
+          "id": "scraper_poc.3",
+          "title": "Implement database storage logic",
+          "description": "Create functions to store scraped data in the businesses table",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "enrich_poc",
+      "title": "Implement Lead Enrichment (02_enrich.py)",
+      "description": "Build the second pipeline stage for tech-stack and vitals enrichment",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "bin/02_enrich.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 2.1",
+        "F 2.2",
+        "F 2.3"
+      ],
+      "subtasks": [
+        {
+          "id": "enrich_poc.1",
+          "title": "Implement website scraping logic",
+          "description": "Create functions to scrape websites for tech stack identification",
+          "status": "completed"
+        },
+        {
+          "id": "enrich_poc.2",
+          "title": "Implement PageSpeed API integration",
+          "description": "Create functions to fetch Core Web Vitals data",
+          "status": "completed"
+        },
+        {
+          "id": "enrich_poc.3",
+          "title": "Implement tier-based enrichment logic",
+          "description": "Create conditional logic for tier-based enrichment features",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "dedupe_prompt",
+      "title": "Implement Deduplication Logic (03_dedupe.py)",
+      "description": "Build the third pipeline stage for Ollama-driven duplicate merging",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "bin/03_dedupe.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 3.1"
+      ],
+      "subtasks": [
+        {
+          "id": "dedupe_prompt.1",
+          "title": "Create Ollama prompt for deduplication",
+          "description": "Design effective prompt for Llama-3 8B to identify duplicates",
+          "status": "completed"
+        },
+        {
+          "id": "dedupe_prompt.2",
+          "title": "Implement Levenshtein pre-filter",
+          "description": "Create name+phone Levenshtein distance pre-filter",
+          "status": "completed"
+        },
+        {
+          "id": "dedupe_prompt.3",
+          "title": "Implement duplicate merging logic",
+          "description": "Create functions to mark duplicates as inactive and merge data",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "score_yaml",
+      "title": "Implement Scoring Logic (04_score.py)",
+      "description": "Build the fourth pipeline stage for YAML-based lead scoring",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "bin/04_score.py",
+        "etc/scoring_rules.yml",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 4.1"
+      ],
+      "subtasks": [
+        {
+          "id": "score_yaml.1",
+          "title": "Create scoring rules YAML file",
+          "description": "Define scoring rules including jQuery penalty in YAML format",
+          "status": "completed"
+        },
+        {
+          "id": "score_yaml.2",
+          "title": "Implement rule parsing and application",
+          "description": "Create functions to parse and apply scoring rules to leads",
+          "status": "completed"
+        },
+        {
+          "id": "score_yaml.3",
+          "title": "Implement score persistence",
+          "description": "Create functions to update and persist lead scores in database",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "mockup_proto",
+      "title": "Implement Mockup Generation (05_mockup.py)",
+      "description": "Build the fifth pipeline stage for GPT-4o/Claude mockup generation",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "bin/05_mockup.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 5.1",
+        "F 5.2"
+      ],
+      "subtasks": [
+        {
+          "id": "mockup_proto.1",
+          "title": "Create GPT-4o prompt for mockups",
+          "description": "Design effective prompt for generating website mockups",
+          "status": "completed"
+        },
+        {
+          "id": "mockup_proto.2",
+          "title": "Implement Claude fallback logic",
+          "description": "Create fallback mechanism to use Claude on rate limits/cost spikes",
+          "status": "completed"
+        },
+        {
+          "id": "mockup_proto.3",
+          "title": "Implement Supabase storage integration",
+          "description": "Create functions to store mockup PNGs in Supabase bucket",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "sendgrid_stub",
+      "title": "Implement Email Queue (06_email_queue.py)",
+      "description": "Build the sixth pipeline stage for SendGrid email delivery",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "bin/06_email_queue.py",
+        "utils/io.py",
+        "utils/cost_tracker.py"
+      ],
+      "tests": [
+        "F 6.1"
+      ],
+      "subtasks": [
+        {
+          "id": "sendgrid_stub.1",
+          "title": "Implement SendGrid API integration",
+          "description": "Create functions to send emails via SendGrid API",
+          "status": "completed"
+        },
+        {
+          "id": "sendgrid_stub.2",
+          "title": "Implement cost logging",
+          "description": "Create functions to track and log email sending costs",
+          "status": "completed"
+        },
+        {
+          "id": "sendgrid_stub.3",
+          "title": "Implement bounce rate monitoring",
+          "description": "Create functions to monitor bounce rates and trigger IP switches",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "bdd_tests",
+      "title": "Implement BDD Acceptance Tests",
+      "description": "Create BDD tests for all pipeline stages as specified in \u00a75",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "tests/test_scraper.py",
+        "tests/test_enrich.py",
+        "tests/test_dedupe.py",
+        "tests/test_score.py",
+        "tests/test_mockup.py",
+        "tests/test_email.py",
+        "tests/conftest.py",
+        "tests/test_budget.py"
+      ],
+      "tests": [
+        "F 1.1",
+        "F 2.1",
+        "F 2.2",
+        "F 2.3",
+        "F 3.1",
+        "F 4.1",
+        "F 5.1",
+        "F 5.2",
+        "F 6.1"
+      ],
+      "subtasks": [
+        {
+          "id": "bdd_tests.1",
+          "title": "Set up BDD testing framework",
+          "description": "Configure pytest-bdd or behave for BDD testing",
+          "status": "completed"
+        },
+        {
+          "id": "bdd_tests.2",
+          "title": "Implement feature files",
+          "description": "Create Gherkin feature files for all acceptance scenarios",
+          "status": "completed"
+        },
+        {
+          "id": "bdd_tests.3",
+          "title": "Implement step definitions",
+          "description": "Create step definitions for all BDD scenarios",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "cron_wrapper",
+      "title": "Implement Cron Wrapper",
+      "description": "Create nightly batch script as specified in \u00a76",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "bin/run_nightly.sh"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": "cron_wrapper.1",
+          "title": "Create nightly shell script",
+          "description": "Implement shell script to run all pipeline stages sequentially",
+          "status": "completed"
+        },
+        {
+          "id": "cron_wrapper.2",
+          "title": "Implement error handling",
+          "description": "Add error handling to abort on first non-zero exit code",
+          "status": "completed"
+        },
+        {
+          "id": "cron_wrapper.3",
+          "title": "Create crontab documentation",
+          "description": "Document crontab entry for 23:00 EST execution",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "prometheus_exporter",
+      "title": "Implement Prometheus Exporter",
+      "description": "Create metrics exporter as specified in \u00a77",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "utils/metrics.py",
+        "etc/alerts.yml"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": "prometheus_exporter.1",
+          "title": "Implement metrics collection",
+          "description": "Create functions to collect required metrics",
+          "status": "completed"
+        },
+        {
+          "id": "prometheus_exporter.2",
+          "title": "Implement Prometheus endpoint",
+          "description": "Create HTTP endpoint for Prometheus scraping",
+          "status": "completed"
+        },
+        {
+          "id": "prometheus_exporter.3",
+          "title": "Document alert rules",
+          "description": "Document Grafana Cloud alert configurations",
+          "status": "completed"
+        },
+        {
+          "id": "prometheus_exporter.4",
+          "title": "Export alert rules YAML",
+          "description": "Generate alert.yml for Grafana Cloud import",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "rsync_fallback",
+      "title": "Implement RSYNC Fallback Script",
+      "description": "Create SPOF fallback mechanism as specified in \u00a72",
+      "status": "completed",
+      "parallelizable": true,
+      "touches": [
+        "bin/rsync_backup.sh",
+        "bin/health_check.sh",
+        "bin/run_nightly.sh"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": "rsync_fallback.1",
+          "title": "Implement RSYNC backup script",
+          "description": "Create script for nightly RSYNC mirroring to VPS",
+          "status": "completed"
+        },
+        {
+          "id": "rsync_fallback.2",
+          "title": "Implement health check",
+          "description": "Create health check script to detect consecutive failures",
+          "status": "completed"
+        },
+        {
+          "id": "rsync_fallback.3",
+          "title": "Implement auto-boot mechanism",
+          "description": "Create script to auto-boot Docker stack on VPS after failures",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "github_action",
+      "title": "Implement Initial CI GitHub Action",
+      "description": "Create GitHub Action for CI as specified in \u00a79 step-2",
+      "status": "completed",
+      "parallelizable": true,
+      "touches": [
+        ".github/workflows/ci.yml",
+        "requirements.txt"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": "github_action.1",
+          "title": "Create CI workflow file",
+          "description": "Implement GitHub Actions workflow for continuous integration",
+          "status": "completed"
+        },
+        {
+          "id": "github_action.2",
+          "title": "Configure test execution",
+          "description": "Configure BDD test execution in CI environment",
+          "status": "completed"
+        },
+        {
+          "id": "github_action.3",
+          "title": "Set up test reporting",
+          "description": "Configure test result reporting and notifications",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "budget_audit_1k",
+      "title": "Implement Budget Audit Task",
+      "description": "Create budget audit mechanism as specified in \u00a78",
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "utils/cost_tracker.py",
+        "bin/budget_audit.py",
+        "tests/test_budget.py"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": "budget_audit_1k.1",
+          "title": "Implement cost tracking",
+          "description": "Create comprehensive cost tracking for all API calls",
+          "status": "completed"
+        },
+        {
+          "id": "budget_audit_1k.2",
+          "title": "Implement budget report",
+          "description": "Create reporting mechanism for budget analysis",
+          "status": "completed"
+        },
+        {
+          "id": "budget_audit_1k.3",
+          "title": "Implement scaling gate",
+          "description": "Create mechanism to gate 10k batch on budget approval",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "env_config",
+      "title": "Implement Environment Configuration",
+      "description": "Create environment configuration files and documentation",
+      "status": "completed",
+      "parallelizable": true,
+      "touches": [
+        ".env.example",
+        "README.md"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": "env_config.1",
+          "title": "Create environment variable template",
+          "description": "Create .env.example with all required API keys and settings",
+          "status": "completed"
+        },
+        {
+          "id": "env_config.2",
+          "title": "Create README documentation",
+          "description": "Document project setup, configuration, and usage",
+          "status": "completed"
+        },
+        {
+          "id": "env_config.3",
+          "title": "Document deployment process",
+          "description": "Create documentation for production deployment",
+          "status": "completed"
+        }
+      ]
+    }
+  ]
+}

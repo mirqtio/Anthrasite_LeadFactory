@@ -1,0 +1,192 @@
+# Anthrasite – Phase 0 "Lead‑Factory" Specification v 1.3 (19 May 2025)
+
+## 1 Objective
+
+Validate—within 90 days—that Anthrasite can automatically:
+
+1. scrape & enrich SMB leads overnight,
+2. deduplicate, score, generate mock‑ups, personalise email,
+3. send high‑deliverability outreach,
+4. hand warm replies to 1 – 3 pilot agencies, with positive unit economics.
+
+## 2 Confirmed Requirements (✓)
+
+- Lead scope – 3 verticals (HVAC, Plumbers, Vets) × 3 metros (NY 10002, WA 98908, Carmel IN)
+- Volume ramp – 100‑lead smoke → 1 000‑lead rehearsal → 10 000‑lead full run, gate‑controlled.
+- Data sources – Yelp Fusion → Google Places; merchant‑site scraping for tech‑stack & Core Web Vitals.
+  - Tier‑2 additionally calls ScreenshotOne + PageSpeed.
+  - Tier‑3 additionally calls SEMrush Site Audit lite API.
+- Mock‑up flag MOCKUP_ENABLED (false Tier‑1 control, true Tier‑2/3).
+- Nightly batch – cron 23:00 EST; finish < 05:00; < 80% CPU; auto‑spin Hetzner GPU when personalisation_queue > 2000.
+- AI stack – local Ollama Llama‑3 8B for dedup; GPT‑4o default; Claude fallback on rate‑limit or cost spike; pipeline pauses if both hosted LLMs unavailable.
+- Email – SendGrid shared warm IP; auto‑switch to dedicated sub‑user if bounce > 2%; CAN‑SPAM footer "Anthrasite", UPS PO box.
+- Mock‑up storage – mockup_png saved to Supabase Storage bucket mockups/ (included in nightly S3 snapshot); mockup_md (markdown) stored in Postgres column.
+- Monitoring – Prometheus exporter → Grafana Cloud alerts: bounce > 4% (2h), spam > 0.1% (1h), batch misses 05:00, cost_per_lead Tier‑1 >$3, Tier‑2 >$6, Tier‑3 >$10.
+- Data durability – Supabase Postgres primary + WAL nightly → S3; retain raw HTML, screenshots, prompt logs ≥ 90 days.
+- SPOF fallback – nightly RSYNC mirror to $5/mo VPS; two consecutive health‑fail nights auto‑boot same Docker stack.
+- Budget assumption – infra ≤ $250/mo; first 1000‑lead batch triggers budget checkpoint; alert if GPU burst >$25 or Supabase tier upgrade.
+
+## 3 Open Questions (❓) & Assumptions (★)
+
+- Q1: Does screenshot‑based critique lift reply‑rate? (Control = Tier‑1 w/o mock‑ups) ❓
+- Q2: Are α = 0.05 & power = 0.80 adequate given batch sizes? ❓
+- A1: Email is primary dedup key; name+phone Levenshtein pre‑filter. ★
+- A2: $250/mo infra is sufficient given local‑first design. ★
+- Q3: Integrate BrightLocal later if ROI proven. ❓
+- Q4: Dedicated IP need re‑evaluated after 5000 sends. ❓
+
+## 4 Repo Skeleton & Seed Files
+
+```
+leadfactory/
+├ bin/                      # six CLI pipeline scripts + nightly shell
+│   ├ 01_scrape.py          # Yelp/Google listings
+│   ├ 02_enrich.py          # tech‑stack, vitals, SEMrush (T3)
+│   ├ 03_dedupe.py          # Ollama‑driven merge
+│   ├ 04_score.py           # YAML rules → score
+│   ├ 05_mockup.py          # GPT‑4o → Claude QA
+│   ├ 06_email_queue.py     # SendGrid
+│   └ run_nightly.sh
+├ db/
+│   ├ migrations/2025‑05‑19_init.sql
+│   └ schema_prisma.sql     # optional later
+├ etc/
+│   ├ zips.csv              # list of zip codes
+│   ├ verticals.yml         # user‑friendly → Yelp alias
+│   └ scoring_rules.yml
+├ tests/                    # BDD scenarios below
+├ utils/                    # io, cost_tracker, metrics helper
+├ .env.example              # doc of required keys
+└ README.md
+```
+
+## 5 Pipeline Stages · Data Flow · Acceptance Tests
+
+### Pipeline Stages
+
+1. 01_scrape.py - Fetch listing rows
+   - Critical Inputs: zip_queue, verticals, YELP_KEY, GOOGLE_KEY
+   - Persisted Outputs: businesses rows
+   - Acceptance Scenario ID: F 1.1 – scraper success
+
+2. 02_enrich.py - Tech + vitals (+ screenshot / SEMrush by tier)
+   - Critical Inputs: website, TIER env, API keys
+   - Persisted Outputs: features rows
+   - Acceptance Scenario ID: F 2.1 / 2.2 / 2.3 – tier‑gated enrich
+
+3. 03_dedupe.py - Mark dups inactive
+   - Critical Inputs: candidate_pairs view, Ollama
+   - Persisted Outputs: merged_ids.csv, businesses.active
+   - Acceptance Scenario ID: F 3.1 – email dup merge
+
+4. 04_score.py - Apply YAML rules
+   - Critical Inputs: business×features join, rules yml
+   - Persisted Outputs: update score
+   - Acceptance Scenario ID: F 4.1 – rule impact
+
+5. 05_mockup.py - Generate mock‑ups
+   - Critical Inputs: high‑score set, MOCKUP_ENABLED, GPT‑4o
+   - Persisted Outputs: mockup_md, mockup_png
+   - Acceptance Scenario ID: F 5.1 / 5.2 – mock‑up off/on
+
+6. 06_email_queue.py - Send & log cost
+   - Critical Inputs: ready leads, SENDGRID_KEY
+   - Persisted Outputs: emails rows
+   - Acceptance Scenario ID: F 6.1 – email logged
+
+### Acceptance Tests
+
+#### F 1.1 Scraper success
+```gherkin
+Scenario: Fetch HVAC leads
+  Given zip_queue zip="10002" done=false
+    And vertical alias="hvac"
+  When 01_scrape.py runs with --limit 5
+  Then businesses has ≥1 row where zip="10002" AND category="hvac"
+```
+
+#### F 2.x Enrichment tier‑gating
+```gherkin
+Scenario Outline: Tier‑controlled enrichment
+  Given business <id> with website "<url>" and no features row
+    And env TIER="<tier>"
+  When 02_enrich.py runs for <id>
+  Then features row exists with non‑null tech_stack and page_speed
+    And <extra>
+Examples:
+| tier | extra |
+| 1 | screenshot_url IS NULL AND semrush_json IS NULL |
+| 2 | screenshot_url LIKE 'https://%' AND semrush_json IS NULL |
+| 3 | screenshot_url LIKE 'https://%' AND semrush_json::text <> '' |
+```
+
+#### F 3.1 Duplicate merge
+```gherkin
+Scenario: Duplicate by email
+  Given two active businesses share email "info@dup.com"
+  When 03_dedupe.py runs
+  Then exactly one remains active
+```
+
+#### F 4.1 Rule impact
+```gherkin
+Scenario: jQuery penalty
+  Given features.tech_stack includes 'jquery'
+  When 04_score.py runs
+  Then that business' score decreases by 10
+```
+
+#### F 5.1 / 5.2 Mock‑up flag
+```gherkin
+Scenario: Mock‑ups disabled in Tier‑1
+  Given env TIER=1 AND MOCKUP_ENABLED=false
+  When 05_mockup.py runs
+  Then mockup_png IS NULL
+
+Scenario: Mock‑ups generated in Tier‑2
+  Given env TIER=2 AND MOCKUP_ENABLED=true
+  Then mockup_png LIKE 'https://'
+```
+
+#### F 6.1 Email cost logging
+```gherkin
+Scenario: Email queued and cost logged
+  Given variant 'A' is sent via 06_email_queue.py
+  Then emails.variant_id='A' AND cost_cents > 0
+```
+
+## 6 Cron Orchestration
+
+/usr/local/crontab entry:
+```
+0 23 * * * bash /leadfactory/bin/run_nightly.sh >> /var/log/leadfactory.log 2>&1
+```
+
+run_nightly.sh aborts on first non‑zero exit so failures propagate to Prometheus.
+
+## 7 Metrics & Alerts
+
+- Prom counter leads_scraped_total, gauge batch_runtime_seconds, gauge leadfactory_cpu_hours_per_lead.
+- Alert rules:
+  - bounce > 4% for 2h
+  - spam > 0.1% for 1h
+  - cost_per_lead tier=1 > 3 for 1h, tier=2 > 6, tier=3 > 10
+  - batch misses 05:00 EST
+
+## 8 Risk Mitigation & Budget Check
+
+- Deliverability – Warmbox toggle + dedicated pool switcher
+- API over‑run – cost alert → exponential back‑off → optional pause
+- Hardware – RSYNC + VPS auto‑boot fallback
+- Budget – first 1000‑lead batch triggers manual review; TaskMaster task budget_audit_1k must complete before scaling to 10k.
+
+## 9 Next‑Step Blueprint ("must‑pass" chain)
+
+1. schema_init – create SQL & seed ZIP/vertical helpers ▶ pass F Seed.
+2. scraper_poc – build 01_scrape.py, scrape 10 leads ▶ pass F 1.1.
+3. enrich_poc – implement 02_enrich.py for Tier‑1 ▶ pass F 2.1.
+4. dedupe_prompt – write prompt, merge toy dups ▶ pass F 3.1.
+5. score_yaml – create scoring_rules.yml, apply rule test ▶ pass F 4.1.
+6. mockup_proto – Tier‑2 path, save PNG ▶ pass F 5.2.
+7. sendgrid_stub – send to your inbox ▶ pass F 6.1.
+   (All subsequent tasks inherit this gate pattern.)

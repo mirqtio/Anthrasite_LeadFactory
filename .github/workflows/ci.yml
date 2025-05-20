@@ -1,0 +1,200 @@
+name: Anthrasite Lead-Factory CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run tests against'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - staging
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Check formatting with black
+        run: |
+          black --check --diff .
+
+      - name: Check imports with isort
+        run: |
+          isort --check --diff .
+
+  test:
+    name: Run Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-bdd
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          # Set mock API keys for testing
+          sed -i 's/your_yelp_api_key_here/mock_yelp_key/g' .env
+          sed -i 's/your_google_places_api_key_here/mock_google_key/g' .env
+          sed -i 's/your_openai_api_key_here/mock_openai_key/g' .env
+          sed -i 's/your_anthropic_api_key_here/mock_anthropic_key/g' .env
+          sed -i 's/your_sendgrid_api_key_here/mock_sendgrid_key/g' .env
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ --cov=bin --cov=utils -v
+
+      - name: Run BDD acceptance tests
+        run: |
+          pytest tests/ --bdd -v
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: false
+
+  validate-db:
+    name: Validate Database Schema
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sqlite3-utils
+
+      - name: Validate SQL migration scripts
+        run: |
+          # Create a temporary database
+          sqlite3 test.db < db/migrations/2025-05-19_init.sql
+          
+          # Verify database structure
+          sqlite3-utils tables test.db --json
+          
+          # Check for required tables
+          python -c "
+          import sqlite3, sys
+          required_tables = ['businesses', 'zip_queue', 'verticals', 'features', 'mockups', 'emails', 'cost_tracking']
+          conn = sqlite3.connect('test.db')
+          cursor = conn.cursor()
+          cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table'\")
+          tables = [row[0] for row in cursor.fetchall()]
+          missing = [table for table in required_tables if table not in tables]
+          if missing:
+              print(f'Missing required tables: {missing}')
+              sys.exit(1)
+          else:
+              print('All required tables exist')
+          conn.close()
+          "
+
+  build-docker:
+    name: Build Docker Image
+    needs: [test, validate-db]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          tags: anthrasite/lead-factory:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker,dest=/tmp/lead-factory.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lead-factory-docker
+          path: /tmp/lead-factory.tar
+          retention-days: 1
+
+  notify:
+    name: Notify on Completion
+    needs: [build-docker]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check build status
+        id: status
+        run: |
+          if [ "${{ needs.lint.result }}" == "success" ] && [ "${{ needs.test.result }}" == "success" ] && [ "${{ needs.validate-db.result }}" == "success" ] && [ "${{ needs.build-docker.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Notify on success
+        if: steps.status.outputs.status == 'success'
+        run: |
+          echo "CI pipeline completed successfully!"
+          # Add notification mechanism here (e.g., Slack, email)
+
+      - name: Notify on failure
+        if: steps.status.outputs.status == 'failure'
+        run: |
+          echo "CI pipeline failed!"
+          # Add notification mechanism here (e.g., Slack, email)

@@ -1,0 +1,23 @@
+# Health check configuration for Anthrasite Lead-Factory
+health_check:
+  # Primary instance details
+  primary:
+    url: http://localhost:8080/health
+    expected_status: 200
+    timeout: 10  # seconds
+  
+  # Failure threshold
+  failure_threshold: 3
+  
+  # Backup instance details
+  backup:
+    host: backup.example.com
+    user: backup
+    port: 22
+    key_file: ~/.ssh/backup_key
+    docker_compose_path: /home/backup/anthrasite_backup/latest/docker-compose.yml
+  
+  # Notification settings
+  notify:
+    email: alerts@anthrasite.com
+    slack_webhook: https://hooks.slack.com/services/XXXX/YYYY/ZZZZ

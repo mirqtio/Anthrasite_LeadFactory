@@ -1,0 +1,747 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Initialize Database Schema and Seed Helpers",
+      "description": "Create SQL schema and seed ZIP/vertical helpers as specified in §4",
+      "details": "Implement the initial database schema with all required tables for the lead factory pipeline. Create seed files for zip codes and verticals mapping. This task corresponds to the schema_init task in the Next-Step Blueprint.",
+      "testStrategy": "Verify schema creation with test data insertion. Ensure the zip_queue table is properly populated with the required zip codes. Test that the verticals mapping works correctly.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "parallelizable": true,
+      "touches": [
+        "db/migrations/2025-05-19_init.sql",
+        "etc/zips.csv",
+        "etc/verticals.yml"
+      ],
+      "tests": [
+        "F Seed"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create database migration script",
+          "description": "Implement the initial SQL migration script with all required tables",
+          "details": "<info added on 2025-05-20T00:45:36.865Z>\nThe database migration script has been successfully implemented with a comprehensive schema design that supports all core functionality of the system. The script is located at db/migrations/2025-05-19_init.sql and includes the following key components:\n\n1. Core Tables:\n   - zip_queue: Tracks zip codes that need to be processed for lead generation\n   - verticals: Stores business categories/industries for classification\n   - businesses: Contains all lead information and business details\n   - features: Stores technical stack information and performance metrics\n   - mockups: Houses generated website improvement suggestions\n   - emails: Tracks all outreach communication\n   - cost_tracking: Monitors budget allocation and expenditure\n\n2. Database Optimizations:\n   - Appropriate indexes for query performance\n   - Foreign key constraints to maintain data integrity\n   - Triggers for automated data management\n\n3. Analytical Views:\n   - Candidate duplicate pairs view for deduplication\n   - High-score businesses view for prioritization\n   - Email-ready businesses view for streamlined outreach\n\n4. Testing:\n   - BDD (Behavior-Driven Development) tests implemented to verify schema integrity\n\nThe schema design follows best practices for relational database modeling and provides a solid foundation for the application's data layer.\n</info added on 2025-05-20T00:45:36.865Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        },
+        {
+          "id": 2,
+          "title": "Create zip codes seed file",
+          "description": "Create CSV file with target zip codes (NY 10002, WA 98908, Carmel IN)",
+          "details": "<info added on 2025-05-20T00:46:04.986Z>\nCreated etc/zips.csv file containing the three required metropolitan areas:\n- NY 10002 (New York)\n- WA 98908 (Yakima)\n- IN 46032 (Carmel)\n\nThe CSV includes metadata columns for metro name and state to provide additional context for each zip code. The file structure allows for easy database seeding and has been verified to work correctly with the test_seed_helpers.py BDD test suite.\n</info added on 2025-05-20T00:46:04.986Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        },
+        {
+          "id": 3,
+          "title": "Create verticals mapping file",
+          "description": "Create YAML file mapping user-friendly vertical names to Yelp/Google categories",
+          "details": "<info added on 2025-05-20T00:46:31.753Z>\nCreated etc/verticals.yml file containing mappings for the three required verticals (HVAC, Plumbers, and Vets). Each vertical includes:\n\n1. Appropriate Yelp and Google category identifiers for accurate API queries\n2. Search parameters optimized for both Yelp and Google APIs\n3. Descriptive information for each vertical to provide context\n\nThe mapping structure ensures consistent categorization across different data sources and enables proper filtering of business listings. The file was successfully tested with the test_seed_helpers.py BDD test to verify integration with the application.\n</info added on 2025-05-20T00:46:31.753Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Implement Lead Scraper (01_scrape.py)",
+      "description": "Build the first pipeline stage to scrape business listings from Yelp and Google",
+      "details": "Develop the scraper script that fetches business listings from Yelp Fusion and Google Places APIs based on zip codes and verticals. Store the results in the businesses table. This task corresponds to the scraper_poc task in the Next-Step Blueprint.",
+      "testStrategy": "Verify that the scraper can successfully fetch HVAC leads for zip code 10002 as specified in acceptance test F 1.1.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "bin/01_scrape.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 1.1"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Yelp API integration",
+          "description": "Create functions to fetch business listings from Yelp Fusion API",
+          "details": "<info added on 2025-05-20T01:10:44.401Z>\nThe Yelp API integration has been successfully implemented for the Lead Scraper. The implementation includes:\n\n1. A YelpAPI class with core functionality:\n   - search_businesses method that searches for businesses by term and location\n   - get_business_details method that retrieves detailed information about a specific business\n\n2. Robust error handling and retry logic to handle API rate limits and temporary failures\n\n3. Cost tracking functionality to monitor API usage and associated costs\n\n4. Data processing functions that:\n   - Extract all required business fields (name, address, zip code, category, etc.)\n   - Transform the data into the appropriate format\n   - Save the processed business data to the database\n\n5. Compliance with Windsurf Global AI Rules v1.1, including:\n   - Structured JSON logging\n   - Explicit timeouts for all network operations\n   - Comprehensive error handling\n\nThe implementation is complete and ready for integration with the rest of the Lead Scraper system.\n</info added on 2025-05-20T01:10:44.401Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 2,
+          "title": "Implement Google Places API integration",
+          "description": "Create functions to fetch business listings from Google Places API",
+          "details": "<info added on 2025-05-20T01:11:16.124Z>\nThe Google Places API integration has been successfully implemented with the following components:\n\n1. Created a GooglePlacesAPI class with core functionality:\n   - search_places method that searches for businesses by query and location\n   - get_place_details method that retrieves comprehensive information for specific places\n\n2. Implemented robust error handling and retry logic to handle API rate limits and temporary failures\n\n3. Added cost tracking functionality to monitor API usage expenses:\n   - Search queries: $0.03 per request\n   - Place details: $0.17 per request\n\n4. Developed data processing functions to transform API responses and save to database\n\n5. Implemented ZIP code to coordinate conversion to enable location-based searches\n\n6. Ensured all business data fields are properly extracted and stored, including:\n   - Business name, address, phone number\n   - Website URL, business hours\n   - Rating and review information\n   - Geographic coordinates\n   - Business category data\n\nThe implementation adheres to Windsurf Global AI Rules v1.1 standards, featuring comprehensive error handling, appropriate logging levels, and explicit timeouts for all network operations to prevent hanging requests.\n</info added on 2025-05-20T01:11:16.124Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 3,
+          "title": "Implement database storage logic",
+          "description": "Create functions to store scraped data in the businesses table",
+          "details": "<info added on 2025-05-20T01:11:49.447Z>\nThe database storage logic for the Lead Scraper has been implemented with the following components:\n\n1. Created a DatabaseConnection context manager in utils/io.py to ensure safe database operations with proper connection handling and automatic closing.\n\n2. Implemented the save_business function that stores scraped business data in the businesses table with comprehensive error handling to prevent data loss.\n\n3. Developed utility functions to retrieve configuration data:\n   - get_active_zip_codes: Retrieves zip codes that need to be processed\n   - get_verticals: Retrieves business verticals for targeting\n\n4. Added mark_zip_done function to update the processing status of zip codes after completion, preventing redundant scraping.\n\n5. Implemented track_api_cost function to monitor API usage costs, supporting budget management and cost optimization.\n\n6. Created data transformation functions:\n   - process_yelp_business: Transforms Yelp API response data into the database schema format\n   - process_google_place: Transforms Google Places API data into the database schema format\n\n7. Ensured data integrity by wrapping all database operations in transactions and implementing proper exception handling with specific error responses.\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, featuring structured logging, robust error handling, and efficient database connection management. All database interactions use parameterized queries to prevent SQL injection vulnerabilities.\n</info added on 2025-05-20T01:11:49.447Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Implement Lead Enrichment (02_enrich.py)",
+      "description": "Build the second pipeline stage for tech-stack and vitals enrichment",
+      "details": "Develop the enrichment script that analyzes business websites to extract tech stack information and performance metrics. Implement tier-based enrichment logic. This task corresponds to the enrich_poc task in the Next-Step Blueprint.",
+      "testStrategy": "Verify that the enrichment process works correctly for different tiers as specified in acceptance tests F 2.1, F 2.2, and F 2.3.",
+      "priority": "high",
+      "dependencies": [
+        2
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "bin/02_enrich.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 2.1",
+        "F 2.2",
+        "F 2.3"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement website scraping logic",
+          "description": "Create functions to scrape websites for tech stack identification",
+          "details": "<info added on 2025-05-20T01:17:53.095Z>\nThe website scraping logic for tech stack identification has been implemented with the following components:\n\n1. Created a TechStackAnalyzer class that leverages Wappalyzer for technology detection on target websites\n2. Enhanced detection capabilities with manual checks for common technologies like jQuery and Bootstrap that might be missed by automated tools\n3. Added functionality to identify outdated HTML/CSS elements to help assess technical debt\n4. Implemented responsive design detection to evaluate mobile-friendliness of target websites\n5. Built comprehensive error handling with specific exception types for different failure scenarios\n6. Integrated structured logging for all operations to facilitate debugging and monitoring\n7. Applied appropriate timeouts to all network operations to prevent hanging during scraping\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, ensuring robust error handling, appropriate logging levels, and explicit timeouts for all network operations. The code is now ready for integration with the lead enrichment pipeline.\n</info added on 2025-05-20T01:17:53.095Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 2,
+          "title": "Implement PageSpeed API integration",
+          "description": "Create functions to fetch Core Web Vitals data",
+          "details": "<info added on 2025-05-20T01:18:21.446Z>\nThe PageSpeed API integration has been successfully implemented to fetch Core Web Vitals data. The implementation includes:\n\n1. A PageSpeedAnalyzer class that handles all interactions with the Google PageSpeed Insights API\n2. Extraction of key Core Web Vitals metrics:\n   - First Contentful Paint (FCP)\n   - Largest Contentful Paint (LCP)\n   - Cumulative Layout Shift (CLS)\n   - Total Blocking Time (TBT)\n   - Speed Index\n   - Time to Interactive\n3. Performance score calculation functionality to assess overall site health\n4. Additional metrics extraction including accessibility, best practices, and SEO scores\n5. API usage cost tracking to monitor consumption\n6. Comprehensive error handling with appropriate exception management\n7. Configurable timeout settings for all network operations\n8. Response validation and parsing to ensure data integrity\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, featuring robust error handling mechanisms, appropriate logging throughout the code, and explicit timeouts for all network operations to prevent hanging requests.\n</info added on 2025-05-20T01:18:21.446Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 3,
+          "title": "Implement tier-based enrichment logic",
+          "description": "Create conditional logic for tier-based enrichment features",
+          "details": "<info added on 2025-05-20T01:18:52.651Z>\nThe tier-based enrichment logic has been implemented with a scalable approach that activates different features based on the configured tier level (1, 2, or 3):\n\nTier 1 (Basic):\n- Implemented core tech stack analysis functionality\n- Integrated PageSpeed metrics from the previously implemented PageSpeed API\n- Optimized for minimal API costs while providing essential insights\n\nTier 2 (Standard):\n- Includes all Tier 1 features\n- Added website screenshot capture functionality using ScreenshotOne API\n- Implemented proper error handling for screenshot failures\n- Added caching to prevent redundant API calls\n\nTier 3 (Premium):\n- Includes all Tier 1 and Tier 2 features\n- Integrated with SEMrush Site Audit API for comprehensive site analysis\n- Implemented detailed reporting for premium insights\n\nAdditional Implementation Details:\n- Created a cost tracking system to monitor API usage expenses for each tier\n- Added configuration via environment variables to set the default tier level\n- Implemented command-line override option for tier selection\n- Ensured robust error handling for all tier-specific features\n- Applied Windsurf Global AI Rules v1.1 compliance throughout the code\n- Implemented appropriate logging at each enrichment step\n- Added explicit timeouts for all network operations to prevent hanging\n\nThe implementation ensures cost-effective operation by default while allowing for premium features when needed. The modular design makes it easy to add new enrichment features to any tier in the future.\n</info added on 2025-05-20T01:18:52.651Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 4,
+          "title": "Implement database integration",
+          "description": "Create functions to fetch businesses and save enrichment data",
+          "details": "<info added on 2025-05-20T01:19:21.170Z>\nThe database integration for the enrichment script has been implemented with the following components:\n\n1. Created get_businesses_to_enrich function to fetch businesses requiring enrichment from the database\n2. Implemented filtering logic to only process businesses with websites and no existing features\n3. Developed save_features function to store enrichment data in the database\n4. Added transaction handling to ensure data integrity during database operations\n5. Implemented parameterized queries as a security measure against SQL injection\n6. Added command-line filtering options (--limit, --id) for more flexible data processing\n7. Implemented comprehensive error handling for all database operations\n8. Added structured logging to track database operations\n\nThe implementation follows Windsurf Global AI Rules v1.1 standards, ensuring robust error handling, appropriate logging levels, and database security best practices. The database integration creates a seamless data flow between the scraping phase and the enrichment process, maintaining data integrity throughout the pipeline.\n</info added on 2025-05-20T01:19:21.170Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 5,
+          "title": "Implement parallel processing",
+          "description": "Create concurrent execution logic for efficient enrichment",
+          "details": "<info added on 2025-05-20T01:19:49.483Z>\nThe parallel processing implementation for the enrichment script has been completed with the following components:\n\n1. ThreadPoolExecutor implementation for concurrent business enrichment operations, allowing multiple enrichment requests to be processed simultaneously.\n\n2. Configurable MAX_CONCURRENT_REQUESTS parameter that can be set via environment variable, providing flexibility to adjust concurrency based on system capabilities and API rate limits.\n\n3. Task submission and result collection logic that properly manages the concurrent execution flow and aggregates results from parallel operations.\n\n4. Progress tracking system that monitors and reports on completed and failed enrichment operations in real-time.\n\n5. Exception handling specifically designed for parallel tasks, ensuring that failures in individual enrichment operations don't affect the entire batch.\n\n6. Timeout configuration to prevent hanging operations, ensuring that long-running or stalled requests don't block the entire process.\n\n7. Resource management implementation to prevent system overload, including proper thread management and resource cleanup.\n\n8. Detailed logging for monitoring parallel execution, providing visibility into the enrichment process performance.\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, featuring robust error handling, appropriate logging levels, and explicit timeouts for all network operations. The parallel processing architecture significantly improves throughput for the enrichment stage compared to sequential processing.\n</info added on 2025-05-20T01:19:49.483Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Implement Deduplication Logic (03_dedupe.py)",
+      "description": "Build the third pipeline stage for Ollama-driven duplicate merging",
+      "details": "Develop the deduplication script that uses Llama-3 8B to identify and merge duplicate business records. Implement Levenshtein distance pre-filtering for name+phone combinations. This task corresponds to the dedupe_prompt task in the Next-Step Blueprint.",
+      "testStrategy": "Verify that the deduplication process correctly identifies and merges duplicate records as specified in acceptance test F 3.1.",
+      "priority": "high",
+      "dependencies": [
+        3
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "bin/03_dedupe.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 3.1"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Levenshtein distance pre-filtering",
+          "description": "Create functions to pre-filter potential duplicates using Levenshtein distance",
+          "details": "<info added on 2025-05-20T01:26:02.350Z>\nThe Levenshtein distance pre-filtering implementation has been successfully completed with the following components:\n\n1. Created a LevenshteinMatcher class that efficiently identifies potential duplicate businesses based on string similarity metrics.\n\n2. Implemented specialized string normalization functions for business names, addresses, and phone numbers to ensure consistent comparison regardless of formatting variations.\n\n3. Added similarity calculation functionality using Levenshtein distance with proper normalization to accurately measure the edit distance between strings.\n\n4. Implemented a weighted similarity scoring system that prioritizes different business attributes:\n   - 50% weight for business name similarity\n   - 30% weight for phone number similarity\n   - 20% weight for address similarity\n\n5. Added configurable threshold settings via environment variables and command-line arguments, allowing for easy tuning of the deduplication sensitivity.\n\n6. Implemented comprehensive error handling and logging to ensure robust operation and facilitate debugging.\n\n7. Added detailed documentation for all functions and methods following best practices.\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1 and significantly optimizes the deduplication process by reducing the number of candidate pairs that require verification through more computationally expensive LLM-based methods.\n</info added on 2025-05-20T01:26:02.350Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 4
+        },
+        {
+          "id": 2,
+          "title": "Implement Ollama LLM integration",
+          "description": "Create functions to verify potential duplicates using Llama-3 8B",
+          "details": "<info added on 2025-05-20T01:26:31.842Z>\nThe OllamaVerifier class has been implemented to integrate with Llama-3 8B via the Ollama API for duplicate verification. The implementation includes:\n\n1. A structured approach to prompt generation specifically designed for business comparison\n2. Response parsing functionality that extracts verification decisions, confidence scores, and reasoning\n3. Token usage tracking and cost calculation for monitoring resource utilization\n4. Configurable parameters including model selection, API URL, and confidence thresholds\n5. Comprehensive error handling with appropriate timeout configurations\n6. Detailed logging system that captures verification decisions and reasoning\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, ensuring robust error handling, appropriate logging levels, and explicit timeouts for all API operations. The LLM-based verification system provides high-quality duplicate detection capabilities with detailed reasoning for each decision, enhancing the overall deduplication logic.\n</info added on 2025-05-20T01:26:31.842Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 4
+        },
+        {
+          "id": 3,
+          "title": "Implement database integration for deduplication",
+          "description": "Create functions to fetch potential duplicates and merge records",
+          "details": "<info added on 2025-05-20T01:27:04.896Z>\nThe database integration for deduplication has been successfully implemented with the following components:\n\n1. A `get_potential_duplicates` function that queries the database to identify candidate pairs of business records that might be duplicates based on similarity criteria.\n\n2. A `get_business_by_id` function that retrieves complete business records from the database for processing.\n\n3. A `merge_businesses` function with transaction support to ensure data integrity during the merging process. This prevents partial merges that could corrupt data.\n\n4. Helper functions:\n   - `select_primary_business` to determine which record should be kept as the primary record\n   - `calculate_completeness_score` to evaluate which record contains more complete information\n\n5. Reference update mechanisms for related tables (features, mockups, and emails) to maintain data consistency after merges.\n\n6. A dry-run mode implementation that allows testing the deduplication logic without making actual changes to the database.\n\n7. Comprehensive error handling with transaction rollback capabilities to ensure the database remains in a consistent state even when errors occur.\n\n8. Detailed logging for all merge operations to provide an audit trail and assist with troubleshooting.\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, incorporating robust error handling, appropriate logging levels, and proper database security practices. The database integration ensures that duplicate business records are identified and merged correctly while preserving all associated data and relationships.\n</info added on 2025-05-20T01:27:04.896Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 4
+        },
+        {
+          "id": 4,
+          "title": "Implement main function and CLI",
+          "description": "Create main function and command-line interface for the deduplication script",
+          "details": "<info added on 2025-05-20T01:27:42.423Z>\nThe main function and CLI implementation for the deduplication script has been completed with the following features:\n\n1. Command-line interface using argparse with the following parameters:\n   - `--limit`: Controls the number of duplicate pairs to process\n   - `--threshold`: Adjusts the Levenshtein similarity threshold for matching\n   - `--dry-run`: Allows testing the deduplication process without making actual database changes\n\n2. Main function implementation includes:\n   - Proper initialization of resources and connections\n   - Comprehensive error handling with try/except blocks\n   - Clean resource cleanup in finally blocks\n   - Appropriate exit code handling for different scenarios\n\n3. Process management features:\n   - Progress tracking to show completion percentage\n   - Sequential processing of duplicate pairs with status updates\n   - Summary reporting of processed items, successful deduplications, and errors\n   - Detailed logging throughout the execution process\n\n4. Code quality:\n   - Follows Windsurf Global AI Rules v1.1\n   - Comprehensive docstrings for functions and modules\n   - Clear help text for CLI arguments\n   - Appropriate comments for complex logic sections\n\nThe implementation provides a flexible interface for running the deduplication process in various modes, allowing for testing, limited runs, and adjustment of matching sensitivity.\n</info added on 2025-05-20T01:27:42.423Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 4
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Implement Scoring Logic (04_score.py)",
+      "description": "Build the fourth pipeline stage for YAML-based lead scoring",
+      "details": "Develop the scoring script that applies rules defined in scoring_rules.yml to calculate lead scores. Implement penalties for outdated technologies like jQuery. This task corresponds to the score_yaml task in the Next-Step Blueprint.",
+      "testStrategy": "Verify that the scoring process correctly applies rules as specified in acceptance test F 4.1.",
+      "priority": "high",
+      "dependencies": [
+        4
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "bin/04_score.py",
+        "etc/scoring_rules.yml",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 4.1"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create scoring rules YAML file",
+          "description": "Implement the scoring_rules.yml file with rule definitions",
+          "details": "<info added on 2025-05-20T01:32:52.283Z>\nThe scoring_rules.yml file has been successfully implemented with a comprehensive set of rule definitions for lead scoring. The implementation includes:\n\n1. Comprehensive rule definitions for lead scoring based on multiple factors, allowing for nuanced evaluation of leads\n2. Tech stack rules with penalties for outdated technologies like jQuery, ensuring focus on modern tech adoption\n3. Performance-based rules using Core Web Vitals metrics to prioritize leads with better site performance\n4. Business category-specific scoring adjustments to tailor scoring to different industry verticals\n5. Location-based scoring rules for target regions to prioritize leads in strategic geographic areas\n6. Tier-specific rules for businesses with different enrichment levels, accounting for data quality\n7. Multipliers for high-value verticals and perfect-match tech stacks to highlight exceptional opportunities\n8. Global settings for base score, min/max scores, and high-score threshold for consistent scoring boundaries\n\nThe YAML file is structured with clear sections and descriptive comments to facilitate maintenance and future extensions. All required scoring factors from the task description have been incorporated, creating a robust framework for identifying promising leads.\n</info added on 2025-05-20T01:32:52.283Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 5
+        },
+        {
+          "id": 2,
+          "title": "Implement rule engine and scoring logic",
+          "description": "Create the core rule evaluation and scoring system",
+          "details": "<info added on 2025-05-20T01:34:50.769Z>\nThe rule engine and scoring logic implementation has been completed with the following components:\n\n1. RuleEngine class with comprehensive condition evaluation capabilities\n2. Dynamic rule loading from YAML configuration file\n3. Support for all required condition types:\n   - Tech stack detection with version comparison\n   - Performance metrics evaluation (PageSpeed, Core Web Vitals)\n   - Business category and location filtering\n   - Website content analysis\n   - Tier-specific condition evaluation\n4. Score calculation with proper multiplier application\n5. Detailed rule application tracking for transparency\n6. Database integration for fetching businesses and saving scores\n7. Support for recalculation mode and business ID filtering\n8. Proper error handling and logging throughout\n\nThe implementation follows the Windsurf Global AI Rules v1.1 specifications, with robust error handling, appropriate logging, and proper security practices. The rule engine is designed to be flexible and extensible, allowing for easy addition of new condition types in the future.\n</info added on 2025-05-20T01:34:50.769Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 5
+        },
+        {
+          "id": 3,
+          "title": "Implement database integration and CLI",
+          "description": "Create functions for database operations and command-line interface",
+          "details": "<info added on 2025-05-20T01:35:22.742Z>\nThe database integration and CLI implementation for the scoring script has been completed with the following components:\n\n1. Database Integration:\n   - Implemented get_businesses_to_score function with configurable parameters:\n     * Limit parameter to control the number of businesses processed\n     * Business ID filter for targeting specific businesses\n     * Flag to enable recalculation of existing scores\n   - Created save_business_score function with transaction handling to ensure data integrity\n   - Added proper error handling and logging for all database operations\n   - Implemented security best practices for database interactions\n\n2. Command-Line Interface:\n   - Developed an argparse-based CLI with comprehensive help text\n   - Added command-line options corresponding to the database function parameters\n   - Implemented proper exit code handling for different scenarios\n   - Added progress tracking and summary reporting for better user experience\n\n3. Core Functionality:\n   - Implemented score_business function to coordinate the scoring process\n   - Created main function with error handling and logging\n   - Ensured compliance with Windsurf Global AI Rules v1.1\n   - Added detailed logging throughout the application\n\nThe implementation provides a flexible and robust interface for running the scoring process in various modes while ensuring proper storage of scores and applied rules in the database.\n</info added on 2025-05-20T01:35:22.742Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 5
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Implement Mockup Generation (05_mockup.py)",
+      "description": "Build the fifth pipeline stage for GPT-4o/Claude mockup generation",
+      "details": "Develop the mockup generation script that uses GPT-4o to create website improvement mockups. Implement Claude fallback logic and tier-based mockup generation. This task corresponds to the mockup_proto task in the Next-Step Blueprint.",
+      "testStrategy": "Verify that the mockup generation process works correctly for different tiers as specified in acceptance tests F 5.1 and F 5.2.",
+      "priority": "high",
+      "dependencies": [
+        5
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "bin/05_mockup.py",
+        "utils/io.py"
+      ],
+      "tests": [
+        "F 5.1",
+        "F 5.2"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement GPT-4o integration",
+          "description": "Create functions to generate mockups using GPT-4o API",
+          "details": "<info added on 2025-05-20T01:40:03.254Z>\nThe GPT-4o integration for mockup generation has been successfully implemented with the following components:\n\n1. Created a GPT4oMockupGenerator class that handles all aspects of website mockup generation\n2. Developed structured prompt generation system that incorporates business data and specific design requirements\n3. Implemented JSON response parsing functionality to extract both mockup images and HTML code\n4. Added comprehensive token usage tracking with associated cost calculation\n5. Built robust error handling with specific exception types for different failure scenarios\n6. Integrated detailed logging throughout all operations for debugging and monitoring\n7. Implemented timeout mechanisms to prevent operations from hanging indefinitely\n8. Added support for customizable mockup styles and multiple resolution options\n\nThe implementation strictly adheres to Windsurf Global AI Rules v1.1, ensuring all API operations have proper error handling, appropriate logging levels, and explicit timeouts. The GPT-4o integration delivers high-quality mockup generation with detailed design suggestions that match the specified requirements.\n</info added on 2025-05-20T01:40:03.254Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        },
+        {
+          "id": 2,
+          "title": "Implement Claude fallback logic",
+          "description": "Create functions to use Claude as a fallback when GPT-4o fails",
+          "details": "<info added on 2025-05-20T01:40:32.129Z>\nThe Claude fallback logic implementation has been completed with the following components:\n\n1. Created a ClaudeMockupGenerator class that serves as a fallback when GPT-4o fails to generate mockups\n2. Developed structured prompt generation specifically optimized for Claude while maintaining similarity to GPT-4o's approach\n3. Implemented robust response parsing using regex to reliably extract both JSON and HTML content from Claude's responses\n4. Added token usage tracking and cost calculation functionality based on Claude's specific pricing model\n5. Implemented comprehensive error handling with specific exception types to properly manage Claude API failures\n6. Integrated detailed logging for all fallback operations to facilitate debugging and monitoring\n7. Created intelligent fallback logic in the generate_business_mockup function that determines when to use Claude\n8. Added conditional evaluation logic to ensure Claude results are only used when they provide better quality than GPT-4o's partial results\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, featuring robust error handling mechanisms, appropriate logging levels, and explicit timeouts for all API operations. The fallback system ensures high availability of the mockup generation service by providing a reliable alternative when the primary model encounters issues.\n</info added on 2025-05-20T01:40:32.129Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        },
+        {
+          "id": 3,
+          "title": "Implement tier-based mockup generation",
+          "description": "Create conditional logic for tier-based mockup features",
+          "details": "<info added on 2025-05-20T01:41:06.199Z>\nThe tier-based mockup generation implementation has been completed with the following features:\n\n1. Implemented tier-based filtering in the get_businesses_for_mockup function to ensure appropriate business selection based on tier level\n2. Added validation logic to enforce minimum tier requirements (Tier 2) for mockup generation\n3. Integrated screenshot URL functionality specifically for Tier 2+ businesses\n4. Implemented command-line tier override option for testing and manual processing\n5. Added comprehensive error handling for tier-specific features and edge cases\n6. Implemented detailed logging system to track tier-based decision making\n7. Created business scoring prioritization system that processes highest-scored businesses first\n8. Added environment variable configuration support for flexible tier settings\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, ensuring robust error handling, appropriate logging levels, and proper security practices throughout. The tier-based approach optimizes resource allocation by providing more comprehensive mockups to higher-tier businesses while maintaining basic functionality for lower tiers.\n</info added on 2025-05-20T01:41:06.199Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        },
+        {
+          "id": 4,
+          "title": "Implement database and storage integration",
+          "description": "Create functions for database operations and image storage",
+          "details": "<info added on 2025-05-20T01:41:45.241Z>\nThe database and storage integration implementation has been completed with the following components:\n\n1. Implemented get_businesses_for_mockup function with comprehensive support for:\n   - Limiting the number of businesses processed\n   - Filtering by specific business ID\n   - Tier-based filtering to align with the mockup generation strategy\n   - Force regeneration option to recreate mockups when needed\n\n2. Created save_mockup function with proper transaction handling to ensure data integrity\n\n3. Implemented save_mockup_image function for Supabase Storage integration, enabling secure storage of generated mockup images\n\n4. Added base64 image handling and conversion capabilities to facilitate image processing and storage\n\n5. Implemented robust error handling for all database and storage operations to ensure system reliability\n\n6. Added detailed logging for all operations to facilitate debugging and monitoring\n\n7. Implemented fallback behavior for storage failures to prevent data loss\n\n8. Added proper security handling for API keys and credentials following best practices\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, with emphasis on robust error handling, appropriate logging levels, and proper security practices. The database and storage integration ensures that mockups are properly saved and can be retrieved for email generation in the next pipeline stage.\n</info added on 2025-05-20T01:41:45.241Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        },
+        {
+          "id": 5,
+          "title": "Implement main function and CLI",
+          "description": "Create main function and command-line interface for the mockup generation script",
+          "details": "<info added on 2025-05-20T01:42:17.397Z>\nThe main function and CLI implementation for the mockup generation script has been completed with the following features:\n\n1. Command-line interface using argparse with the following parameters:\n   - `--limit`: Controls the number of businesses to process\n   - `--id`: Targets a specific business by ID\n   - `--tier`: Overrides the default tier level\n   - `--force`: Flag to regenerate existing mockups\n\n2. Main function architecture:\n   - Proper initialization of resources and dependencies\n   - Comprehensive error handling and exception management\n   - API key validation to prevent unnecessary processing\n   - Tier validation to ensure minimum requirements are met\n   - Sequential processing of businesses with proper state management\n   - Progress tracking with user feedback\n   - Summary reporting upon completion\n   - Appropriate exit code handling for different scenarios\n\n3. Logging implementation:\n   - Detailed logging throughout the process\n   - Clear indication of processing stages\n   - Error reporting with actionable information\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, ensuring robust error handling, appropriate logging levels, and clear documentation. The CLI design provides flexibility for running the mockup generation process in different modes, supporting both batch processing and targeted generation for specific businesses.\n</info added on 2025-05-20T01:42:17.397Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Implement Email Queue (06_email_queue.py)",
+      "description": "Build the sixth pipeline stage for SendGrid email delivery",
+      "details": "Develop the email queue script that sends personalized emails via SendGrid. Implement cost logging and bounce rate monitoring. This task corresponds to the sendgrid_stub task in the Next-Step Blueprint.",
+      "testStrategy": "Verify that the email queue process correctly sends emails and logs costs as specified in acceptance test F 6.1.",
+      "priority": "high",
+      "dependencies": [
+        6
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "bin/06_email_queue.py",
+        "utils/io.py",
+        "utils/cost_tracker.py"
+      ],
+      "tests": [
+        "F 6.1"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement SendGrid API integration",
+          "description": "Create functions to send emails using SendGrid API",
+          "details": "<info added on 2025-05-20T01:49:39.847Z>\nThe SendGrid API integration has been successfully implemented with the following features:\n\n1. Created a SendGridEmailSender class that provides comprehensive email sending functionality\n2. Implemented support for both HTML and plain text email content formats\n3. Added capability to attach images from URLs directly into emails\n4. Implemented bounce rate monitoring system to track and prevent delivery issues\n5. Added daily sent count tracking to ensure compliance with API rate limits\n6. Developed robust error handling with specific exception types for different failure scenarios\n7. Implemented detailed logging for all operations to facilitate debugging and monitoring\n8. Integrated cost tracking functionality to monitor API usage expenses\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, featuring robust error handling mechanisms, appropriate logging levels, and explicit timeouts for all API operations. The SendGrid integration provides a reliable email delivery system with comprehensive tracking and monitoring capabilities.\n</info added on 2025-05-20T01:49:39.847Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 2,
+          "title": "Implement email template and content generation",
+          "description": "Create functions to generate personalized email content",
+          "details": "<info added on 2025-05-20T01:50:38.272Z>\nThe email template and content generation implementation has been completed with the following features:\n\n1. Responsive HTML email template with modern design that renders properly across different email clients and devices\n2. Variable substitution system for personalizing emails with recipient name, company, and other relevant information\n3. Dynamic improvements list generation based on score details, allowing for customized recommendations\n4. Template loading mechanism from external files with an inline fallback option for reliability\n5. A comprehensive generate_email_content function that produces both HTML and plain text versions of emails for maximum compatibility\n6. Support for embedding mockup images to visually enhance the emails\n7. Proper HTML escaping implementation to prevent injection attacks and ensure security\n8. Professional layout with clear call-to-action buttons to improve conversion rates\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, featuring robust error handling for all edge cases and following security best practices. The email template is designed with conversion optimization in mind, presenting clear value propositions and maintaining a professional appearance throughout.\n\nThis component works in conjunction with the SendGrid API integration from the previous subtask to enable the complete email delivery system.\n</info added on 2025-05-20T01:50:38.272Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 3,
+          "title": "Implement database integration and cost tracking",
+          "description": "Create functions for database operations and cost tracking",
+          "details": "<info added on 2025-05-20T01:52:35.459Z>\nThe database integration and cost tracking implementation has been completed with the following components:\n\n1. Created a comprehensive cost_tracker.py utility module that includes:\n   - Cost logging functionality for all API operations\n   - Daily and monthly cost tracking mechanisms\n   - Budget threshold monitoring system\n   - Detailed cost breakdown by service and operation\n   - Prometheus metrics export for monitoring dashboards\n   - JSON report generation capabilities\n\n2. Implemented database functions:\n   - get_businesses_for_email function with filtering options to retrieve targeted business records\n   - save_email_record function with transaction support to ensure data integrity\n   - Full database integration in the email queue script\n\n3. Added robust implementation features:\n   - Proper error handling for all database operations\n   - Detailed logging for cost tracking activities\n   - Command-line interface for cost tracking utilities\n   - Budget threshold alerts to prevent overspending\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, incorporating robust error handling, appropriate logging levels, and proper security practices. The cost tracking system provides comprehensive monitoring and reporting capabilities to ensure budget compliance throughout the email queue operations.\n</info added on 2025-05-20T01:52:35.459Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 4,
+          "title": "Implement main function and CLI",
+          "description": "Create main function and command-line interface for the email queue script",
+          "details": "<info added on 2025-05-20T01:53:13.856Z>\nThe main function and CLI implementation for the email queue script includes:\n\n1. Command-line interface using argparse with the following parameters:\n   - --limit: Controls the maximum number of emails to send in a single run\n   - --id: Allows targeting a specific business by ID\n   - --dry-run: Tests the process without actually sending emails\n   - --force: Overrides normal checks to resend emails\n\n2. Main function implementation with:\n   - Proper initialization of database connections and email client\n   - Comprehensive error handling and exception management\n   - Graceful shutdown procedures\n\n3. Safety features:\n   - Bounce rate checking to prevent delivery issues with problematic domains\n   - Daily email limit enforcement to maintain sending reputation\n   - Proper exit code handling for integration with scheduling systems\n\n4. Operational features:\n   - Detailed logging throughout the process\n   - Sequential processing of businesses with appropriate pacing\n   - Progress tracking during execution\n   - Summary reporting upon completion\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, featuring robust error handling, appropriate logging levels, and clear documentation. The CLI design provides flexibility for different operational scenarios while maintaining safeguards against excessive sending or delivery issues.\n</info added on 2025-05-20T01:53:13.856Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Implement BDD Acceptance Tests",
+      "description": "Create BDD tests for all pipeline stages as specified in §5",
+      "details": "Develop comprehensive BDD tests for all pipeline stages using pytest-bdd or behave. Implement all acceptance scenarios defined in the specification.",
+      "testStrategy": "Verify that all BDD tests pass for each pipeline stage.",
+      "priority": "high",
+      "dependencies": [
+        7
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "tests/test_scraper.py",
+        "tests/test_enrich.py",
+        "tests/test_dedupe.py",
+        "tests/test_score.py",
+        "tests/test_mockup.py",
+        "tests/test_email.py"
+      ],
+      "tests": [
+        "F 1.1",
+        "F 2.1",
+        "F 2.2",
+        "F 2.3",
+        "F 3.1",
+        "F 4.1",
+        "F 5.1",
+        "F 5.2",
+        "F 6.1"
+      ],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement scraper BDD tests",
+          "description": "Create BDD tests for the lead scraper (01_scrape.py)",
+          "details": "<info added on 2025-05-20T01:56:20.381Z>\nThe BDD tests for the lead scraper (01_scrape.py) have been successfully implemented with the following components:\n\n1. Comprehensive BDD test scenarios covering both Yelp and Google Places APIs\n2. Error handling test cases to verify proper behavior during API failures\n3. Duplicate detection testing to ensure no redundant business entries\n4. Test fixtures with mock API responses for consistent testing\n5. Temporary database fixture implementation for test isolation\n6. Business data validation assertions to verify data integrity\n7. Step definitions for all BDD scenarios to translate natural language to code\n8. Feature file with clear, descriptive scenarios in Gherkin syntax\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, ensuring robust error handling and proper test isolation. All key functionality of the scraper component has been verified, including API integration, data validation, error handling, and database operations. The tests provide a solid foundation for future development and maintenance of the scraper module.\n</info added on 2025-05-20T01:56:20.381Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 8
+        },
+        {
+          "id": 2,
+          "title": "Implement enrichment BDD tests",
+          "description": "Create BDD tests for the lead enrichment (02_enrich.py)",
+          "details": "<info added on 2025-05-20T01:58:06.825Z>\nThe enrichment BDD tests implementation has been completed with comprehensive test coverage for the lead enrichment module (02_enrich.py). The implementation includes:\n\n1. Test scenarios for website data enrichment functionality\n2. Tests for handling businesses without websites\n3. Tests for API error handling and recovery\n4. Tests for skipping already enriched business records\n5. Tests for prioritization logic based on business score\n6. Test fixtures with mock API responses to simulate various scenarios\n7. Temporary database fixture setup for isolated testing\n8. Assertions for validating enrichment data quality and completeness\n\nThe tests follow the Windsurf Global AI Rules v1.1 standards, implementing robust error handling patterns and maintaining proper test isolation. All key functionality of the enrichment component has been verified, including website analysis, contact information extraction, error handling mechanisms, and database operations.\n\nThe test suite ensures that the enrichment module correctly processes business data, handles edge cases appropriately, and maintains data integrity throughout the enrichment process.\n</info added on 2025-05-20T01:58:06.825Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 8
+        },
+        {
+          "id": 3,
+          "title": "Implement deduplication BDD tests",
+          "description": "Create BDD tests for the lead deduplication (03_dedupe.py)",
+          "details": "<info added on 2025-05-20T01:59:52.383Z>\nImplemented comprehensive BDD tests for the lead deduplication module (03_dedupe.py) with the following components:\n\n1. Test scenarios for exact duplicate detection to verify the system correctly identifies identical business records\n2. Fuzzy matching tests to ensure similar businesses with minor differences are properly identified\n3. Tests for edge cases where businesses have the same name but different addresses\n4. API error handling tests to verify graceful failure and appropriate error messages\n5. Tests for the skipping mechanism that prevents reprocessing of already processed businesses\n6. Test fixtures with mock LLM responses to simulate AI-based verification without external dependencies\n7. Temporary database fixture with test data to ensure test isolation and reproducibility\n8. Comprehensive assertions to verify all aspects of the deduplication logic\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, featuring robust error handling and proper test isolation. All key functionality of the deduplication component is verified, including exact and fuzzy matching algorithms, LLM verification processes, error handling procedures, and database operations.\n</info added on 2025-05-20T01:59:52.383Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 8
+        },
+        {
+          "id": 4,
+          "title": "Implement scoring BDD tests",
+          "description": "Create BDD tests for the lead scoring (04_score.py)",
+          "details": "<info added on 2025-05-20T02:01:49.237Z>\nThe BDD tests for the lead scoring component (04_score.py) have been successfully implemented. The implementation includes:\n\n1. Comprehensive test scenarios covering all aspects of the lead scoring functionality\n2. Tech stack-based scoring tests that verify correct point allocation based on technology matches\n3. Performance metrics scoring tests to ensure proper evaluation of company performance indicators\n4. Location-based scoring tests that validate geographical scoring rules\n5. Tests for graceful handling of missing or incomplete lead data\n6. Verification of rule weight application to ensure proper prioritization\n7. A mock scoring rules fixture to provide consistent test data\n8. A temporary database fixture with test data for integration testing\n9. Assertions to verify the correctness of the scoring logic\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1 specifications and includes robust error handling mechanisms. All tests maintain proper isolation to prevent test interference. The test suite validates all key functionality including rule loading from configuration, score calculation algorithms, weight application formulas, and database operations for storing and retrieving scores.\n</info added on 2025-05-20T02:01:49.237Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 8
+        },
+        {
+          "id": 5,
+          "title": "Implement mockup BDD tests",
+          "description": "Create BDD tests for the mockup generation (05_mockup.py)",
+          "details": "<info added on 2025-05-20T02:03:37.510Z>\nThe BDD tests for mockup generation have been successfully implemented, covering all key aspects of the 05_mockup.py functionality. The implementation includes comprehensive test scenarios for high, medium, and low-scoring business mockups to ensure proper tier-based generation. \n\nTest coverage includes:\n- Verification of mockup generation for different business quality tiers\n- API error handling scenarios\n- Edge cases for businesses without website data\n- Fallback model usage when primary generation fails\n- Cost tracking verification to ensure budget compliance\n\nThe implementation leverages mock API client fixtures and a temporary database fixture with test data to ensure proper test isolation. All tests include appropriate assertions to verify the mockup generation logic functions correctly.\n\nThe tests adhere to the Windsurf Global AI Rules v1.1, with robust error handling and proper test isolation techniques. This completes the mockup testing component of the BDD acceptance test suite, complementing the previously completed scoring tests.\n</info added on 2025-05-20T02:03:37.510Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 8
+        },
+        {
+          "id": 6,
+          "title": "Implement email BDD tests",
+          "description": "Create BDD tests for the email queue (06_email_queue.py)",
+          "details": "<info added on 2025-05-20T08:41:06.309Z>\nThe email BDD tests implementation has been completed with comprehensive test coverage for the email queue functionality. The implementation includes:\n\n1. Comprehensive BDD test scenarios for the email queue (06_email_queue.py)\n2. Test scenarios for personalized email sending with mockups\n3. Tests for skipping businesses without mockup data\n4. Tests for API error handling\n5. Tests for daily email limit enforcement\n6. Tests for bounce rate tracking\n7. Tests for dry run mode\n8. A mock SendGrid client fixture for testing\n9. A temporary database fixture with test data\n10. Proper assertions for verification of email sending logic\n11. Cost tracking verification tests\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, featuring robust error handling and proper test isolation. All key functionality of the email queue component is verified, including personalization, error handling, limit enforcement, and cost tracking.\n</info added on 2025-05-20T08:41:06.309Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 8
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Implement Cron Wrapper",
+      "description": "Create nightly batch script as specified in §6",
+      "details": "Develop the run_nightly.sh script that orchestrates the execution of all pipeline stages. Implement error handling to abort on first non-zero exit code.",
+      "testStrategy": "Verify that the cron wrapper correctly executes all pipeline stages in sequence and handles errors appropriately.",
+      "priority": "medium",
+      "dependencies": [
+        8
+      ],
+      "status": "done",
+      "parallelizable": false,
+      "touches": [
+        "bin/run_nightly.sh"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create run_nightly.sh script",
+          "description": "Implement the main nightly batch script with pipeline orchestration",
+          "details": "<info added on 2025-05-20T09:02:44.631Z>\nThe run_nightly.sh script has been successfully implemented with the following features:\n\n1. Comprehensive bash script for orchestrating the entire pipeline\n2. Robust error handling with immediate exit on failures\n3. Detailed logging with timestamps and log levels\n4. Metrics tracking for performance monitoring\n5. Flexible command-line options:\n   - Debug mode for verbose output\n   - Stage skipping for targeted execution\n   - Lead limits for controlled processing\n   - Dry run mode for testing without API calls\n6. Virtual environment auto-detection and activation\n7. Environment variable loading from .env file\n8. Help documentation and usage examples\n9. Proper executable permissions\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, ensuring robust error handling, appropriate logging, and clear documentation. The script provides a flexible and reliable way to run the entire pipeline as a nightly batch process.\n</info added on 2025-05-20T09:02:44.631Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 9
+        },
+        {
+          "id": 2,
+          "title": "Implement cron job setup",
+          "description": "Create script for setting up the nightly cron job",
+          "details": "<info added on 2025-05-20T09:05:06.525Z>\nThe cron job setup implementation has been completed with the following features:\n\n1. A comprehensive setup script for configuring the nightly cron job that works in conjunction with the run_nightly.sh script.\n\n2. Flexible command-line options for customization:\n   - Custom time scheduling with validation to ensure proper cron format\n   - User selection with existence checking to verify valid system users\n   - Options to modify existing cron jobs or create new ones\n\n3. Robust error handling and validation:\n   - Checks for required dependencies and permissions\n   - Validates input parameters before attempting to modify crontab\n   - Provides meaningful error messages for troubleshooting\n\n4. Crontab management capabilities:\n   - Can add/modify cron jobs for the current user\n   - Supports setting up cron jobs for different users (with appropriate permissions)\n   - Prevents duplicate entries\n\n5. Log rotation configuration:\n   - Automatically sets up logrotate configuration\n   - Prevents log files from consuming excessive disk space\n   - Maintains historical logs for troubleshooting\n\n6. Comprehensive documentation:\n   - Detailed help documentation (-h/--help option)\n   - Usage examples for common scenarios\n   - Comments throughout the code for maintainability\n\n7. Permission handling:\n   - Checks for and requests necessary permissions\n   - Handles sudo requirements when needed\n   - Secures created files with appropriate permissions\n\n8. Executable script:\n   - Set with appropriate execute permissions (chmod +x)\n   - Can be run directly or sourced from other scripts\n\nThe implementation complies with Windsurf Global AI Rules v1.1 standards and provides a reliable way to schedule the nightly batch process as a cron job.\n</info added on 2025-05-20T09:05:06.525Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 9
+        },
+        {
+          "id": 3,
+          "title": "Document cron wrapper",
+          "description": "Update project documentation with cron wrapper usage",
+          "details": "<info added on 2025-05-20T09:07:02.157Z>\nThe cron wrapper documentation has been completed with comprehensive coverage of all aspects. The documentation includes:\n\n1. A complete overview of the cron wrapper functionality in the README.md\n2. Detailed documentation for all available command-line options and parameters\n3. Practical examples demonstrating common usage scenarios to help users get started quickly\n4. Step-by-step instructions for configuring automated nightly runs\n5. Thorough documentation of the cron job setup process with concrete examples for various environments\n6. Information about log file locations, rotation policies, and management best practices\n7. Documentation that adheres to the project's established style guidelines and formatting conventions\n8. Strategic placement within the README to ensure logical flow and easy discoverability\n\nThe documentation now provides team members with clear, actionable guidance on implementing and utilizing the cron wrapper functionality, with special emphasis on automated scheduling. All documentation has been reviewed for clarity, completeness, and accuracy.\n</info added on 2025-05-20T09:07:02.157Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 9
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Implement Prometheus Exporter",
+      "description": "Create metrics exporter as specified in §7",
+      "details": "Develop the metrics collection and reporting module. Implement Prometheus endpoint for metrics scraping. Document Grafana Cloud alert configurations.",
+      "testStrategy": "Verify that the metrics exporter correctly collects and reports all required metrics.",
+      "priority": "medium",
+      "dependencies": [
+        9
+      ],
+      "status": "completed",
+      "parallelizable": false,
+      "touches": [
+        "utils/metrics.py"
+      ],
+      "tests": []
+    },
+    {
+      "id": 11,
+      "title": "Implement RSYNC Fallback Script",
+      "description": "Create SPOF fallback mechanism as specified in §2",
+      "details": "Develop the RSYNC backup script for nightly mirroring to VPS. Implement health check and auto-boot mechanisms.",
+      "testStrategy": "Verify that the RSYNC fallback correctly mirrors data to VPS and auto-boots Docker stack after consecutive failures.",
+      "priority": "medium",
+      "dependencies": [
+        9
+      ],
+      "status": "done",
+      "parallelizable": true,
+      "touches": [
+        "bin/rsync_backup.sh",
+        "bin/health_check.sh"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement RSYNC backup script",
+          "description": "Create the rsync_backup.sh script for nightly mirroring to VPS",
+          "details": "<info added on 2025-05-20T09:13:04.492Z>\nImplemented a comprehensive rsync_backup.sh script for secure data mirroring to a remote VPS. The implementation includes:\n\n1. A robust bash script with secure data mirroring capabilities\n2. YAML configuration parsing for flexible configuration management\n3. Comprehensive error handling with specific exit codes for different failure scenarios\n4. SSH connection testing and verification before backup attempts\n5. Lock file mechanism to prevent concurrent backup operations\n6. Retention policy implementation for managing backup history and storage\n7. Notification system integration for email and Slack alerts on success/failure\n8. Dry-run mode for testing configuration without making actual changes\n9. Detailed logging system with timestamps and severity levels\n10. Sample configuration file with comprehensive options and documentation\n11. Proper file permissions (executable) for the script\n\nThe implementation adheres to Windsurf Global AI Rules v1.1, focusing on robust error handling, appropriate logging, and clear documentation. The script provides a reliable SPOF (Single Point of Failure) fallback mechanism for the Lead-Factory project, ensuring data integrity and availability.\n</info added on 2025-05-20T09:13:04.492Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        },
+        {
+          "id": 2,
+          "title": "Implement health check script",
+          "description": "Create the health_check.sh script for monitoring and auto-boot",
+          "details": "<info added on 2025-05-20T09:18:33.567Z>\nThe health check script implementation has been completed with the following features:\n\n1. Comprehensive health check script with auto-boot capabilities for the fallback system\n2. HTTP endpoint monitoring functionality to track the primary instance health status\n3. Failure threshold tracking with persistent state management to prevent false positives\n4. SSH-based Docker stack deployment mechanism for the backup VPS activation\n5. YAML configuration parsing for flexible and maintainable configuration options\n6. Notification system integration for both email and Slack alerts on status changes\n7. Multiple operation modes including check-only and force-boot for different scenarios\n8. Detailed logging system with timestamps and severity levels for troubleshooting\n9. Lock file mechanism implementation to prevent concurrent script executions\n10. Sample configuration file with comprehensive options and documentation\n11. Proper executable permissions set on the script file\n\nThe implementation adheres to the Windsurf Global AI Rules v1.1, featuring robust error handling, appropriate logging levels, and clear inline documentation. The script provides a reliable auto-boot mechanism that complements the RSYNC backup script to create a complete SPOF fallback solution.\n</info added on 2025-05-20T09:18:33.567Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        },
+        {
+          "id": 3,
+          "title": "Document RSYNC fallback mechanism",
+          "description": "Update project documentation with RSYNC fallback details",
+          "details": "<info added on 2025-05-20T09:20:33.386Z>\nThe RSYNC fallback mechanism documentation has been completed and integrated into the project documentation. The documentation includes:\n\n1. Comprehensive documentation in README.md covering the Single Point of Failure (SPOF) fallback mechanism\n2. Detailed documentation for the rsync_backup.sh script, including:\n   - Usage examples\n   - Configuration parameters\n   - Command-line options\n   - Error handling procedures\n\n3. Documentation for the health_check.sh script, including:\n   - Usage examples\n   - Monitoring capabilities\n   - Alert configurations\n   - Integration with the fallback system\n\n4. Step-by-step setup instructions for implementing the fallback mechanism:\n   - Initial configuration\n   - Server setup requirements\n   - Network configuration\n   - Permission settings\n\n5. Cron job configuration examples for scheduling regular backups and health checks:\n   - Recommended scheduling patterns\n   - Example crontab entries\n   - Logging considerations\n\n6. Logical documentation structure with clear sections for:\n   - Overview\n   - Installation\n   - Configuration\n   - Usage\n   - Troubleshooting\n   - FAQ\n\n7. Documentation follows established project style guidelines and formatting conventions\n\n8. All documentation has been properly placed in the Data Durability section of the project documentation\n\nThe completed documentation provides team members with clear guidance on understanding, configuring, and using the RSYNC fallback mechanism for SPOF protection.\n</info added on 2025-05-20T09:20:33.386Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Implement Initial CI GitHub Action",
+      "description": "Create GitHub Action for CI as specified in §9 step-2",
+      "details": "Develop the GitHub Actions workflow for continuous integration. Configure BDD test execution and result reporting.",
+      "testStrategy": "Verify that the CI workflow correctly executes all tests and reports results.",
+      "priority": "medium",
+      "dependencies": [
+        8
+      ],
+      "status": "done",
+      "parallelizable": true,
+      "touches": [
+        ".github/workflows/ci.yml"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create GitHub workflow directory structure",
+          "description": "Create the .github/workflows directory structure",
+          "details": "<info added on 2025-05-20T08:53:49.078Z>\nCreated the GitHub workflow directory structure:\n1. Created the .github directory in the project root\n2. Created the .github/workflows subdirectory for GitHub Actions workflow files\n3. Verified the directory structure is properly set up for CI workflow files\n\nThe directory structure follows GitHub's standard conventions for Actions workflows and is ready for the CI workflow file to be added.\n</info added on 2025-05-20T08:53:49.078Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 12
+        },
+        {
+          "id": 2,
+          "title": "Implement CI workflow file",
+          "description": "Create the ci.yml workflow file with linting, testing, and validation steps",
+          "details": "<info added on 2025-05-20T08:55:45.323Z>\nThe CI workflow file has been successfully implemented with a comprehensive pipeline structure that covers all aspects of continuous integration for the project. The implementation includes:\n\n1. A multi-stage CI pipeline architecture with separate jobs for linting, testing, database validation, and Docker build processes\n2. Code quality enforcement through integration of multiple tools:\n   - flake8 for code style and error checking\n   - black for code formatting verification\n   - isort for import sorting and organization\n3. Comprehensive automated testing setup with pytest, including configuration for test coverage reporting\n4. Behavior-Driven Development (BDD) acceptance test automation to ensure features work as expected\n5. Database schema validation mechanisms to maintain data integrity across changes\n6. Docker build process with artifact storage configuration for containerized deployments\n7. Notification system implementation to alert team members about pipeline status and results\n8. Flexible workflow triggers configured for:\n   - Push events to specified branches\n   - Pull request events\n   - Manual dispatch option for on-demand execution\n9. Environment selection capabilities to enable testing across different configurations\n10. Performance optimization through dependency caching\n\nThe implementation follows GitHub Actions best practices with properly configured job dependencies, efficient caching strategies, and artifact management. This ensures consistent code quality, maintains test coverage standards, and validates builds for the Lead-Factory project.\n</info added on 2025-05-20T08:55:45.323Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 12
+        },
+        {
+          "id": 3,
+          "title": "Document CI workflow",
+          "description": "Create documentation for the CI workflow in the project README",
+          "details": "<info added on 2025-05-20T08:57:35.004Z>\nThe CI workflow documentation has been completed and added to the project README.md. The documentation includes:\n\n1. A comprehensive Continuous Integration section that explains the purpose and benefits of the CI pipeline\n2. Detailed documentation of all CI pipeline components:\n   - Code linting process\n   - Automated testing framework\n   - Validation steps\n   - Docker image building process\n3. Clear explanation of automatic trigger conditions for the CI workflow\n4. Step-by-step instructions for manually triggering the workflow when needed\n5. Information about where the workflow configuration files are located in the repository\n6. Documentation formatted according to project style guidelines\n7. Logical placement within the README structure for easy discovery\n\nThe documentation now provides team members with clear guidance on how the CI process works, what it does, and how to interact with it. This completes the documentation phase of the CI implementation.\n</info added on 2025-05-20T08:57:35.004Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 12
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Implement Budget Audit Task",
+      "description": "Create budget audit mechanism as specified in §8",
+      "status": "done",
+      "dependencies": [
+        7,
+        10
+      ],
+      "priority": "high",
+      "details": "Develop comprehensive cost tracking for all API calls. Implement budget reporting and scaling gate mechanisms. The scaling gate includes thresholds, configuration constants, activation/deactivation functions, operation permission checks, and a critical operation whitelist for essential functions.",
+      "testStrategy": "Verify that the budget audit correctly tracks costs and enforces scaling gate. Test scaling gate activation/deactivation, operation permissions, and ensure critical operations on the whitelist function properly.",
+      "subtasks": [
+        {
+          "id": "13.1",
+          "description": "Implement cost tracking for API calls in utils/cost_tracker.py",
+          "status": "completed",
+          "assignee": "cascade-agent-1"
+        },
+        {
+          "id": "13.2",
+          "description": "Create budget reporting functionality in bin/budget_audit.py",
+          "status": "done",
+          "assignee": "cascade-agent-1"
+        },
+        {
+          "id": "13.3",
+          "description": "Implement scaling gate mechanisms based on budget thresholds",
+          "status": "completed",
+          "details": "Added scaling gate thresholds and configuration constants, implemented is_scaling_gate_active(), set_scaling_gate(), should_allow_operation(), enhanced log_cost() to respect scaling gate status, enhanced check_budget_thresholds() to manage scaling gate status, added get_scaling_gate_history() function, and added critical operation whitelist."
+        },
+        {
+          "id": "13.4",
+          "description": "Add CLI interface for budget audit script",
+          "status": "done"
+        },
+        {
+          "id": "13.5",
+          "description": "Create documentation for scaling gate configuration and usage",
+          "status": "done"
+        },
+        {
+          "id": "13.6",
+          "description": "Implement unit tests for scaling gate functionality",
+          "status": "done"
+        },
+        {
+          "id": "13.7",
+          "description": "Add integration with budget reporting to display scaling gate history",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Implement Environment Configuration",
+      "description": "Create environment configuration files and documentation",
+      "details": "Develop .env.example with all required API keys and settings. Create comprehensive README documentation.",
+      "testStrategy": "Verify that the environment configuration is complete and documentation is accurate.",
+      "priority": "medium",
+      "dependencies": [],
+      "status": "done",
+      "parallelizable": true,
+      "touches": [
+        ".env.example",
+        "README.md"
+      ],
+      "tests": [],
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create environment variable template",
+          "description": "Create .env.example with all required API keys and settings",
+          "details": "<info added on 2025-05-20T00:52:54.384Z>\nCreated a comprehensive .env.example file that includes all required environment variables for the project. The template is organized into logical sections for better readability and maintenance:\n\n1. External API Keys Section:\n   - Yelp API credentials\n   - Google API credentials\n   - ScreenshotOne API keys\n   - PageSpeed API configuration\n   - SEMrush API access tokens\n   - SendGrid email service configuration\n\n2. AI Services Configuration:\n   - OpenAI API keys and model settings\n   - Anthropic API configuration\n   - Ollama local model settings\n\n3. Supabase Configuration:\n   - Connection strings\n   - Authentication settings\n   - Database access credentials\n\n4. Pipeline Configuration:\n   - Tier settings for different processing levels\n   - Mockup flags for testing\n   - Batch processing limits\n   - Queue management settings\n\n5. Monitoring and Alert Thresholds:\n   - Error rate thresholds\n   - Performance monitoring settings\n   - Notification triggers\n\n6. RSYNC Fallback Configuration:\n   - Backup settings\n   - Synchronization parameters\n\n7. Logging Configuration:\n   - Log levels\n   - Rotation settings\n   - Storage paths\n\nEach section includes descriptive comments explaining the purpose and format of each variable. All environment variables referenced in the project specification have been included to ensure complete coverage for deployment.\n</info added on 2025-05-20T00:52:54.384Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 14
+        },
+        {
+          "id": 2,
+          "title": "Create README documentation",
+          "description": "Document project setup, configuration, and usage",
+          "details": "<info added on 2025-05-20T00:53:56.395Z>\nCreated a comprehensive README.md file for the project with the following sections:\n\n1. Project Overview: Detailed explanation of the project's purpose and goals\n2. Pipeline Stages: Descriptions of each component in the pipeline\n3. Setup Instructions: Prerequisites and step-by-step installation process\n4. Configuration: Detailed explanation of all environment variables and configuration options, building on the environment variable template from subtask 14.1\n5. Usage Instructions: How to use individual stages and the complete pipeline\n6. Monitoring: Information about monitoring capabilities and available metrics\n7. Data Durability: Strategies for data backup and ensuring durability\n8. Testing: BDD examples and testing approach documentation\n9. Budget Monitoring: Information on tracking and managing costs\n\nThe documentation was formatted using proper Markdown syntax for optimal readability. Code examples were included for all common operations to help users understand implementation details. All key features specified in the project requirements were thoroughly documented.\n\nThe README now serves as a comprehensive guide for users to understand, set up, configure, and use the project effectively.\n</info added on 2025-05-20T00:53:56.395Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 14
+        },
+        {
+          "id": 3,
+          "title": "Document deployment process",
+          "description": "Create documentation for production deployment",
+          "details": "<info added on 2025-05-20T00:56:38.985Z>\nThe deployment documentation has been completed with comprehensive coverage of all required aspects. The documentation includes:\n\n1. A complete deployment guide in docs/deployment.md covering:\n   - Both standard and high-availability deployment configurations\n   - Detailed server provisioning and setup instructions with step-by-step procedures\n   - Configuration instructions for Ollama to enable local LLM processing\n   - Setup guidance for automated nightly batch processing via cron jobs\n   - Complete monitoring solution using Prometheus and Grafana\n   - Backup and failover strategy using RSYNC\n   - Advanced scaling considerations including GPU bursting capabilities and SendGrid IP pool switching\n   - A troubleshooting section with common issues and solutions, plus support contact information\n\n2. Creation of a specification history directory (docs/spec-history) containing the canonical specification document saved as 2025-05-19_v1.3.md\n\n3. Verification that all documented deployment procedures align with the specification requirements\n\n4. Inclusion of exact commands for all setup procedures to ensure reproducibility and consistency across environments\n\nThe documentation provides a complete reference for both initial deployment and ongoing maintenance of the production environment.\n</info added on 2025-05-20T00:56:38.985Z>",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 14
+        }
+      ]
+    }
+  ]
+}
