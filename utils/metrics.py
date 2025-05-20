@@ -49,13 +49,9 @@ app = FastAPI(
 
 # Prometheus metrics
 # Gauges
-DAILY_COST = Gauge(
-    "lead_factory_daily_cost", "Total cost for the current day in USD", ["service"]
-)
+DAILY_COST = Gauge("lead_factory_daily_cost", "Total cost for the current day in USD", ["service"])
 
-MONTHLY_COST = Gauge(
-    "lead_factory_monthly_cost", "Total cost for the current month in USD", ["service"]
-)
+MONTHLY_COST = Gauge("lead_factory_monthly_cost", "Total cost for the current month in USD", ["service"])
 
 BUDGET_UTILIZATION = Gauge(
     "lead_factory_budget_utilization",
@@ -102,14 +98,12 @@ def update_metrics() -> None:
         # Update budget utilization
         budget_info = check_budget_thresholds()
         BUDGET_UTILIZATION.labels(period="daily").set(
-            (budget_info.get("daily_cost", 0) / budget_info.get("daily_budget", 1))
-            * 100
+            (budget_info.get("daily_cost", 0) / budget_info.get("daily_budget", 1)) * 100
             if budget_info.get("daily_budget", 0) > 0
             else 0
         )
         BUDGET_UTILIZATION.labels(period="monthly").set(
-            (budget_info.get("monthly_cost", 0) / budget_info.get("monthly_budget", 1))
-            * 100
+            (budget_info.get("monthly_cost", 0) / budget_info.get("monthly_budget", 1)) * 100
             if budget_info.get("monthly_budget", 0) > 0
             else 0
         )
@@ -147,13 +141,9 @@ async def http_metrics_middleware(request: Request, call_next):
         raise e
     finally:
         # Record request metrics
-        REQUEST_COUNT.labels(
-            method=method, endpoint=endpoint, http_status=status_code
-        ).inc()
+        REQUEST_COUNT.labels(method=method, endpoint=endpoint, http_status=status_code).inc()
 
-        REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(
-            time.time() - start_time
-        )
+        REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(time.time() - start_time)
 
 
 @app.get("/metrics")
@@ -202,9 +192,7 @@ def start_metrics_server(host: str = "0.0.0.0", port: int = 8000):
     import uvicorn
 
     logger.info(f"Starting metrics server on http://{host}:{port}")
-    uvicorn.run(
-        app, host=host, port=port, log_level=os.getenv("LOG_LEVEL", "info").lower()
-    )
+    uvicorn.run(app, host=host, port=port, log_level=os.getenv("LOG_LEVEL", "info").lower())
 
 
 if __name__ == "__main__":

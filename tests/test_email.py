@@ -570,9 +570,7 @@ def run_email_queue(mock_sendgrid_client, mock_cost_tracker, business_with_mocku
                             "implementation_difficulty": "Medium",
                         },
                     ],
-                    "visual_mockup": base64.b64encode(b"Mock image data").decode(
-                        "utf-8"
-                    ),
+                    "visual_mockup": base64.b64encode(b"Mock image data").decode("utf-8"),
                     "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>",
                 },
             }
@@ -594,9 +592,7 @@ def run_email_queue(mock_sendgrid_client, mock_cost_tracker, business_with_mocku
 
 
 @when("I run the email queue process in dry run mode")
-def run_email_queue_dry_run(
-    mock_sendgrid_client, mock_cost_tracker, business_with_mockup
-):
+def run_email_queue_dry_run(mock_sendgrid_client, mock_cost_tracker, business_with_mockup):
     """Run the email queue process in dry run mode."""
     with patch("bin.email_queue.get_businesses_for_email") as mock_get_businesses:
         mock_get_businesses.return_value = [
@@ -614,9 +610,7 @@ def run_email_queue_dry_run(
                             "implementation_difficulty": "Medium",
                         }
                     ],
-                    "visual_mockup": base64.b64encode(b"Mock image data").decode(
-                        "utf-8"
-                    ),
+                    "visual_mockup": base64.b64encode(b"Mock image data").decode("utf-8"),
                     "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>",
                 },
             }

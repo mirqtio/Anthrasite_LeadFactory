@@ -49,10 +49,7 @@ def test_metrics_endpoint(mock_cost_data, mock_budget_data):
 
         # Assert response
         assert response.status_code == 200
-        assert (
-            response.headers["Content-Type"]
-            == "text/plain; version=0.0.4; charset=utf-8"
-        )
+        assert response.headers["Content-Type"] == "text/plain; version=0.0.4; charset=utf-8"
 
         # Check if metrics are in the response
         metrics = response.text

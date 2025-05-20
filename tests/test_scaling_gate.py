@@ -39,9 +39,7 @@ class TestScalingGate(unittest.TestCase):
         self.original_history_file = utils.cost_tracker.SCALING_GATE_HISTORY_FILE
 
         # Set up a test history file
-        self.test_history_file = os.path.join(
-            self.test_dir, "scaling_gate_history.json"
-        )
+        self.test_history_file = os.path.join(self.test_dir, "scaling_gate_history.json")
 
         # Update the module's constant for testing
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = self.test_history_file
@@ -72,9 +70,7 @@ class TestScalingGate(unittest.TestCase):
         try:
             active, reason = is_scaling_gate_active()
             # Either state is acceptable as long as we get a valid response
-            self.assertIn(
-                reason, ["Scaling gate not initialized", "Scaling gate is inactive"]
-            )
+            self.assertIn(reason, ["Scaling gate not initialized", "Scaling gate is inactive"])
         except Exception as e:
             self.fail(f"is_scaling_gate_active() raised {e} unexpectedly")
 

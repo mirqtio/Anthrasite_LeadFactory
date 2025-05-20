@@ -28,28 +28,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Constants
-DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "db", "lead_factory.db"
-)
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "db", "lead_factory.db")
 DAILY_BUDGET = float(os.getenv("DAILY_BUDGET", "50.0"))  # $50 per day
 MONTHLY_BUDGET = float(os.getenv("MONTHLY_BUDGET", "1000.0"))  # $1000 per month
-DAILY_ALERT_THRESHOLD = float(
-    os.getenv("DAILY_ALERT_THRESHOLD", "0.8")
-)  # 80% of daily budget
-MONTHLY_ALERT_THRESHOLD = float(
-    os.getenv("MONTHLY_ALERT_THRESHOLD", "0.8")
-)  # 80% of monthly budget
+DAILY_ALERT_THRESHOLD = float(os.getenv("DAILY_ALERT_THRESHOLD", "0.8"))  # 80% of daily budget
+MONTHLY_ALERT_THRESHOLD = float(os.getenv("MONTHLY_ALERT_THRESHOLD", "0.8"))  # 80% of monthly budget
 
 # Scaling gate thresholds
-SCALING_GATE_DAILY_THRESHOLD = float(
-    os.getenv("SCALING_GATE_DAILY_THRESHOLD", "0.9")
-)  # 90% of daily budget
-SCALING_GATE_MONTHLY_THRESHOLD = float(
-    os.getenv("SCALING_GATE_MONTHLY_THRESHOLD", "0.9")
-)  # 90% of monthly budget
-SCALING_GATE_ENABLED = (
-    os.getenv("SCALING_GATE_ENABLED", "true").lower() == "true"
-)  # Enable/disable scaling gate
+SCALING_GATE_DAILY_THRESHOLD = float(os.getenv("SCALING_GATE_DAILY_THRESHOLD", "0.9"))  # 90% of daily budget
+SCALING_GATE_MONTHLY_THRESHOLD = float(os.getenv("SCALING_GATE_MONTHLY_THRESHOLD", "0.9"))  # 90% of monthly budget
+SCALING_GATE_ENABLED = os.getenv("SCALING_GATE_ENABLED", "true").lower() == "true"  # Enable/disable scaling gate
 SCALING_GATE_LOCKFILE = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "logs",
@@ -77,9 +65,7 @@ def get_db_connection() -> sqlite3.Connection:
         raise
 
 
-def log_cost(
-    service: str, operation: str, cost_dollars: float, check_scaling_gate: bool = True
-) -> bool:
+def log_cost(service: str, operation: str, cost_dollars: float, check_scaling_gate: bool = True) -> bool:
     """Log a cost entry to the database.
 
     Args:
@@ -105,9 +91,7 @@ def log_cost(
         if check_scaling_gate:
             allowed, reason = should_allow_operation(service, operation)
             if not allowed:
-                logger.warning(
-                    f"Operation not allowed by scaling gate: {service}.{operation} - {reason}"
-                )
+                logger.warning(f"Operation not allowed by scaling gate: {service}.{operation} - {reason}")
                 return False
 
         # Round cost to 4 decimal places
@@ -370,12 +354,8 @@ def check_budget_thresholds() -> Dict[str, Any]:
 
         # Check scaling gate thresholds
         scaling_gate_daily_triggered = daily_percentage >= SCALING_GATE_DAILY_THRESHOLD
-        scaling_gate_monthly_triggered = (
-            monthly_percentage >= SCALING_GATE_MONTHLY_THRESHOLD
-        )
-        scaling_gate_triggered = (
-            scaling_gate_daily_triggered or scaling_gate_monthly_triggered
-        )
+        scaling_gate_monthly_triggered = monthly_percentage >= SCALING_GATE_MONTHLY_THRESHOLD
+        scaling_gate_triggered = scaling_gate_daily_triggered or scaling_gate_monthly_triggered
 
         # Get current scaling gate status
         scaling_gate_active, scaling_gate_reason = is_scaling_gate_active()
@@ -383,8 +363,7 @@ def check_budget_thresholds() -> Dict[str, Any]:
         # Log alerts if thresholds exceeded
         if daily_threshold_exceeded:
             logger.warning(
-                f"Daily cost threshold exceeded: ${daily_cost:.2f} / ${DAILY_BUDGET:.2f} "
-                f"({daily_percentage:.1%})"
+                f"Daily cost threshold exceeded: ${daily_cost:.2f} / ${DAILY_BUDGET:.2f} " f"({daily_percentage:.1%})"
             )
 
         if monthly_threshold_exceeded:
@@ -397,7 +376,9 @@ def check_budget_thresholds() -> Dict[str, Any]:
         if scaling_gate_triggered and not scaling_gate_active:
             reason = ""
             if scaling_gate_daily_triggered:
-                reason = f"Daily budget threshold exceeded: ${daily_cost:.2f} / ${DAILY_BUDGET:.2f} ({daily_percentage:.1%})"
+                reason = (
+                    f"Daily budget threshold exceeded: ${daily_cost:.2f} / ${DAILY_BUDGET:.2f} ({daily_percentage:.1%})"
+                )
             elif scaling_gate_monthly_triggered:
                 reason = f"Monthly budget threshold exceeded: ${monthly_cost:.2f} / ${MONTHLY_BUDGET:.2f} ({monthly_percentage:.1%})"
 
@@ -513,9 +494,7 @@ def set_scaling_gate(activated: bool, reason: str) -> bool:
             f.truncate()
             json.dump(data, f, indent=2)
 
-        logger.info(
-            f"Scaling gate {'activated' if activated else 'deactivated'}: {reason}"
-        )
+        logger.info(f"Scaling gate {'activated' if activated else 'deactivated'}: {reason}")
         return True
     except Exception as e:
         logger.error(f"Error setting scaling gate status: {e}")
@@ -548,13 +527,8 @@ def should_allow_operation(service: str, operation: str) -> Tuple[bool, str]:
 
     # Check if operation is critical
     if service in critical_operations:
-        if (
-            "all" in critical_operations[service]
-            or operation in critical_operations[service]
-        ):
-            logger.info(
-                f"Critical operation allowed despite scaling gate: {service}.{operation}"
-            )
+        if "all" in critical_operations[service] or operation in critical_operations[service]:
+            logger.info(f"Critical operation allowed despite scaling gate: {service}.{operation}")
             return True, "Critical operation allowed despite scaling gate"
 
     # Block non-critical operations
@@ -635,9 +609,7 @@ def export_cost_report(
         # Get detailed breakdown by operation for each service
         operation_breakdown = {}
         for service in service_breakdown.keys():
-            operation_breakdown[service] = get_cost_breakdown_by_operation(
-                service, period, start_date, end_date
-            )
+            operation_breakdown[service] = get_cost_breakdown_by_operation(service, period, start_date, end_date)
 
         # Calculate total cost
         total_cost = sum(service_breakdown.values())
@@ -690,9 +662,7 @@ def export_prometheus_metrics(output_file: str) -> bool:
         metrics.append(f"# TYPE anthrasite_daily_cost gauge")
         metrics.append(f"anthrasite_daily_cost {daily_cost:.4f}")
 
-        metrics.append(
-            f"# HELP anthrasite_monthly_cost Total cost for the current month in dollars"
-        )
+        metrics.append(f"# HELP anthrasite_monthly_cost Total cost for the current month in dollars")
         metrics.append(f"# TYPE anthrasite_monthly_cost gauge")
         metrics.append(f"anthrasite_monthly_cost {monthly_cost:.4f}")
 
@@ -700,15 +670,11 @@ def export_prometheus_metrics(output_file: str) -> bool:
         daily_percentage = daily_cost / DAILY_BUDGET if DAILY_BUDGET > 0 else 0
         monthly_percentage = monthly_cost / MONTHLY_BUDGET if MONTHLY_BUDGET > 0 else 0
 
-        metrics.append(
-            f"# HELP anthrasite_daily_budget_percentage Percentage of daily budget used"
-        )
+        metrics.append(f"# HELP anthrasite_daily_budget_percentage Percentage of daily budget used")
         metrics.append(f"# TYPE anthrasite_daily_budget_percentage gauge")
         metrics.append(f"anthrasite_daily_budget_percentage {daily_percentage:.4f}")
 
-        metrics.append(
-            f"# HELP anthrasite_monthly_budget_percentage Percentage of monthly budget used"
-        )
+        metrics.append(f"# HELP anthrasite_monthly_budget_percentage Percentage of monthly budget used")
         metrics.append(f"# TYPE anthrasite_monthly_budget_percentage gauge")
         metrics.append(f"anthrasite_monthly_budget_percentage {monthly_percentage:.4f}")
 
@@ -760,17 +726,11 @@ if __name__ == "__main__":
         choices=["day", "week", "month", "custom"],
         help="Time period",
     )
-    report_parser.add_argument(
-        "--start-date", help="Start date for custom period (YYYY-MM-DD)"
-    )
-    report_parser.add_argument(
-        "--end-date", help="End date for custom period (YYYY-MM-DD)"
-    )
+    report_parser.add_argument("--start-date", help="Start date for custom period (YYYY-MM-DD)")
+    report_parser.add_argument("--end-date", help="End date for custom period (YYYY-MM-DD)")
 
     # Export Prometheus metrics command
-    prometheus_parser = subparsers.add_parser(
-        "prometheus", help="Export Prometheus metrics"
-    )
+    prometheus_parser = subparsers.add_parser("prometheus", help="Export Prometheus metrics")
     prometheus_parser.add_argument("--output", required=True, help="Output file path")
 
     # Parse arguments
@@ -796,9 +756,7 @@ if __name__ == "__main__":
         print(f"Monthly cost{service_str}: ${cost:.2f}")
 
     elif args.command == "report":
-        success = export_cost_report(
-            args.output, args.period, args.start_date, args.end_date
-        )
+        success = export_cost_report(args.output, args.period, args.start_date, args.end_date)
         if success:
             print(f"Cost report exported to {args.output}")
         else:

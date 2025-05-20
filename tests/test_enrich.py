@@ -328,9 +328,7 @@ def business_with_website(temp_db):
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT id FROM businesses WHERE website != '' AND enriched_at IS NULL LIMIT 1"
-    )
+    cursor.execute("SELECT id FROM businesses WHERE website != '' AND enriched_at IS NULL LIMIT 1")
     business_id = cursor.fetchone()[0]
 
     conn.close()
@@ -344,9 +342,7 @@ def business_without_website(temp_db):
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT id FROM businesses WHERE website = '' AND enriched_at IS NULL LIMIT 1"
-    )
+    cursor.execute("SELECT id FROM businesses WHERE website = '' AND enriched_at IS NULL LIMIT 1")
     business_id = cursor.fetchone()[0]
 
     conn.close()
@@ -381,9 +377,7 @@ def businesses_with_scores(temp_db):
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT id, score FROM businesses WHERE score IS NOT NULL ORDER BY score DESC"
-    )
+    cursor.execute("SELECT id, score FROM businesses WHERE score IS NOT NULL ORDER BY score DESC")
     businesses = cursor.fetchall()
 
     conn.close()
@@ -418,14 +412,10 @@ def run_enrichment(mock_website_analyzer, mock_contact_finder, business_with_web
 
 
 @when("I run the enrichment process with prioritization")
-def run_enrichment_prioritized(
-    mock_website_analyzer, mock_contact_finder, businesses_with_scores
-):
+def run_enrichment_prioritized(mock_website_analyzer, mock_contact_finder, businesses_with_scores):
     """Run the enrichment process with prioritization."""
     with patch("bin.enrich.get_businesses_to_enrich") as mock_get_businesses:
-        mock_get_businesses.return_value = [
-            {"id": id, "score": score} for id, score in businesses_with_scores
-        ]
+        mock_get_businesses.return_value = [{"id": id, "score": score} for id, score in businesses_with_scores]
 
         with patch("bin.enrich.update_business") as mock_update_business:
             mock_update_business.return_value = True
@@ -455,9 +445,7 @@ def has_performance_metrics(mock_website_analyzer):
     """Verify that the business has performance metrics."""
     assert "performance" in mock_website_analyzer.analyze.return_value
     assert "load_time" in mock_website_analyzer.analyze.return_value["performance"]
-    assert (
-        "lighthouse_score" in mock_website_analyzer.analyze.return_value["performance"]
-    )
+    assert "lighthouse_score" in mock_website_analyzer.analyze.return_value["performance"]
 
 
 @then("the business should have contact information")

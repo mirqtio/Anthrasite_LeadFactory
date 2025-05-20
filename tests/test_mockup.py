@@ -492,16 +492,12 @@ def mockup_api_unavailable(mock_gpt4o_client, mock_claude_client):
 @given("the primary model is unavailable")
 def primary_model_unavailable(mock_gpt4o_client):
     """Simulate primary model unavailability."""
-    mock_gpt4o_client.generate_mockup.side_effect = Exception(
-        "Primary model unavailable"
-    )
+    mock_gpt4o_client.generate_mockup.side_effect = Exception("Primary model unavailable")
 
 
 # When steps
 @when("I run the mockup generation process")
-def run_mockup_generation(
-    mock_gpt4o_client, mock_claude_client, mock_cost_tracker, high_scoring_business
-):
+def run_mockup_generation(mock_gpt4o_client, mock_claude_client, mock_cost_tracker, high_scoring_business):
     """Run the mockup generation process."""
     with patch("bin.mockup.get_business_by_id") as mock_get_business:
         mock_get_business.return_value = {

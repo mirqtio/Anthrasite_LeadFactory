@@ -493,12 +493,8 @@ def points_for_poor_performance(mock_scoring_rules):
     # For this mock test, we'll just verify the rules exist
     assert "slow_load_time" in mock_scoring_rules.return_value["performance"]
     assert "poor_lighthouse" in mock_scoring_rules.return_value["performance"]
-    assert (
-        mock_scoring_rules.return_value["performance"]["slow_load_time"]["points"] > 0
-    )
-    assert (
-        mock_scoring_rules.return_value["performance"]["poor_lighthouse"]["points"] > 0
-    )
+    assert mock_scoring_rules.return_value["performance"]["slow_load_time"]["points"] > 0
+    assert mock_scoring_rules.return_value["performance"]["poor_lighthouse"]["points"] > 0
 
 
 @then("the score details should include performance information")
