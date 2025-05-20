@@ -4,14 +4,9 @@ Tests for the metrics module.
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from utils.metrics import app, update_metrics
-from utils.cost_tracker import (
-    get_cost_breakdown_by_service,
-    is_scaling_gate_active,
-    check_budget_thresholds,
-)
 
 # Create test client
 client = TestClient(app)
@@ -49,7 +44,10 @@ def test_metrics_endpoint(mock_cost_data, mock_budget_data):
 
         # Assert response
         assert response.status_code == 200
-        assert response.headers["Content-Type"] == "text/plain; version=0.0.4; charset=utf-8"
+        assert (
+            response.headers["Content-Type"]
+            == "text/plain; version=0.0.4; charset=utf-8"
+        )
 
         # Check if metrics are in the response
         metrics = response.text

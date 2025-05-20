@@ -13,34 +13,27 @@ Options:
     --force          Force regeneration of mockups for businesses that already have them
 """
 
-import os
-import sys
 import argparse
-import logging
-import json
-import time
 import base64
-from typing import Dict, List, Any, Optional, Tuple, Union
-from pathlib import Path
-from dotenv import load_dotenv
-import concurrent.futures
+import json
+import os
 import re
+import sys
+import time
+from typing import Dict, List, Optional, Tuple
+
 import requests
-from io import BytesIO
-from PIL import Image
-from datetime import datetime
+from dotenv import load_dotenv
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import logging configuration first
+# Import all necessary modules before any local imports
 from utils.logging_config import get_logger
+from utils.io import DatabaseConnection, track_api_cost
 
 # Set up logging
 logger = get_logger(__name__)
-
-# Import utility functions
-from utils.io import DatabaseConnection, make_api_request, track_api_cost
 
 # Load environment variables
 load_dotenv()
@@ -59,10 +52,18 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 # Cost tracking constants (in cents)
-GPT4O_COST_PER_1K_TOKENS_INPUT = float(os.getenv("GPT4O_COST_PER_1K_TOKENS_INPUT", "10"))  # $0.10 per 1K tokens
-GPT4O_COST_PER_1K_TOKENS_OUTPUT = float(os.getenv("GPT4O_COST_PER_1K_TOKENS_OUTPUT", "30"))  # $0.30 per 1K tokens
-CLAUDE_COST_PER_1K_TOKENS_INPUT = float(os.getenv("CLAUDE_COST_PER_1K_TOKENS_INPUT", "15"))  # $0.15 per 1K tokens
-CLAUDE_COST_PER_1K_TOKENS_OUTPUT = float(os.getenv("CLAUDE_COST_PER_1K_TOKENS_OUTPUT", "75"))  # $0.75 per 1K tokens
+GPT4O_COST_PER_1K_TOKENS_INPUT = float(
+    os.getenv("GPT4O_COST_PER_1K_TOKENS_INPUT", "10")
+)  # $0.10 per 1K tokens
+GPT4O_COST_PER_1K_TOKENS_OUTPUT = float(
+    os.getenv("GPT4O_COST_PER_1K_TOKENS_OUTPUT", "30")
+)  # $0.30 per 1K tokens
+CLAUDE_COST_PER_1K_TOKENS_INPUT = float(
+    os.getenv("CLAUDE_COST_PER_1K_TOKENS_INPUT", "15")
+)  # $0.15 per 1K tokens
+CLAUDE_COST_PER_1K_TOKENS_OUTPUT = float(
+    os.getenv("CLAUDE_COST_PER_1K_TOKENS_OUTPUT", "75")
+)  # $0.75 per 1K tokens
 
 
 class GPT4oMockupGenerator:
@@ -142,7 +143,9 @@ class GPT4oMockupGenerator:
 
             # Track cost
             input_cost_cents = (prompt_tokens / 1000) * GPT4O_COST_PER_1K_TOKENS_INPUT
-            output_cost_cents = (completion_tokens / 1000) * GPT4O_COST_PER_1K_TOKENS_OUTPUT
+            output_cost_cents = (
+                completion_tokens / 1000
+            ) * GPT4O_COST_PER_1K_TOKENS_OUTPUT
             total_cost_cents = input_cost_cents + output_cost_cents
 
             track_api_cost(
@@ -153,7 +156,9 @@ class GPT4oMockupGenerator:
             )
 
             # Extract response content
-            response_content = result.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+            response_content = (
+                result.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+            )
 
             try:
                 response_json = json.loads(response_content)
@@ -244,7 +249,9 @@ Design Requirements:
 """
 
         if screenshot_url:
-            prompt += f"\nThe current website screenshot is available at: {screenshot_url}\n"
+            prompt += (
+                f"\nThe current website screenshot is available at: {screenshot_url}\n"
+            )
             prompt += "Please analyze this screenshot and suggest specific improvements in your redesign.\n"
 
         prompt += """
@@ -330,8 +337,12 @@ class ClaudeMockupGenerator:
             }
 
             # Track cost
-            input_cost_cents = (usage["input_tokens"] / 1000) * CLAUDE_COST_PER_1K_TOKENS_INPUT
-            output_cost_cents = (usage["output_tokens"] / 1000) * CLAUDE_COST_PER_1K_TOKENS_OUTPUT
+            input_cost_cents = (
+                usage["input_tokens"] / 1000
+            ) * CLAUDE_COST_PER_1K_TOKENS_INPUT
+            output_cost_cents = (
+                usage["output_tokens"] / 1000
+            ) * CLAUDE_COST_PER_1K_TOKENS_OUTPUT
             total_cost_cents = input_cost_cents + output_cost_cents
 
             track_api_cost(
@@ -449,7 +460,9 @@ Design Requirements:
 """
 
         if screenshot_url:
-            prompt += f"\nThe current website screenshot is available at: {screenshot_url}\n"
+            prompt += (
+                f"\nThe current website screenshot is available at: {screenshot_url}\n"
+            )
             prompt += "Please analyze this screenshot and suggest specific improvements in your redesign.\n"
 
         prompt += """
@@ -676,7 +689,9 @@ def generate_business_mockup(
 
     # If GPT-4o failed and we have Claude API key, try Claude as fallback
     if (not mockup_image_base64 or not mockup_html) and ANTHROPIC_API_KEY:
-        logger.warning(f"GPT-4o mockup generation failed for business ID {business_id}, trying Claude fallback")
+        logger.warning(
+            f"GPT-4o mockup generation failed for business ID {business_id}, trying Claude fallback"
+        )
 
         (
             claude_image,
@@ -691,7 +706,9 @@ def generate_business_mockup(
         )
 
         # Use Claude results if better than GPT-4o
-        if claude_html and (not mockup_html or (not mockup_image_base64 and claude_image)):
+        if claude_html and (
+            not mockup_html or (not mockup_image_base64 and claude_image)
+        ):
             mockup_image_base64 = claude_image
             mockup_html = claude_html
             usage_data = claude_usage
@@ -707,7 +724,9 @@ def generate_business_mockup(
         )
 
         if not mockup_image_base64:
-            logger.warning(f"Mockup saved for business ID {business_id} but without image")
+            logger.warning(
+                f"Mockup saved for business ID {business_id} but without image"
+            )
 
         return success
 
@@ -717,10 +736,16 @@ def generate_business_mockup(
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Generate website mockups for high-scoring businesses")
-    parser.add_argument("--limit", type=int, help="Limit the number of businesses to process")
+    parser = argparse.ArgumentParser(
+        description="Generate website mockups for high-scoring businesses"
+    )
+    parser.add_argument(
+        "--limit", type=int, help="Limit the number of businesses to process"
+    )
     parser.add_argument("--id", type=int, help="Process only the specified business ID")
-    parser.add_argument("--tier", type=int, choices=[2, 3], help="Override the tier level")
+    parser.add_argument(
+        "--tier", type=int, choices=[2, 3], help="Override the tier level"
+    )
     parser.add_argument(
         "--force",
         action="store_true",
@@ -744,7 +769,9 @@ def main():
         return 1
 
     # Get businesses for mockup generation
-    businesses = get_businesses_for_mockup(limit=args.limit, business_id=args.id, tier=tier, force=args.force)
+    businesses = get_businesses_for_mockup(
+        limit=args.limit, business_id=args.id, tier=tier, force=args.force
+    )
 
     if not businesses:
         logger.warning("No businesses found for mockup generation")
@@ -769,7 +796,9 @@ def main():
             logger.error(f"Error processing business ID {business['id']}: {e}")
             error_count += 1
 
-    logger.info(f"Mockup generation completed. Success: {success_count}, Errors: {error_count}")
+    logger.info(
+        f"Mockup generation completed. Success: {success_count}, Errors: {error_count}"
+    )
     return 0
 
 

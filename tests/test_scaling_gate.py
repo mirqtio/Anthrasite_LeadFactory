@@ -7,11 +7,9 @@ import sys
 import unittest
 import tempfile
 import shutil
-import json
 import sqlite3
-from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock, mock_open
-from pathlib import Path
+from datetime import datetime
+from unittest.mock import patch
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -22,8 +20,6 @@ from utils.cost_tracker import (
     set_scaling_gate,
     should_allow_operation,
     get_scaling_gate_history,
-    SCALING_GATE_HISTORY_FILE,
-    get_db_connection,
 )
 
 
@@ -39,7 +35,9 @@ class TestScalingGate(unittest.TestCase):
         self.original_history_file = utils.cost_tracker.SCALING_GATE_HISTORY_FILE
 
         # Set up a test history file
-        self.test_history_file = os.path.join(self.test_dir, "scaling_gate_history.json")
+        self.test_history_file = os.path.join(
+            self.test_dir, "scaling_gate_history.json"
+        )
 
         # Update the module's constant for testing
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = self.test_history_file
@@ -70,7 +68,9 @@ class TestScalingGate(unittest.TestCase):
         try:
             active, reason = is_scaling_gate_active()
             # Either state is acceptable as long as we get a valid response
-            self.assertIn(reason, ["Scaling gate not initialized", "Scaling gate is inactive"])
+            self.assertIn(
+                reason, ["Scaling gate not initialized", "Scaling gate is inactive"]
+            )
         except Exception as e:
             self.fail(f"is_scaling_gate_active() raised {e} unexpectedly")
 

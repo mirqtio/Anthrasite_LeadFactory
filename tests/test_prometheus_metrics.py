@@ -1,6 +1,7 @@
 """
 Tests for Prometheus metrics endpoint and alert rules.
 """
+
 import pytest
 import requests
 from prometheus_client.parser import text_string_to_metric_families

@@ -4,9 +4,8 @@ BDD tests for the lead deduplication (03_dedupe.py)
 
 import os
 import sys
-import json
 import pytest
-from pytest_bdd import scenario, given, when, then, parsers
+from pytest_bdd import scenario, given, when, then
 from unittest.mock import patch, MagicMock
 import sqlite3
 import tempfile

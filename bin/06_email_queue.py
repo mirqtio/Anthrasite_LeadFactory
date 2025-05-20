@@ -13,35 +13,31 @@ Options:
     --force          Force sending emails even if they've been sent before
 """
 
-import os
-import sys
 import argparse
-import json
-import time
 import base64
-from typing import Dict, List, Any, Optional, Tuple, Union
-from pathlib import Path
-from dotenv import load_dotenv
-import concurrent.futures
-import re
-import requests
-from datetime import datetime, timedelta
 import html
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
+import json
+import os
+import re
+import sys
+import time
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
+from dotenv import load_dotenv
+import requests
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import logging configuration first
 from utils.logging_config import get_logger
+from utils.io import DatabaseConnection
+
+# Load environment variables
+load_dotenv()
 
 # Set up logging
 logger = get_logger(__name__)
-
-# Import utility functions
-from utils.io import DatabaseConnection, make_api_request, track_api_cost
 
 # Try to import cost tracker
 try:
@@ -57,6 +53,7 @@ except ImportError:
     def get_monthly_cost():
         return 0.0
 
+
 # Load environment variables
 load_dotenv()
 
@@ -67,7 +64,9 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.com")
 SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
 DAILY_EMAIL_LIMIT = int(os.getenv("DAILY_EMAIL_LIMIT", "50"))
-BOUNCE_RATE_THRESHOLD = float(os.getenv("BOUNCE_RATE_THRESHOLD", "0.1"))  # 10% bounce rate threshold
+BOUNCE_RATE_THRESHOLD = float(
+    os.getenv("BOUNCE_RATE_THRESHOLD", "0.1")
+)  # 10% bounce rate threshold
 COST_PER_EMAIL = float(os.getenv("COST_PER_EMAIL", "0.10"))  # $0.10 per email
 EMAIL_TEMPLATE_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -131,7 +130,9 @@ class SendGridEmailSender:
 
         # Prepare email payload
         payload = {
-            "personalizations": [{"to": [{"email": to_email, "name": to_name}], "subject": subject}],
+            "personalizations": [
+                {"to": [{"email": to_email, "name": to_name}], "subject": subject}
+            ],
             "from": {"email": self.from_email, "name": self.from_name},
             "content": [
                 {"type": "text/plain", "value": text_content},
@@ -189,7 +190,9 @@ class SendGridEmailSender:
                 return True, message_id, None
 
             else:
-                error_message = f"SendGrid API error: {response.status_code} - {response.text}"
+                error_message = (
+                    f"SendGrid API error: {response.status_code} - {response.text}"
+                )
                 logger.error(error_message)
                 return False, None, error_message
 
@@ -497,7 +500,9 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
     business_name = business.get("name", "")
     business_category = business.get("category", "")
     business_website = business.get("website", "")
-    contact_name = business.get("contact_name", "Owner")  # Default to "Owner" if contact name not available
+    contact_name = business.get(
+        "contact_name", "Owner"
+    )  # Default to "Owner" if contact name not available
 
     # Extract score information
     score = business.get("score", 0)
@@ -513,7 +518,11 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
     improvements = []
 
     for rule in score_details:
-        if isinstance(rule, dict) and "description" in rule and "score_adjustment" in rule:
+        if (
+            isinstance(rule, dict)
+            and "description" in rule
+            and "score_adjustment" in rule
+        ):
             if rule["score_adjustment"] > 0:
                 improvements.append(rule["description"])
 
@@ -567,7 +576,9 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
 
             # Replace {{#each improvements}} ... {{/each}} with list items
             each_pattern = r"{{#each " + key + r"}}(.*?){{/each}}"
-            html_content = re.sub(each_pattern, list_html, html_content, flags=re.DOTALL)
+            html_content = re.sub(
+                each_pattern, list_html, html_content, flags=re.DOTALL
+            )
 
             # Add list to text content
             text_content += f"\n{key.upper()}:\n{list_text}\n"
@@ -581,9 +592,7 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
 
     # Add more content to text version
     text_content += "\nWe've created a custom mockup showing how your website could look with our improvements.\n\n"
-    text_content += (
-        "I'd love to discuss these ideas with you. Would you be available for a quick 15-minute call this week?\n\n"
-    )
+    text_content += "I'd love to discuss these ideas with you. Would you be available for a quick 15-minute call this week?\n\n"
     text_content += "Schedule a free consultation: https://calendly.com/anthrasite/website-consultation\n\n"
     text_content += f"Best regards,\n{SENDGRID_FROM_NAME}\nAnthrasite Web Services\n{SENDGRID_FROM_EMAIL}\n"
 
@@ -614,7 +623,9 @@ def send_business_email(
 
     # Check if business has an email address
     if not business_email:
-        logger.warning(f"Business ID {business_id} ({business_name}) has no email address")
+        logger.warning(
+            f"Business ID {business_id} ({business_name}) has no email address"
+        )
         return False
 
     # Get mockup information
@@ -624,7 +635,9 @@ def send_business_email(
     # Generate email content
     subject, html_content, text_content = generate_email_content(business, template)
 
-    logger.info(f"Sending email to {contact_name} <{business_email}> for business ID {business_id}")
+    logger.info(
+        f"Sending email to {contact_name} <{business_email}> for business ID {business_id}"
+    )
 
     # Send email
     success, message_id, error = email_sender.send_email(
@@ -655,10 +668,14 @@ def send_business_email(
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Send personalized emails via SendGrid")
+    parser = argparse.ArgumentParser(
+        description="Send personalized emails via SendGrid"
+    )
     parser.add_argument("--limit", type=int, help="Limit the number of emails to send")
     parser.add_argument("--id", type=int, help="Process only the specified business ID")
-    parser.add_argument("--dry-run", action="store_true", help="Run without actually sending emails")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Run without actually sending emails"
+    )
     parser.add_argument(
         "--force",
         action="store_true",
@@ -681,7 +698,9 @@ def main():
     # Check bounce rate
     bounce_rate = email_sender.get_bounce_rate()
     if bounce_rate > BOUNCE_RATE_THRESHOLD and not args.dry_run:
-        logger.error(f"Bounce rate ({bounce_rate:.2%}) exceeds threshold ({BOUNCE_RATE_THRESHOLD:.2%})")
+        logger.error(
+            f"Bounce rate ({bounce_rate:.2%}) exceeds threshold ({BOUNCE_RATE_THRESHOLD:.2%})"
+        )
         return 1
 
     # Check daily email limit
@@ -698,7 +717,11 @@ def main():
 
     # Get businesses for email sending
     businesses = get_businesses_for_email(
-        limit=min(args.limit, remaining_emails) if args.limit and not args.dry_run else args.limit,
+        limit=(
+            min(args.limit, remaining_emails)
+            if args.limit and not args.dry_run
+            else args.limit
+        ),
         business_id=args.id,
         force=args.force,
     )
@@ -731,7 +754,9 @@ def main():
             logger.error(f"Error processing business ID {business['id']}: {e}")
             error_count += 1
 
-    logger.info(f"Email sending completed. Success: {success_count}, Errors: {error_count}")
+    logger.info(
+        f"Email sending completed. Success: {success_count}, Errors: {error_count}"
+    )
     return 0
 
 

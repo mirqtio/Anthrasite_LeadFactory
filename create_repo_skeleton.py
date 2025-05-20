@@ -3,7 +3,6 @@
 Creates the initial repository skeleton structure for the Anthrasite Lead-Factory project.
 """
 
-import os
 from pathlib import Path
 
 # Define the directory structure

@@ -1,0 +1,31 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version
+    rev: v0.9.5
+    hooks:
+      # Run the linter
+      - id: ruff
+        # Run the formatter (ruff format) as part of the linter hook
+        args: [--fix, --exit-non-zero-on-fix]
+        # Only run on Python files
+        types: [python]
+        # Exclude virtual environment and other directories
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
+
+-   repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.4.2
+    hooks:
+      - id: black
+        # It is recommended to specify the latest version of Python
+        # supported by your project here, or alternatively use
+        # pre-commit's default_language_version, see
+        # https://pre-commit.com/#top_level-default_language_version
+        language_version: python3.10
+        # Only run on Python files
+        types: [python]
+        # Exclude virtual environment and other directories
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
+        # Run in check mode (will fail if files need formatting)
+        args: [--check]

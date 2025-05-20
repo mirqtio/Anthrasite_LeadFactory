@@ -4,7 +4,6 @@ BDD tests for the lead scraper (01_scrape.py)
 
 import os
 import sys
-import json
 import pytest
 from pytest_bdd import scenario, given, when, then, parsers
 from unittest.mock import patch, MagicMock
@@ -337,14 +336,18 @@ def run_scraper_yelp(mock_yelp_api, target_zip_code, target_vertical):
         mock_get_zip_codes.return_value = [{"zip": target_zip_code}]
 
         with patch("bin.scrape.get_verticals") as mock_get_verticals:
-            mock_get_verticals.return_value = [{"name": target_vertical, "yelp_categories": "restaurants"}]
+            mock_get_verticals.return_value = [
+                {"name": target_vertical, "yelp_categories": "restaurants"}
+            ]
 
             # Run the scraper with mocked dependencies
             with patch("bin.scrape.main") as mock_main:
                 mock_main.return_value = 0
 
                 # Call the function that processes Yelp businesses
-                scraper.process_yelp_businesses(target_zip_code, target_vertical, mock_yelp_api)
+                scraper.process_yelp_businesses(
+                    target_zip_code, target_vertical, mock_yelp_api
+                )
 
 
 @when("I run the scraper for Google Places API")
@@ -354,18 +357,24 @@ def run_scraper_google(mock_google_places_api, target_zip_code, target_vertical)
         mock_get_zip_codes.return_value = [{"zip": target_zip_code}]
 
         with patch("bin.scrape.get_verticals") as mock_get_verticals:
-            mock_get_verticals.return_value = [{"name": target_vertical, "google_categories": "store"}]
+            mock_get_verticals.return_value = [
+                {"name": target_vertical, "google_categories": "store"}
+            ]
 
             # Run the scraper with mocked dependencies
             with patch("bin.scrape.main") as mock_main:
                 mock_main.return_value = 0
 
                 # Call the function that processes Google businesses
-                scraper.process_google_places(target_zip_code, target_vertical, mock_google_places_api)
+                scraper.process_google_places(
+                    target_zip_code, target_vertical, mock_google_places_api
+                )
 
 
 @when("I run the scraper")
-def run_scraper(mock_yelp_api, mock_google_places_api, target_zip_code, target_vertical):
+def run_scraper(
+    mock_yelp_api, mock_google_places_api, target_zip_code, target_vertical
+):
     """Run the scraper."""
     with patch("bin.scrape.get_zip_codes") as mock_get_zip_codes:
         mock_get_zip_codes.return_value = [{"zip": target_zip_code}]

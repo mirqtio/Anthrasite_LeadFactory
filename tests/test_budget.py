@@ -1,7 +1,7 @@
 """
 Tests for budget audit functionality.
 """
-import pytest
+
 from utils.cost_tracker import (
     get_daily_cost,
     get_monthly_cost,

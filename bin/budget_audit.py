@@ -6,26 +6,11 @@ This script provides a command-line interface for monitoring and managing the bu
 and scaling gate status of the Anthrasite Lead-Factory system.
 """
 
+import argparse
 import os
 import sys
-import json
-import argparse
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
-
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Import logging configuration first
+from dotenv import load_dotenv
 from utils.logging_config import get_logger
-
-# Set up logging
-logger = get_logger(__name__)
-
-# Import utility functions
-from utils.io import DatabaseConnection
-
-# Import cost tracker functions
 from utils.cost_tracker import (
     get_daily_cost,
     get_monthly_cost,
@@ -38,6 +23,16 @@ from utils.cost_tracker import (
     export_cost_report,
     export_prometheus_metrics,
 )
+
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Load environment variables
+load_dotenv()
+
+# Set up logging
+logger = get_logger(__name__)
+
 
 # Color codes for terminal output
 class Colors:
@@ -99,14 +94,20 @@ def show_summary() -> None:
     daily_utilization = (daily_cost / daily_budget) * 100 if daily_budget > 0 else 0
 
     print(f"Daily Budget: {format_currency(daily_budget)}")
-    print(f"Daily Spend:  {format_currency(daily_cost)} ({format_percentage(daily_utilization)} of budget)")
+    print(
+        f"Daily Spend:  {format_currency(daily_cost)} ({format_percentage(daily_utilization)} of budget)"
+    )
 
     # Print monthly budget
     monthly_budget = budget_info.get("monthly_budget", 0)
-    monthly_utilization = (monthly_cost / monthly_budget) * 100 if monthly_budget > 0 else 0
+    monthly_utilization = (
+        (monthly_cost / monthly_budget) * 100 if monthly_budget > 0 else 0
+    )
 
     print(f"\nMonthly Budget: {format_currency(monthly_budget)}")
-    print(f"Monthly Spend:  {format_currency(monthly_cost)} ({format_percentage(monthly_utilization)} of budget)")
+    print(
+        f"Monthly Spend:  {format_currency(monthly_cost)} ({format_percentage(monthly_utilization)} of budget)"
+    )
 
     # Print alerts if any
     if budget_info.get("daily_alert", False):
@@ -156,7 +157,11 @@ def show_scaling_gate_status() -> None:
     print_header("Scaling Gate Status")
 
     active, reason = is_scaling_gate_active()
-    status = f"{Colors.FAIL}ACTIVE{Colors.ENDC}" if active else f"{Colors.OKGREEN}INACTIVE{Colors.ENDC}"
+    status = (
+        f"{Colors.FAIL}ACTIVE{Colors.ENDC}"
+        if active
+        else f"{Colors.OKGREEN}INACTIVE{Colors.ENDC}"
+    )
 
     print(f"Status: {status}")
     print(f"Reason: {reason}")
@@ -204,13 +209,15 @@ def export_report(period: str, output_file: str) -> None:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Budget Audit Tool for Anthrasite Lead-Factory")
+    parser = argparse.ArgumentParser(
+        description="Budget Audit Tool for Anthrasite Lead-Factory"
+    )
 
     # Main commands
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
-    # Summary command
-    summary_parser = subparsers.add_parser("summary", help="Show budget summary")
+    # Summary command - store in _ to indicate it's intentionally unused
+    _ = subparsers.add_parser("summary", help="Show budget summary")
 
     # Cost breakdown command
     cost_parser = subparsers.add_parser("costs", help="Show cost breakdown")
@@ -223,14 +230,18 @@ def parse_args() -> argparse.Namespace:
 
     # Scaling gate command
     gate_parser = subparsers.add_parser("gate", help="Manage scaling gate")
-    gate_subparsers = gate_parser.add_subparsers(dest="gate_command", help="Scaling gate command")
+    gate_subparsers = gate_parser.add_subparsers(
+        dest="gate_command", help="Scaling gate command"
+    )
 
     # Enable gate
     enable_parser = gate_subparsers.add_parser("enable", help="Enable the scaling gate")
     enable_parser.add_argument("--reason", help="Reason for enabling the gate")
 
     # Disable gate
-    disable_parser = gate_subparsers.add_parser("disable", help="Disable the scaling gate")
+    disable_parser = gate_subparsers.add_parser(
+        "disable", help="Disable the scaling gate"
+    )
     disable_parser.add_argument("--reason", help="Reason for disabling the gate")
 
     # Status gate
@@ -244,11 +255,17 @@ def parse_args() -> argparse.Namespace:
         default="month",
         help="Time period for the report",
     )
-    export_parser.add_argument("--output", default="cost_report.json", help="Output file path")
+    export_parser.add_argument(
+        "--output", default="cost_report.json", help="Output file path"
+    )
 
     # Export Prometheus metrics
-    prom_parser = subparsers.add_parser("export-prometheus", help="Export Prometheus metrics")
-    prom_parser.add_argument("--output", default="metrics.prom", help="Output file path")
+    prom_parser = subparsers.add_parser(
+        "export-prometheus", help="Export Prometheus metrics"
+    )
+    prom_parser.add_argument(
+        "--output", default="metrics.prom", help="Output file path"
+    )
 
     # Set default command
     parser.set_defaults(func=show_summary)

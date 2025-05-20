@@ -12,40 +12,39 @@ Options:
     --vertical VERTICAL  Process only the specified vertical
 """
 
+import argparse
 import os
 import sys
-import time
-import json
-import random
-import argparse
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Tuple
+
+from dotenv import load_dotenv
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import logging configuration first
 from utils.logging_config import get_logger
 
-# Set up logging
-logger = get_logger(__name__)
-
 # Import utility functions
 from utils.io import (
-    DatabaseConnection,
     make_api_request,
-    track_api_cost,
     get_active_zip_codes,
     get_verticals,
     save_business,
     mark_zip_done,
+    load_yaml_config,
 )
+
+# Set up logging
+logger = get_logger(__name__)
 
 # Load environment variables
 load_dotenv()
 
 # Constants
-VERTICALS_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "etc", "verticals.yml")
+VERTICALS_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "etc", "verticals.yml"
+)
 YELP_API_KEY = os.getenv("YELP_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_KEY")
 YELP_API_BASE_URL = "https://api.yelp.com/v3"
@@ -119,7 +118,9 @@ class YelpAPI:
 
         return response_data.get("businesses", []), None
 
-    def get_business_details(self, business_id: str) -> Tuple[Optional[Dict], Optional[str]]:
+    def get_business_details(
+        self, business_id: str
+    ) -> Tuple[Optional[Dict], Optional[str]]:
         """Get detailed information about a business.
 
         Args:
@@ -342,7 +343,9 @@ def process_yelp_business(business: Dict, category: str) -> Optional[int]:
         return None
 
 
-def process_google_place(place: Dict, category: str, google_api: GooglePlacesAPI) -> Optional[int]:
+def process_google_place(
+    place: Dict, category: str, google_api: GooglePlacesAPI
+) -> Optional[int]:
     """Process and save a place from Google.
 
     Args:
@@ -362,7 +365,9 @@ def process_google_place(place: Dict, category: str, google_api: GooglePlacesAPI
 
         details, error = google_api.get_place_details(place_id)
         if error or not details:
-            logger.warning(f"Error getting details for Google place {place_id}: {error}")
+            logger.warning(
+                f"Error getting details for Google place {place_id}: {error}"
+            )
             return None
 
         # Extract information
@@ -403,7 +408,9 @@ def process_google_place(place: Dict, category: str, google_api: GooglePlacesAPI
         return None
 
 
-def scrape_businesses(zip_code: str, vertical: Dict, limit: int = 50) -> Tuple[int, int]:
+def scrape_businesses(
+    zip_code: str, vertical: Dict, limit: int = 50
+) -> Tuple[int, int]:
     """Scrape businesses for a specific ZIP code and vertical.
 
     Args:
@@ -487,13 +494,17 @@ def scrape_businesses(zip_code: str, vertical: Dict, limit: int = 50) -> Tuple[i
                 if process_google_place(place, vertical["name"], google_api):
                     google_count += 1
 
-    logger.info(f"Scraped {yelp_count} businesses from Yelp and {google_count} from Google Places")
+    logger.info(
+        f"Scraped {yelp_count} businesses from Yelp and {google_count} from Google Places"
+    )
     return yelp_count, google_count
 
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Scrape business listings from Yelp and Google Places APIs")
+    parser = argparse.ArgumentParser(
+        description="Scrape business listings from Yelp and Google Places APIs"
+    )
     parser.add_argument(
         "--limit",
         type=int,
@@ -501,7 +512,9 @@ def main():
         help="Limit the number of businesses to fetch per API",
     )
     parser.add_argument("--zip", type=str, help="Process only the specified ZIP code")
-    parser.add_argument("--vertical", type=str, help="Process only the specified vertical")
+    parser.add_argument(
+        "--vertical", type=str, help="Process only the specified vertical"
+    )
     args = parser.parse_args()
 
     # Get active ZIP codes
@@ -534,7 +547,9 @@ def main():
     for zip_code_info in zip_codes:
         zip_code = zip_code_info["zip"]
         for vertical in verticals:
-            yelp_count, google_count = scrape_businesses(zip_code=zip_code, vertical=vertical, limit=args.limit)
+            yelp_count, google_count = scrape_businesses(
+                zip_code=zip_code, vertical=vertical, limit=args.limit
+            )
             total_yelp += yelp_count
             total_google += google_count
 
@@ -542,7 +557,9 @@ def main():
         if not args.zip:
             mark_zip_done(zip_code)
 
-    logger.info(f"Scraping completed. Total: {total_yelp} from Yelp, {total_google} from Google Places")
+    logger.info(
+        f"Scraping completed. Total: {total_yelp} from Yelp, {total_google} from Google Places"
+    )
     return 0
 
 
