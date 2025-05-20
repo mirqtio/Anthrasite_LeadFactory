@@ -46,7 +46,7 @@ jobs:
 
       - name: Check formatting with black
         run: |
-          black --check --diff .
+          black --check --config .black.toml --diff .
 
       - name: Check imports with isort
         run: |
