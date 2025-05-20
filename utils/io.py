@@ -14,15 +14,11 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-# Configure logging
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
-    format='{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "function": "%(funcName)s", "message": "%(message)s"}'
-    if os.getenv("LOG_FORMAT", "json") == "json"
-    else "%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
+# Import logging configuration
+from .logging_config import get_logger
+
+# Set up logging
+logger = get_logger(__name__)
 
 # Load environment variables
 load_dotenv()

@@ -9,14 +9,23 @@ and scaling gate status of the Anthrasite Lead-Factory system.
 import os
 import sys
 import json
-import logging
 import argparse
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Any, Optional, Tuple
 
-# Add project root to Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import logging configuration first
+from utils.logging_config import get_logger
+
+# Set up logging
+logger = get_logger(__name__)
+
+# Import utility functions
+from utils.io import DatabaseConnection
+
+# Import cost tracker functions
 from utils.cost_tracker import (
     get_daily_cost,
     get_monthly_cost,
@@ -29,15 +38,6 @@ from utils.cost_tracker import (
     export_cost_report,
     export_prometheus_metrics,
 )
-
-# Configure logging
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
-
 
 # Color codes for terminal output
 class Colors:

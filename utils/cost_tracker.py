@@ -9,7 +9,6 @@ totals, and check against budget thresholds.
 
 import os
 import sys
-import logging
 import json
 import time
 from typing import Dict, List, Any, Optional, Tuple, Union
@@ -17,15 +16,11 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import sqlite3
 
-# Configure logging
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
-    format='{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "function": "%(funcName)s", "message": "%(message)s"}'
-    if os.getenv("LOG_FORMAT", "json") == "json"
-    else "%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
+# Import logging configuration
+from .logging_config import get_logger
+
+# Set up logging
+logger = get_logger(__name__)
 
 # Constants
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "db", "lead_factory.db")

@@ -16,7 +16,6 @@ Options:
 import os
 import sys
 import argparse
-import logging
 import json
 import time
 import base64
@@ -35,6 +34,12 @@ from email.mime.image import MIMEImage
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import logging configuration first
+from utils.logging_config import get_logger
+
+# Set up logging
+logger = get_logger(__name__)
+
 # Import utility functions
 from utils.io import DatabaseConnection, make_api_request, track_api_cost
 
@@ -42,26 +47,15 @@ from utils.io import DatabaseConnection, make_api_request, track_api_cost
 try:
     from utils.cost_tracker import log_cost, get_daily_cost, get_monthly_cost
 except ImportError:
-    # Define stub functions if cost_tracker is not available
+    # Define dummy functions if cost_tracker is not available
     def log_cost(service, operation, cost_dollars):
-        logging.info(f"Cost tracking: {service} {operation} ${cost_dollars:.2f}")
+        pass
 
     def get_daily_cost():
         return 0.0
 
     def get_monthly_cost():
         return 0.0
-
-
-# Configure logging
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
-    format='{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "function": "%(funcName)s", "message": "%(message)s"}'
-    if os.getenv("LOG_FORMAT", "json") == "json"
-    else "%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()

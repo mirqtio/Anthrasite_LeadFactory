@@ -14,39 +14,32 @@ Options:
 
 import os
 import sys
-import argparse
-import logging
 import time
 import json
-import yaml
-from typing import Dict, List, Any, Optional, Tuple
-from pathlib import Path
-from dotenv import load_dotenv
+import random
+import argparse
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any, Tuple
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import logging configuration first
+from utils.logging_config import get_logger
+
+# Set up logging
+logger = get_logger(__name__)
+
 # Import utility functions
 from utils.io import (
     DatabaseConnection,
-    load_yaml_config,
     make_api_request,
+    track_api_cost,
     get_active_zip_codes,
     get_verticals,
     save_business,
     mark_zip_done,
-    track_api_cost,
 )
-
-# Configure logging
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
-    format='{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "function": "%(funcName)s", "message": "%(message)s"}'
-    if os.getenv("LOG_FORMAT", "json") == "json"
-    else "%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()

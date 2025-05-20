@@ -7,7 +7,6 @@ It exposes a /metrics endpoint that can be scraped by Prometheus.
 
 import os
 import time
-import logging
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -33,12 +32,11 @@ from .cost_tracker import (
     check_budget_thresholds,
 )
 
-# Configure logging
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
-    format='{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "function": "%(funcName)s", "message": "%(message)s"}',
-)
-logger = logging.getLogger(__name__)
+# Import logging configuration
+from .logging_config import get_logger
+
+# Set up logging
+logger = get_logger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
