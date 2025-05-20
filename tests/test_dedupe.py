@@ -24,7 +24,8 @@ FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/deduplication.f
 os.makedirs(os.path.join(os.path.dirname(__file__), "features"), exist_ok=True)
 if not os.path.exists(FEATURE_FILE):
     with open(FEATURE_FILE, "w") as f:
-        f.write("""
+        f.write(
+            """
 Feature: Lead Deduplication
   As a marketing manager
   I want to identify and merge duplicate business records
@@ -70,7 +71,8 @@ Feature: Lead Deduplication
     When I run the deduplication process
     Then the businesses should be skipped
     And the deduplication process should continue to the next set
-""")
+"""
+        )
 
 
 # Test fixtures
@@ -92,7 +94,7 @@ def mock_llm_verifier():
         instance.verify_duplicates.return_value = {
             "is_duplicate": True,
             "confidence": 0.95,
-            "reasoning": "Both businesses have the same name and very similar addresses."
+            "reasoning": "Both businesses have the same name and very similar addresses.",
         }
         yield instance
 
@@ -102,13 +104,14 @@ def temp_db():
     """Create a temporary database for testing."""
     fd, path = tempfile.mkstemp()
     os.close(fd)
-    
+
     # Create test database
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    
+
     # Create tables
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS businesses (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
@@ -132,8 +135,9 @@ def temp_db():
         merged_into INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
+    """
+    )
+
     # Insert exact duplicate businesses
     cursor.execute(
         """
@@ -141,22 +145,46 @@ def temp_db():
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Exact Duplicate Business", "123 Main St", "New York", "NY", "10002", 
-         "+12125551234", "contact@exactdupe.com", "https://exactdupe.com", 
-         "Restaurants", "yelp", "business1", "active", 85)
+        (
+            "Exact Duplicate Business",
+            "123 Main St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125551234",
+            "contact@exactdupe.com",
+            "https://exactdupe.com",
+            "Restaurants",
+            "yelp",
+            "business1",
+            "active",
+            85,
+        ),
     )
-    
+
     cursor.execute(
         """
         INSERT INTO businesses 
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Exact Duplicate Business", "123 Main St", "New York", "NY", "10002", 
-         "+12125551235", "info@exactdupe.com", "https://exactdupe.com", 
-         "Restaurants", "google", "business2", "active", 90)
+        (
+            "Exact Duplicate Business",
+            "123 Main St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125551235",
+            "info@exactdupe.com",
+            "https://exactdupe.com",
+            "Restaurants",
+            "google",
+            "business2",
+            "active",
+            90,
+        ),
     )
-    
+
     # Insert similar businesses
     cursor.execute(
         """
@@ -164,22 +192,46 @@ def temp_db():
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Similar Business LLC", "456 Elm Street", "New York", "NY", "10002", 
-         "+12125553456", "contact@similar.com", "https://similar.com", 
-         "Retail", "yelp", "business3", "active", 75)
+        (
+            "Similar Business LLC",
+            "456 Elm Street",
+            "New York",
+            "NY",
+            "10002",
+            "+12125553456",
+            "contact@similar.com",
+            "https://similar.com",
+            "Retail",
+            "yelp",
+            "business3",
+            "active",
+            75,
+        ),
     )
-    
+
     cursor.execute(
         """
         INSERT INTO businesses 
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Similar Business", "456 Elm St", "New York", "NY", "10002", 
-         "+12125553457", "info@similar.com", "https://similar.com", 
-         "Retail", "google", "business4", "active", 80)
+        (
+            "Similar Business",
+            "456 Elm St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125553457",
+            "info@similar.com",
+            "https://similar.com",
+            "Retail",
+            "google",
+            "business4",
+            "active",
+            80,
+        ),
     )
-    
+
     # Insert businesses with same name but different addresses
     cursor.execute(
         """
@@ -187,22 +239,46 @@ def temp_db():
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Same Name Business", "789 Oak St", "New York", "NY", "10002", 
-         "+12125556789", "contact@samename.com", "https://samename.com", 
-         "Services", "yelp", "business5", "active", 70)
+        (
+            "Same Name Business",
+            "789 Oak St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125556789",
+            "contact@samename.com",
+            "https://samename.com",
+            "Services",
+            "yelp",
+            "business5",
+            "active",
+            70,
+        ),
     )
-    
+
     cursor.execute(
         """
         INSERT INTO businesses 
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Same Name Business", "101 Pine St", "New York", "NY", "10003", 
-         "+12125556780", "info@samename.com", "https://samename.com", 
-         "Services", "google", "business6", "active", 65)
+        (
+            "Same Name Business",
+            "101 Pine St",
+            "New York",
+            "NY",
+            "10003",
+            "+12125556780",
+            "info@samename.com",
+            "https://samename.com",
+            "Services",
+            "google",
+            "business6",
+            "active",
+            65,
+        ),
     )
-    
+
     # Insert already processed businesses
     cursor.execute(
         """
@@ -210,29 +286,54 @@ def temp_db():
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score, merged_into) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Already Processed Business 1", "222 Maple St", "New York", "NY", "10002", 
-         "+12125552222", "contact@processed.com", "https://processed.com", 
-         "Healthcare", "yelp", "business7", "merged", 60, 12)
+        (
+            "Already Processed Business 1",
+            "222 Maple St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125552222",
+            "contact@processed.com",
+            "https://processed.com",
+            "Healthcare",
+            "yelp",
+            "business7",
+            "merged",
+            60,
+            12,
+        ),
     )
-    
+
     cursor.execute(
         """
         INSERT INTO businesses 
         (name, address, city, state, zip, phone, email, website, category, source, source_id, status, score) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Already Processed Business 2", "222 Maple Street", "New York", "NY", "10002", 
-         "+12125552223", "info@processed.com", "https://processed.com", 
-         "Healthcare", "google", "business8", "active", 62)
+        (
+            "Already Processed Business 2",
+            "222 Maple Street",
+            "New York",
+            "NY",
+            "10002",
+            "+12125552223",
+            "info@processed.com",
+            "https://processed.com",
+            "Healthcare",
+            "google",
+            "business8",
+            "active",
+            62,
+        ),
     )
-    
+
     conn.commit()
     conn.close()
-    
+
     # Patch the database path
     with patch("bin.dedupe.DB_PATH", path):
         yield path
-    
+
     # Clean up
     os.unlink(path)
 
@@ -286,7 +387,7 @@ def exact_duplicate_businesses(temp_db):
     """Get businesses with identical names and addresses."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute(
         """
         SELECT id FROM businesses 
@@ -294,9 +395,9 @@ def exact_duplicate_businesses(temp_db):
         """
     )
     business_ids = [row[0] for row in cursor.fetchall()]
-    
+
     conn.close()
-    
+
     return business_ids
 
 
@@ -305,7 +406,7 @@ def similar_businesses(temp_db):
     """Get businesses with similar names and addresses."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute(
         """
         SELECT id FROM businesses 
@@ -313,9 +414,9 @@ def similar_businesses(temp_db):
         """
     )
     business_ids = [row[0] for row in cursor.fetchall()]
-    
+
     conn.close()
-    
+
     return business_ids
 
 
@@ -324,7 +425,7 @@ def same_name_different_address_businesses(temp_db):
     """Get businesses with same name but different addresses."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute(
         """
         SELECT id FROM businesses 
@@ -332,9 +433,9 @@ def same_name_different_address_businesses(temp_db):
         """
     )
     business_ids = [row[0] for row in cursor.fetchall()]
-    
+
     conn.close()
-    
+
     return business_ids
 
 
@@ -349,7 +450,7 @@ def already_processed_businesses(temp_db):
     """Get businesses that have already been processed for deduplication."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute(
         """
         SELECT id FROM businesses 
@@ -357,9 +458,9 @@ def already_processed_businesses(temp_db):
         """
     )
     business_ids = [row[0] for row in cursor.fetchall()]
-    
+
     conn.close()
-    
+
     return business_ids
 
 
@@ -369,14 +470,14 @@ def run_deduplication(mock_llm_verifier, exact_duplicate_businesses):
     """Run the deduplication process."""
     with patch("bin.dedupe.find_potential_duplicates") as mock_find_duplicates:
         mock_find_duplicates.return_value = [exact_duplicate_businesses]
-        
+
         with patch("bin.dedupe.merge_businesses") as mock_merge_businesses:
             mock_merge_businesses.return_value = True
-            
+
             # Run the deduplication process
             with patch("bin.dedupe.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes duplicates
                 try:
                     dedupe.process_duplicates()
@@ -390,14 +491,14 @@ def run_deduplication_fuzzy(mock_llm_verifier, similar_businesses):
     """Run the deduplication process with fuzzy matching."""
     with patch("bin.dedupe.find_potential_duplicates") as mock_find_duplicates:
         mock_find_duplicates.return_value = [similar_businesses]
-        
+
         with patch("bin.dedupe.merge_businesses") as mock_merge_businesses:
             mock_merge_businesses.return_value = True
-            
+
             # Run the deduplication process
             with patch("bin.dedupe.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes duplicates
                 try:
                     dedupe.process_duplicates(fuzzy_match=True)

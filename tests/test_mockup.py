@@ -25,7 +25,8 @@ FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/mockup.feature"
 os.makedirs(os.path.join(os.path.dirname(__file__), "features"), exist_ok=True)
 if not os.path.exists(FEATURE_FILE):
     with open(FEATURE_FILE, "w") as f:
-        f.write("""
+        f.write(
+            """
 Feature: Mockup Generation
   As a marketing manager
   I want to generate website improvement mockups for potential leads
@@ -81,7 +82,8 @@ Feature: Mockup Generation
     And a mockup should still be generated
     And the mockup should be saved to the database
     And the cost should be tracked for the fallback model
-""")
+"""
+        )
 
 
 # Sample mockup response for testing
@@ -91,23 +93,23 @@ SAMPLE_MOCKUP_RESPONSE = {
             "title": "Improve Page Load Speed",
             "description": "Your website currently takes 4.5 seconds to load. We can reduce this to under 2 seconds by optimizing images and implementing lazy loading.",
             "impact": "High",
-            "implementation_difficulty": "Medium"
+            "implementation_difficulty": "Medium",
         },
         {
             "title": "Mobile Responsiveness",
             "description": "Your website is not fully responsive on mobile devices. We can implement a responsive design that works seamlessly across all device sizes.",
             "impact": "High",
-            "implementation_difficulty": "Medium"
+            "implementation_difficulty": "Medium",
         },
         {
             "title": "Add Clear Call-to-Action",
             "description": "Your homepage lacks a clear call-to-action. We can add prominent buttons that guide visitors toward conversion.",
             "impact": "Medium",
-            "implementation_difficulty": "Low"
-        }
+            "implementation_difficulty": "Low",
+        },
     ],
-    "visual_mockup": base64.b64encode(b"Mock image data").decode('utf-8'),
-    "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>"
+    "visual_mockup": base64.b64encode(b"Mock image data").decode("utf-8"),
+    "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>",
 }
 
 SAMPLE_FALLBACK_MOCKUP_RESPONSE = {
@@ -116,17 +118,17 @@ SAMPLE_FALLBACK_MOCKUP_RESPONSE = {
             "title": "Improve Page Load Speed",
             "description": "Your website currently takes 4.5 seconds to load. We can optimize it for better performance.",
             "impact": "High",
-            "implementation_difficulty": "Medium"
+            "implementation_difficulty": "Medium",
         },
         {
             "title": "Mobile Responsiveness",
             "description": "Your website needs better mobile responsiveness.",
             "impact": "High",
-            "implementation_difficulty": "Medium"
-        }
+            "implementation_difficulty": "Medium",
+        },
     ],
-    "visual_mockup": base64.b64encode(b"Fallback mock image data").decode('utf-8'),
-    "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>Fallback mockup.</p></div>"
+    "visual_mockup": base64.b64encode(b"Fallback mock image data").decode("utf-8"),
+    "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>Fallback mockup.</p></div>",
 }
 
 
@@ -173,13 +175,14 @@ def temp_db():
     """Create a temporary database for testing."""
     fd, path = tempfile.mkstemp()
     os.close(fd)
-    
+
     # Create test database
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    
+
     # Create tables
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS businesses (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
@@ -203,9 +206,11 @@ def temp_db():
         merged_into INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS mockups (
         id INTEGER PRIMARY KEY,
         business_id INTEGER NOT NULL,
@@ -217,9 +222,11 @@ def temp_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (business_id) REFERENCES businesses(id)
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS cost_tracking (
         id INTEGER PRIMARY KEY,
         operation TEXT NOT NULL,
@@ -228,8 +235,9 @@ def temp_db():
         details TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
+    """
+    )
+
     # Insert test data
     # High-scoring business
     cursor.execute(
@@ -238,17 +246,29 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, tech_stack, performance, score, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("High Score Business", "123 Main St", "New York", "NY", "10002", 
-         "+12125551234", "https://highscore.com", "Restaurants", 
-         json.dumps(["WordPress", "PHP 7", "MySQL"]),
-         json.dumps({
-             "load_time": 4.5,
-             "page_size": 2048,
-             "requests": 65,
-             "lighthouse_score": 55
-         }), 90, "active")
+        (
+            "High Score Business",
+            "123 Main St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125551234",
+            "https://highscore.com",
+            "Restaurants",
+            json.dumps(["WordPress", "PHP 7", "MySQL"]),
+            json.dumps(
+                {
+                    "load_time": 4.5,
+                    "page_size": 2048,
+                    "requests": 65,
+                    "lighthouse_score": 55,
+                }
+            ),
+            90,
+            "active",
+        ),
     )
-    
+
     # Medium-scoring business
     cursor.execute(
         """
@@ -256,17 +276,29 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, tech_stack, performance, score, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Medium Score Business", "456 Elm St", "New York", "NY", "10002", 
-         "+12125555678", "https://mediumscore.com", "Retail", 
-         json.dumps(["WordPress", "PHP 7", "MySQL"]),
-         json.dumps({
-             "load_time": 3.5,
-             "page_size": 1536,
-             "requests": 45,
-             "lighthouse_score": 65
-         }), 75, "active")
+        (
+            "Medium Score Business",
+            "456 Elm St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125555678",
+            "https://mediumscore.com",
+            "Retail",
+            json.dumps(["WordPress", "PHP 7", "MySQL"]),
+            json.dumps(
+                {
+                    "load_time": 3.5,
+                    "page_size": 1536,
+                    "requests": 45,
+                    "lighthouse_score": 65,
+                }
+            ),
+            75,
+            "active",
+        ),
     )
-    
+
     # Low-scoring business
     cursor.execute(
         """
@@ -274,17 +306,29 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, tech_stack, performance, score, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Low Score Business", "789 Oak St", "New York", "NY", "10002", 
-         "+12125559012", "https://lowscore.com", "Services", 
-         json.dumps(["WordPress", "PHP 7", "MySQL"]),
-         json.dumps({
-             "load_time": 2.5,
-             "page_size": 1024,
-             "requests": 25,
-             "lighthouse_score": 75
-         }), 45, "active")
+        (
+            "Low Score Business",
+            "789 Oak St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125559012",
+            "https://lowscore.com",
+            "Services",
+            json.dumps(["WordPress", "PHP 7", "MySQL"]),
+            json.dumps(
+                {
+                    "load_time": 2.5,
+                    "page_size": 1024,
+                    "requests": 25,
+                    "lighthouse_score": 75,
+                }
+            ),
+            45,
+            "active",
+        ),
     )
-    
+
     # Business without website
     cursor.execute(
         """
@@ -292,17 +336,27 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, score, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("No Website Business", "101 Pine St", "New York", "NY", "10003", 
-         "+12125556780", "", "Services", 60, "active")
+        (
+            "No Website Business",
+            "101 Pine St",
+            "New York",
+            "NY",
+            "10003",
+            "+12125556780",
+            "",
+            "Services",
+            60,
+            "active",
+        ),
     )
-    
+
     conn.commit()
     conn.close()
-    
+
     # Patch the database path
     with patch("bin.mockup.DB_PATH", path):
         yield path
-    
+
     # Clean up
     os.unlink(path)
 
@@ -363,12 +417,12 @@ def high_scoring_business(temp_db):
     """Get a high-scoring business with website data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'High Score Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -377,12 +431,12 @@ def medium_scoring_business(temp_db):
     """Get a medium-scoring business with website data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Medium Score Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -391,12 +445,12 @@ def low_scoring_business(temp_db):
     """Get a low-scoring business with website data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Low Score Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -405,12 +459,12 @@ def business_with_website(temp_db):
     """Get a business with website data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE website != '' LIMIT 1")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -419,12 +473,12 @@ def business_without_website(temp_db):
     """Get a business without website data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE website = '' LIMIT 1")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -438,12 +492,16 @@ def mockup_api_unavailable(mock_gpt4o_client, mock_claude_client):
 @given("the primary model is unavailable")
 def primary_model_unavailable(mock_gpt4o_client):
     """Simulate primary model unavailability."""
-    mock_gpt4o_client.generate_mockup.side_effect = Exception("Primary model unavailable")
+    mock_gpt4o_client.generate_mockup.side_effect = Exception(
+        "Primary model unavailable"
+    )
 
 
 # When steps
 @when("I run the mockup generation process")
-def run_mockup_generation(mock_gpt4o_client, mock_claude_client, mock_cost_tracker, high_scoring_business):
+def run_mockup_generation(
+    mock_gpt4o_client, mock_claude_client, mock_cost_tracker, high_scoring_business
+):
     """Run the mockup generation process."""
     with patch("bin.mockup.get_business_by_id") as mock_get_business:
         mock_get_business.return_value = {
@@ -456,17 +514,17 @@ def run_mockup_generation(mock_gpt4o_client, mock_claude_client, mock_cost_track
                 "load_time": 4.5,
                 "page_size": 2048,
                 "requests": 65,
-                "lighthouse_score": 55
-            }
+                "lighthouse_score": 55,
+            },
         }
-        
+
         with patch("bin.mockup.save_mockup") as mock_save_mockup:
             mock_save_mockup.return_value = True
-            
+
             # Run the mockup generation process
             with patch("bin.mockup.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes a single business
                 try:
                     mockup.generate_mockup_for_business(high_scoring_business)

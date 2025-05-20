@@ -7,53 +7,60 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
 from utils.metrics import app, update_metrics
-from utils.cost_tracker import get_cost_breakdown_by_service, is_scaling_gate_active, check_budget_thresholds
+from utils.cost_tracker import (
+    get_cost_breakdown_by_service,
+    is_scaling_gate_active,
+    check_budget_thresholds,
+)
 
 # Create test client
 client = TestClient(app)
 
+
 @pytest.fixture
 def mock_cost_data():
-    return {
-        'openai': 10.5,
-        'sendgrid': 2.3
-    }
+    return {"openai": 10.5, "sendgrid": 2.3}
+
 
 @pytest.fixture
 def mock_budget_data():
     return {
-        'daily_cost': 12.8,
-        'daily_budget': 50.0,
-        'monthly_cost': 120.5,
-        'monthly_budget': 1000.0,
-        'daily_alert': False,
-        'monthly_alert': False
+        "daily_cost": 12.8,
+        "daily_budget": 50.0,
+        "monthly_cost": 120.5,
+        "monthly_budget": 1000.0,
+        "daily_alert": False,
+        "monthly_alert": False,
     }
+
 
 def test_metrics_endpoint(mock_cost_data, mock_budget_data):
     """Test the /metrics endpoint."""
-    with patch('utils.metrics.get_cost_breakdown_by_service') as mock_get_costs, \
-         patch('utils.metrics.check_budget_thresholds') as mock_budget, \
-         patch('utils.metrics.is_scaling_gate_active') as mock_gate:
-        
+    with patch("utils.metrics.get_cost_breakdown_by_service") as mock_get_costs, patch(
+        "utils.metrics.check_budget_thresholds"
+    ) as mock_budget, patch("utils.metrics.is_scaling_gate_active") as mock_gate:
         # Setup mocks
         mock_get_costs.return_value = mock_cost_data
         mock_budget.return_value = mock_budget_data
-        mock_gate.return_value = (False, 'Below threshold')
-        
+        mock_gate.return_value = (False, "Below threshold")
+
         # Make request
         response = client.get("/metrics")
-        
+
         # Assert response
         assert response.status_code == 200
-        assert response.headers["Content-Type"] == "text/plain; version=0.0.4; charset=utf-8"
-        
+        assert (
+            response.headers["Content-Type"]
+            == "text/plain; version=0.0.4; charset=utf-8"
+        )
+
         # Check if metrics are in the response
         metrics = response.text
-        assert 'lead_factory_daily_cost' in metrics
-        assert 'lead_factory_monthly_cost' in metrics
-        assert 'lead_factory_budget_utilization' in metrics
-        assert 'lead_factory_scaling_gate_active' in metrics
+        assert "lead_factory_daily_cost" in metrics
+        assert "lead_factory_monthly_cost" in metrics
+        assert "lead_factory_budget_utilization" in metrics
+        assert "lead_factory_scaling_gate_active" in metrics
+
 
 def test_health_endpoint():
     """Test the /health endpoint."""
@@ -61,11 +68,12 @@ def test_health_endpoint():
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
 
+
 def test_scaling_gate_status():
     """Test the /scaling-gate/status endpoint."""
-    with patch('utils.metrics.is_scaling_gate_active') as mock_gate:
-        mock_gate.return_value = (True, 'Test reason')
-        
+    with patch("utils.metrics.is_scaling_gate_active") as mock_gate:
+        mock_gate.return_value = (True, "Test reason")
+
         response = client.get("/scaling-gate/status")
         assert response.status_code == 200
         data = response.json()
@@ -73,55 +81,59 @@ def test_scaling_gate_status():
         assert data["reason"] == "Test reason"
         assert "timestamp" in data
 
+
 def test_daily_costs_endpoint(mock_cost_data):
     """Test the /costs/daily endpoint."""
-    with patch('utils.metrics.get_cost_breakdown_by_service') as mock_get_costs:
+    with patch("utils.metrics.get_cost_breakdown_by_service") as mock_get_costs:
         mock_get_costs.return_value = mock_cost_data
-        
+
         response = client.get("/costs/daily")
         assert response.status_code == 200
         assert response.json() == mock_cost_data
 
+
 def test_monthly_costs_endpoint(mock_cost_data):
     """Test the /costs/monthly endpoint."""
-    with patch('utils.metrics.get_cost_breakdown_by_service') as mock_get_costs:
+    with patch("utils.metrics.get_cost_breakdown_by_service") as mock_get_costs:
         mock_get_costs.return_value = mock_cost_data
-        
+
         response = client.get("/costs/monthly")
         assert response.status_code == 200
         assert response.json() == mock_cost_data
+
 
 def test_http_metrics():
     """Test that HTTP metrics are recorded."""
     # Reset metrics
     from prometheus_client import REGISTRY
+
     for metric in list(REGISTRY._names_to_collectors.values()):
-        if metric._name.startswith('lead_factory_http'):
+        if metric._name.startswith("lead_factory_http"):
             REGISTRY.unregister(metric)
-    
+
     # Make a request
     response = client.get("/health")
     assert response.status_code == 200
-    
+
     # Check metrics
     metrics_response = client.get("/metrics")
-    assert 'lead_factory_http_requests_total' in metrics_response.text
-    assert 'lead_factory_http_request_duration_seconds' in metrics_response.text
+    assert "lead_factory_http_requests_total" in metrics_response.text
+    assert "lead_factory_http_request_duration_seconds" in metrics_response.text
+
 
 def test_update_metrics(mock_cost_data, mock_budget_data):
     """Test the update_metrics function."""
-    with patch('utils.metrics.get_cost_breakdown_by_service') as mock_get_costs, \
-         patch('utils.metrics.check_budget_thresholds') as mock_budget, \
-         patch('utils.metrics.is_scaling_gate_active') as mock_gate:
-        
+    with patch("utils.metrics.get_cost_breakdown_by_service") as mock_get_costs, patch(
+        "utils.metrics.check_budget_thresholds"
+    ) as mock_budget, patch("utils.metrics.is_scaling_gate_active") as mock_gate:
         # Setup mocks
         mock_get_costs.return_value = mock_cost_data
         mock_budget.return_value = mock_budget_data
-        mock_gate.return_value = (False, 'Below threshold')
-        
+        mock_gate.return_value = (False, "Below threshold")
+
         # Call the function
         update_metrics()
-        
+
         # Verify the mocks were called
         assert mock_get_costs.call_count == 2  # Called once for daily, once for monthly
         mock_budget.assert_called_once()

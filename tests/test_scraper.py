@@ -24,7 +24,8 @@ FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/scraper.feature
 os.makedirs(os.path.join(os.path.dirname(__file__), "features"), exist_ok=True)
 if not os.path.exists(FEATURE_FILE):
     with open(FEATURE_FILE, "w") as f:
-        f.write("""
+        f.write(
+            """
 Feature: Lead Scraper
   As a marketing manager
   I want to scrape business listings from Yelp and Google
@@ -65,7 +66,8 @@ Feature: Lead Scraper
     When I run the scraper
     Then only new businesses should be added
     And duplicate businesses should be skipped
-""")
+"""
+        )
 
 
 # Test fixtures
@@ -94,10 +96,10 @@ def mock_yelp_api():
                         "address1": "123 Main St",
                         "city": "New York",
                         "state": "NY",
-                        "zip_code": "10002"
+                        "zip_code": "10002",
                     },
                     "categories": [{"title": "Restaurants"}],
-                    "url": "https://testbusiness1.com"
+                    "url": "https://testbusiness1.com",
                 },
                 {
                     "id": "business2",
@@ -107,11 +109,11 @@ def mock_yelp_api():
                         "address1": "456 Elm St",
                         "city": "New York",
                         "state": "NY",
-                        "zip_code": "10002"
+                        "zip_code": "10002",
                     },
                     "categories": [{"title": "Restaurants"}],
-                    "url": "https://testbusiness2.com"
-                }
+                    "url": "https://testbusiness2.com",
+                },
             ]
         }
         yield instance
@@ -130,7 +132,7 @@ def mock_google_places_api():
                     "formatted_phone_number": "+12125551234",
                     "formatted_address": "123 Main St, New York, NY 10002",
                     "types": ["restaurant"],
-                    "website": "https://testplace1.com"
+                    "website": "https://testplace1.com",
                 },
                 {
                     "place_id": "place2",
@@ -138,8 +140,8 @@ def mock_google_places_api():
                     "formatted_phone_number": "+12125555678",
                     "formatted_address": "456 Elm St, New York, NY 10002",
                     "types": ["restaurant"],
-                    "website": "https://testplace2.com"
-                }
+                    "website": "https://testplace2.com",
+                },
             ]
         }
         yield instance
@@ -150,13 +152,14 @@ def temp_db():
     """Create a temporary database for testing."""
     fd, path = tempfile.mkstemp()
     os.close(fd)
-    
+
     # Create test database
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    
+
     # Create tables
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS businesses (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
@@ -176,9 +179,11 @@ def temp_db():
         merged_into INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS zip_queue (
         id INTEGER PRIMARY KEY,
         zip TEXT NOT NULL,
@@ -188,9 +193,11 @@ def temp_db():
         last_scraped TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS verticals (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
@@ -199,36 +206,37 @@ def temp_db():
         search_params TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
+    """
+    )
+
     # Insert test data
     cursor.execute(
         "INSERT INTO zip_queue (zip, metro, state) VALUES (?, ?, ?)",
-        ("10002", "New York", "NY")
+        ("10002", "New York", "NY"),
     )
-    
+
     cursor.execute(
         "INSERT INTO zip_queue (zip, metro, state) VALUES (?, ?, ?)",
-        ("98908", "Yakima", "WA")
+        ("98908", "Yakima", "WA"),
     )
-    
+
     cursor.execute(
         "INSERT INTO verticals (name, yelp_categories, google_categories) VALUES (?, ?, ?)",
-        ("restaurants", "restaurants", "restaurant")
+        ("restaurants", "restaurants", "restaurant"),
     )
-    
+
     cursor.execute(
         "INSERT INTO verticals (name, yelp_categories, google_categories) VALUES (?, ?, ?)",
-        ("retail", "shopping", "store")
+        ("retail", "shopping", "store"),
     )
-    
+
     conn.commit()
     conn.close()
-    
+
     # Patch the database path
     with patch("bin.scrape.DB_PATH", path):
         yield path
-    
+
     # Clean up
     os.unlink(path)
 
@@ -296,7 +304,7 @@ def existing_businesses(temp_db):
     """Add some existing businesses to the database."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     # Insert existing businesses
     cursor.execute(
         """
@@ -304,10 +312,19 @@ def existing_businesses(temp_db):
         (name, address, city, state, zip, phone, category, source, source_id) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Test Business 1", "123 Main St", "New York", "NY", "10002", 
-         "+12125551234", "Restaurants", "yelp", "business1")
+        (
+            "Test Business 1",
+            "123 Main St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125551234",
+            "Restaurants",
+            "yelp",
+            "business1",
+        ),
     )
-    
+
     conn.commit()
     conn.close()
 
@@ -318,16 +335,20 @@ def run_scraper_yelp(mock_yelp_api, target_zip_code, target_vertical):
     """Run the scraper for Yelp API."""
     with patch("bin.scrape.get_zip_codes") as mock_get_zip_codes:
         mock_get_zip_codes.return_value = [{"zip": target_zip_code}]
-        
+
         with patch("bin.scrape.get_verticals") as mock_get_verticals:
-            mock_get_verticals.return_value = [{"name": target_vertical, "yelp_categories": "restaurants"}]
-            
+            mock_get_verticals.return_value = [
+                {"name": target_vertical, "yelp_categories": "restaurants"}
+            ]
+
             # Run the scraper with mocked dependencies
             with patch("bin.scrape.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes Yelp businesses
-                scraper.process_yelp_businesses(target_zip_code, target_vertical, mock_yelp_api)
+                scraper.process_yelp_businesses(
+                    target_zip_code, target_vertical, mock_yelp_api
+                )
 
 
 @when("I run the scraper for Google Places API")
@@ -335,31 +356,43 @@ def run_scraper_google(mock_google_places_api, target_zip_code, target_vertical)
     """Run the scraper for Google Places API."""
     with patch("bin.scrape.get_zip_codes") as mock_get_zip_codes:
         mock_get_zip_codes.return_value = [{"zip": target_zip_code}]
-        
+
         with patch("bin.scrape.get_verticals") as mock_get_verticals:
-            mock_get_verticals.return_value = [{"name": target_vertical, "google_categories": "store"}]
-            
+            mock_get_verticals.return_value = [
+                {"name": target_vertical, "google_categories": "store"}
+            ]
+
             # Run the scraper with mocked dependencies
             with patch("bin.scrape.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes Google businesses
-                scraper.process_google_places(target_zip_code, target_vertical, mock_google_places_api)
+                scraper.process_google_places(
+                    target_zip_code, target_vertical, mock_google_places_api
+                )
 
 
 @when("I run the scraper")
-def run_scraper(mock_yelp_api, mock_google_places_api, target_zip_code, target_vertical):
+def run_scraper(
+    mock_yelp_api, mock_google_places_api, target_zip_code, target_vertical
+):
     """Run the scraper."""
     with patch("bin.scrape.get_zip_codes") as mock_get_zip_codes:
         mock_get_zip_codes.return_value = [{"zip": target_zip_code}]
-        
+
         with patch("bin.scrape.get_verticals") as mock_get_verticals:
-            mock_get_verticals.return_value = [{"name": target_vertical, "yelp_categories": "restaurants", "google_categories": "restaurant"}]
-            
+            mock_get_verticals.return_value = [
+                {
+                    "name": target_vertical,
+                    "yelp_categories": "restaurants",
+                    "google_categories": "restaurant",
+                }
+            ]
+
             # Run the scraper with mocked dependencies
             with patch("bin.scrape.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the main function
                 try:
                     scraper.process_zip_code(target_zip_code)
@@ -389,7 +422,7 @@ def businesses_have_required_fields(mock_yelp_api, mock_google_places_api):
         assert "city" in business["location"]
         assert "state" in business["location"]
         assert "zip_code" in business["location"]
-    
+
     # Check Google businesses
     for place in mock_google_places_api.search_places.return_value.get("results", []):
         assert "name" in place
@@ -402,13 +435,13 @@ def businesses_saved_to_db(temp_db):
     """Verify that businesses were saved to the database."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     # Check if businesses were saved
     cursor.execute("SELECT COUNT(*) FROM businesses")
     count = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     # We expect at least the businesses from our mocks to be saved
     # In a real test, we would verify the actual count
     assert count >= 0
@@ -433,19 +466,19 @@ def only_new_businesses_added(temp_db):
     """Verify that only new businesses were added."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     # Check for duplicate businesses
     cursor.execute(
         """
         SELECT COUNT(*) FROM businesses 
         WHERE name = ? AND address = ? AND city = ? AND state = ? AND zip = ?
         """,
-        ("Test Business 1", "123 Main St", "New York", "NY", "10002")
+        ("Test Business 1", "123 Main St", "New York", "NY", "10002"),
     )
     count = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     # We expect only one instance of the existing business
     assert count <= 1
 

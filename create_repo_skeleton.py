@@ -7,15 +7,7 @@ import os
 from pathlib import Path
 
 # Define the directory structure
-DIRS = [
-    "bin",
-    "utils",
-    "etc",
-    "tests",
-    "db/migrations",
-    "db/seeds",
-    "tmp"
-]
+DIRS = ["bin", "utils", "etc", "tests", "db/migrations", "db/seeds", "tmp"]
 
 # Define stub files to create
 STUBS = {
@@ -55,8 +47,9 @@ ENVIRONMENT=development
 # Budget Settings
 DAILY_BUDGET_LIMIT=100.0
 MONTHLY_BUDGET_LIMIT=2000.0
-"""
+""",
 }
+
 
 def create_skeleton():
     """Create the directory structure and stub files."""
@@ -64,18 +57,19 @@ def create_skeleton():
     for directory in DIRS:
         Path(directory).mkdir(parents=True, exist_ok=True)
         print(f"Created directory: {directory}")
-    
+
     # Create stub files
     for file_path, content in STUBS.items():
         if not Path(file_path).exists():
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 f.write(content)
             print(f"Created file: {file_path}")
-    
+
     # Make scripts executable
-    for script in Path('bin').glob('*.py'):
+    for script in Path("bin").glob("*.py"):
         script.chmod(0o755)
         print(f"Made executable: {script}")
+
 
 if __name__ == "__main__":
     create_skeleton()

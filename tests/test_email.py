@@ -25,7 +25,8 @@ FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/email_queue.fea
 os.makedirs(os.path.join(os.path.dirname(__file__), "features"), exist_ok=True)
 if not os.path.exists(FEATURE_FILE):
     with open(FEATURE_FILE, "w") as f:
-        f.write("""
+        f.write(
+            """
 Feature: Email Queue
   As a marketing manager
   I want to send personalized emails to potential leads
@@ -79,14 +80,15 @@ Feature: Email Queue
     Then the email should be prepared but not sent
     And the process should log the email content
     And no cost should be tracked
-""")
+"""
+        )
 
 
 # Sample email response for testing
 SAMPLE_EMAIL_RESPONSE = {
     "id": "test-email-id-123",
     "status": "sent",
-    "tracking_id": "tracking-123"
+    "tracking_id": "tracking-123",
 }
 
 
@@ -124,13 +126,14 @@ def temp_db():
     """Create a temporary database for testing."""
     fd, path = tempfile.mkstemp()
     os.close(fd)
-    
+
     # Create test database
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    
+
     # Create tables
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS businesses (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
@@ -154,9 +157,11 @@ def temp_db():
         merged_into INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS mockups (
         id INTEGER PRIMARY KEY,
         business_id INTEGER NOT NULL,
@@ -168,9 +173,11 @@ def temp_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (business_id) REFERENCES businesses(id)
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS emails (
         id INTEGER PRIMARY KEY,
         business_id INTEGER NOT NULL,
@@ -188,9 +195,11 @@ def temp_db():
         FOREIGN KEY (business_id) REFERENCES businesses(id),
         FOREIGN KEY (mockup_id) REFERENCES mockups(id)
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS cost_tracking (
         id INTEGER PRIMARY KEY,
         operation TEXT NOT NULL,
@@ -199,8 +208,9 @@ def temp_db():
         details TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
+    """
+    )
+
     # Insert test data
     # Business with mockup
     cursor.execute(
@@ -209,38 +219,53 @@ def temp_db():
         (name, address, city, state, zip, phone, email, website, category, score, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Business With Mockup", "123 Main St", "New York", "NY", "10002", 
-         "+12125551234", "contact@mockupbiz.com", "https://mockupbiz.com", 
-         "Restaurants", 90, "active")
+        (
+            "Business With Mockup",
+            "123 Main St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125551234",
+            "contact@mockupbiz.com",
+            "https://mockupbiz.com",
+            "Restaurants",
+            90,
+            "active",
+        ),
     )
     business_id = cursor.lastrowid
-    
+
     cursor.execute(
         """
         INSERT INTO mockups 
         (business_id, mockup_type, improvements, visual_mockup, html_snippet, model_used) 
         VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (business_id, "premium", 
-         json.dumps([
-             {
-                 "title": "Improve Page Load Speed",
-                 "description": "Your website currently takes 4.5 seconds to load. We can reduce this to under 2 seconds by optimizing images and implementing lazy loading.",
-                 "impact": "High",
-                 "implementation_difficulty": "Medium"
-             },
-             {
-                 "title": "Mobile Responsiveness",
-                 "description": "Your website is not fully responsive on mobile devices. We can implement a responsive design that works seamlessly across all device sizes.",
-                 "impact": "High",
-                 "implementation_difficulty": "Medium"
-             }
-         ]),
-         base64.b64encode(b"Mock image data").decode('utf-8'),
-         "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>",
-         "gpt-4o")
+        (
+            business_id,
+            "premium",
+            json.dumps(
+                [
+                    {
+                        "title": "Improve Page Load Speed",
+                        "description": "Your website currently takes 4.5 seconds to load. We can reduce this to under 2 seconds by optimizing images and implementing lazy loading.",
+                        "impact": "High",
+                        "implementation_difficulty": "Medium",
+                    },
+                    {
+                        "title": "Mobile Responsiveness",
+                        "description": "Your website is not fully responsive on mobile devices. We can implement a responsive design that works seamlessly across all device sizes.",
+                        "impact": "High",
+                        "implementation_difficulty": "Medium",
+                    },
+                ]
+            ),
+            base64.b64encode(b"Mock image data").decode("utf-8"),
+            "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>",
+            "gpt-4o",
+        ),
     )
-    
+
     # Business without mockup
     cursor.execute(
         """
@@ -248,11 +273,21 @@ def temp_db():
         (name, address, city, state, zip, phone, email, website, category, score, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Business Without Mockup", "456 Elm St", "New York", "NY", "10002", 
-         "+12125555678", "contact@nomockup.com", "https://nomockup.com", 
-         "Retail", 75, "active")
+        (
+            "Business Without Mockup",
+            "456 Elm St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125555678",
+            "contact@nomockup.com",
+            "https://nomockup.com",
+            "Retail",
+            75,
+            "active",
+        ),
     )
-    
+
     # Multiple businesses with mockups for testing limits
     for i in range(5):
         cursor.execute(
@@ -261,32 +296,47 @@ def temp_db():
             (name, address, city, state, zip, phone, email, website, category, score, status) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (f"Limit Test Business {i+1}", f"{i+1}00 Limit St", "New York", "NY", "10002", 
-             f"+1212555{i+1000}", f"contact@limit{i+1}.com", f"https://limit{i+1}.com", 
-             "Services", 80, "active")
+            (
+                f"Limit Test Business {i+1}",
+                f"{i+1}00 Limit St",
+                "New York",
+                "NY",
+                "10002",
+                f"+1212555{i+1000}",
+                f"contact@limit{i+1}.com",
+                f"https://limit{i+1}.com",
+                "Services",
+                80,
+                "active",
+            ),
         )
         business_id = cursor.lastrowid
-        
+
         cursor.execute(
             """
             INSERT INTO mockups 
             (business_id, mockup_type, improvements, visual_mockup, html_snippet, model_used) 
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (business_id, "standard", 
-             json.dumps([
-                 {
-                     "title": f"Improvement {i+1}",
-                     "description": f"Description {i+1}",
-                     "impact": "Medium",
-                     "implementation_difficulty": "Medium"
-                 }
-             ]),
-             base64.b64encode(f"Mock image data {i+1}".encode()).decode('utf-8'),
-             f"<div>HTML Snippet {i+1}</div>",
-             "gpt-4o")
+            (
+                business_id,
+                "standard",
+                json.dumps(
+                    [
+                        {
+                            "title": f"Improvement {i+1}",
+                            "description": f"Description {i+1}",
+                            "impact": "Medium",
+                            "implementation_difficulty": "Medium",
+                        }
+                    ]
+                ),
+                base64.b64encode(f"Mock image data {i+1}".encode()).decode("utf-8"),
+                f"<div>HTML Snippet {i+1}</div>",
+                "gpt-4o",
+            ),
         )
-    
+
     # Business with high bounce rate domain
     cursor.execute(
         """
@@ -294,39 +344,54 @@ def temp_db():
         (name, address, city, state, zip, phone, email, website, category, score, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("High Bounce Rate Business", "789 Oak St", "New York", "NY", "10002", 
-         "+12125559012", "contact@highbounce.com", "https://highbounce.com", 
-         "Services", 85, "active")
+        (
+            "High Bounce Rate Business",
+            "789 Oak St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125559012",
+            "contact@highbounce.com",
+            "https://highbounce.com",
+            "Services",
+            85,
+            "active",
+        ),
     )
     business_id = cursor.lastrowid
-    
+
     cursor.execute(
         """
         INSERT INTO mockups 
         (business_id, mockup_type, improvements, visual_mockup, html_snippet, model_used) 
         VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (business_id, "premium", 
-         json.dumps([
-             {
-                 "title": "Bounce Rate Improvement",
-                 "description": "Description for high bounce rate business",
-                 "impact": "High",
-                 "implementation_difficulty": "Low"
-             }
-         ]),
-         base64.b64encode(b"Bounce rate mock image").decode('utf-8'),
-         "<div>Bounce rate HTML</div>",
-         "gpt-4o")
+        (
+            business_id,
+            "premium",
+            json.dumps(
+                [
+                    {
+                        "title": "Bounce Rate Improvement",
+                        "description": "Description for high bounce rate business",
+                        "impact": "High",
+                        "implementation_difficulty": "Low",
+                    }
+                ]
+            ),
+            base64.b64encode(b"Bounce rate mock image").decode("utf-8"),
+            "<div>Bounce rate HTML</div>",
+            "gpt-4o",
+        ),
     )
-    
+
     conn.commit()
     conn.close()
-    
+
     # Patch the database path
     with patch("bin.email_queue.DB_PATH", path):
         yield path
-    
+
     # Clean up
     os.unlink(path)
 
@@ -386,12 +451,12 @@ def business_with_mockup(temp_db):
     """Get a high-scoring business with mockup data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Business With Mockup'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -400,12 +465,12 @@ def business_without_mockup(temp_db):
     """Get a business without mockup data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Business Without Mockup'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -414,16 +479,18 @@ def any_business_with_mockup(temp_db):
     """Get any business with mockup data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
-    cursor.execute("""
+
+    cursor.execute(
+        """
         SELECT b.id FROM businesses b
         JOIN mockups m ON b.id = m.business_id
         LIMIT 1
-    """)
+    """
+    )
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -438,20 +505,22 @@ def multiple_businesses_with_mockup(temp_db):
     """Get multiple businesses with mockup data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
-    cursor.execute("""
+
+    cursor.execute(
+        """
         SELECT b.id FROM businesses b
         JOIN mockups m ON b.id = m.business_id
         WHERE b.name LIKE 'Limit Test Business%'
-    """)
+    """
+    )
     business_ids = [row[0] for row in cursor.fetchall()]
-    
+
     conn.close()
-    
+
     return business_ids
 
 
-@given(parsers.parse('the daily email limit is set to {limit:d}'))
+@given(parsers.parse("the daily email limit is set to {limit:d}"))
 def daily_email_limit(limit):
     """Set the daily email limit."""
     with patch("bin.email_queue.DAILY_EMAIL_LIMIT", limit):
@@ -463,12 +532,12 @@ def business_with_high_bounce_rate(temp_db):
     """Get a business with a high bounce rate domain."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'High Bounce Rate Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     # Patch the bounce rate checker to return True for this domain
     with patch("bin.email_queue.check_domain_bounce_rate") as mock_check_bounce:
         mock_check_bounce.return_value = True
@@ -480,38 +549,42 @@ def business_with_high_bounce_rate(temp_db):
 def run_email_queue(mock_sendgrid_client, mock_cost_tracker, business_with_mockup):
     """Run the email queue process."""
     with patch("bin.email_queue.get_businesses_for_email") as mock_get_businesses:
-        mock_get_businesses.return_value = [{
-            "id": business_with_mockup,
-            "name": "Business With Mockup",
-            "email": "contact@mockupbiz.com",
-            "mockup_id": 1,
-            "mockup_data": {
-                "improvements": [
-                    {
-                        "title": "Improve Page Load Speed",
-                        "description": "Your website currently takes 4.5 seconds to load. We can reduce this to under 2 seconds by optimizing images and implementing lazy loading.",
-                        "impact": "High",
-                        "implementation_difficulty": "Medium"
-                    },
-                    {
-                        "title": "Mobile Responsiveness",
-                        "description": "Your website is not fully responsive on mobile devices. We can implement a responsive design that works seamlessly across all device sizes.",
-                        "impact": "High",
-                        "implementation_difficulty": "Medium"
-                    }
-                ],
-                "visual_mockup": base64.b64encode(b"Mock image data").decode('utf-8'),
-                "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>"
+        mock_get_businesses.return_value = [
+            {
+                "id": business_with_mockup,
+                "name": "Business With Mockup",
+                "email": "contact@mockupbiz.com",
+                "mockup_id": 1,
+                "mockup_data": {
+                    "improvements": [
+                        {
+                            "title": "Improve Page Load Speed",
+                            "description": "Your website currently takes 4.5 seconds to load. We can reduce this to under 2 seconds by optimizing images and implementing lazy loading.",
+                            "impact": "High",
+                            "implementation_difficulty": "Medium",
+                        },
+                        {
+                            "title": "Mobile Responsiveness",
+                            "description": "Your website is not fully responsive on mobile devices. We can implement a responsive design that works seamlessly across all device sizes.",
+                            "impact": "High",
+                            "implementation_difficulty": "Medium",
+                        },
+                    ],
+                    "visual_mockup": base64.b64encode(b"Mock image data").decode(
+                        "utf-8"
+                    ),
+                    "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>",
+                },
             }
-        }]
-        
+        ]
+
         with patch("bin.email_queue.save_email_record") as mock_save_email:
             mock_save_email.return_value = True
-            
+
             # Run the email queue process
             with patch("bin.email_queue.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes a single business
                 try:
                     email_queue.process_business_email(business_with_mockup)
@@ -521,32 +594,38 @@ def run_email_queue(mock_sendgrid_client, mock_cost_tracker, business_with_mocku
 
 
 @when("I run the email queue process in dry run mode")
-def run_email_queue_dry_run(mock_sendgrid_client, mock_cost_tracker, business_with_mockup):
+def run_email_queue_dry_run(
+    mock_sendgrid_client, mock_cost_tracker, business_with_mockup
+):
     """Run the email queue process in dry run mode."""
     with patch("bin.email_queue.get_businesses_for_email") as mock_get_businesses:
-        mock_get_businesses.return_value = [{
-            "id": business_with_mockup,
-            "name": "Business With Mockup",
-            "email": "contact@mockupbiz.com",
-            "mockup_id": 1,
-            "mockup_data": {
-                "improvements": [
-                    {
-                        "title": "Improve Page Load Speed",
-                        "description": "Your website currently takes 4.5 seconds to load. We can reduce this to under 2 seconds by optimizing images and implementing lazy loading.",
-                        "impact": "High",
-                        "implementation_difficulty": "Medium"
-                    }
-                ],
-                "visual_mockup": base64.b64encode(b"Mock image data").decode('utf-8'),
-                "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>"
+        mock_get_businesses.return_value = [
+            {
+                "id": business_with_mockup,
+                "name": "Business With Mockup",
+                "email": "contact@mockupbiz.com",
+                "mockup_id": 1,
+                "mockup_data": {
+                    "improvements": [
+                        {
+                            "title": "Improve Page Load Speed",
+                            "description": "Your website currently takes 4.5 seconds to load. We can reduce this to under 2 seconds by optimizing images and implementing lazy loading.",
+                            "impact": "High",
+                            "implementation_difficulty": "Medium",
+                        }
+                    ],
+                    "visual_mockup": base64.b64encode(b"Mock image data").decode(
+                        "utf-8"
+                    ),
+                    "html_snippet": "<div class='improved-section'><h2>Improved Section</h2><p>This is how your website could look with our improvements.</p></div>",
+                },
             }
-        }]
-        
+        ]
+
         # Run the email queue process in dry run mode
         with patch("bin.email_queue.main") as mock_main:
             mock_main.return_value = 0
-            
+
             # Call the function that processes a single business in dry run mode
             try:
                 email_queue.process_business_email(business_with_mockup, dry_run=True)
@@ -632,7 +711,7 @@ def process_continues():
     assert True
 
 
-@then(parsers.parse('only {count:d} emails should be sent'))
+@then(parsers.parse("only {count:d} emails should be sent"))
 def only_n_emails_sent(mock_sendgrid_client, count):
     """Verify that only n emails were sent."""
     # In a real test, we would check the number of emails sent

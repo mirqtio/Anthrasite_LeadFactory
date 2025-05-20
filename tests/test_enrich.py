@@ -24,7 +24,8 @@ FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/enrichment.feat
 os.makedirs(os.path.join(os.path.dirname(__file__), "features"), exist_ok=True)
 if not os.path.exists(FEATURE_FILE):
     with open(FEATURE_FILE, "w") as f:
-        f.write("""
+        f.write(
+            """
 Feature: Lead Enrichment
   As a marketing manager
   I want to enrich business data with additional information
@@ -67,7 +68,8 @@ Feature: Lead Enrichment
     Given multiple businesses with different scores
     When I run the enrichment process with prioritization
     Then businesses should be processed in descending score order
-""")
+"""
+        )
 
 
 # Test fixtures
@@ -92,16 +94,16 @@ def mock_website_analyzer():
                 "load_time": 2.5,
                 "page_size": 1024,
                 "requests": 45,
-                "lighthouse_score": 65
+                "lighthouse_score": 65,
             },
             "contact_info": {
                 "email": "contact@testbusiness.com",
                 "phone": "+12125551234",
                 "social_media": {
                     "facebook": "https://facebook.com/testbusiness",
-                    "twitter": "https://twitter.com/testbusiness"
-                }
-            }
+                    "twitter": "https://twitter.com/testbusiness",
+                },
+            },
         }
         yield instance
 
@@ -116,8 +118,8 @@ def mock_contact_finder():
             "phone": "+12125551234",
             "social_media": {
                 "facebook": "https://facebook.com/testbusiness",
-                "twitter": "https://twitter.com/testbusiness"
-            }
+                "twitter": "https://twitter.com/testbusiness",
+            },
         }
         yield instance
 
@@ -127,13 +129,14 @@ def temp_db():
     """Create a temporary database for testing."""
     fd, path = tempfile.mkstemp()
     os.close(fd)
-    
+
     # Create test database
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    
+
     # Create tables
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS businesses (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
@@ -157,9 +160,11 @@ def temp_db():
         merged_into INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
-    cursor.execute("""
+    """
+    )
+
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS features (
         id INTEGER PRIMARY KEY,
         business_id INTEGER NOT NULL,
@@ -168,8 +173,9 @@ def temp_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (business_id) REFERENCES businesses(id)
     )
-    """)
-    
+    """
+    )
+
     # Insert test data
     cursor.execute(
         """
@@ -177,31 +183,64 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, source, source_id, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Test Business With Website", "123 Main St", "New York", "NY", "10002", 
-         "+12125551234", "https://testbusiness.com", "Restaurants", "yelp", "business1", "active")
+        (
+            "Test Business With Website",
+            "123 Main St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125551234",
+            "https://testbusiness.com",
+            "Restaurants",
+            "yelp",
+            "business1",
+            "active",
+        ),
     )
-    
+
     cursor.execute(
         """
         INSERT INTO businesses 
         (name, address, city, state, zip, phone, website, category, source, source_id, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Test Business Without Website", "456 Elm St", "New York", "NY", "10002", 
-         "+12125555678", "", "Restaurants", "yelp", "business2", "active")
+        (
+            "Test Business Without Website",
+            "456 Elm St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125555678",
+            "",
+            "Restaurants",
+            "yelp",
+            "business2",
+            "active",
+        ),
     )
-    
+
     cursor.execute(
         """
         INSERT INTO businesses 
         (name, address, city, state, zip, phone, website, category, source, source_id, status, tech_stack, enriched_at) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         """,
-        ("Already Enriched Business", "789 Oak St", "New York", "NY", "10002", 
-         "+12125559012", "https://enriched.com", "Restaurants", "yelp", "business3", "active", 
-         json.dumps(["WordPress", "PHP"]))
+        (
+            "Already Enriched Business",
+            "789 Oak St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125559012",
+            "https://enriched.com",
+            "Restaurants",
+            "yelp",
+            "business3",
+            "active",
+            json.dumps(["WordPress", "PHP"]),
+        ),
     )
-    
+
     # Insert businesses with different scores
     for i, score in enumerate([85, 92, 78, 65, 90]):
         cursor.execute(
@@ -210,17 +249,29 @@ def temp_db():
             (name, address, city, state, zip, phone, website, category, source, source_id, status, score) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (f"Scored Business {i+1}", f"{i+1}00 Score St", "New York", "NY", "10002", 
-             f"+1212555{i+1000}", f"https://scored{i+1}.com", "Restaurants", "yelp", f"scored{i+1}", "active", score)
+            (
+                f"Scored Business {i+1}",
+                f"{i+1}00 Score St",
+                "New York",
+                "NY",
+                "10002",
+                f"+1212555{i+1000}",
+                f"https://scored{i+1}.com",
+                "Restaurants",
+                "yelp",
+                f"scored{i+1}",
+                "active",
+                score,
+            ),
         )
-    
+
     conn.commit()
     conn.close()
-    
+
     # Patch the database path
     with patch("bin.enrich.DB_PATH", path):
         yield path
-    
+
     # Clean up
     os.unlink(path)
 
@@ -276,12 +327,14 @@ def business_with_website(temp_db):
     """Get a business with a website."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT id FROM businesses WHERE website != '' AND enriched_at IS NULL LIMIT 1")
+
+    cursor.execute(
+        "SELECT id FROM businesses WHERE website != '' AND enriched_at IS NULL LIMIT 1"
+    )
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -290,12 +343,14 @@ def business_without_website(temp_db):
     """Get a business without a website."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT id FROM businesses WHERE website = '' AND enriched_at IS NULL LIMIT 1")
+
+    cursor.execute(
+        "SELECT id FROM businesses WHERE website = '' AND enriched_at IS NULL LIMIT 1"
+    )
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -311,12 +366,12 @@ def already_enriched_business(temp_db):
     """Get a business that has already been enriched."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE enriched_at IS NOT NULL LIMIT 1")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -325,12 +380,14 @@ def businesses_with_scores(temp_db):
     """Get businesses with different scores."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT id, score FROM businesses WHERE score IS NOT NULL ORDER BY score DESC")
+
+    cursor.execute(
+        "SELECT id, score FROM businesses WHERE score IS NOT NULL ORDER BY score DESC"
+    )
     businesses = cursor.fetchall()
-    
+
     conn.close()
-    
+
     return businesses
 
 
@@ -342,16 +399,16 @@ def run_enrichment(mock_website_analyzer, mock_contact_finder, business_with_web
         mock_get_business.return_value = {
             "id": business_with_website,
             "name": "Test Business",
-            "website": "https://testbusiness.com"
+            "website": "https://testbusiness.com",
         }
-        
+
         with patch("bin.enrich.update_business") as mock_update_business:
             mock_update_business.return_value = True
-            
+
             # Run the enrichment process
             with patch("bin.enrich.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes a single business
                 try:
                     enrich.process_business(business_with_website)
@@ -361,20 +418,22 @@ def run_enrichment(mock_website_analyzer, mock_contact_finder, business_with_web
 
 
 @when("I run the enrichment process with prioritization")
-def run_enrichment_prioritized(mock_website_analyzer, mock_contact_finder, businesses_with_scores):
+def run_enrichment_prioritized(
+    mock_website_analyzer, mock_contact_finder, businesses_with_scores
+):
     """Run the enrichment process with prioritization."""
     with patch("bin.enrich.get_businesses_to_enrich") as mock_get_businesses:
         mock_get_businesses.return_value = [
             {"id": id, "score": score} for id, score in businesses_with_scores
         ]
-        
+
         with patch("bin.enrich.update_business") as mock_update_business:
             mock_update_business.return_value = True
-            
+
             # Run the enrichment process
             with patch("bin.enrich.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes businesses in order
                 try:
                     enrich.process_businesses(limit=10, prioritize=True)
@@ -396,7 +455,9 @@ def has_performance_metrics(mock_website_analyzer):
     """Verify that the business has performance metrics."""
     assert "performance" in mock_website_analyzer.analyze.return_value
     assert "load_time" in mock_website_analyzer.analyze.return_value["performance"]
-    assert "lighthouse_score" in mock_website_analyzer.analyze.return_value["performance"]
+    assert (
+        "lighthouse_score" in mock_website_analyzer.analyze.return_value["performance"]
+    )
 
 
 @then("the business should have contact information")

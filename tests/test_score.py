@@ -25,7 +25,8 @@ FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/scoring.feature
 os.makedirs(os.path.join(os.path.dirname(__file__), "features"), exist_ok=True)
 if not os.path.exists(FEATURE_FILE):
     with open(FEATURE_FILE, "w") as f:
-        f.write("""
+        f.write(
+            """
 Feature: Lead Scoring
   As a marketing manager
   I want to score leads based on defined rules
@@ -69,7 +70,8 @@ Feature: Lead Scoring
     Then the business should receive weighted points for each matching rule
     And the final score should be the sum of all weighted points
     And the score details should include all applied rules
-""")
+"""
+        )
 
 
 # Sample scoring rules for testing
@@ -79,14 +81,14 @@ SAMPLE_SCORING_RULES = {
             "description": "WordPress CMS",
             "points": 10,
             "condition": "contains",
-            "value": "WordPress"
+            "value": "WordPress",
         },
         "old_php": {
             "description": "Outdated PHP version",
             "points": 15,
             "condition": "contains",
-            "value": "PHP 5"
-        }
+            "value": "PHP 5",
+        },
     },
     "performance": {
         "slow_load_time": {
@@ -94,15 +96,15 @@ SAMPLE_SCORING_RULES = {
             "points": 20,
             "condition": "greater_than",
             "field": "load_time",
-            "value": 3.0
+            "value": 3.0,
         },
         "poor_lighthouse": {
             "description": "Poor Lighthouse score",
             "points": 15,
             "condition": "less_than",
             "field": "lighthouse_score",
-            "value": 70
-        }
+            "value": 70,
+        },
     },
     "location": {
         "target_zip": {
@@ -110,14 +112,10 @@ SAMPLE_SCORING_RULES = {
             "points": 10,
             "condition": "in",
             "field": "zip",
-            "value": ["10002", "98908", "46220"]
+            "value": ["10002", "98908", "46220"],
         }
     },
-    "weights": {
-        "tech_stack": 1.0,
-        "performance": 1.2,
-        "location": 0.8
-    }
+    "weights": {"tech_stack": 1.0, "performance": 1.2, "location": 0.8},
 }
 
 
@@ -145,13 +143,14 @@ def temp_db():
     """Create a temporary database for testing."""
     fd, path = tempfile.mkstemp()
     os.close(fd)
-    
+
     # Create test database
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    
+
     # Create tables
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS businesses (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
@@ -175,8 +174,9 @@ def temp_db():
         merged_into INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    """)
-    
+    """
+    )
+
     # Insert test data
     # Business with WordPress in tech stack
     cursor.execute(
@@ -185,11 +185,20 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, tech_stack, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("WordPress Business", "123 Main St", "New York", "NY", "10002", 
-         "+12125551234", "https://wpbusiness.com", "Restaurants", 
-         json.dumps(["WordPress", "PHP 7", "MySQL"]), "active")
+        (
+            "WordPress Business",
+            "123 Main St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125551234",
+            "https://wpbusiness.com",
+            "Restaurants",
+            json.dumps(["WordPress", "PHP 7", "MySQL"]),
+            "active",
+        ),
     )
-    
+
     # Business with poor performance
     cursor.execute(
         """
@@ -197,16 +206,27 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, performance, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Slow Website Business", "456 Elm St", "New York", "NY", "10002", 
-         "+12125555678", "https://slowsite.com", "Retail", 
-         json.dumps({
-             "load_time": 4.5,
-             "page_size": 3072,
-             "requests": 85,
-             "lighthouse_score": 45
-         }), "active")
+        (
+            "Slow Website Business",
+            "456 Elm St",
+            "New York",
+            "NY",
+            "10002",
+            "+12125555678",
+            "https://slowsite.com",
+            "Retail",
+            json.dumps(
+                {
+                    "load_time": 4.5,
+                    "page_size": 3072,
+                    "requests": 85,
+                    "lighthouse_score": 45,
+                }
+            ),
+            "active",
+        ),
     )
-    
+
     # Business in target location
     cursor.execute(
         """
@@ -214,10 +234,19 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Target Location Business", "789 Oak St", "Indianapolis", "IN", "46220", 
-         "+13175551234", "https://targetlocation.com", "Services", "active")
+        (
+            "Target Location Business",
+            "789 Oak St",
+            "Indianapolis",
+            "IN",
+            "46220",
+            "+13175551234",
+            "https://targetlocation.com",
+            "Services",
+            "active",
+        ),
     )
-    
+
     # Business with incomplete data
     cursor.execute(
         """
@@ -225,10 +254,19 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Incomplete Data Business", "101 Pine St", "New York", "NY", "10003", 
-         "+12125556780", "https://incomplete.com", "Services", "active")
+        (
+            "Incomplete Data Business",
+            "101 Pine St",
+            "New York",
+            "NY",
+            "10003",
+            "+12125556780",
+            "https://incomplete.com",
+            "Services",
+            "active",
+        ),
     )
-    
+
     # Business matching multiple rules
     cursor.execute(
         """
@@ -236,24 +274,35 @@ def temp_db():
         (name, address, city, state, zip, phone, website, category, tech_stack, performance, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("Multi-Rule Business", "222 Maple St", "Yakima", "WA", "98908", 
-         "+15095552222", "https://multirule.com", "Healthcare", 
-         json.dumps(["WordPress", "PHP 5", "MySQL"]),
-         json.dumps({
-             "load_time": 3.5,
-             "page_size": 2048,
-             "requests": 65,
-             "lighthouse_score": 55
-         }), "active")
+        (
+            "Multi-Rule Business",
+            "222 Maple St",
+            "Yakima",
+            "WA",
+            "98908",
+            "+15095552222",
+            "https://multirule.com",
+            "Healthcare",
+            json.dumps(["WordPress", "PHP 5", "MySQL"]),
+            json.dumps(
+                {
+                    "load_time": 3.5,
+                    "page_size": 2048,
+                    "requests": 65,
+                    "lighthouse_score": 55,
+                }
+            ),
+            "active",
+        ),
     )
-    
+
     conn.commit()
     conn.close()
-    
+
     # Patch the database path
     with patch("bin.score.DB_PATH", path):
         yield path
-    
+
     # Clean up
     os.unlink(path)
 
@@ -316,12 +365,12 @@ def business_with_wordpress(temp_db):
     """Get a business with WordPress in its tech stack."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'WordPress Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -330,12 +379,12 @@ def business_with_poor_performance(temp_db):
     """Get a business with poor performance metrics."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Slow Website Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -344,12 +393,12 @@ def business_in_target_location(temp_db):
     """Get a business in a target location."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Target Location Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -358,12 +407,12 @@ def business_with_incomplete_data(temp_db):
     """Get a business with incomplete data."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Incomplete Data Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -372,12 +421,12 @@ def business_matching_multiple_rules(temp_db):
     """Get a business matching multiple scoring rules."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id FROM businesses WHERE name = 'Multi-Rule Business'")
     business_id = cursor.fetchone()[0]
-    
+
     conn.close()
-    
+
     return business_id
 
 
@@ -386,21 +435,23 @@ def business_matching_multiple_rules(temp_db):
 def run_scoring_process(mock_scoring_rules, business_with_wordpress):
     """Run the scoring process."""
     with patch("bin.score.get_businesses_to_score") as mock_get_businesses:
-        mock_get_businesses.return_value = [{
-            "id": business_with_wordpress,
-            "name": "WordPress Business",
-            "tech_stack": ["WordPress", "PHP 7", "MySQL"],
-            "performance": None,
-            "zip": "10002"
-        }]
-        
+        mock_get_businesses.return_value = [
+            {
+                "id": business_with_wordpress,
+                "name": "WordPress Business",
+                "tech_stack": ["WordPress", "PHP 7", "MySQL"],
+                "performance": None,
+                "zip": "10002",
+            }
+        ]
+
         with patch("bin.score.update_business_score") as mock_update_score:
             mock_update_score.return_value = True
-            
+
             # Run the scoring process
             with patch("bin.score.main") as mock_main:
                 mock_main.return_value = 0
-                
+
                 # Call the function that processes a single business
                 try:
                     score.score_business(business_with_wordpress)
@@ -442,8 +493,12 @@ def points_for_poor_performance(mock_scoring_rules):
     # For this mock test, we'll just verify the rules exist
     assert "slow_load_time" in mock_scoring_rules.return_value["performance"]
     assert "poor_lighthouse" in mock_scoring_rules.return_value["performance"]
-    assert mock_scoring_rules.return_value["performance"]["slow_load_time"]["points"] > 0
-    assert mock_scoring_rules.return_value["performance"]["poor_lighthouse"]["points"] > 0
+    assert (
+        mock_scoring_rules.return_value["performance"]["slow_load_time"]["points"] > 0
+    )
+    assert (
+        mock_scoring_rules.return_value["performance"]["poor_lighthouse"]["points"] > 0
+    )
 
 
 @then("the score details should include performance information")
