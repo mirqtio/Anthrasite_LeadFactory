@@ -10,13 +10,15 @@ fastapi_available = False
 try:
     from fastapi.testclient import TestClient
     from utils.metrics import app, update_metrics
-    
+
     # Create test client
     client = TestClient(app)
     fastapi_available = True
 except ImportError:
     # Skip tests if fastapi is not available
-    pytest.skip("fastapi not installed, skipping metrics tests", allow_module_level=True)
+    pytest.skip(
+        "fastapi not installed, skipping metrics tests", allow_module_level=True
+    )
 
 
 @pytest.fixture

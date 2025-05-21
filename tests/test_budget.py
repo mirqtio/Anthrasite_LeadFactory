@@ -27,17 +27,17 @@ def test_monthly_cost_tracking():
 def test_budget_thresholds():
     """Test budget threshold checks."""
     thresholds = check_budget_thresholds()
-    
+
     # Check top-level keys
     required_top_keys = [
         "daily",
         "monthly",
         "any_threshold_exceeded",
-        "any_budget_exceeded"
+        "any_budget_exceeded",
     ]
     for key in required_top_keys:
         assert key in thresholds, f"Missing top-level key in thresholds: {key}"
-    
+
     # Check daily section keys
     required_daily_keys = [
         "cost",
@@ -45,11 +45,11 @@ def test_budget_thresholds():
         "threshold",
         "threshold_exceeded",
         "budget_exceeded",
-        "percent_used"
+        "percent_used",
     ]
     for key in required_daily_keys:
         assert key in thresholds["daily"], f"Missing key in daily thresholds: {key}"
-    
+
     # Check monthly section keys
     required_monthly_keys = [
         "cost",
@@ -57,7 +57,7 @@ def test_budget_thresholds():
         "threshold",
         "threshold_exceeded",
         "budget_exceeded",
-        "percent_used"
+        "percent_used",
     ]
     for key in required_monthly_keys:
         assert key in thresholds["monthly"], f"Missing key in monthly thresholds: {key}"

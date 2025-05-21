@@ -21,37 +21,38 @@ if bin_dir not in sys.path:
 
 # Create a MagicMock object instead of a regular function
 mock_track_api_cost = MagicMock(return_value=True)
-mock_track_api_cost.__name__ = 'mock_track_api_cost'
+mock_track_api_cost.__name__ = "mock_track_api_cost"
 
 
 # Create a mock for the Wappalyzer module
 class MockWappalyzer:
     def __init__(self, *args, **kwargs):
         pass
-        
+
     def analyze(self, *args, **kwargs):
         return {"technologies": []}
-    
+
     def analyze_with_categories(self, *args, **kwargs):
         return {"technologies": []}
-    
+
     @classmethod
     def latest(cls):
         return cls()
 
+
 class MockWebPage:
     def __init__(self, *args, **kwargs):
         pass
-    
+
     @classmethod
     def new_from_url(cls, url, **kwargs):
         return cls()
 
+
 # Patch the Wappalyzer module
-sys.modules['wappalyzer'] = type('wappalyzer', (), {
-    'Wappalyzer': MockWappalyzer,
-    'WebPage': MockWebPage
-})
+sys.modules["wappalyzer"] = type(
+    "wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage}
+)
 
 # Patch the track_api_cost function before importing modules that use it
 patch("utils.io.track_api_cost", mock_track_api_cost).start()

@@ -34,40 +34,42 @@ def scaling_gate_setup():
     """Set up test environment for scaling gate tests."""
     # Create a temporary directory for test files
     test_dir = tempfile.mkdtemp()
-    
+
     # Skip if SCALING_GATE_LOCKFILE or SCALING_GATE_HISTORY_FILE are not defined
-    if not hasattr(utils.cost_tracker, 'SCALING_GATE_LOCKFILE') or not hasattr(utils.cost_tracker, 'SCALING_GATE_HISTORY_FILE'):
+    if not hasattr(utils.cost_tracker, "SCALING_GATE_LOCKFILE") or not hasattr(
+        utils.cost_tracker, "SCALING_GATE_HISTORY_FILE"
+    ):
         pytest.skip("SCALING_GATE_LOCKFILE or SCALING_GATE_HISTORY_FILE not defined")
-    
+
     # Save original paths
     original_lockfile = utils.cost_tracker.SCALING_GATE_LOCKFILE
     original_history_file = utils.cost_tracker.SCALING_GATE_HISTORY_FILE
-    
+
     # Set up test paths
     test_lockfile = os.path.join(test_dir, "scaling_gate.lock")
     test_history_file = os.path.join(test_dir, "scaling_gate_history.json")
-    
+
     # Override paths for testing
     utils.cost_tracker.SCALING_GATE_LOCKFILE = test_lockfile
     utils.cost_tracker.SCALING_GATE_HISTORY_FILE = test_history_file
-    
+
     # Ensure the scaling gate is inactive at the start of each test
     if os.path.exists(test_lockfile):
         os.remove(test_lockfile)
-    
+
     # Initialize the history file with an empty structure
     with open(test_history_file, "w") as f:
         json.dump({"history": []}, f)
-        
+
     # Yield the test paths and original paths for cleanup
     yield {
         "test_dir": test_dir,
         "test_lockfile": test_lockfile,
         "test_history_file": test_history_file,
         "original_lockfile": original_lockfile,
-        "original_history_file": original_history_file
+        "original_history_file": original_history_file,
     }
-    
+
     # Cleanup after tests
     utils.cost_tracker.SCALING_GATE_LOCKFILE = original_lockfile
     utils.cost_tracker.SCALING_GATE_HISTORY_FILE = original_history_file
@@ -90,20 +92,21 @@ def test_set_scaling_gate(scaling_gate_setup):
     # Set the scaling gate to active
     result = set_scaling_gate(True, "Test reason")
     assert result is True
-    
+
     # Check that the scaling gate is active
     active, reason = is_scaling_gate_active()
     assert active is True
     assert reason == "Test reason"
-    
+
     # Set the scaling gate to inactive
     result = set_scaling_gate(False, "Test inactive")
     assert result is True
-    
+
     # Check that the scaling gate is inactive
     active, reason = is_scaling_gate_active()
     assert active is False
     assert reason == "Test inactive"
+
 
 def test_activate_gate(scaling_gate_setup):
     """Test activating the scaling gate."""
@@ -120,7 +123,7 @@ def test_activate_gate(scaling_gate_setup):
             pytest.skip("Database tables not set up for testing")
         else:
             raise
-    
+
     # Check history
     history = get_scaling_gate_history()
     if history:  # Only check if history is available
@@ -145,7 +148,7 @@ def test_deactivate_gate(scaling_gate_setup):
         # Check the status
         active, _ = is_scaling_gate_active()
         assert active is False
-        
+
         # Get all history entries to find the deactivation entry
         history = get_scaling_gate_history()
         if history:  # Only check if history is available
@@ -164,21 +167,22 @@ def test_deactivate_gate(scaling_gate_setup):
         else:
             raise
 
+
 def test_operation_permission(scaling_gate_setup):
     """Test operation permission checking."""
     # By default, all operations should be allowed when gate is inactive
     allowed = should_allow_operation("test_service", "test_operation")
     assert allowed is True
-    
+
     # Skip the rest of the test if database tables aren't set up
     try:
         # Activate the gate
         set_scaling_gate(True, "Test operation permission")
-        
+
         # Non-critical operations should be blocked
         allowed = should_allow_operation("test_service", "test_operation")
         assert allowed is False
-        
+
         # Critical operations should be allowed
         critical_ops = {"_global": ["health_check", "metrics", "status"]}
         for op in critical_ops["_global"]:
@@ -197,12 +201,12 @@ def test_history_limit(scaling_gate_setup):
         # Add some test entries
         for i in range(5):
             set_scaling_gate(i % 2 == 0, f"Test {i}")
-        
+
         # Check that we can retrieve the history
         history = get_scaling_gate_history()
         if history is not None:  # Only check if history is available
             assert len(history) <= 10  # Default limit is 10
-            
+
             # Check if the function supports a limit parameter
             try:
                 limited_history = get_scaling_gate_history(limit=3)
@@ -217,19 +221,22 @@ def test_history_limit(scaling_gate_setup):
         else:
             raise
 
-@pytest.mark.parametrize("mock_datetime", [patch("utils.cost_tracker.datetime")], indirect=True)
+
+@pytest.mark.parametrize(
+    "mock_datetime", [patch("utils.cost_tracker.datetime")], indirect=True
+)
 def test_timestamps(scaling_gate_setup, mock_datetime):
     """Test that timestamps are recorded correctly."""
     try:
         # Set a fixed datetime for testing
         test_time = datetime(2023, 1, 1, 12, 0, 0)
         mock_datetime.now.return_value = test_time
-        
+
         # We don't need to format the timestamp for this test
-        
+
         # Perform an action that records a timestamp
         set_scaling_gate(True, "Test timestamp")
-        
+
         # Check the timestamp in history
         history = get_scaling_gate_history()
         if history:  # Only check if we have history
@@ -239,7 +246,7 @@ def test_timestamps(scaling_gate_setup, mock_datetime):
                 if entry.get("reason") == "Test timestamp":
                     timestamp_entry = entry
                     break
-                    
+
             if timestamp_entry and "timestamp" in timestamp_entry:
                 # The format might be different, so just check if the timestamp exists
                 assert timestamp_entry["timestamp"] is not None
@@ -257,15 +264,15 @@ def test_critical_operations_whitelist(scaling_gate_setup):
     try:
         # Activate the gate
         set_scaling_gate(True, "Test critical operations")
-        
+
         # Define critical operations
         critical_ops = {"_global": ["health_check", "metrics", "status"]}
-        
+
         # Critical operations should be allowed
         for op in critical_ops["_global"]:
             allowed = should_allow_operation("test_service", op, critical_ops)
             assert allowed is True, f"Operation {op} should be allowed"
-            
+
         # Non-critical operations should be blocked
         for op in ["send_email", "process_data"]:
             allowed = should_allow_operation("test_service", op)
@@ -276,35 +283,37 @@ def test_critical_operations_whitelist(scaling_gate_setup):
         else:
             raise
 
+
 def test_file_permissions_handling(scaling_gate_setup):
     """Test handling of file permission issues."""
     # Get the test directory from the fixture
     test_dir = scaling_gate_setup["test_dir"]
-    
+
     # Create a read-only directory
     read_only_dir = os.path.join(test_dir, "readonly")
     os.makedirs(read_only_dir, mode=0o555)
-    
+
     # Store the original file path
     original_file = utils.cost_tracker.SCALING_GATE_HISTORY_FILE
-    
+
     try:
         # Point the history file to the read-only directory
         test_file = os.path.join(read_only_dir, "history.json")
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = test_file
-        
+
         # This should not raise an exception
         set_scaling_gate(True, "Test file permissions")
-        
+
         # The operation should still work, just not persist
         active, _ = is_scaling_gate_active()
         assert active is True
-        
+
         # But the history file shouldn't exist due to permissions
         assert os.path.exists(test_file) is False
     finally:
         # Restore the original file path
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = original_file
+
 
 def test_concurrent_updates(scaling_gate_setup):
     """Test that concurrent updates to the gate don't corrupt the history."""
@@ -325,12 +334,12 @@ def test_concurrent_updates(scaling_gate_setup):
         # Run concurrent updates
         with ThreadPoolExecutor(max_workers=5) as executor:
             executor.map(toggle_gate, range(num_operations))
-        
+
         # Check that history has entries
         history = get_scaling_gate_history()
         if history:
             assert len(history) <= num_operations
-            
+
             # Check that the entries have timestamps
             for entry in history:
                 assert "timestamp" in entry or "created_at" in entry
@@ -348,17 +357,18 @@ def test_malformed_history_file(scaling_gate_setup):
     """Test handling of malformed history file."""
     # Get the test history file from the fixture
     test_history_file = scaling_gate_setup["test_history_file"]
-    
+
     # Create a malformed history file
     with open(test_history_file, "w") as f:
         f.write("{invalid json}")
-    
+
     # This should not raise an exception
     history = get_scaling_gate_history()
     assert isinstance(history, list)
-    
+
     # The file should have been reset or left as is (implementation detail)
     # We don't check the file content as it's managed by the database
+
 
 @pytest.mark.skip(reason="Test not applicable to current implementation")
 def test_large_history_file():
