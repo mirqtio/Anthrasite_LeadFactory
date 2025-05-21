@@ -34,6 +34,10 @@ class MockWappalyzer:
         
     def analyze(self, *args, **kwargs):
         return {"technologies": []}
+    
+    @classmethod
+    def latest(cls):
+        return cls()
 
 class MockWebPage:
     def __init__(self, *args, **kwargs):
