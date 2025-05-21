@@ -598,7 +598,7 @@ def test_handle_api_errors_gracefully():
             try:
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
-                model_used = \"primary\"  # noqa: F841 - for future reference
+                model_used = "primary"  # noqa: F841 - for future reference
             except Exception as e:
                 self.logger.error(f"Primary model failed: {e}")
                 try:
@@ -775,7 +775,7 @@ def test_fallback_model_custom():
             try:
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
-                model_used = \"primary\"  # noqa: F841 - for future reference
+                model_used = "primary"  # noqa: F841 - for future reference
             except Exception as e:
                 print(f"Primary model failed: {e}")
                 # Fall back to the secondary model
