@@ -9,8 +9,47 @@ dev-debug.log
 # Dependency directories
 node_modules/
 
-# Environment variables
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
 .env
+.venv/
+venv/
+ENV/
+env/
+
+# Test coverage data
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# Data directories
+data/
+
+# Temporary files
+temp_*
 
 # Editor directories and files
 .idea

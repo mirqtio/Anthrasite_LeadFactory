@@ -267,7 +267,7 @@
           "id": 17,
           "title": "Fix remaining test failures in full test suite",
           "description": "Address all remaining test failures across components",
-          "details": "While email queue and cron wrapper tests have been fixed, there are still multiple failures in the full test suite. Identify, debug, and fix all remaining test failures to ensure the entire system functions correctly.",
+          "details": "While email queue and cron wrapper tests have been fixed, there are still multiple failures in the full test suite. Identify, debug, and fix all remaining test failures to ensure the entire system functions correctly.\n<info added on 2025-05-21T11:58:33.677Z>\nMade significant progress on fixing test failures:\n1. Created utils/__init__.py to fix module import issues\n2. Added missing Wappalyzer dependency to requirements.txt\n3. Restructured bin modules with proper __init__.py and renamed files\n4. Fixed code formatting with black and ruff\n5. Set up proper virtual environment (.venv) for testing\n6. Committed all changes to git repository\n\nNext steps:\n- Install pyyaml dependency to fix utils.io import errors\n- Fix remaining test failures in test_metrics.py (TestClient app parameter issue)\n- Fix indentation error in test_mockup.py\n- Run full test suite to identify any other issues\n</info added on 2025-05-21T11:58:33.677Z>",
           "status": "in-progress",
           "dependencies": [
             7,
