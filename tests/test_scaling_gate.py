@@ -15,6 +15,7 @@ from unittest.mock import patch
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+
 # Add mock_datetime fixture
 @pytest.fixture
 def mock_datetime(request):
@@ -23,6 +24,7 @@ def mock_datetime(request):
     mock = patcher.start()
     yield mock
     patcher.stop()
+
 
 # Check if all required functions are available
 try:
@@ -211,19 +213,19 @@ def test_history_limit(scaling_gate_setup):
     # Reset the history file to start with a clean slate
     with open(scaling_gate_setup["test_history_file"], "w") as f:
         json.dump({"history": []}, f)
-        
+
     # Add some test entries
     for i in range(15):  # Add more than the default limit
         set_scaling_gate(i % 2 == 0, f"History Test {i}")
 
     # Check that we can retrieve the history
     history = get_scaling_gate_history()
-    
+
     # The test is not about the exact limit, but that there is some reasonable limit
     # to prevent the history from growing indefinitely
     assert history is not None, "History should not be None"
     assert len(history) > 0, "History should not be empty"
-    
+
     # Check if the function supports a limit parameter
     try:
         limited_history = get_scaling_gate_history(limit=3)
@@ -331,29 +333,32 @@ def test_concurrent_updates(scaling_gate_setup):
     """Test that concurrent updates to the gate don't corrupt the history."""
     # This test verifies that we can make multiple updates to the scaling gate
     # without corrupting the history file
-    
+
     # Reset the history file to start with a clean slate
     with open(scaling_gate_setup["test_history_file"], "w") as f:
         json.dump({"history": []}, f)
-    
+
     # Make a few updates with specific reasons we can check for
     set_scaling_gate(True, "CONCURRENT_TEST_1")
     set_scaling_gate(False, "CONCURRENT_TEST_2")
-    
+
     # Check that we can retrieve the history
     history = get_scaling_gate_history()
     assert history is not None, "History should not be None"
     assert len(history) >= 2, "History should have at least 2 entries"
-    
+
     # Check if our specific updates are in the history
     found_entries = 0
     for entry in history:
-        if "CONCURRENT_TEST_1" in entry["reason"] or "CONCURRENT_TEST_2" in entry["reason"]:
+        if (
+            "CONCURRENT_TEST_1" in entry["reason"]
+            or "CONCURRENT_TEST_2" in entry["reason"]
+        ):
             found_entries += 1
-    
+
     # We should find at least one of our entries
     assert found_entries > 0, "None of our test entries were found in the history"
-    
+
     # The test passes if we get here without exceptions, indicating the history file
     # wasn't corrupted by multiple updates
 
@@ -362,25 +367,31 @@ def test_custom_critical_operations(scaling_gate_setup):
     """Test that custom critical operations can be added."""
     # Set the scaling gate to active
     set_scaling_gate(True, "Testing custom critical operations")
-    
+
     # Define custom critical operations
     custom_critical_ops = {
         "test_service": ["critical_operation"],
-        "another_service": ["important_task", "essential_function"]
+        "another_service": ["important_task", "essential_function"],
     }
-    
+
     # Test a non-critical operation (should be blocked)
-    permitted, _ = check_operation_permission("test_service", "normal_operation", custom_critical_ops)
+    permitted, _ = check_operation_permission(
+        "test_service", "normal_operation", custom_critical_ops
+    )
     assert not permitted, "Non-critical operation should be blocked when gate is active"
-    
+
     # Test a critical operation (should be allowed)
-    permitted, _ = check_operation_permission("test_service", "critical_operation", custom_critical_ops)
+    permitted, _ = check_operation_permission(
+        "test_service", "critical_operation", custom_critical_ops
+    )
     assert permitted, "Critical operation should be allowed even when gate is active"
-    
+
     # Test another critical operation from a different service
-    permitted, _ = check_operation_permission("another_service", "important_task", custom_critical_ops)
+    permitted, _ = check_operation_permission(
+        "another_service", "important_task", custom_critical_ops
+    )
     assert permitted, "Critical operation from different service should be allowed"
-    
+
     # Reset the scaling gate
     set_scaling_gate(False, "Test complete")
 
@@ -406,23 +417,25 @@ def test_large_history_file(scaling_gate_setup):
     """Test that large history files are handled correctly."""
     # Generate a large history with many entries
     history_file = scaling_gate_setup["test_history_file"]
-    
+
     # Create a history with 1000 entries
     large_history = {"history": []}
     for i in range(1000):
-        large_history["history"].append({
-            "timestamp": datetime.now().isoformat(),
-            "active": i % 2 == 0,  # Alternate between active and inactive
-            "reason": f"Test reason {i}"
-        })
-    
+        large_history["history"].append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "active": i % 2 == 0,  # Alternate between active and inactive
+                "reason": f"Test reason {i}",
+            }
+        )
+
     # Write the large history to the file
     with open(history_file, "w") as f:
         json.dump(large_history, f)
-    
+
     # Get the history and verify it loads correctly
     history = get_scaling_gate_history()
-    
+
     # Verify that the history was loaded correctly
     assert isinstance(history, list)
     assert len(history) > 0

@@ -534,7 +534,7 @@ def test_handle_api_errors():
     # Create an in-memory database for this test
     conn = sqlite3.connect(":memory:")
     cursor = conn.cursor()
-    
+
     # Create the necessary tables
     cursor.execute(
         """
@@ -549,30 +549,33 @@ def test_handle_api_errors():
         )
         """
     )
-    
+
     # Insert a test business
     cursor.execute(
         "INSERT INTO businesses (id, name, website, score) VALUES (?, ?, ?, ?)",
         (7, "API Error Test Business", "https://example.com", 90),
     )
     conn.commit()
-    
+
     # Create a mock API client that always raises an exception
     class MockAPIClient:
         def generate_mockup(self, business_id, website):
             raise Exception("API Error: Service unavailable")
-    
+
     # Create a function that handles API errors gracefully
     def generate_mockup_with_error_handling(business_id, conn, cursor):
         # Get business details
-        cursor.execute("SELECT website, mockup_retry_count FROM businesses WHERE id = ?", (business_id,))
+        cursor.execute(
+            "SELECT website, mockup_retry_count FROM businesses WHERE id = ?",
+            (business_id,),
+        )
         business = cursor.fetchone()
         if not business or not business[0]:
             return {"status": "skipped", "reason": "no website"}
-        
+
         website = business[0]
         retry_count = business[1] or 0
-        
+
         try:
             # Try to generate mockup
             api_client = MockAPIClient()
@@ -582,7 +585,7 @@ def test_handle_api_errors():
             # Handle the error gracefully
             error_message = str(e)
             print(f"Error generating mockup: {error_message}")
-            
+
             # Update retry count and last attempt timestamp
             cursor.execute(
                 """
@@ -594,23 +597,29 @@ def test_handle_api_errors():
                 (retry_count + 1, business_id),
             )
             conn.commit()
-            
-            return {"status": "error", "error": error_message, "retry_count": retry_count + 1}
-    
+
+            return {
+                "status": "error",
+                "error": error_message,
+                "retry_count": retry_count + 1,
+            }
+
     # Test the function
     result = generate_mockup_with_error_handling(7, conn, cursor)
-    
+
     # Verify the error was handled gracefully
     assert result["status"] == "error", "Error status should be returned"
     assert "API Error" in result["error"], "Error message should be included"
     assert result["retry_count"] == 1, "Retry count should be incremented"
-    
+
     # Verify the retry count was updated in the database
-    cursor.execute("SELECT mockup_retry_count, mockup_last_attempt FROM businesses WHERE id = 7")
+    cursor.execute(
+        "SELECT mockup_retry_count, mockup_last_attempt FROM businesses WHERE id = 7"
+    )
     db_result = cursor.fetchone()
     assert db_result[0] == 1, "Retry count should be updated in the database"
     assert db_result[1] is not None, "Last attempt timestamp should be set"
-    
+
     # Clean up
     conn.close()
 
@@ -726,7 +735,7 @@ def test_skip_businesses_without_website_data():
     # Create an in-memory database for this test
     conn = sqlite3.connect(":memory:")
     cursor = conn.cursor()
-    
+
     # Create the necessary tables
     cursor.execute(
         """
@@ -739,14 +748,14 @@ def test_skip_businesses_without_website_data():
         )
         """
     )
-    
+
     # Insert a test business without a website
     cursor.execute(
         "INSERT INTO businesses (id, name, score, website) VALUES (?, ?, ?, ?)",
         (5, "No Website Business", 80, None),
     )
     conn.commit()
-    
+
     # Create a simple mockup generator function that skips businesses without websites
     def generate_mockup(business_id, conn, cursor):
         cursor.execute("SELECT website FROM businesses WHERE id = ?", (business_id,))
@@ -754,13 +763,13 @@ def test_skip_businesses_without_website_data():
         if not business or business[0] is None:
             return None
         return {"mockup": "Sample mockup data"}
-    
+
     # Test the function with our business without a website
     result = generate_mockup(5, conn, cursor)
-    
+
     # Verify the business was skipped
     assert result is None, "Business without website should be skipped"
-    
+
     # Clean up
     conn.close()
 
@@ -815,7 +824,7 @@ def test_use_fallback_model_when_primary_model_fails():
     # Create an in-memory database for this test
     conn = sqlite3.connect(":memory:")
     cursor = conn.cursor()
-    
+
     # Create the necessary tables
     cursor.execute(
         """
@@ -829,36 +838,36 @@ def test_use_fallback_model_when_primary_model_fails():
         )
         """
     )
-    
+
     # Insert a test business
     cursor.execute(
         "INSERT INTO businesses (id, name, website, score) VALUES (?, ?, ?, ?)",
         (6, "Fallback Test Business", "https://example.com", 85),
     )
     conn.commit()
-    
+
     # Create mock models
     class PrimaryModel:
         def generate_mockup(self, business_id):
             # Primary model fails
             raise Exception("Primary model error")
-    
+
     class FallbackModel:
         def generate_mockup(self, business_id):
             # Fallback model succeeds
             return {"mockup": "Fallback mockup data", "model": "fallback"}
-    
+
     # Create a mockup generator that uses fallback model when primary fails
     class MockupGenerator:
         def __init__(self):
             self.primary = PrimaryModel()
             self.fallback = FallbackModel()
             self.logger = MagicMock()
-        
+
         def generate_mockup_for_business(self, business_id, conn, cursor):
             # Initialize model_used variable
             model_used = "unknown"
-            
+
             try:
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
@@ -871,7 +880,7 @@ def test_use_fallback_model_when_primary_model_fails():
                 self.logger.info("Using fallback model for mockup generation")
                 # Set the model_used variable for the fallback model
                 model_used = "fallback"
-            
+
             # Save the mockup data to the database
             cursor.execute(
                 """
@@ -883,22 +892,24 @@ def test_use_fallback_model_when_primary_model_fails():
                 (json.dumps(mockup_data), business_id),
             )
             conn.commit()
-            
+
             return model_used, mockup_data
-    
+
     # Create the generator and test it
     generator = MockupGenerator()
     model_used, mockup_data = generator.generate_mockup_for_business(6, conn, cursor)
-    
+
     # Verify the fallback model was used
     assert model_used == "fallback", "Fallback model should be used when primary fails"
-    assert mockup_data["model"] == "fallback", "Mockup data should be from fallback model"
-    
+    assert (
+        mockup_data["model"] == "fallback"
+    ), "Mockup data should be from fallback model"
+
     # Verify the mockup data was saved to the database
     cursor.execute("SELECT mockup_data FROM businesses WHERE id = 6")
     saved_data = cursor.fetchone()[0]
     assert saved_data is not None, "Mockup data should be saved to the database"
-    
+
     # Clean up
     conn.close()
 

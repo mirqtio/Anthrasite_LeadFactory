@@ -413,26 +413,36 @@ def temp_db():
 
 
 # Test scenarios - converted to simple unit tests
-def test_send_personalized_email(mock_db_connection, mock_sendgrid_client, mock_cost_tracker):
+def test_send_personalized_email(
+    mock_db_connection, mock_sendgrid_client, mock_cost_tracker
+):
     """Test sending personalized email with mockup."""
     # Mock the necessary components
     business_id = 1
     business_name = "Test Business"
     email = "test@example.com"
-    mockup_data = {"html": "<html><body>Test Mockup</body></html>", "text": "Test Mockup"}
-    
+    mockup_data = {
+        "html": "<html><body>Test Mockup</body></html>",
+        "text": "Test Mockup",
+    }
+
     # Mock the database query result
     mock_cursor = mock_db_connection.cursor.return_value
-    mock_cursor.fetchone.return_value = (business_id, business_name, email, json.dumps(mockup_data))
-    
+    mock_cursor.fetchone.return_value = (
+        business_id,
+        business_name,
+        email,
+        json.dumps(mockup_data),
+    )
+
     # Call the function that would send the email
     # This is a simplified test that just verifies the mocks are set up correctly
     assert mock_sendgrid_client is not None
     assert mock_cost_tracker is not None
-    
+
     # Verify that we can access the mocked methods
-    assert hasattr(mock_sendgrid_client, 'send')
-    assert 'log_cost' in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
+    assert hasattr(mock_sendgrid_client, "send")
+    assert "log_cost" in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
 
 
 def test_skip_no_mockup(mock_db_connection, mock_sendgrid_client, mock_cost_tracker):
@@ -441,15 +451,15 @@ def test_skip_no_mockup(mock_db_connection, mock_sendgrid_client, mock_cost_trac
     business_id = 2
     business_name = "No Mockup Business"
     email = "nomockup@example.com"
-    
+
     # Mock the database query result - no mockup data
     mock_cursor = mock_db_connection.cursor.return_value
     mock_cursor.fetchone.return_value = (business_id, business_name, email, None)
-    
+
     # Verify that we can access the mocked methods
-    assert hasattr(mock_sendgrid_client, 'send')
-    assert 'log_cost' in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
-    
+    assert hasattr(mock_sendgrid_client, "send")
+    assert "log_cost" in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
+
     # This is a simplified test that just verifies the mocks are set up correctly
     assert mock_db_connection is not None
 
@@ -460,64 +470,105 @@ def test_handle_api_errors(mock_db_connection, mock_sendgrid_client, mock_cost_t
     business_id = 3
     business_name = "Error Test Business"
     email = "error@example.com"
-    mockup_data = {"html": "<html><body>Test Mockup</body></html>", "text": "Test Mockup"}
-    
+    mockup_data = {
+        "html": "<html><body>Test Mockup</body></html>",
+        "text": "Test Mockup",
+    }
+
     # Mock the database query result
     mock_cursor = mock_db_connection.cursor.return_value
-    mock_cursor.fetchone.return_value = (business_id, business_name, email, json.dumps(mockup_data))
-    
+    mock_cursor.fetchone.return_value = (
+        business_id,
+        business_name,
+        email,
+        json.dumps(mockup_data),
+    )
+
     # Mock the SendGrid client to raise an exception
     mock_sendgrid_client.send.side_effect = Exception("API Error")
-    
+
     # Verify that we can access the mocked methods
-    assert hasattr(mock_sendgrid_client, 'send')
-    assert 'log_cost' in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
-    
+    assert hasattr(mock_sendgrid_client, "send")
+    assert "log_cost" in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
+
     # This is a simplified test that just verifies the mocks are set up correctly
     assert mock_db_connection is not None
 
 
-def test_respect_daily_limit(mock_db_connection, mock_sendgrid_client, mock_cost_tracker):
+def test_respect_daily_limit(
+    mock_db_connection, mock_sendgrid_client, mock_cost_tracker
+):
     """Test respecting daily email limit."""
     # Mock the necessary components for multiple businesses
     mock_cursor = mock_db_connection.cursor.return_value
     mock_cursor.fetchall.return_value = [
-        (1, "Business 1", "email1@example.com", json.dumps({"html": "<html><body>Mockup 1</body></html>", "text": "Mockup 1"})),
-        (2, "Business 2", "email2@example.com", json.dumps({"html": "<html><body>Mockup 2</body></html>", "text": "Mockup 2"})),
-        (3, "Business 3", "email3@example.com", json.dumps({"html": "<html><body>Mockup 3</body></html>", "text": "Mockup 3"}))
+        (
+            1,
+            "Business 1",
+            "email1@example.com",
+            json.dumps(
+                {"html": "<html><body>Mockup 1</body></html>", "text": "Mockup 1"}
+            ),
+        ),
+        (
+            2,
+            "Business 2",
+            "email2@example.com",
+            json.dumps(
+                {"html": "<html><body>Mockup 2</body></html>", "text": "Mockup 2"}
+            ),
+        ),
+        (
+            3,
+            "Business 3",
+            "email3@example.com",
+            json.dumps(
+                {"html": "<html><body>Mockup 3</body></html>", "text": "Mockup 3"}
+            ),
+        ),
     ]
-    
+
     # Set a daily limit of 2 emails
     daily_limit = 2
-    
+
     # Verify that we can access the mocked methods
-    assert hasattr(mock_sendgrid_client, 'send')
-    assert 'log_cost' in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
-    
+    assert hasattr(mock_sendgrid_client, "send")
+    assert "log_cost" in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
+
     # This is a simplified test that just verifies the mocks are set up correctly
     assert mock_db_connection is not None
     assert daily_limit == 2
 
 
-def test_track_bounce_rates(mock_db_connection, mock_sendgrid_client, mock_cost_tracker):
+def test_track_bounce_rates(
+    mock_db_connection, mock_sendgrid_client, mock_cost_tracker
+):
     """Test tracking bounce rates."""
     # Mock the necessary components
     business_id = 4
     business_name = "Bounce Test Business"
     email = "bounce@high-bounce-rate.com"
-    mockup_data = {"html": "<html><body>Test Mockup</body></html>", "text": "Test Mockup"}
-    
+    mockup_data = {
+        "html": "<html><body>Test Mockup</body></html>",
+        "text": "Test Mockup",
+    }
+
     # Mock the database query result
     mock_cursor = mock_db_connection.cursor.return_value
-    mock_cursor.fetchone.return_value = (business_id, business_name, email, json.dumps(mockup_data))
-    
+    mock_cursor.fetchone.return_value = (
+        business_id,
+        business_name,
+        email,
+        json.dumps(mockup_data),
+    )
+
     # Mock the bounce rate check
     mock_cursor.fetchall.return_value = [("high-bounce-rate.com", 0.75)]
-    
+
     # Verify that we can access the mocked methods
-    assert hasattr(mock_sendgrid_client, 'send')
-    assert 'log_cost' in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
-    
+    assert hasattr(mock_sendgrid_client, "send")
+    assert "log_cost" in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
+
     # This is a simplified test that just verifies the mocks are set up correctly
     assert mock_db_connection is not None
 
@@ -528,19 +579,27 @@ def test_dry_run_mode(mock_db_connection, mock_sendgrid_client, mock_cost_tracke
     business_id = 5
     business_name = "Dry Run Test Business"
     email = "dryrun@example.com"
-    mockup_data = {"html": "<html><body>Test Mockup</body></html>", "text": "Test Mockup"}
-    
+    mockup_data = {
+        "html": "<html><body>Test Mockup</body></html>",
+        "text": "Test Mockup",
+    }
+
     # Mock the database query result
     mock_cursor = mock_db_connection.cursor.return_value
-    mock_cursor.fetchone.return_value = (business_id, business_name, email, json.dumps(mockup_data))
-    
+    mock_cursor.fetchone.return_value = (
+        business_id,
+        business_name,
+        email,
+        json.dumps(mockup_data),
+    )
+
     # Set dry run mode
     dry_run = True
-    
+
     # Verify that we can access the mocked methods
-    assert hasattr(mock_sendgrid_client, 'send')
-    assert 'log_cost' in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
-    
+    assert hasattr(mock_sendgrid_client, "send")
+    assert "log_cost" in mock_cost_tracker, "mock_cost_tracker should have log_cost key"
+
     # This is a simplified test that just verifies the mocks are set up correctly
     assert mock_db_connection is not None
     assert dry_run is True
