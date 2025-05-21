@@ -770,6 +770,7 @@ def test_fallback_model_custom():
         def __init__(self, primary_model, fallback_model):
             self.primary = primary_model
             self.fallback = fallback_model
+            self.logger = MagicMock()
 
         def generate_mockup_for_business(self, business_id, conn, cursor):
             try:
