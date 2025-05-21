@@ -76,7 +76,9 @@ def update_tasks():
                 {
                     "id": len(prometheus_task["subtasks"]) + 1,
                     "title": "Create Prometheus Alert Rules",
-                    "description": "Define and export Prometheus alert rules for monitoring",
+                    "description": (
+                        "Define and export Prometheus alert rules for monitoring"
+                    ),
                     "status": "completed",
                     "parallelizable": True,
                     "parentTaskId": prometheus_task["id"],
