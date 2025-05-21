@@ -28,7 +28,9 @@ logger = get_logger(__name__)
 load_dotenv()
 
 # Constants
-DEFAULT_SQLITE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db")
+DEFAULT_SQLITE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db"
+)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Table definitions with their schema
@@ -155,7 +157,7 @@ TABLE_SCHEMAS = {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-    """
+    """,
 }
 
 # Indexes to create after migration
@@ -172,7 +174,7 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_zip_queue_done ON zip_queue(done)",
     "CREATE INDEX IF NOT EXISTS idx_cost_tracking_service ON cost_tracking(service)",
     "CREATE INDEX IF NOT EXISTS idx_cost_tracking_date ON cost_tracking(date)",
-    "CREATE INDEX IF NOT EXISTS idx_email_metrics_date ON email_metrics(date)"
+    "CREATE INDEX IF NOT EXISTS idx_email_metrics_date ON email_metrics(date)",
 ]
 
 # Type conversion mapping from SQLite to Postgres
@@ -184,7 +186,7 @@ TYPE_CONVERSIONS = {
     "BOOLEAN": "BOOLEAN",
     "TIMESTAMP": "TIMESTAMP",
     "DATE": "DATE",
-    "JSON": "JSONB"
+    "JSON": "JSONB",
 }
 
 
@@ -227,7 +229,9 @@ def get_sqlite_tables(sqlite_conn) -> List[str]:
         List of table names.
     """
     cursor = sqlite_conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+    )
     return [row[0] for row in cursor.fetchall()]
 
 
@@ -282,7 +286,7 @@ def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
     # Table names cannot be parameterized directly, but this is a controlled internal script
     # with validated table names from get_sqlite_tables()
     # Adding a validation step to ensure table_name contains only alphanumeric characters and underscores
-    if not re.match(r'^[a-zA-Z0-9_]+$', table_name):
+    if not re.match(r"^[a-zA-Z0-9_]+$", table_name):
         raise ValueError(f"Invalid table name: {table_name}")
     cursor.execute("SELECT * FROM " + table_name)  # nosec B608
     columns = [column[0] for column in cursor.description]
@@ -312,19 +316,31 @@ def insert_postgres_data(pg_conn, table_name: str, data: List[Dict[str, Any]]):
     # Table names cannot be parameterized directly, but this is a controlled internal script
     # with validated table names from get_sqlite_tables()
     # Adding a validation step to ensure table_name contains only alphanumeric characters and underscores
-    if not re.match(r'^[a-zA-Z0-9_]+$', table_name):
+    if not re.match(r"^[a-zA-Z0-9_]+$", table_name):
         raise ValueError(f"Invalid table name: {table_name}")
-    sql = "INSERT INTO " + table_name + " (" + column_str + ") VALUES (" + placeholders + ")"  # nosec B608
+    sql = (
+        "INSERT INTO "
+        + table_name
+        + " ("
+        + column_str
+        + ") VALUES ("
+        + placeholders
+        + ")"
+    )  # nosec B608
 
     # Insert data in batches
     batch_size = 1000
     total_rows = len(data)
     for i in range(0, total_rows, batch_size):
-        batch = data[i:i+batch_size]
-        batch_values = [[row[col] if col in row else None for col in columns] for row in batch]
+        batch = data[i : i + batch_size]
+        batch_values = [
+            [row[col] if col in row else None for col in columns] for row in batch
+        ]
         cursor.executemany(sql, batch_values)
         pg_conn.commit()
-        logger.info(f"Inserted {min(i+batch_size, total_rows)}/{total_rows} rows into {table_name}")
+        logger.info(
+            f"Inserted {min(i+batch_size, total_rows)}/{total_rows} rows into {table_name}"
+        )
 
 
 def migrate_table(sqlite_conn, pg_conn, table_name: str):
@@ -356,10 +372,14 @@ def migrate_database(sqlite_path: str, postgres_url: str):
     logger.info(f"Starting migration from SQLite ({sqlite_path}) to Postgres")
 
     # Connect to databases
-    with sqlite_connection(sqlite_path) as sqlite_conn, postgres_connection(postgres_url) as pg_conn:
+    with sqlite_connection(sqlite_path) as sqlite_conn, postgres_connection(
+        postgres_url
+    ) as pg_conn:
         # Get list of tables in SQLite
         sqlite_tables = get_sqlite_tables(sqlite_conn)
-        logger.info(f"Found {len(sqlite_tables)} tables in SQLite: {', '.join(sqlite_tables)}")
+        logger.info(
+            f"Found {len(sqlite_tables)} tables in SQLite: {', '.join(sqlite_tables)}"
+        )
 
         # Create tables in Postgres
         create_postgres_tables(pg_conn)
@@ -369,7 +389,9 @@ def migrate_database(sqlite_path: str, postgres_url: str):
             if table_name in TABLE_SCHEMAS:
                 migrate_table(sqlite_conn, pg_conn, table_name)
             else:
-                logger.warning(f"Skipping table {table_name} as it is not defined in TABLE_SCHEMAS")
+                logger.warning(
+                    f"Skipping table {table_name} as it is not defined in TABLE_SCHEMAS"
+                )
 
     logger.info("Migration completed successfully")
 
@@ -377,13 +399,23 @@ def migrate_database(sqlite_path: str, postgres_url: str):
 def main():
     """Main function."""
     parser = argparse.ArgumentParser(description="Migrate SQLite database to Postgres")
-    parser.add_argument("--sqlite-path", default=DEFAULT_SQLITE_PATH, help="Path to SQLite database file")
-    parser.add_argument("--postgres-url", default=DATABASE_URL, help="Postgres connection URL")
-    parser.add_argument("--dry-run", action="store_true", help="Dry run (no actual migration)")
+    parser.add_argument(
+        "--sqlite-path",
+        default=DEFAULT_SQLITE_PATH,
+        help="Path to SQLite database file",
+    )
+    parser.add_argument(
+        "--postgres-url", default=DATABASE_URL, help="Postgres connection URL"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Dry run (no actual migration)"
+    )
     args = parser.parse_args()
 
     if not args.postgres_url:
-        logger.error("Postgres connection URL not specified. Set DATABASE_URL environment variable or use --postgres-url")
+        logger.error(
+            "Postgres connection URL not specified. Set DATABASE_URL environment variable or use --postgres-url"
+        )
         sys.exit(1)
 
     if not os.path.exists(args.sqlite_path):
@@ -396,7 +428,9 @@ def main():
         with sqlite_connection(args.sqlite_path) as sqlite_conn:
             # Get list of tables in SQLite
             sqlite_tables = get_sqlite_tables(sqlite_conn)
-            logger.info(f"Found {len(sqlite_tables)} tables in SQLite: {', '.join(sqlite_tables)}")
+            logger.info(
+                f"Found {len(sqlite_tables)} tables in SQLite: {', '.join(sqlite_tables)}"
+            )
 
             # Check each table
             for table_name in sqlite_tables:
@@ -405,12 +439,20 @@ def main():
                     # Table names cannot be parameterized directly, but this is a controlled internal script
                     # with validated table names from get_sqlite_tables()
                     # Adding a validation step to ensure table_name contains only alphanumeric characters and underscores
-                    if not re.match(r'^[a-zA-Z0-9_]+$', table_name):
+                    if not re.match(r"^[a-zA-Z0-9_]+$", table_name):
                         raise ValueError(f"Invalid table name: {table_name}")
-                    row_count = sqlite_conn.cursor().execute("SELECT COUNT(*) FROM " + table_name).fetchone()[0]  # nosec B608
-                    logger.info(f"Table {table_name}: {row_count} rows, {len(schema)} columns")
+                    row_count = (
+                        sqlite_conn.cursor()
+                        .execute("SELECT COUNT(*) FROM " + table_name)
+                        .fetchone()[0]
+                    )  # nosec B608
+                    logger.info(
+                        f"Table {table_name}: {row_count} rows, {len(schema)} columns"
+                    )
                 else:
-                    logger.warning(f"Table {table_name} is not defined in TABLE_SCHEMAS and will be skipped")
+                    logger.warning(
+                        f"Table {table_name} is not defined in TABLE_SCHEMAS and will be skipped"
+                    )
 
         logger.info("Dry run completed")
     else:

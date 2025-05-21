@@ -16,6 +16,7 @@ from prometheus_client import Gauge, Histogram, Counter
 
 # Import batch tracker
 from utils.batch_tracker import get_batch_status
+
 # Import logging configuration
 from utils.logging_config import get_logger
 
@@ -82,6 +83,7 @@ def update_batch_metrics() -> None:
         if "current_batch_start" in status and "current_batch_end" in status:
             try:
                 from datetime import datetime
+
                 start_time = datetime.fromisoformat(status["current_batch_start"])
                 end_time = datetime.fromisoformat(status["current_batch_end"])
                 duration_seconds = (end_time - start_time).total_seconds()

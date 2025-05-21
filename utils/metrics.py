@@ -9,13 +9,22 @@ import time
 from datetime import datetime
 
 from fastapi import FastAPI, Request, Response
-from prometheus_client import (CONTENT_TYPE_LATEST, Counter, Gauge, Histogram,
-                               Info, generate_latest)
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    Info,
+    generate_latest,
+)
 
-from .cost_tracker import (check_budget_thresholds,
-                           get_cost_breakdown_by_service,
-                           is_scaling_gate_active)
+from .cost_tracker import (
+    check_budget_thresholds,
+    get_cost_breakdown_by_service,
+    is_scaling_gate_active,
+)
 from .batch_metrics import update_batch_metrics, start_metrics_updater
+
 # Import logging configuration
 from .logging_config import get_logger
 
@@ -29,8 +38,12 @@ app = FastAPI(
 )
 # Prometheus metrics
 # Gauges
-DAILY_COST = Gauge("lead_factory_daily_cost", "Total cost for the current day in USD", ["service"])
-MONTHLY_COST = Gauge("lead_factory_monthly_cost", "Total cost for the current month in USD", ["service"])
+DAILY_COST = Gauge(
+    "lead_factory_daily_cost", "Total cost for the current day in USD", ["service"]
+)
+MONTHLY_COST = Gauge(
+    "lead_factory_monthly_cost", "Total cost for the current month in USD", ["service"]
+)
 BUDGET_UTILIZATION = Gauge(
     "lead_factory_budget_utilization",
     "Budget utilization as a percentage",
@@ -108,9 +121,13 @@ def update_metrics():
 
         # Update budget utilization gauge
         if daily_budget > 0:
-            BUDGET_UTILIZATION.labels(period="daily").set(total_daily_cost / daily_budget * 100)
+            BUDGET_UTILIZATION.labels(period="daily").set(
+                total_daily_cost / daily_budget * 100
+            )
         if monthly_budget > 0:
-            BUDGET_UTILIZATION.labels(period="monthly").set(total_monthly_cost / monthly_budget * 100)
+            BUDGET_UTILIZATION.labels(period="monthly").set(
+                total_monthly_cost / monthly_budget * 100
+            )
 
         # Update scaling gate status
         SCALING_GATE_STATUS.set(1 if is_scaling_gate_active() else 0)
@@ -138,7 +155,9 @@ def update_metrics():
             gpu_burst = os.getenv("GPU_BURST", "0") == "1"
             if gpu_burst:
                 # Track GPU cost for mockup generation
-                gpu_cost = daily_costs.get("openai", 0) * 0.8  # Estimate 80% of OpenAI cost is GPU
+                gpu_cost = (
+                    daily_costs.get("openai", 0) * 0.8
+                )  # Estimate 80% of OpenAI cost is GPU
                 GPU_COST_GAUGE.labels(operation="mockup_generation").set(gpu_cost)
                 logger.debug(f"GPU cost for mockup generation: ${gpu_cost:.2f}")
 
@@ -175,8 +194,12 @@ async def http_metrics_middleware(request: Request, call_next):
         raise e
     finally:
         # Record request metrics
-        REQUEST_COUNT.labels(method=method, endpoint=endpoint, http_status=status_code).inc()
-        REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(time.time() - start_time)
+        REQUEST_COUNT.labels(
+            method=method, endpoint=endpoint, http_status=status_code
+        ).inc()
+        REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(
+            time.time() - start_time
+        )
 
 
 @app.get("/metrics")
@@ -226,19 +249,28 @@ def start_metrics_server(host: str = "127.0.0.1", port: int = 8000):
 
     # Start batch metrics updater thread
     logger.info("Starting batch metrics updater thread")
-    start_metrics_updater(interval_seconds=int(os.getenv("BATCH_METRICS_UPDATE_INTERVAL", "60")))
+    start_metrics_updater(
+        interval_seconds=int(os.getenv("BATCH_METRICS_UPDATE_INTERVAL", "60"))
+    )
 
     # Use environment variable to allow override in container environments
     bind_host = os.getenv("METRICS_BIND_HOST", host)
     logger.info(f"Starting metrics server on http://{bind_host}:{port}")
-    uvicorn.run(app, host=bind_host, port=port, log_level=os.getenv("LOG_LEVEL", "info").lower())
+    uvicorn.run(
+        app, host=bind_host, port=port, log_level=os.getenv("LOG_LEVEL", "info").lower()
+    )
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Start the Prometheus metrics server")
-    parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to bind to (use 127.0.0.1 for security, 0.0.0.0 only in secure environments)")
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Host to bind to (use 127.0.0.1 for security, 0.0.0.0 only in secure environments)",
+    )
     parser.add_argument("--port", type=int, default=8000, help="Port to listen on")
     args = parser.parse_args()
     start_metrics_server(host=args.host, port=args.port)

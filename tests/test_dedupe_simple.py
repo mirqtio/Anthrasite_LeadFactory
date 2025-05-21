@@ -61,9 +61,15 @@ def temp_db():
         )"""
         )
         # Create indexes for businesses table
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_name ON businesses(name)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_source ON businesses(source, source_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_businesses_name ON businesses(name)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_businesses_source ON businesses(source, source_id)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)"
+        )
         # Create candidate_duplicate_pairs table with all necessary fields
         cursor.execute(
             """
@@ -248,7 +254,9 @@ def test_exact_duplicates(temp_db):
                     with patch("sys.argv", ["bin/dedupe.py"]):
                         dedupe.main()
                     # Verify the process_duplicate_pair function was called
-                    assert mock_process_pair.called, "Expected process_duplicate_pair to be called"
+                    assert (
+                        mock_process_pair.called
+                    ), "Expected process_duplicate_pair to be called"
                     # Since we're mocking process_duplicate_pair, manually update the DB
                     # to reflect what would happen if function was actually called
                     real_cursor.execute(
@@ -362,7 +370,9 @@ def test_similar_businesses(temp_db):
                     with patch("sys.argv", ["bin/dedupe.py"]):
                         dedupe.main()
                     # Verify the process_duplicate_pair function was called
-                    assert mock_process_pair.called, "Expected process_duplicate_pair to be called"
+                    assert (
+                        mock_process_pair.called
+                    ), "Expected process_duplicate_pair to be called"
                     # Since we're mocking process_duplicate_pair, manually update the DB
                     # to reflect what would happen if function was actually called
                     real_cursor.execute(
@@ -469,12 +479,16 @@ def test_skip_processed_businesses(temp_db):
                         not mock_flag_for_review.called
                     ), "Expected flag_for_review not to be called for processed businesses"
                     # Verify that the deduplication completed message was logged
-                    log_messages = [call[0][0] for call in mock_logger.info.call_args_list]
+                    log_messages = [
+                        call[0][0] for call in mock_logger.info.call_args_list
+                    ]
                     completion_message_found = False
                     for msg in log_messages:
                         if "Deduplication completed" in msg:
                             completion_message_found = True
                             break
-                    assert completion_message_found, f"Expected 'Deduplication completed' message, got: {log_messages}"
+                    assert (
+                        completion_message_found
+                    ), f"Expected 'Deduplication completed' message, got: {log_messages}"
     finally:
         conn.close()

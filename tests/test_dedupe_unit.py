@@ -62,7 +62,9 @@ def test_get_potential_duplicates():
     ]
     # Directly mock the get_potential_duplicates function
     # This is a more reliable approach than mocking the database connection
-    with patch("bin.dedupe.get_potential_duplicates", return_value=expected_result) as mock_get_pairs:
+    with patch(
+        "bin.dedupe.get_potential_duplicates", return_value=expected_result
+    ) as mock_get_pairs:
         # Call the function
         result = dedupe.get_potential_duplicates(limit=10)
         # Verify the function was called with the expected arguments
@@ -125,8 +127,12 @@ def test_process_duplicate_pair():
                     is_dry_run=False,
                 )
                 # Verify the function called the expected methods
-                assert mock_matcher.are_potential_duplicates.called, "Expected are_potential_duplicates to be called"
-                assert mock_verifier.verify_duplicates.called, "Expected verify_duplicates to be called"
+                assert (
+                    mock_matcher.are_potential_duplicates.called
+                ), "Expected are_potential_duplicates to be called"
+                assert (
+                    mock_verifier.verify_duplicates.called
+                ), "Expected verify_duplicates to be called"
                 assert mock_merge.called, "Expected merge_businesses to be called"
                 # Verify the function returned the expected result
                 assert success is True, f"Expected success=True, got {success}"
@@ -188,17 +194,27 @@ def test_process_duplicate_pair_dry_run():
                     is_dry_run=True,
                 )
                 # Verify the function called the expected methods
-                assert mock_matcher.are_potential_duplicates.called, "Expected are_potential_duplicates to be called"
-                assert mock_verifier.verify_duplicates.called, "Expected verify_duplicates to be called"
+                assert (
+                    mock_matcher.are_potential_duplicates.called
+                ), "Expected are_potential_duplicates to be called"
+                assert (
+                    mock_verifier.verify_duplicates.called
+                ), "Expected verify_duplicates to be called"
                 # Verify the merge_businesses function was called with is_dry_run=True
                 assert mock_merge.called, "Expected merge_businesses to be called"
                 args, kwargs = mock_merge.call_args
                 # The is_dry_run parameter is passed as the third positional argument,
                 # not as a keyword
-                assert len(args) >= 3 and args[2] is True, "Expected is_dry_run=True as third positional argument"
+                assert (
+                    len(args) >= 3 and args[2] is True
+                ), "Expected is_dry_run=True as third positional argument"
                 # Verify the function returned the expected result
-                assert success is False, f"Expected success=False in dry run mode, got {success}"
-                assert merged_id is None, f"Expected merged_id=None in dry run mode, got {merged_id}"
+                assert (
+                    success is False
+                ), f"Expected success=False in dry run mode, got {success}"
+                assert (
+                    merged_id is None
+                ), f"Expected merged_id=None in dry run mode, got {merged_id}"
 
 
 def test_main_function():
@@ -224,8 +240,12 @@ def test_main_function():
                 # Run the main function
                 result = dedupe.main()
                 # Verify the function called the expected methods
-                assert mock_get_pairs.called, "Expected get_potential_duplicates to be called"
-                assert mock_process_pair.called, "Expected process_duplicate_pair to be called"
+                assert (
+                    mock_get_pairs.called
+                ), "Expected get_potential_duplicates to be called"
+                assert (
+                    mock_process_pair.called
+                ), "Expected process_duplicate_pair to be called"
                 # Verify the function returned the expected result
                 assert result == 0, f"Expected result=0, got {result}"
 
@@ -276,17 +296,23 @@ def test_skip_processed_businesses():
                 mock_get_pairs.return_value = [processed_pair]
                 # Mock the get_business_by_id function
                 with patch("bin.dedupe.get_business_by_id") as mock_get_business:
-                    mock_get_business.side_effect = lambda id: (business1 if id == 1 else business2)
+                    mock_get_business.side_effect = lambda id: (
+                        business1 if id == 1 else business2
+                    )
                     # Create a custom implementation of process_duplicate_pair
                     # to check if it's called with processed pairs
                     original_process_pair = dedupe.process_duplicate_pair
                     processed_pairs_processed = []
 
-                    def mock_process_pair(duplicate_pair, matcher, verifier, is_dry_run=False):
+                    def mock_process_pair(
+                        duplicate_pair, matcher, verifier, is_dry_run=False
+                    ):
                         # Record which pairs were processed
                         processed_pairs_processed.append(duplicate_pair["id"])
                         # Call the original function
-                        return original_process_pair(duplicate_pair, matcher, verifier, is_dry_run)
+                        return original_process_pair(
+                            duplicate_pair, matcher, verifier, is_dry_run
+                        )
 
                     # Mock the process_duplicate_pair function with our implementation
                     with patch(

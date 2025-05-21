@@ -11,7 +11,9 @@ import pytest
 import yaml
 
 # Path constants
-DB_MIGRATIONS_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "migrations")
+DB_MIGRATIONS_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "db", "migrations"
+)
 ETC_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "etc")
 MIGRATION_FILE = os.path.join(DB_MIGRATIONS_PATH, "2025-05-19_init.sql")
 ZIPS_FILE = os.path.join(ETC_PATH, "zips.csv")
@@ -28,7 +30,9 @@ def db_connection():
 
 def test_migration_file_exists():
     """Test that the migration file exists"""
-    assert os.path.exists(MIGRATION_FILE), f"Migration file {MIGRATION_FILE} does not exist"
+    assert os.path.exists(
+        MIGRATION_FILE
+    ), f"Migration file {MIGRATION_FILE} does not exist"
 
 
 def test_zips_file_exists():
@@ -38,7 +42,9 @@ def test_zips_file_exists():
 
 def test_verticals_file_exists():
     """Test that the verticals.yml file exists"""
-    assert os.path.exists(VERTICALS_FILE), f"Verticals file {VERTICALS_FILE} does not exist"
+    assert os.path.exists(
+        VERTICALS_FILE
+    ), f"Verticals file {VERTICALS_FILE} does not exist"
 
 
 def test_zips_contains_required_zips():
@@ -58,7 +64,9 @@ def test_verticals_contains_required_verticals():
         data = yaml.safe_load(f)
     vertical_names = [v["name"] for v in data["verticals"]]
     for vertical in required_verticals:
-        assert vertical in vertical_names, f"Required vertical {vertical} not found in verticals.yml"
+        assert (
+            vertical in vertical_names
+        ), f"Required vertical {vertical} not found in verticals.yml"
 
 
 def test_schema_creation(db_connection):

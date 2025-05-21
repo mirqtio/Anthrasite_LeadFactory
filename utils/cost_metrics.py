@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import logging configuration
 from utils.logging_config import get_logger
+
 # Import batch metrics
 from utils.batch_metrics import record_cost_per_lead, increment_gpu_cost
 
@@ -25,7 +26,9 @@ logger = get_logger(__name__)
 # Constants
 COST_TRACKER_FILE = os.getenv("COST_TRACKER_FILE", "data/cost_tracker.json")
 DATABASE_URL = os.getenv("DATABASE_URL", "leadfactory.db")
-MONTHLY_BUDGET = float(os.getenv("MONTHLY_BUDGET", "250"))  # Default $250 monthly budget
+MONTHLY_BUDGET = float(
+    os.getenv("MONTHLY_BUDGET", "250")
+)  # Default $250 monthly budget
 
 
 def ensure_cost_tracker_file() -> None:
@@ -134,7 +137,9 @@ def get_total_monthly_cost() -> float:
         data = get_cost_data()
 
         # Sum all monthly costs
-        total_cost = sum(float(cost) for service, cost in data.get("monthly_costs", {}).items())
+        total_cost = sum(
+            float(cost) for service, cost in data.get("monthly_costs", {}).items()
+        )
 
         return total_cost
     except Exception as e:
@@ -263,7 +268,9 @@ def reset_monthly_gpu_cost() -> bool:
         return False
 
 
-def check_gpu_cost_threshold(daily_threshold: float = 25.0, monthly_threshold: float = 100.0) -> Tuple[bool, str]:
+def check_gpu_cost_threshold(
+    daily_threshold: float = 25.0, monthly_threshold: float = 100.0
+) -> Tuple[bool, str]:
     """Check if GPU cost exceeds thresholds.
 
     Args:
@@ -280,12 +287,18 @@ def check_gpu_cost_threshold(daily_threshold: float = 25.0, monthly_threshold: f
         # Check daily threshold
         daily_cost = data["gpu_costs"]["daily"]
         if daily_cost > daily_threshold:
-            return True, f"Daily GPU cost (${daily_cost:.2f}) exceeds threshold (${daily_threshold:.2f})"
+            return (
+                True,
+                f"Daily GPU cost (${daily_cost:.2f}) exceeds threshold (${daily_threshold:.2f})",
+            )
 
         # Check monthly threshold
         monthly_cost = data["gpu_costs"]["monthly"]
         if monthly_cost > monthly_threshold:
-            return True, f"Monthly GPU cost (${monthly_cost:.2f}) exceeds threshold (${monthly_threshold:.2f})"
+            return (
+                True,
+                f"Monthly GPU cost (${monthly_cost:.2f}) exceeds threshold (${monthly_threshold:.2f})",
+            )
 
         return False, "GPU cost is within thresholds"
     except Exception as e:
@@ -309,7 +322,10 @@ def check_cost_per_lead_threshold(threshold: float = 3.0) -> Tuple[bool, str]:
         # Check threshold
         cost_per_lead = data["cost_per_lead"]
         if cost_per_lead > threshold:
-            return True, f"Cost per lead (${cost_per_lead:.2f}) exceeds threshold (${threshold:.2f})"
+            return (
+                True,
+                f"Cost per lead (${cost_per_lead:.2f}) exceeds threshold (${threshold:.2f})",
+            )
 
         return False, "Cost per lead is within threshold"
     except Exception as e:
@@ -346,7 +362,11 @@ def update_cost_metrics_at_batch_end() -> Dict[str, Any]:
             "gpu_cost_reason": gpu_cost_reason,
             "total_monthly_cost": get_total_monthly_cost(),
             "monthly_budget": MONTHLY_BUDGET,
-            "budget_utilization": (get_total_monthly_cost() / MONTHLY_BUDGET) * 100 if MONTHLY_BUDGET > 0 else 0.0,
+            "budget_utilization": (
+                (get_total_monthly_cost() / MONTHLY_BUDGET) * 100
+                if MONTHLY_BUDGET > 0
+                else 0.0
+            ),
         }
 
         logger.info(f"Updated cost metrics at batch end: {results}")

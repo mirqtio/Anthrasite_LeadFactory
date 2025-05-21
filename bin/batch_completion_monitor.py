@@ -17,6 +17,7 @@ from email.mime.multipart import MIMEMultipart
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import batch tracker
 from utils.batch_tracker import check_batch_completion, get_batch_status
+
 # Import logging configuration
 from utils.logging_config import get_logger
 
@@ -24,7 +25,9 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 # Constants
-CHECK_INTERVAL = int(os.getenv("BATCH_COMPLETION_CHECK_INTERVAL_SECONDS", "300"))  # 5 minutes
+CHECK_INTERVAL = int(
+    os.getenv("BATCH_COMPLETION_CHECK_INTERVAL_SECONDS", "300")
+)  # 5 minutes
 ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "alerts@anthrasite.com")
 ALERT_EMAIL_FROM = os.getenv("ALERT_EMAIL_FROM", "leadfactory@anthrasite.com")
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.sendgrid.net")
@@ -95,13 +98,13 @@ Stage Completion:
 """
 
         # Add stage completion details
-        stages = status.get('stages', {})
+        stages = status.get("stages", {})
         for stage, details in stages.items():
             message += f"- {stage.title()}: {details.get('completion_percentage', 0):.2f}% at {details.get('timestamp', 'Unknown')}\n"
 
         # Add recent alerts
         message += "\nRecent Alerts:\n"
-        alerts = status.get('alerts', [])
+        alerts = status.get("alerts", [])
         for alert in alerts:
             message += f"- {alert.get('timestamp', 'Unknown')}: {alert.get('message', 'Unknown')}\n"
 

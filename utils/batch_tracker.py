@@ -11,6 +11,7 @@ from typing import Dict, Optional, Tuple
 
 # Import logging configuration
 from .logging_config import get_logger
+
 # Import metrics for updating batch completion gauge
 from .metrics import BATCH_COMPLETION_GAUGE
 
@@ -19,9 +20,15 @@ logger = get_logger(__name__)
 
 # Constants
 BATCH_TRACKER_FILE = os.getenv("BATCH_TRACKER_FILE", "data/batch_tracker.json")
-BATCH_COMPLETION_DEADLINE_HOUR = int(os.getenv("BATCH_COMPLETION_DEADLINE_HOUR", "5"))  # 5:00 AM EST
-BATCH_COMPLETION_DEADLINE_MINUTE = int(os.getenv("BATCH_COMPLETION_DEADLINE_MINUTE", "0"))  # 5:00 AM EST
-BATCH_COMPLETION_TIMEZONE = os.getenv("BATCH_COMPLETION_TIMEZONE", "America/New_York")  # EST
+BATCH_COMPLETION_DEADLINE_HOUR = int(
+    os.getenv("BATCH_COMPLETION_DEADLINE_HOUR", "5")
+)  # 5:00 AM EST
+BATCH_COMPLETION_DEADLINE_MINUTE = int(
+    os.getenv("BATCH_COMPLETION_DEADLINE_MINUTE", "0")
+)  # 5:00 AM EST
+BATCH_COMPLETION_TIMEZONE = os.getenv(
+    "BATCH_COMPLETION_TIMEZONE", "America/New_York"
+)  # EST
 
 
 def ensure_tracker_file_exists() -> None:
@@ -36,7 +43,7 @@ def ensure_tracker_file_exists() -> None:
             "last_batch_end": None,
             "current_batch_start": None,
             "current_batch_stages": {},
-            "alerts": []
+            "alerts": [],
         }
         with open(tracker_file, "w") as f:
             json.dump(initial_data, f, indent=2)
@@ -57,7 +64,7 @@ def load_tracker_data() -> Dict:
             "last_batch_end": None,
             "current_batch_start": None,
             "current_batch_stages": {},
-            "alerts": []
+            "alerts": [],
         }
 
 
@@ -135,7 +142,7 @@ def record_batch_stage_completion(stage: str, completion_percentage: float) -> b
         current_time = datetime.utcnow().isoformat()
         data["current_batch_stages"][stage] = {
             "timestamp": current_time,
-            "completion_percentage": completion_percentage
+            "completion_percentage": completion_percentage,
         }
 
         # Update batch completion gauge
@@ -144,7 +151,9 @@ def record_batch_stage_completion(stage: str, completion_percentage: float) -> b
         # Save updated data
         success = save_tracker_data(data)
         if success:
-            logger.info(f"Recorded {stage} stage completion: {completion_percentage}% at {current_time}")
+            logger.info(
+                f"Recorded {stage} stage completion: {completion_percentage}% at {current_time}"
+            )
 
         return success
     except Exception as e:
@@ -175,7 +184,7 @@ def record_batch_end() -> bool:
             if stage not in data["current_batch_stages"]:
                 data["current_batch_stages"][stage] = {
                     "timestamp": current_time,
-                    "completion_percentage": 100.0
+                    "completion_percentage": 100.0,
                 }
             BATCH_COMPLETION_GAUGE.labels(stage=stage).set(100.0)
 
@@ -214,24 +223,26 @@ def check_batch_completion() -> Tuple[bool, Optional[str]]:
 
         # Get current time in EST
         import pytz
+
         est_tz = pytz.timezone(BATCH_COMPLETION_TIMEZONE)
         current_time = datetime.now(est_tz)
 
         # Check if it's past the deadline
-        deadline_passed = (
-            current_time.hour > BATCH_COMPLETION_DEADLINE_HOUR or
-            (current_time.hour == BATCH_COMPLETION_DEADLINE_HOUR and
-             current_time.minute >= BATCH_COMPLETION_DEADLINE_MINUTE)
+        deadline_passed = current_time.hour > BATCH_COMPLETION_DEADLINE_HOUR or (
+            current_time.hour == BATCH_COMPLETION_DEADLINE_HOUR
+            and current_time.minute >= BATCH_COMPLETION_DEADLINE_MINUTE
         )
 
         if deadline_passed:
             # Check if batch has an end timestamp
             if data["last_batch_end"]:
                 # Check if the end timestamp is from today
-                last_end = datetime.fromisoformat(data["last_batch_end"].replace("Z", "+00:00"))
+                last_end = datetime.fromisoformat(
+                    data["last_batch_end"].replace("Z", "+00:00")
+                )
                 last_end_est = last_end.astimezone(est_tz)
 
-                if (last_end_est.date() == current_time.date()):
+                if last_end_est.date() == current_time.date():
                     # Batch completed today, we're good
                     return True, "Batch completed today"
                 else:
@@ -243,7 +254,7 @@ def check_batch_completion() -> Tuple[bool, Optional[str]]:
                     alert = {
                         "timestamp": datetime.utcnow().isoformat(),
                         "type": "batch_completion",
-                        "message": reason
+                        "message": reason,
                     }
                     data["alerts"].append(alert)
                     save_tracker_data(data)
@@ -258,7 +269,7 @@ def check_batch_completion() -> Tuple[bool, Optional[str]]:
                 alert = {
                     "timestamp": datetime.utcnow().isoformat(),
                     "type": "batch_completion",
-                    "message": reason
+                    "message": reason,
                 }
                 data["alerts"].append(alert)
                 save_tracker_data(data)
@@ -284,19 +295,22 @@ def get_batch_status() -> Dict:
         # Calculate completion percentage across all stages
         completion_percentage = 0.0
         if data["current_batch_stages"]:
-            stage_percentages = [stage_data["completion_percentage"]
-                                for stage_data in data["current_batch_stages"].values()]
+            stage_percentages = [
+                stage_data["completion_percentage"]
+                for stage_data in data["current_batch_stages"].values()
+            ]
             completion_percentage = sum(stage_percentages) / len(stage_percentages)
 
         # Get deadline in EST
         import pytz
+
         est_tz = pytz.timezone(BATCH_COMPLETION_TIMEZONE)
         now = datetime.now(est_tz)
         deadline = now.replace(
             hour=BATCH_COMPLETION_DEADLINE_HOUR,
             minute=BATCH_COMPLETION_DEADLINE_MINUTE,
             second=0,
-            microsecond=0
+            microsecond=0,
         )
 
         # If deadline is in the past for today, set it to tomorrow
@@ -317,13 +331,13 @@ def get_batch_status() -> Dict:
             "deadline": deadline_str,
             "completed_on_time": completed_on_time,
             "reason": reason,
-            "alerts": data["alerts"][-5:] if data["alerts"] else []  # Return last 5 alerts
+            "alerts": (
+                data["alerts"][-5:] if data["alerts"] else []
+            ),  # Return last 5 alerts
         }
     except Exception as e:
         logger.error(f"Error getting batch status: {e}")
-        return {
-            "error": f"Error getting batch status: {e}"
-        }
+        return {"error": f"Error getting batch status: {e}"}
 
 
 # Initialize batch tracker on module import

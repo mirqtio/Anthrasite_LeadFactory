@@ -150,7 +150,9 @@ class RuleEngine:
                         "multiplier": multiplier_factor,
                     }
                 )
-                logger.debug(f"Applied multiplier '{multiplier_name}': x{multiplier_factor:.2f}")
+                logger.debug(
+                    f"Applied multiplier '{multiplier_name}': x{multiplier_factor:.2f}"
+                )
         # Apply multiplier to score
         score = int(score * multiplier_value)
         # Ensure score is within min/max bounds
@@ -188,7 +190,9 @@ class RuleEngine:
         tech_stack = self._get_tech_stack(business_data)
         return technology in tech_stack
 
-    def _eval_tech_stack_contains_any(self, technologies: List[str], business_data: Dict) -> bool:
+    def _eval_tech_stack_contains_any(
+        self, technologies: List[str], business_data: Dict
+    ) -> bool:
         """Check if business tech stack contains any of the specified technologies."""
         tech_stack = self._get_tech_stack(business_data)
         return any(tech in tech_stack for tech in technologies)
@@ -227,7 +231,9 @@ class RuleEngine:
         performance_score = self._get_performance_score(business_data)
         return performance_score > threshold
 
-    def _eval_performance_score_between(self, condition: Dict, business_data: Dict) -> bool:
+    def _eval_performance_score_between(
+        self, condition: Dict, business_data: Dict
+    ) -> bool:
         """Check if business performance score is between min and max values."""
         performance_score = self._get_performance_score(business_data)
         min_value = condition.get("min", 0)
@@ -244,7 +250,9 @@ class RuleEngine:
         cls = self._get_cls(business_data)
         return cls > threshold
 
-    def _eval_category_contains_any(self, categories: List[str], business_data: Dict) -> bool:
+    def _eval_category_contains_any(
+        self, categories: List[str], business_data: Dict
+    ) -> bool:
         """Check if business category contains any of the specified categories."""
         business_category = business_data.get("category", "").lower()
         return any(category.lower() in business_category for category in categories)
@@ -254,7 +262,9 @@ class RuleEngine:
         has_website = bool(business_data.get("website"))
         return not has_website if value else has_website
 
-    def _eval_website_contains_any(self, patterns: List[str], business_data: Dict) -> bool:
+    def _eval_website_contains_any(
+        self, patterns: List[str], business_data: Dict
+    ) -> bool:
         """Check if business website contains any of the specified patterns."""
         website = business_data.get("website", "")
         if not website:
@@ -512,7 +522,9 @@ def get_businesses_to_score(
         return []
 
 
-def save_business_score(business_id: int, score: int, applied_rules: List[Dict]) -> bool:
+def save_business_score(
+    business_id: int, score: int, applied_rules: List[Dict]
+) -> bool:
     """Save business score to database.
     Args:
         business_id: Business ID.
@@ -551,7 +563,9 @@ def score_business(business: Dict, rule_engine: RuleEngine) -> bool:
     try:
         # Calculate score
         score, applied_rules = rule_engine.calculate_score(business)
-        logger.info(f"Calculated score {score} for business ID {business_id} with {len(applied_rules)} applied rules")
+        logger.info(
+            f"Calculated score {score} for business ID {business_id} with {len(applied_rules)} applied rules"
+        )
         # Save score to database
         success = save_business_score(business_id, score, applied_rules)
         return success
@@ -562,8 +576,12 @@ def score_business(business: Dict, rule_engine: RuleEngine) -> bool:
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Calculate lead scores based on defined rules")
-    parser.add_argument("--limit", type=int, help="Limit the number of businesses to process")
+    parser = argparse.ArgumentParser(
+        description="Calculate lead scores based on defined rules"
+    )
+    parser.add_argument(
+        "--limit", type=int, help="Limit the number of businesses to process"
+    )
     parser.add_argument("--id", type=int, help="Process only the specified business ID")
     parser.add_argument(
         "--recalculate",
@@ -574,7 +592,9 @@ def main():
     # Initialize rule engine
     rule_engine = RuleEngine()
     # Get businesses to score
-    businesses = get_businesses_to_score(limit=args.limit, business_id=args.id, recalculate=args.recalculate)
+    businesses = get_businesses_to_score(
+        limit=args.limit, business_id=args.id, recalculate=args.recalculate
+    )
     if not businesses:
         logger.warning("No businesses to score")
         return 0

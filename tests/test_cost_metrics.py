@@ -13,6 +13,7 @@ import pytest
 
 # Add project root to path
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import modules to test
@@ -53,7 +54,7 @@ def cost_tracker_file():
 @pytest.fixture
 def mock_database():
     """Create a temporary SQLite database for testing."""
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.db') as temp_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as temp_file:
         pass
 
     # Set environment variable to use the temp database
@@ -63,7 +64,9 @@ def mock_database():
     # Create test database
     conn = sqlite3.connect(temp_file.name)
     cursor = conn.cursor()
-    cursor.execute("CREATE TABLE businesses (id INTEGER PRIMARY KEY, name TEXT, email TEXT)")
+    cursor.execute(
+        "CREATE TABLE businesses (id INTEGER PRIMARY KEY, name TEXT, email TEXT)"
+    )
     conn.commit()
     conn.close()
 
@@ -101,7 +104,7 @@ def step_impl(context, count):
     for i in range(count):
         cursor.execute(
             "INSERT INTO businesses (name, email) VALUES (?, ?)",
-            (f"Business {i}", f"business{i}@example.com")
+            (f"Business {i}", f"business{i}@example.com"),
         )
 
     conn.commit()

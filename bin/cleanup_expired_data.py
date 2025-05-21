@@ -18,7 +18,11 @@ from typing import Dict, List, Tuple, Any
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import utility functions
-from utils.raw_data_retention import identify_expired_data, HTML_STORAGE_DIR, RETENTION_DAYS
+from utils.raw_data_retention import (
+    identify_expired_data,
+    HTML_STORAGE_DIR,
+    RETENTION_DAYS,
+)
 from utils.io import DatabaseConnection
 from utils.logging_config import get_logger
 
@@ -56,7 +60,9 @@ def delete_html_files(expired_paths: List[str], dry_run: bool = False) -> int:
     return deleted_count
 
 
-def delete_database_records(expired_html_paths: List[str], expired_log_ids: List[int], dry_run: bool = False) -> Tuple[int, int]:
+def delete_database_records(
+    expired_html_paths: List[str], expired_log_ids: List[int], dry_run: bool = False
+) -> Tuple[int, int]:
     """Delete expired database records.
 
     Args:
@@ -90,12 +96,18 @@ def delete_database_records(expired_html_paths: List[str], expired_log_ids: List
                     # Use a safer approach with a fixed query structure and validated placeholders
                     # The placeholders string is constructed from a list comprehension with fixed values
                     # This is safe because we're not using user input in the query structure
-                    query = "DELETE FROM raw_html_storage WHERE html_path IN (" + placeholders + ")"  # nosec B608
+                    query = (
+                        "DELETE FROM raw_html_storage WHERE html_path IN ("
+                        + placeholders
+                        + ")"
+                    )  # nosec B608
                     cursor.execute(query, expired_html_paths)
                     html_records_deleted = len(expired_html_paths)
                     logger.info(f"Deleted {html_records_deleted} HTML storage records")
                 else:
-                    logger.info(f"[DRY RUN] Would delete {len(expired_html_paths)} HTML storage records")
+                    logger.info(
+                        f"[DRY RUN] Would delete {len(expired_html_paths)} HTML storage records"
+                    )
                     html_records_deleted = len(expired_html_paths)
 
             # Delete LLM log records
@@ -109,21 +121,27 @@ def delete_database_records(expired_html_paths: List[str], expired_log_ids: List
                         # Use a safer approach with a fixed query structure and validated placeholders
                         # The placeholders string is constructed from a list comprehension with fixed values
                         # This is safe because we're not using user input in the query structure
-                        query = "DELETE FROM llm_logs WHERE id IN (" + placeholders + ")"  # nosec B608
+                        query = (
+                            "DELETE FROM llm_logs WHERE id IN (" + placeholders + ")"
+                        )  # nosec B608
                     else:
                         # SQLite uses ? for parameters
                         placeholders = ", ".join(["?" for _ in expired_log_ids])
                         # Use a safer approach with a fixed query structure and validated placeholders
                         # The placeholders string is constructed from a list comprehension with fixed values
                         # This is safe because we're not using user input in the query structure
-                        query = "DELETE FROM llm_logs WHERE id IN (" + placeholders + ")"  # nosec B608
+                        query = (
+                            "DELETE FROM llm_logs WHERE id IN (" + placeholders + ")"
+                        )  # nosec B608
 
                     # Execute delete query with parameters
                     cursor.execute(query, expired_log_ids)
                     log_records_deleted = len(expired_log_ids)
                     logger.info(f"Deleted {log_records_deleted} LLM log records")
                 else:
-                    logger.info(f"[DRY RUN] Would delete {len(expired_log_ids)} LLM log records")
+                    logger.info(
+                        f"[DRY RUN] Would delete {len(expired_log_ids)} LLM log records"
+                    )
                     log_records_deleted = len(expired_log_ids)
 
     except Exception as e:
@@ -132,7 +150,9 @@ def delete_database_records(expired_html_paths: List[str], expired_log_ids: List
     return html_records_deleted, log_records_deleted
 
 
-def cleanup_expired_data(dry_run: bool = False, verbose: bool = False) -> Dict[str, Any]:
+def cleanup_expired_data(
+    dry_run: bool = False, verbose: bool = False
+) -> Dict[str, Any]:
     """Clean up expired data based on retention policy.
 
     Args:
@@ -143,19 +163,25 @@ def cleanup_expired_data(dry_run: bool = False, verbose: bool = False) -> Dict[s
         Dictionary with cleanup results.
     """
     if verbose:
-        logger.info(f"Identifying expired data (retention period: {RETENTION_DAYS} days)...")
+        logger.info(
+            f"Identifying expired data (retention period: {RETENTION_DAYS} days)..."
+        )
 
     # Identify expired data
     expired_html_paths, expired_log_ids = identify_expired_data()
 
     if verbose:
-        logger.info(f"Found {len(expired_html_paths)} expired HTML files and {len(expired_log_ids)} expired LLM logs")
+        logger.info(
+            f"Found {len(expired_html_paths)} expired HTML files and {len(expired_log_ids)} expired LLM logs"
+        )
 
     # Delete HTML files
     html_files_deleted = delete_html_files(expired_html_paths, dry_run)
 
     # Delete database records
-    html_records_deleted, log_records_deleted = delete_database_records(expired_html_paths, expired_log_ids, dry_run)
+    html_records_deleted, log_records_deleted = delete_database_records(
+        expired_html_paths, expired_log_ids, dry_run
+    )
 
     # Prepare results
     results = {
@@ -172,7 +198,9 @@ def cleanup_expired_data(dry_run: bool = False, verbose: bool = False) -> Dict[s
     if verbose:
         if dry_run:
             logger.info("[DRY RUN] No actual deletions performed")
-        logger.info(f"Cleanup complete: {html_files_deleted} HTML files and {log_records_deleted} LLM logs processed")
+        logger.info(
+            f"Cleanup complete: {html_files_deleted} HTML files and {log_records_deleted} LLM logs processed"
+        )
 
     return results
 
@@ -186,7 +214,8 @@ def main() -> int:
         help="Don't actually delete anything, just show what would be deleted",
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Print verbose output",
     )

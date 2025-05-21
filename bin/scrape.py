@@ -19,8 +19,15 @@ from dotenv import load_dotenv
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import utility functions
-from utils.io import (get_active_zip_codes, get_verticals, load_yaml_config,
-                      make_api_request, mark_zip_done, save_business)
+from utils.io import (
+    get_active_zip_codes,
+    get_verticals,
+    load_yaml_config,
+    make_api_request,
+    mark_zip_done,
+    save_business,
+)
+
 # Import logging configuration first
 from utils.logging_config import get_logger
 
@@ -29,7 +36,9 @@ logger = get_logger(__name__)
 # Load environment variables
 load_dotenv()
 # Constants
-VERTICALS_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "etc", "verticals.yml")
+VERTICALS_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "etc", "verticals.yml"
+)
 YELP_API_KEY = os.getenv("YELP_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_KEY")
 YELP_API_BASE_URL = "https://api.yelp.com/v3"
@@ -96,7 +105,9 @@ class YelpAPI:
             return [], error
         return response_data.get("businesses", []), None
 
-    def get_business_details(self, business_id: str) -> Tuple[Optional[Dict], Optional[str]]:
+    def get_business_details(
+        self, business_id: str
+    ) -> Tuple[Optional[Dict], Optional[str]]:
         """Get detailed information about a business.
         Args:
             business_id: Yelp business ID.
@@ -216,7 +227,9 @@ def get_zip_coordinates(zip_code: str) -> Optional[str]:
     return zip_coordinates.get(zip_code)
 
 
-def extract_email_from_website(website: str, business_id: Optional[int] = None) -> Optional[str]:
+def extract_email_from_website(
+    website: str, business_id: Optional[int] = None
+) -> Optional[str]:
     """Extract email from website.
     This function fetches the website HTML, stores it for retention purposes,
     and extracts email addresses from the content.
@@ -239,10 +252,13 @@ def extract_email_from_website(website: str, business_id: Optional[int] = None) 
         # Store HTML content if business_id is provided
         if html_content and business_id:
             html_path = store_html(html_content, website, business_id)
-            logger.info(f"Stored HTML for business {business_id}, website: {website}, path: {html_path}")
+            logger.info(
+                f"Stored HTML for business {business_id}, website: {website}, path: {html_path}"
+            )
 
         # Extract email from domain (placeholder for actual email extraction)
         from urllib.parse import urlparse
+
         domain = urlparse(website).netloc
         if domain:
             return f"info@{domain}"
@@ -302,7 +318,9 @@ def process_yelp_business(business: Dict, category: str) -> Optional[int]:
         return None
 
 
-def process_google_place(place: Dict, category: str, google_api: GooglePlacesAPI) -> Optional[int]:
+def process_google_place(
+    place: Dict, category: str, google_api: GooglePlacesAPI
+) -> Optional[int]:
     """Process and save a place from Google.
     Args:
         place: Place data from Google Places API.
@@ -319,7 +337,9 @@ def process_google_place(place: Dict, category: str, google_api: GooglePlacesAPI
             return None
         details, error = google_api.get_place_details(place_id)
         if error or not details:
-            logger.warning(f"Error getting details for Google place {place_id}: {error}")
+            logger.warning(
+                f"Error getting details for Google place {place_id}: {error}"
+            )
             return None
         # Extract information
         name = details.get("name", "")
@@ -355,7 +375,9 @@ def process_google_place(place: Dict, category: str, google_api: GooglePlacesAPI
         return None
 
 
-def scrape_businesses(zip_code: str, vertical: Dict, limit: int = 50) -> Tuple[int, int]:
+def scrape_businesses(
+    zip_code: str, vertical: Dict, limit: int = 50
+) -> Tuple[int, int]:
     """Scrape businesses for a specific ZIP code and vertical.
     Args:
         zip_code: ZIP code to scrape.
@@ -425,13 +447,17 @@ def scrape_businesses(zip_code: str, vertical: Dict, limit: int = 50) -> Tuple[i
             for place in places:
                 if process_google_place(place, vertical["name"], google_api):
                     google_count += 1
-    logger.info(f"Scraped {yelp_count} businesses from Yelp and {google_count} from Google Places")
+    logger.info(
+        f"Scraped {yelp_count} businesses from Yelp and {google_count} from Google Places"
+    )
     return yelp_count, google_count
 
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Scrape business listings from Yelp and Google Places APIs")
+    parser = argparse.ArgumentParser(
+        description="Scrape business listings from Yelp and Google Places APIs"
+    )
     parser.add_argument(
         "--limit",
         type=int,
@@ -439,7 +465,9 @@ def main():
         help="Limit the number of businesses to fetch per API",
     )
     parser.add_argument("--zip", type=str, help="Process only the specified ZIP code")
-    parser.add_argument("--vertical", type=str, help="Process only the specified vertical")
+    parser.add_argument(
+        "--vertical", type=str, help="Process only the specified vertical"
+    )
     args = parser.parse_args()
     # Get active ZIP codes
     if args.zip:
@@ -466,13 +494,17 @@ def main():
     for zip_code_info in zip_codes:
         zip_code = zip_code_info["zip"]
         for vertical in verticals:
-            yelp_count, google_count = scrape_businesses(zip_code=zip_code, vertical=vertical, limit=args.limit)
+            yelp_count, google_count = scrape_businesses(
+                zip_code=zip_code, vertical=vertical, limit=args.limit
+            )
             total_yelp += yelp_count
             total_google += google_count
         # Mark ZIP code as done if not in custom mode
         if not args.zip:
             mark_zip_done(zip_code)
-    logger.info(f"Scraping completed. Total: {total_yelp} from Yelp, {total_google} from Google Places")
+    logger.info(
+        f"Scraping completed. Total: {total_yelp} from Yelp, {total_google} from Google Places"
+    )
     return 0
 
 

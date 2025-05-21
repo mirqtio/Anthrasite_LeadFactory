@@ -296,7 +296,9 @@ class TestTechStackAnalyzer:
             mock_page = MagicMock()
             mock_webpage.return_value = mock_page
             # Mock the Wappalyzer.analyze_with_categories method
-            with patch.object(analyzer.wappalyzer, "analyze_with_categories") as mock_analyze:
+            with patch.object(
+                analyzer.wappalyzer, "analyze_with_categories"
+            ) as mock_analyze:
                 # Create a mock response with technologies
                 mock_result = {
                     "WordPress": {"categories": ["CMS"]},
@@ -456,7 +458,9 @@ def check_enriched_data_saved(temp_db):
     cursor = conn.cursor()
     # In a real test, we would check the database for the enriched data
     # For now, we'll just verify that the business was marked as enriched
-    cursor.execute("SELECT status FROM businesses WHERE website = ?", ("https://example.com",))
+    cursor.execute(
+        "SELECT status FROM businesses WHERE website = ?", ("https://example.com",)
+    )
     result = cursor.fetchone()
     assert result is not None
     assert result[0] == "enriched"
@@ -505,7 +509,9 @@ def check_processing_order(multiple_businesses_with_scores):
     assert scores == sorted(scores, reverse=True)
     # Create a cursor for database operations
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM businesses WHERE website != '' AND enriched_at IS NULL LIMIT 1")
+    cursor.execute(
+        "SELECT id FROM businesses WHERE website != '' AND enriched_at IS NULL LIMIT 1"
+    )
     business_id = cursor.fetchone()[0]
     # Close the cursor but not the connection as it's managed by the fixture
     cursor.close()
@@ -517,7 +523,9 @@ def business_without_website(temp_db):
     """Get a business without a website."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM businesses WHERE website = '' AND enriched_at IS NULL LIMIT 1")
+    cursor.execute(
+        "SELECT id FROM businesses WHERE website = '' AND enriched_at IS NULL LIMIT 1"
+    )
     business_id = cursor.fetchone()[0]
     conn.close()
     return business_id

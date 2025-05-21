@@ -12,7 +12,9 @@ def fix_unused_vars():
         content = f.read()
 
     # Fix unused variables with proper noqa comments
-    content = content.replace(") as mock_track, patch(", ") as mock_track,  # noqa: F841\n    patch(")
+    content = content.replace(
+        ") as mock_track, patch(", ") as mock_track,  # noqa: F841\n    patch("
+    )
 
     content = content.replace(") as mock_logging:", ") as mock_logging:  # noqa: F841")
 

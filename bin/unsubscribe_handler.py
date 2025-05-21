@@ -18,6 +18,7 @@ from fastapi.templating import Jinja2Templates
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import email queue functions
 from bin.email_queue import add_unsubscribe, is_email_unsubscribed
+
 # Import logging configuration
 from utils.logging_config import get_logger
 
@@ -46,7 +47,8 @@ templates = Jinja2Templates(directory=templates_dir)
 unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
 if not os.path.exists(unsubscribe_template_path):
     with open(unsubscribe_template_path, "w") as f:
-        f.write("""
+        f.write(
+            """
 <!DOCTYPE html>
 <html>
 <head>
@@ -191,13 +193,15 @@ if not os.path.exists(unsubscribe_template_path):
     </div>
 </body>
 </html>
-        """)
+        """
+        )
 
 # Create success template if it doesn't exist
 success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
 if not os.path.exists(success_template_path):
     with open(success_template_path, "w") as f:
-        f.write("""
+        f.write(
+            """
 <!DOCTYPE html>
 <html>
 <head>
@@ -272,7 +276,8 @@ if not os.path.exists(success_template_path):
     </div>
 </body>
 </html>
-        """)
+        """
+        )
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -286,7 +291,7 @@ async def unsubscribe_page(request: Request, email: Optional[str] = None):
     """Render unsubscribe page."""
     return templates.TemplateResponse(
         "unsubscribe.html",
-        {"request": request, "email": email or "", "success": False, "error": None}
+        {"request": request, "email": email or "", "success": False, "error": None},
     )
 
 
@@ -295,21 +300,25 @@ async def process_unsubscribe(
     request: Request,
     email: str = Form(...),
     reason: Optional[str] = Form(None),
-    comments: Optional[str] = Form(None)
+    comments: Optional[str] = Form(None),
 ):
     """Process unsubscribe request."""
     # Validate email
     if not email or "@" not in email:
         return templates.TemplateResponse(
             "unsubscribe.html",
-            {"request": request, "email": email, "success": False, "error": "Invalid email address"}
+            {
+                "request": request,
+                "email": email,
+                "success": False,
+                "error": "Invalid email address",
+            },
         )
 
     # Check if already unsubscribed
     if is_email_unsubscribed(email):
         return templates.TemplateResponse(
-            "unsubscribe_success.html",
-            {"request": request, "email": email}
+            "unsubscribe_success.html", {"request": request, "email": email}
         )
 
     # Combine reason and comments
@@ -327,8 +336,7 @@ async def process_unsubscribe(
     if success:
         logger.info(f"User unsubscribed: {email}, Reason: {reason_text}")
         return templates.TemplateResponse(
-            "unsubscribe_success.html",
-            {"request": request, "email": email}
+            "unsubscribe_success.html", {"request": request, "email": email}
         )
     else:
         return templates.TemplateResponse(
@@ -337,8 +345,8 @@ async def process_unsubscribe(
                 "request": request,
                 "email": email,
                 "success": False,
-                "error": "An error occurred while processing your request. Please try again later."
-            }
+                "error": "An error occurred while processing your request. Please try again later.",
+            },
         )
 
 

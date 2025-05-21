@@ -15,8 +15,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import database utilities
 from utils.io import DatabaseConnection
+
 # Import raw data retention utilities
-from utils.raw_data_retention import log_llm_interaction, get_llm_logs, identify_expired_data
+from utils.raw_data_retention import (
+    log_llm_interaction,
+    get_llm_logs,
+    identify_expired_data,
+)
+
 # Import logging configuration
 from utils.logging_config import get_logger
 
@@ -233,15 +239,21 @@ def check_retention_status() -> Dict[str, Any]:
     with DatabaseConnection() as cursor:
         # Count HTML files
         cursor.execute("SELECT COUNT(*) as count FROM raw_html_storage")
-        html_count = cursor.fetchone()['count']
+        html_count = cursor.fetchone()["count"]
 
         # Count LLM logs
         cursor.execute("SELECT COUNT(*) as count FROM llm_logs")
-        llm_logs_count = cursor.fetchone()['count']
+        llm_logs_count = cursor.fetchone()["count"]
 
     # Calculate retention percentages
-    html_retention_percentage = 100 - (len(expired_html_files) / html_count * 100) if html_count > 0 else 100
-    llm_retention_percentage = 100 - (len(expired_llm_logs) / llm_logs_count * 100) if llm_logs_count > 0 else 100
+    html_retention_percentage = (
+        100 - (len(expired_html_files) / html_count * 100) if html_count > 0 else 100
+    )
+    llm_retention_percentage = (
+        100 - (len(expired_llm_logs) / llm_logs_count * 100)
+        if llm_logs_count > 0
+        else 100
+    )
 
     # Prepare status report
     status = {

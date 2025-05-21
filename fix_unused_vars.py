@@ -16,7 +16,9 @@ def fix_unused_vars():
         if ") as mock_track," in line:
             line = line.replace(") as mock_track,", ") as mock_track,  # noqa: F841")
         elif ") as mock_logging:" in line:
-            line = line.replace(") as mock_logging:", ") as mock_logging:  # noqa: F841")
+            line = line.replace(
+                ") as mock_logging:", ") as mock_logging:  # noqa: F841"
+            )
         fixed_lines.append(line)
 
     with open(file_path, "w") as f:

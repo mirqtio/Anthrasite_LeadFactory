@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import database utilities
 from utils.io import DatabaseConnection
+
 # Import logging configuration
 from utils.logging_config import get_logger
 
@@ -25,7 +26,9 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 # Constants
-HTML_STORAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "html_storage")
+HTML_STORAGE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "data", "html_storage"
+)
 RETENTION_DAYS = int(os.getenv("DATA_RETENTION_DAYS", "90"))
 
 
@@ -83,7 +86,7 @@ def compress_html(html_content: str) -> Tuple[bytes, float]:
     """
     # Convert to bytes if string
     if isinstance(html_content, str):
-        html_bytes = html_content.encode('utf-8')
+        html_bytes = html_content.encode("utf-8")
     else:
         html_bytes = html_content
 
@@ -93,7 +96,9 @@ def compress_html(html_content: str) -> Tuple[bytes, float]:
     # Calculate compression ratio
     original_size = len(html_bytes)
     compressed_size = len(compressed)
-    compression_ratio = (original_size - compressed_size) / original_size if original_size > 0 else 0
+    compression_ratio = (
+        (original_size - compressed_size) / original_size if original_size > 0 else 0
+    )
 
     return compressed, compression_ratio
 
@@ -127,7 +132,7 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
         content_hash = hashlib.sha256(html_content.encode()).hexdigest()
 
         # Write compressed content to file
-        with open(full_path, 'wb') as f:
+        with open(full_path, "wb") as f:
             f.write(compressed_content)
 
         # Calculate size in bytes
@@ -147,11 +152,19 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
-                    (business_id, relative_path, url, compression_ratio, content_hash, size_bytes, retention_expires_at)
+                    (
+                        business_id,
+                        relative_path,
+                        url,
+                        compression_ratio,
+                        content_hash,
+                        size_bytes,
+                        retention_expires_at,
+                    ),
                 )
                 result = cursor.fetchone()
                 # Store the ID for potential future use or logging
-                _ = result['id'] if result else None
+                _ = result["id"] if result else None
             else:
                 cursor.execute(
                     """
@@ -159,7 +172,15 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
                     (business_id, html_path, original_url, compression_ratio, content_hash, size_bytes, retention_expires_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (business_id, relative_path, url, compression_ratio, content_hash, size_bytes, retention_expires_at)
+                    (
+                        business_id,
+                        relative_path,
+                        url,
+                        compression_ratio,
+                        content_hash,
+                        size_bytes,
+                        retention_expires_at,
+                    ),
                 )
                 # Store the ID for potential future use or logging
                 _ = cursor.lastrowid
@@ -168,15 +189,17 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
             if cursor.connection.is_postgres:
                 cursor.execute(
                     "UPDATE businesses SET html_path = %s WHERE id = %s",
-                    (relative_path, business_id)
+                    (relative_path, business_id),
                 )
             else:
                 cursor.execute(
                     "UPDATE businesses SET html_path = ? WHERE id = ?",
-                    (relative_path, business_id)
+                    (relative_path, business_id),
                 )
 
-        logger.info(f"Stored HTML for business {business_id}, URL: {url}, path: {relative_path}, size: {size_bytes} bytes, compression ratio: {compression_ratio:.2f}")
+        logger.info(
+            f"Stored HTML for business {business_id}, URL: {url}, path: {relative_path}, size: {size_bytes} bytes, compression ratio: {compression_ratio:.2f}"
+        )
         return relative_path
 
     except Exception as e:
@@ -203,11 +226,11 @@ def retrieve_html(html_path: str) -> Optional[str]:
             return None
 
         # Read and decompress file
-        with open(full_path, 'rb') as f:
+        with open(full_path, "rb") as f:
             compressed_content = f.read()
 
         # Decompress content
-        html_content = gzip.decompress(compressed_content).decode('utf-8')
+        html_content = gzip.decompress(compressed_content).decode("utf-8")
 
         logger.debug(f"Retrieved HTML from {html_path}")
         return html_content
@@ -273,11 +296,22 @@ def log_llm_interaction(
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
-                    (business_id, operation, model_version, prompt_text, response_json_str,
-                     tokens_prompt, tokens_completion, duration_ms, status, retention_expires_at, metadata_str)
+                    (
+                        business_id,
+                        operation,
+                        model_version,
+                        prompt_text,
+                        response_json_str,
+                        tokens_prompt,
+                        tokens_completion,
+                        duration_ms,
+                        status,
+                        retention_expires_at,
+                        metadata_str,
+                    ),
                 )
                 result = cursor.fetchone()
-                log_id = result['id'] if result else None
+                log_id = result["id"] if result else None
             else:
                 cursor.execute(
                     """
@@ -286,12 +320,25 @@ def log_llm_interaction(
                      tokens_prompt, tokens_completion, duration_ms, status, retention_expires_at, metadata)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (business_id, operation, model_version, prompt_text, response_json_str,
-                     tokens_prompt, tokens_completion, duration_ms, status, retention_expires_at, metadata_str)
+                    (
+                        business_id,
+                        operation,
+                        model_version,
+                        prompt_text,
+                        response_json_str,
+                        tokens_prompt,
+                        tokens_completion,
+                        duration_ms,
+                        status,
+                        retention_expires_at,
+                        metadata_str,
+                    ),
                 )
                 log_id = cursor.lastrowid
 
-        logger.info(f"Logged LLM interaction: operation={operation}, model={model_version}, business_id={business_id}, status={status}")
+        logger.info(
+            f"Logged LLM interaction: operation={operation}, model={model_version}, business_id={business_id}, status={status}"
+        )
         return log_id
 
     except Exception as e:
@@ -343,15 +390,15 @@ def get_llm_logs(
 
         # Parse JSON fields
         for log in logs:
-            if 'response_json' in log and isinstance(log['response_json'], str):
+            if "response_json" in log and isinstance(log["response_json"], str):
                 try:
-                    log['response_json'] = json.loads(log['response_json'])
+                    log["response_json"] = json.loads(log["response_json"])
                 except json.JSONDecodeError:
                     pass
 
-            if 'metadata' in log and isinstance(log['metadata'], str):
+            if "metadata" in log and isinstance(log["metadata"], str):
                 try:
-                    log['metadata'] = json.loads(log['metadata'])
+                    log["metadata"] = json.loads(log["metadata"])
                 except json.JSONDecodeError:
                     pass
 
@@ -380,18 +427,20 @@ def identify_expired_data() -> Tuple[List[Dict], List[Dict]]:
             # Query for expired HTML files
             cursor.execute(
                 "SELECT id, business_id, html_path, original_url FROM raw_html_storage WHERE retention_expires_at < ?",
-                (now,)
+                (now,),
             )
             expired_html_files = cursor.fetchall()
 
             # Query for expired LLM logs
             cursor.execute(
                 "SELECT id, business_id, operation FROM llm_logs WHERE retention_expires_at < ?",
-                (now,)
+                (now,),
             )
             expired_llm_logs = cursor.fetchall()
 
-        logger.info(f"Identified {len(expired_html_files)} expired HTML files and {len(expired_llm_logs)} expired LLM logs")
+        logger.info(
+            f"Identified {len(expired_html_files)} expired HTML files and {len(expired_llm_logs)} expired LLM logs"
+        )
         return expired_html_files, expired_llm_logs
 
     except Exception as e:

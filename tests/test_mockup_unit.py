@@ -202,7 +202,9 @@ def test_generate_mockup_low_scoring(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(business_data, tier=1, style="modern", resolution="1024x1024")  # Basic tier
+        result = generate_business_mockup(
+            business_data, tier=1, style="modern", resolution="1024x1024"
+        )  # Basic tier
         # Verify the result
         assert result is True
         # Verify that GPT-4o was called with the right parameters
@@ -241,7 +243,9 @@ def test_fallback_to_claude(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(business_data, tier=3, style="modern", resolution="1024x1024")
+        result = generate_business_mockup(
+            business_data, tier=3, style="modern", resolution="1024x1024"
+        )
         # Verify the result
         assert result is True
         # Verify that both models were called
@@ -277,7 +281,9 @@ def test_both_models_failing(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(business_data, tier=3, style="modern", resolution="1024x1024")
+        result = generate_business_mockup(
+            business_data, tier=3, style="modern", resolution="1024x1024"
+        )
         # Verify the result
         assert result is False
         # Verify that both models were called
@@ -319,7 +325,9 @@ def test_partial_success_html_only(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(business_data, tier=3, style="modern", resolution="1024x1024")
+        result = generate_business_mockup(
+            business_data, tier=3, style="modern", resolution="1024x1024"
+        )
         # Verify the result
         assert result is True
         # Verify that a warning was logged about missing image

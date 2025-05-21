@@ -99,4 +99,6 @@ def fix_undefined_names():
 if __name__ == "__main__":
     fix_unused_variables()
     fix_undefined_names()
-    print("Specific issues fixed. Now run Black and Ruff again to ensure consistent formatting.")
+    print(
+        "Specific issues fixed. Now run Black and Ruff again to ensure consistent formatting."
+    )

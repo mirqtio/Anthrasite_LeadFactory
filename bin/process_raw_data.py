@@ -63,12 +63,16 @@ def check_retention(verbose: bool = False) -> Dict[str, Any]:
     if verbose:
         # Print status report
         logger.info(f"Data Retention Status (Policy: {status['retention_days']} days)")
-        logger.info(f"HTML Storage: {status['html_storage']['total_count']} total, "
-                   f"{status['html_storage']['expired_count']} expired, "
-                   f"{status['html_storage']['retention_percentage']:.2f}% retained")
-        logger.info(f"LLM Logs: {status['llm_logs']['total_count']} total, "
-                   f"{status['llm_logs']['expired_count']} expired, "
-                   f"{status['llm_logs']['retention_percentage']:.2f}% retained")
+        logger.info(
+            f"HTML Storage: {status['html_storage']['total_count']} total, "
+            f"{status['html_storage']['expired_count']} expired, "
+            f"{status['html_storage']['retention_percentage']:.2f}% retained"
+        )
+        logger.info(
+            f"LLM Logs: {status['llm_logs']['total_count']} total, "
+            f"{status['llm_logs']['expired_count']} expired, "
+            f"{status['llm_logs']['retention_percentage']:.2f}% retained"
+        )
 
     return status
 
@@ -87,7 +91,8 @@ def main() -> int:
         help="Check data retention status",
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Print verbose output",
     )

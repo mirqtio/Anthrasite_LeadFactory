@@ -287,7 +287,9 @@ def test_flag_for_review(temp_db):
         )
         # No need to verify a return value, just check that the database was updated correctly
         # Verify the database was updated
-        cursor.execute("SELECT * FROM candidate_duplicate_pairs WHERE business1_id = 1 AND business2_id = 2")
+        cursor.execute(
+            "SELECT * FROM candidate_duplicate_pairs WHERE business1_id = 1 AND business2_id = 2"
+        )
         pair = cursor.fetchone()
         assert pair is not None
         assert pair["status"] == "review"
@@ -358,10 +360,15 @@ def test_skip_processed_businesses(temp_db):
                                 "Skipping pair",
                                 "status is not pending",
                             ]
-                            log_messages = [str(call[0][0]) for call in mock_logger.info.call_args_list]
+                            log_messages = [
+                                str(call[0][0])
+                                for call in mock_logger.info.call_args_list
+                            ]
                             found_skip_message = False
                             for msg in log_messages:
-                                if any(expected in msg for expected in expected_messages):
+                                if any(
+                                    expected in msg for expected in expected_messages
+                                ):
                                     found_skip_message = True
                                     break
                             assert (

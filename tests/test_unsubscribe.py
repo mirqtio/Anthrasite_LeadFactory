@@ -24,8 +24,10 @@ from bin.email_queue import (
     load_email_template,
     generate_email_content,
 )
+
 # Import unsubscribe handler
 from bin.unsubscribe_handler import app
+
 # Import database connection
 from utils.io import DatabaseConnection
 
@@ -44,7 +46,8 @@ def mock_db():
     cursor = conn.cursor()
 
     # Create unsubscribes table
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS unsubscribes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT NOT NULL UNIQUE,
@@ -53,10 +56,12 @@ def mock_db():
             user_agent TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-    """)
+    """
+    )
 
     # Create emails table for testing
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS emails (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             business_id INTEGER,
@@ -69,10 +74,12 @@ def mock_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-    """)
+    """
+    )
 
     # Create businesses table for testing
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS businesses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -82,7 +89,8 @@ def mock_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-    """)
+    """
+    )
 
     conn.commit()
 
@@ -100,8 +108,10 @@ def mock_db():
 @given(parsers.parse("a user with email '{email}'"))
 def user_with_email(mock_db, email):
     """Create a test user with the given email."""
-    mock_db.execute("INSERT INTO businesses (name, email, contact_name) VALUES (?, ?, ?)",
-                   ("Test Business", email, "Test User"))
+    mock_db.execute(
+        "INSERT INTO businesses (name, email, contact_name) VALUES (?, ?, ?)",
+        ("Test Business", email, "Test User"),
+    )
     mock_db.connection.commit()
 
 
@@ -211,7 +221,9 @@ def check_email_sent(request):
 @then(parsers.parse("the response status code should be {status_code:d}"))
 def check_response_status_code(status_code, request):
     """Check if the response status code matches the expected value."""
-    response = request.node.funcargs.get("visit_unsubscribe_page", None) or request.node.funcargs.get("submit_unsubscribe_form", None)
+    response = request.node.funcargs.get(
+        "visit_unsubscribe_page", None
+    ) or request.node.funcargs.get("submit_unsubscribe_form", None)
     assert response is not None
     assert response.status_code == status_code
 
@@ -219,7 +231,9 @@ def check_response_status_code(status_code, request):
 @then(parsers.parse("the response should contain '{text}'"))
 def check_response_contains_text(text, request):
     """Check if the response contains the expected text."""
-    response = request.node.funcargs.get("visit_unsubscribe_page", None) or request.node.funcargs.get("submit_unsubscribe_form", None)
+    response = request.node.funcargs.get(
+        "visit_unsubscribe_page", None
+    ) or request.node.funcargs.get("submit_unsubscribe_form", None)
     assert response is not None
     assert text in response.text
 

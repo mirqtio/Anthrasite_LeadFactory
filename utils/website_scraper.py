@@ -15,8 +15,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import database utilities
 from utils.io import DatabaseConnection
+
 # Import raw data retention utilities
 from utils.raw_data_retention import fetch_website_html, store_html
+
 # Import logging configuration
 from utils.logging_config import get_logger
 
@@ -38,13 +40,17 @@ def extract_email_from_html(html_content: str) -> Optional[str]:
 
     try:
         # Simple regex for email addresses
-        email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+        email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
         emails = re.findall(email_pattern, html_content)
 
         # Filter out common false positives
         filtered_emails = [
-            email for email in emails
-            if not any(exclude in email.lower() for exclude in ['example.com', 'yourdomain', '@image', '@png', '@jpg'])
+            email
+            for email in emails
+            if not any(
+                exclude in email.lower()
+                for exclude in ["example.com", "yourdomain", "@image", "@png", "@jpg"]
+            )
         ]
 
         if filtered_emails:
@@ -55,7 +61,9 @@ def extract_email_from_html(html_content: str) -> Optional[str]:
     return None
 
 
-def extract_email_from_website(website: str, business_id: Optional[int] = None) -> Optional[str]:
+def extract_email_from_website(
+    website: str, business_id: Optional[int] = None
+) -> Optional[str]:
     """Extract email from website and store HTML content.
 
     Args:
@@ -75,19 +83,21 @@ def extract_email_from_website(website: str, business_id: Optional[int] = None) 
         # Store HTML content if business_id is provided
         if html_content and business_id:
             html_path = store_html(html_content, website, business_id)
-            logger.info(f"Stored HTML for business {business_id}, website: {website}, path: {html_path}")
+            logger.info(
+                f"Stored HTML for business {business_id}, website: {website}, path: {html_path}"
+            )
 
             # Update the business record with the HTML path
             with DatabaseConnection() as cursor:
                 if cursor.connection.is_postgres:
                     cursor.execute(
                         "UPDATE businesses SET html_path = %s WHERE id = %s",
-                        (html_path, business_id)
+                        (html_path, business_id),
                     )
                 else:
                     cursor.execute(
                         "UPDATE businesses SET html_path = ? WHERE id = ?",
-                        (html_path, business_id)
+                        (html_path, business_id),
                     )
 
         # Extract email from HTML content
@@ -130,12 +140,12 @@ def update_business_with_website_data(business_id: int, website: str) -> bool:
                 if cursor.connection.is_postgres:
                     cursor.execute(
                         "UPDATE businesses SET email = %s WHERE id = %s",
-                        (email, business_id)
+                        (email, business_id),
                     )
                 else:
                     cursor.execute(
                         "UPDATE businesses SET email = ? WHERE id = ?",
-                        (email, business_id)
+                        (email, business_id),
                     )
             logger.info(f"Updated business {business_id} with email: {email}")
             return True
@@ -170,13 +180,15 @@ def process_pending_websites() -> Tuple[int, int]:
 
             businesses = cursor.fetchall()
 
-        logger.info(f"Found {len(businesses)} businesses with websites but no HTML stored")
+        logger.info(
+            f"Found {len(businesses)} businesses with websites but no HTML stored"
+        )
 
         # Process each business
         for business in businesses:
             processed_count += 1
-            business_id = business['id']
-            website = business['website']
+            business_id = business["id"]
+            website = business["website"]
 
             # Update business with website data
             if update_business_with_website_data(business_id, website):
@@ -186,7 +198,9 @@ def process_pending_websites() -> Tuple[int, int]:
             if processed_count % 10 == 0:
                 logger.info(f"Processed {processed_count}/{len(businesses)} businesses")
 
-        logger.info(f"Finished processing {processed_count} businesses, {success_count} successful")
+        logger.info(
+            f"Finished processing {processed_count} businesses, {success_count} successful"
+        )
         return processed_count, success_count
 
     except Exception as e:

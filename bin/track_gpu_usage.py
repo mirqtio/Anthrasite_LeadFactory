@@ -14,6 +14,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import cost metrics
 from utils.cost_metrics import track_gpu_usage, check_gpu_cost_threshold
+
 # Import logging configuration
 from utils.logging_config import get_logger
 
@@ -24,7 +25,9 @@ logger = get_logger(__name__)
 CHECK_INTERVAL = int(os.getenv("GPU_USAGE_CHECK_INTERVAL_SECONDS", "3600"))  # 1 hour
 GPU_BURST_COST = float(os.getenv("GPU_BURST_COST_DOLLARS", "0.50"))  # $0.50 per hour
 DAILY_THRESHOLD = float(os.getenv("GPU_COST_DAILY_THRESHOLD", "25.0"))  # $25 per day
-MONTHLY_THRESHOLD = float(os.getenv("GPU_COST_MONTHLY_THRESHOLD", "100.0"))  # $100 per month
+MONTHLY_THRESHOLD = float(
+    os.getenv("GPU_COST_MONTHLY_THRESHOLD", "100.0")
+)  # $100 per month
 
 
 def check_and_track_gpu_usage() -> bool:
