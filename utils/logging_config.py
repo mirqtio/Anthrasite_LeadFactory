@@ -49,3 +49,10 @@ def get_logger(name: str) -> logging.Logger:
         A configured logger instance.
     """
     return logging.getLogger(name)
+
+
+# Set up default logging configuration
+setup_logging()
+
+# Create a default logger instance for direct import
+logger = get_logger("anthrasite")
