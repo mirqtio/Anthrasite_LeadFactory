@@ -411,6 +411,8 @@ def check_budget_thresholds() -> Dict[str, Any]:
             "monthly_percentage": monthly_percentage,
             "daily_threshold_exceeded": daily_threshold_exceeded,
             "monthly_threshold_exceeded": monthly_threshold_exceeded,
+            "daily_alert": daily_threshold_exceeded,  # Add missing key
+            "monthly_alert": monthly_threshold_exceeded,  # Add missing key
             "scaling_gate_triggered": scaling_gate_triggered,
             "scaling_gate_active": scaling_gate_active,
             "scaling_gate_reason": scaling_gate_reason,
@@ -420,8 +422,16 @@ def check_budget_thresholds() -> Dict[str, Any]:
         logger.error(f"Error checking budget thresholds: {e}")
         return {
             "error": str(e),
+            "daily_cost": 0.0,
+            "monthly_cost": 0.0,
+            "daily_budget": DAILY_BUDGET,
+            "monthly_budget": MONTHLY_BUDGET,
+            "daily_percentage": 0.0,
+            "monthly_percentage": 0.0,
             "daily_threshold_exceeded": False,
             "monthly_threshold_exceeded": False,
+            "daily_alert": False,  # Add missing key
+            "monthly_alert": False,  # Add missing key
             "scaling_gate_triggered": False,
             "scaling_gate_active": False,
             "scaling_gate_reason": f"Error: {str(e)}",
@@ -438,11 +448,16 @@ def is_scaling_gate_active() -> Tuple[bool, str]:
         return False, "Scaling gate disabled by configuration"
 
     if not os.path.exists(SCALING_GATE_LOCKFILE):
-        return False, "Scaling gate not active"
+        return False, "Scaling gate not initialized"
 
     try:
         with open(SCALING_GATE_LOCKFILE, "r") as f:
             content = f.read().strip()
+
+        # If the file exists but is empty, consider the gate inactive
+        if not content:
+            return False, "Scaling gate is inactive"
+
         return True, content
     except Exception as e:
         logger.error(f"Error reading scaling gate lock file: {e}")
@@ -493,6 +508,11 @@ def set_scaling_gate(activated: bool, reason: str) -> bool:
         with open(SCALING_GATE_HISTORY_FILE, "r+") as f:
             try:
                 data = json.load(f)
+                # Ensure data is a dictionary with a history list
+                if not isinstance(data, dict):
+                    data = {"history": []}
+                if "history" not in data or not isinstance(data["history"], list):
+                    data["history"] = []
             except json.JSONDecodeError:
                 data = {"history": []}
 
@@ -537,9 +557,18 @@ def should_allow_operation(service: str, operation: str) -> Tuple[bool, str]:
         "database": ["backup", "health_check", "error_log"],
         "monitoring": ["all"],
         "system": ["all"],
+        # Add global critical operations that apply to all services
+        "_global": ["health_check", "metrics", "admin_status"],
     }
 
-    # Check if operation is critical
+    # Check if operation is in the global critical operations list
+    if operation in critical_operations.get("_global", []):
+        logger.info(
+            f"Global critical operation allowed despite scaling gate: {service}.{operation}"
+        )
+        return True, "Global critical operation allowed despite scaling gate"
+
+    # Check if operation is critical for the specific service
     if service in critical_operations:
         if (
             "all" in critical_operations[service]
@@ -571,9 +600,19 @@ def get_scaling_gate_history(limit: int = 10) -> List[Dict[str, Any]]:
         with open(SCALING_GATE_HISTORY_FILE, "r") as f:
             try:
                 data = json.load(f)
-                history = data.get("history", [])
-                return history[-limit:] if limit > 0 else history
+                # Ensure data is a dictionary with a 'history' key that contains a list
+                if isinstance(data, dict) and isinstance(data.get("history"), list):
+                    history = data.get("history", [])
+                    # Return most recent entries first (reverse chronological order)
+                    history = sorted(
+                        history, key=lambda x: x.get("timestamp", ""), reverse=True
+                    )
+                    return history[:limit] if limit > 0 else history
+                else:
+                    logger.warning(f"Malformed history data structure: {type(data)}")
+                    return []
             except json.JSONDecodeError:
+                logger.warning("Invalid JSON in scaling gate history file")
                 return []
     except Exception as e:
         logger.error(f"Error getting scaling gate history: {e}")
