@@ -61,9 +61,7 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.com")
 SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
 DAILY_EMAIL_LIMIT = int(os.getenv("DAILY_EMAIL_LIMIT", "50"))
-BOUNCE_RATE_THRESHOLD = float(
-    os.getenv("BOUNCE_RATE_THRESHOLD", "0.1")
-)  # 10% bounce rate threshold
+BOUNCE_RATE_THRESHOLD = float(os.getenv("BOUNCE_RATE_THRESHOLD", "0.1"))  # 10% bounce rate threshold
 COST_PER_EMAIL = float(os.getenv("COST_PER_EMAIL", "0.10"))  # $0.10 per email
 EMAIL_TEMPLATE_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -122,9 +120,7 @@ class SendGridEmailSender:
             return True, f"dry-run-{int(time.time())}", None
         # Prepare email payload
         payload = {
-            "personalizations": [
-                {"to": [{"email": to_email, "name": to_name}], "subject": subject}
-            ],
+            "personalizations": [{"to": [{"email": to_email, "name": to_name}], "subject": subject}],
             "from": {"email": self.from_email, "name": self.from_name},
             "content": [
                 {"type": "text/plain", "value": text_content},
@@ -172,9 +168,7 @@ class SendGridEmailSender:
                 log_cost("sendgrid", "email", COST_PER_EMAIL)
                 return True, message_id, None
             else:
-                error_message = (
-                    f"SendGrid API error: {response.status_code} - {response.text}"
-                )
+                error_message = f"SendGrid API error: {response.status_code} - {response.text}"
                 logger.error(error_message)
                 return False, None, error_message
         except requests.exceptions.RequestException as e:
@@ -428,9 +422,7 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
     business_name = business.get("name", "")
     business_category = business.get("category", "")
     business_website = business.get("website", "")
-    contact_name = business.get(
-        "contact_name", "Owner"
-    )  # Default to "Owner" if contact name not available
+    contact_name = business.get("contact_name", "Owner")  # Default to "Owner" if contact name not available
     # Extract score information
     score = business.get("score", 0)
     score_details = business.get("score_details", "[]")
@@ -442,11 +434,7 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
     # Generate improvements list based on score details
     improvements = []
     for rule in score_details:
-        if (
-            isinstance(rule, dict)
-            and "description" in rule
-            and "score_adjustment" in rule
-        ):
+        if isinstance(rule, dict) and "description" in rule and "score_adjustment" in rule:
             if rule["score_adjustment"] > 0:
                 improvements.append(rule["description"])
     # Limit to top 5 improvements
@@ -491,9 +479,7 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
                 list_text += f"- {item}\n"
             # Replace {{#each improvements}} ... {{/each}} with list items
             each_pattern = r"{{#each " + key + r"}}(.*?){{/each}}"
-            html_content = re.sub(
-                each_pattern, list_html, html_content, flags=re.DOTALL
-            )
+            html_content = re.sub(each_pattern, list_html, html_content, flags=re.DOTALL)
             # Add list to text content
             text_content += f"\n{key.upper()}:\n{list_text}\n"
         else:
@@ -504,7 +490,9 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
                 text_content += f"{key.replace('_', ' ').title()}: {value}\n"
     # Add more content to text version
     text_content += "\nWe've created a custom mockup showing how your website could look with our improvements.\n\n"
-    text_content += "I'd love to discuss these ideas with you. Would you be available for a quick 15-minute call this week?\n\n"
+    text_content += (
+        "I'd love to discuss these ideas with you. Would you be available for a quick 15-minute call this week?\n\n"
+    )
     text_content += "Schedule a free consultation: https://calendly.com/anthrasite/website-consultation\n\n"
     text_content += f"Best regards,\n{SENDGRID_FROM_NAME}\nAnthrasite Web Services\n{SENDGRID_FROM_EMAIL}\n"
     return subject, html_content, text_content
@@ -531,18 +519,14 @@ def send_business_email(
     contact_name = business.get("contact_name", "Owner")
     # Check if business has an email address
     if not business_email:
-        logger.warning(
-            f"Business ID {business_id} ({business_name}) has no email address"
-        )
+        logger.warning(f"Business ID {business_id} ({business_name}) has no email address")
         return False
     # Get mockup information
     mockup_url = business.get("mockup_url")
     mockup_html = business.get("mockup_html")
     # Generate email content
     subject, html_content, text_content = generate_email_content(business, template)
-    logger.info(
-        f"Sending email to {contact_name} <{business_email}> for business ID {business_id}"
-    )
+    logger.info(f"Sending email to {contact_name} <{business_email}> for business ID {business_id}")
     # Send email
     success, message_id, error = email_sender.send_email(
         to_email=business_email,
@@ -582,9 +566,7 @@ def process_business_email(business_id: int, dry_run: bool = None) -> bool:
         if DEBUG:
             logger.debug(f"[DEBUG] {message}")
 
-    log_debug(
-        f"Starting process_business_email for business_id: {business_id}, dry_run: {dry_run}"
-    )
+    log_debug(f"Starting process_business_email for business_id: {business_id}, dry_run: {dry_run}")
     # Use the global DRY_RUN setting if dry_run is not explicitly set
     is_dry_run = dry_run if dry_run is not None else DRY_RUN
     log_debug(f"Using is_dry_run: {is_dry_run}")
@@ -599,18 +581,14 @@ def process_business_email(business_id: int, dry_run: bool = None) -> bool:
             return False
         # For dry run mode, we can proceed even without API keys
         if is_dry_run and not sendgrid_api_key:
-            logger.warning(
-                "SENDGRID_API_KEY environment variable not set, but continuing in dry run mode"
-            )
+            logger.warning("SENDGRID_API_KEY environment variable not set, but continuing in dry run mode")
             # We'll skip initializing the email sender since we won't use it in dry run mode
             email_sender = None  # Set to None so we can check later
         # Only initialize the email sender if we're not in dry run mode or if we have an API key
         if not is_dry_run or (is_dry_run and sendgrid_api_key):
             try:
                 logger.debug("Initializing SendGridEmailSender")
-                email_sender = SendGridEmailSender(
-                    api_key=sendgrid_api_key, from_email=from_email, from_name=from_name
-                )
+                email_sender = SendGridEmailSender(api_key=sendgrid_api_key, from_email=from_email, from_name=from_name)
                 logger.debug("Successfully initialized SendGridEmailSender")
             except Exception as e:
                 # Only return False if we're not in dry run mode
@@ -622,9 +600,7 @@ def process_business_email(business_id: int, dry_run: bool = None) -> bool:
                     return False
                 else:
                     # In dry run mode, we can continue even if initialization fails
-                    logger.warning(
-                        f"Error initializing SendGridEmailSender in dry run mode: {str(e)}"
-                    )
+                    logger.warning(f"Error initializing SendGridEmailSender in dry run mode: {str(e)}")
                     email_sender = None
         # Get the business data - in dry run mode, we can use mock data if the database fails
         log_debug(f"Getting business with ID: {business_id}")
@@ -708,16 +684,10 @@ def process_business_email(business_id: int, dry_run: bool = None) -> bool:
         # Generate email content (needed for both dry run and actual sending)
         try:
             log_debug("Generating email content...")
-            subject, html_content, text_content = generate_email_content(
-                business, template
-            )
+            subject, html_content, text_content = generate_email_content(business, template)
             log_debug(f"Generated subject: {subject}")
-            log_debug(
-                f"Generated HTML content length: {len(html_content) if html_content else 0}"
-            )
-            log_debug(
-                f"Generated text content length: {len(text_content) if text_content else 0}"
-            )
+            log_debug(f"Generated HTML content length: {len(html_content) if html_content else 0}")
+            log_debug(f"Generated text content length: {len(text_content) if text_content else 0}")
         except Exception as e:
             error_msg = f"Error generating email content: {str(e)}"
             if is_dry_run:
@@ -825,23 +795,17 @@ def process_business_email(business_id: int, dry_run: bool = None) -> bool:
             logger.error(f"Error sending business email: {str(e)}", exc_info=True)
             return False
     except Exception as e:
-        logger.error(
-            f"Error processing business ID {business_id}: {str(e)}", exc_info=True
-        )
+        logger.error(f"Error processing business ID {business_id}: {str(e)}", exc_info=True)
         return False
 
 
 def main():
     """Main function."""
     global DRY_RUN
-    parser = argparse.ArgumentParser(
-        description="Send personalized emails via SendGrid"
-    )
+    parser = argparse.ArgumentParser(description="Send personalized emails via SendGrid")
     parser.add_argument("--limit", type=int, help="Limit the number of emails to send")
     parser.add_argument("--id", type=int, help="Process only the specified business ID")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Run without actually sending emails"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Run without actually sending emails")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -863,9 +827,7 @@ def main():
     # Check bounce rate
     bounce_rate = email_sender.get_bounce_rate()
     if bounce_rate > BOUNCE_RATE_THRESHOLD and not args.dry_run:
-        logger.error(
-            f"Bounce rate ({bounce_rate:.2%}) exceeds threshold ({BOUNCE_RATE_THRESHOLD:.2%})"
-        )
+        logger.error(f"Bounce rate ({bounce_rate:.2%}) exceeds threshold ({BOUNCE_RATE_THRESHOLD:.2%})")
         return 1
     # Check daily email limit
     daily_sent = email_sender.get_daily_sent_count()
@@ -878,11 +840,7 @@ def main():
     template = load_email_template()
     # Get businesses for email sending
     businesses = get_businesses_for_email(
-        limit=(
-            min(args.limit, remaining_emails)
-            if args.limit and not args.dry_run
-            else args.limit
-        ),
+        limit=(min(args.limit, remaining_emails) if args.limit and not args.dry_run else args.limit),
         business_id=args.id,
         force=args.force,
     )
@@ -908,9 +866,7 @@ def main():
         except Exception as e:
             logger.error(f"Error processing business ID {business['id']}: {e}")
             error_count += 1
-    logger.info(
-        f"Email sending completed. Success: {success_count}, Errors: {error_count}"
-    )
+    logger.info(f"Email sending completed. Success: {success_count}, Errors: {error_count}")
     return 0
 
 

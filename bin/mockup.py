@@ -44,18 +44,10 @@ MOCKUP_RESOLUTION = os.getenv("MOCKUP_RESOLUTION", "1024x1024")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 # Cost tracking constants (in cents)
-GPT4O_COST_PER_1K_TOKENS_INPUT = float(
-    os.getenv("GPT4O_COST_PER_1K_TOKENS_INPUT", "10")
-)  # $0.10 per 1K tokens
-GPT4O_COST_PER_1K_TOKENS_OUTPUT = float(
-    os.getenv("GPT4O_COST_PER_1K_TOKENS_OUTPUT", "30")
-)  # $0.30 per 1K tokens
-CLAUDE_COST_PER_1K_TOKENS_INPUT = float(
-    os.getenv("CLAUDE_COST_PER_1K_TOKENS_INPUT", "15")
-)  # $0.15 per 1K tokens
-CLAUDE_COST_PER_1K_TOKENS_OUTPUT = float(
-    os.getenv("CLAUDE_COST_PER_1K_TOKENS_OUTPUT", "75")
-)  # $0.75 per 1K tokens
+GPT4O_COST_PER_1K_TOKENS_INPUT = float(os.getenv("GPT4O_COST_PER_1K_TOKENS_INPUT", "10"))  # $0.10 per 1K tokens
+GPT4O_COST_PER_1K_TOKENS_OUTPUT = float(os.getenv("GPT4O_COST_PER_1K_TOKENS_OUTPUT", "30"))  # $0.30 per 1K tokens
+CLAUDE_COST_PER_1K_TOKENS_INPUT = float(os.getenv("CLAUDE_COST_PER_1K_TOKENS_INPUT", "15"))  # $0.15 per 1K tokens
+CLAUDE_COST_PER_1K_TOKENS_OUTPUT = float(os.getenv("CLAUDE_COST_PER_1K_TOKENS_OUTPUT", "75"))  # $0.75 per 1K tokens
 
 
 class GPT4oMockupGenerator:
@@ -127,9 +119,7 @@ class GPT4oMockupGenerator:
             completion_tokens = usage.get("completion_tokens", 0)
             # Track cost
             input_cost_cents = (prompt_tokens / 1000) * GPT4O_COST_PER_1K_TOKENS_INPUT
-            output_cost_cents = (
-                completion_tokens / 1000
-            ) * GPT4O_COST_PER_1K_TOKENS_OUTPUT
+            output_cost_cents = (completion_tokens / 1000) * GPT4O_COST_PER_1K_TOKENS_OUTPUT
             total_cost_cents = input_cost_cents + output_cost_cents
             track_api_cost(
                 service="openai",
@@ -138,9 +128,7 @@ class GPT4oMockupGenerator:
                 tier=CURRENT_TIER,
             )
             # Extract response content
-            response_content = (
-                result.get("choices", [{}])[0].get("message", {}).get("content", "{}")
-            )
+            response_content = result.get("choices", [{}])[0].get("message", {}).get("content", "{}")
             try:
                 response_json = json.loads(response_content)
                 mockup_image_base64 = response_json.get("mockup_image", "")
@@ -216,9 +204,7 @@ Design Requirements:
 - Include contact information prominently
 """
         if screenshot_url:
-            prompt += (
-                f"\nThe current website screenshot is available at: {screenshot_url}\n"
-            )
+            prompt += f"\nThe current website screenshot is available at: {screenshot_url}\n"
             prompt += "Please analyze this screenshot and suggest specific improvements in your redesign.\n"
         prompt += """
 Please provide:
@@ -291,12 +277,8 @@ class ClaudeMockupGenerator:
                 "output_tokens": result.get("usage", {}).get("output_tokens", 0),
             }
             # Track cost
-            input_cost_cents = (
-                usage["input_tokens"] / 1000
-            ) * CLAUDE_COST_PER_1K_TOKENS_INPUT
-            output_cost_cents = (
-                usage["output_tokens"] / 1000
-            ) * CLAUDE_COST_PER_1K_TOKENS_OUTPUT
+            input_cost_cents = (usage["input_tokens"] / 1000) * CLAUDE_COST_PER_1K_TOKENS_INPUT
+            output_cost_cents = (usage["output_tokens"] / 1000) * CLAUDE_COST_PER_1K_TOKENS_OUTPUT
             total_cost_cents = input_cost_cents + output_cost_cents
             track_api_cost(
                 service="anthropic",
@@ -395,9 +377,7 @@ Design Requirements:
 - Include contact information prominently
 """
         if screenshot_url:
-            prompt += (
-                f"\nThe current website screenshot is available at: {screenshot_url}\n"
-            )
+            prompt += f"\nThe current website screenshot is available at: {screenshot_url}\n"
             prompt += "Please analyze this screenshot and suggest specific improvements in your redesign.\n"
         prompt += """
 Please provide:
@@ -625,9 +605,7 @@ def generate_business_mockup(
     )
     # If GPT-4o failed and we have Claude API key, try Claude as fallback
     if (not mockup_image_base64 or not mockup_html) and ANTHROPIC_API_KEY:
-        logger.warning(
-            f"GPT-4o mockup generation failed for business ID {business_id}, trying Claude fallback"
-        )
+        logger.warning(f"GPT-4o mockup generation failed for business ID {business_id}, trying Claude fallback")
         (
             claude_image,
             claude_html,
@@ -640,9 +618,7 @@ def generate_business_mockup(
             resolution=resolution,
         )
         # Use Claude results if better than GPT-4o
-        if claude_html and (
-            not mockup_html or (not mockup_image_base64 and claude_image)
-        ):
+        if claude_html and (not mockup_html or (not mockup_image_base64 and claude_image)):
             mockup_image_base64 = claude_image
             mockup_html = claude_html
             usage_data = claude_usage
@@ -657,9 +633,7 @@ def generate_business_mockup(
             tier=tier,
         )
         if not mockup_image_base64:
-            logger.warning(
-                f"Mockup saved for business ID {business_id} but without image"
-            )
+            logger.warning(f"Mockup saved for business ID {business_id} but without image")
         return success
     logger.error(f"Mockup generation failed for business ID {business_id}: {error}")
     return False
@@ -667,16 +641,10 @@ def generate_business_mockup(
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(
-        description="Generate website mockups for high-scoring businesses"
-    )
-    parser.add_argument(
-        "--limit", type=int, help="Limit the number of businesses to process"
-    )
+    parser = argparse.ArgumentParser(description="Generate website mockups for high-scoring businesses")
+    parser.add_argument("--limit", type=int, help="Limit the number of businesses to process")
     parser.add_argument("--id", type=int, help="Process only the specified business ID")
-    parser.add_argument(
-        "--tier", type=int, choices=[2, 3], help="Override the tier level"
-    )
+    parser.add_argument("--tier", type=int, choices=[2, 3], help="Override the tier level")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -695,9 +663,7 @@ def main():
         logger.error("No API keys provided for mockup generation")
         return 1
     # Get businesses for mockup generation
-    businesses = get_businesses_for_mockup(
-        limit=args.limit, business_id=args.id, tier=tier, force=args.force
-    )
+    businesses = get_businesses_for_mockup(limit=args.limit, business_id=args.id, tier=tier, force=args.force)
     if not businesses:
         logger.warning("No businesses found for mockup generation")
         return 0
@@ -715,9 +681,7 @@ def main():
         except Exception as e:
             logger.error(f"Error processing business ID {business['id']}: {e}")
             error_count += 1
-    logger.info(
-        f"Mockup generation completed. Success: {success_count}, Errors: {error_count}"
-    )
+    logger.info(f"Mockup generation completed. Success: {success_count}, Errors: {error_count}")
     return 0
 
 

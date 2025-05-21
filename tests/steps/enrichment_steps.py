@@ -71,13 +71,11 @@ def mock_db():
 @pytest.fixture
 def mock_apis():
     """Mock external APIs used in enrichment."""
-    with patch(
-        "bin.enrich.TechStackAnalyzer.analyze_website"
-    ) as mock_tech_stack, patch(
-        "bin.enrich.PageSpeedAnalyzer.analyze_website"
-    ) as mock_pagespeed, patch(
-        "utils.io.track_api_cost"
-    ) as mock_track_cost:
+    with (
+        patch("bin.enrich.TechStackAnalyzer.analyze_website") as mock_tech_stack,
+        patch("bin.enrich.PageSpeedAnalyzer.analyze_website") as mock_pagespeed,
+        patch("utils.io.track_api_cost") as mock_track_cost,
+    ):
         # Configure mocks
         mock_tech_stack.return_value = (set(["React", "Node.js", "Express"]), None)
         mock_pagespeed.return_value = (
@@ -217,9 +215,10 @@ def run_enrichment_prioritized(mock_db, mock_apis):
     """Run the enrichment process with prioritization."""
     conn, cursor = mock_db
     # Mock the database connection
-    with patch("utils.io.DatabaseConnection") as mock_db_conn, patch(
-        "bin.enrich.get_businesses_to_enrich"
-    ) as mock_get_businesses:
+    with (
+        patch("utils.io.DatabaseConnection") as mock_db_conn,
+        patch("bin.enrich.get_businesses_to_enrich") as mock_get_businesses,
+    ):
         mock_db_conn.return_value.__enter__.return_value = cursor
         # Get all businesses ordered by score
         cursor.execute("SELECT * FROM businesses ORDER BY score DESC")

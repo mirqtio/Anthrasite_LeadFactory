@@ -438,15 +438,13 @@ def existing_businesses(monkeypatch):
 def setup_environment(monkeypatch):
     """Set up test environment variables and patches."""
     # Mock database operations
-    with patch("utils.io.save_business") as mock_save_business, patch(
-        "utils.io.mark_zip_done"
-    ) as mock_mark_zip_done, patch(
-        "utils.io.DatabaseConnection"
-    ) as mock_db_connection, patch(
-        "utils.io.get_active_zip_codes"
-    ) as mock_get_active_zips, patch(
-        "utils.io.get_verticals"
-    ) as mock_get_verticals:
+    with (
+        patch("utils.io.save_business") as mock_save_business,
+        patch("utils.io.mark_zip_done") as mock_mark_zip_done,
+        patch("utils.io.DatabaseConnection") as mock_db_connection,
+        patch("utils.io.get_active_zip_codes") as mock_get_active_zips,
+        patch("utils.io.get_verticals") as mock_get_verticals,
+    ):
         # Set up mock return values
         mock_save_business.return_value = 1  # Return a mock business ID
         mock_mark_zip_done.return_value = True
@@ -625,11 +623,11 @@ def run_scraper(monkeypatch, setup_environment, temp_db):
         "user_ratings_total": 35,
     }
     # Patch the API classes to return our mocks
-    with patch("bin.scrape.YelpAPI", return_value=mock_yelp) as mock_yelp_class, patch(
-        "bin.scrape.GooglePlacesAPI", return_value=mock_google
-    ) as mock_google_class, patch(
-        "bin.scrape.get_zip_coordinates", return_value="40.7128,-74.0060"
-    ) as mock_coords:
+    with (
+        patch("bin.scrape.YelpAPI", return_value=mock_yelp) as mock_yelp_class,
+        patch("bin.scrape.GooglePlacesAPI", return_value=mock_google) as mock_google_class,
+        patch("bin.scrape.get_zip_coordinates", return_value="40.7128,-74.0060") as mock_coords,
+    ):
         # Set up mock return values for the API methods and ensure they're called
         mock_yelp.search_businesses.return_value = yelp_businesses, None
         mock_google.search_places.return_value = google_places, None
@@ -639,9 +637,7 @@ def run_scraper(monkeypatch, setup_environment, temp_db):
         mock_google.search_places()
         # Mock the save_business function to track calls
         mock_save_business = setup_environment["save_business"]
-        mock_save_business.side_effect = (
-            lambda *args, **kwargs: len(mock_save_business.mock_calls) + 1
-        )
+        mock_save_business.side_effect = lambda *args, **kwargs: len(mock_save_business.mock_calls) + 1
         # Store references to mocks if needed for debugging
         # (Currently not used in assertions)
         # Set up the existing businesses in the mock database
@@ -654,9 +650,7 @@ def run_scraper(monkeypatch, setup_environment, temp_db):
         ]
         # Mock command line arguments
         with patch("argparse.ArgumentParser.parse_args") as mock_args:
-            args = argparse.Namespace(
-                limit=5, zip="10002", vertical="restaurants", all_verticals=False
-            )
+            args = argparse.Namespace(limit=5, zip="10002", vertical="restaurants", all_verticals=False)
             mock_args.return_value = args
             # Run the scraper
             main()
@@ -787,11 +781,12 @@ def existing_businesses_step(temp_db):
 @when("I run the scraper for Yelp API")
 def run_scraper_yelp(mock_yelp_api_for_test, target_zip_code, target_vertical, temp_db):
     """Run the scraper for Yelp API."""
-    with patch("bin.scrape.YelpAPI") as mock_yelp_class, patch(
-        "bin.scrape.get_zip_coordinates"
-    ) as mock_coords, patch("bin.scrape.process_yelp_business") as mock_process, patch(
-        "bin.scrape.save_business"
-    ) as mock_save_business:
+    with (
+        patch("bin.scrape.YelpAPI") as mock_yelp_class,
+        patch("bin.scrape.get_zip_coordinates") as mock_coords,
+        patch("bin.scrape.process_yelp_business") as mock_process,
+        patch("bin.scrape.save_business") as mock_save_business,
+    ):
         # Set up mocks
         mock_yelp_class.return_value = mock_yelp_api_for_test
         mock_coords.return_value = "40.7128,-74.0060"  # Mock coordinates for testing
@@ -831,15 +826,14 @@ def run_scraper_yelp(mock_yelp_api_for_test, target_zip_code, target_vertical, t
 
 
 @when("I run the scraper for Google Places API")
-def run_scraper_google(
-    mock_google_places_api_for_test, target_zip_code, target_vertical, temp_db
-):
+def run_scraper_google(mock_google_places_api_for_test, target_zip_code, target_vertical, temp_db):
     """Run the scraper for Google Places API."""
-    with patch("bin.scrape.GooglePlacesAPI") as mock_google_class, patch(
-        "bin.scrape.get_zip_coordinates"
-    ) as mock_coords, patch("bin.scrape.process_google_place") as mock_process, patch(
-        "bin.scrape.save_business"
-    ) as mock_save_business:
+    with (
+        patch("bin.scrape.GooglePlacesAPI") as mock_google_class,
+        patch("bin.scrape.get_zip_coordinates") as mock_coords,
+        patch("bin.scrape.process_google_place") as mock_process,
+        patch("bin.scrape.save_business") as mock_save_business,
+    ):
         # Set up mocks
         mock_google_class.return_value = mock_google_places_api_for_test
         mock_coords.return_value = "40.7128,-74.0060"  # Mock coordinates for testing
@@ -970,9 +964,7 @@ def businesses_saved_to_db(run_scraper):
 def error_logged(caplog):
     """Verify that the error was logged."""
     # Check that an error was logged
-    assert any(
-        record.levelname == "ERROR" for record in caplog.records
-    ), "Expected error to be logged"
+    assert any(record.levelname == "ERROR" for record in caplog.records), "Expected error to be logged"
 
 
 @then("the process should continue without crashing")
@@ -995,9 +987,7 @@ def only_new_businesses_added(temp_db, existing_businesses):
     cursor.execute("SELECT COUNT(*) FROM businesses")
     new_count = cursor.fetchone()[0]
     # The count should be the same since we're skipping existing businesses
-    assert (
-        new_count == initial_count
-    ), "New businesses were added when they should have been skipped"
+    assert new_count == initial_count, "New businesses were added when they should have been skipped"
 
 
 @then("duplicate businesses should be skipped")

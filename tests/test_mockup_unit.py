@@ -26,9 +26,10 @@ def mock_db_connection():
 @pytest.fixture
 def mock_generators():
     """Create mocks for both GPT-4o and Claude generators."""
-    with patch("bin.mockup.GPT4oMockupGenerator") as mock_gpt4o, patch(
-        "bin.mockup.ClaudeMockupGenerator"
-    ) as mock_claude:
+    with (
+        patch("bin.mockup.GPT4oMockupGenerator") as mock_gpt4o,
+        patch("bin.mockup.ClaudeMockupGenerator") as mock_claude,
+    ):
         # Configure GPT-4o mock
         mock_gpt4o_instance = MagicMock()
         mock_gpt4o.return_value = mock_gpt4o_instance
@@ -98,14 +99,13 @@ def test_db():
 def test_generate_mockup_success(mock_generators, test_db):
     """Test generating a mockup successfully."""
     mock_gpt4o, mock_claude = mock_generators
-    with patch("bin.mockup.DatabaseConnection") as mock_db, patch(
-        "bin.mockup.save_mockup", return_value=True
-    ) as mock_save, patch("bin.mockup.OPENAI_API_KEY", "test_key"), patch(
-        "bin.mockup.ANTHROPIC_API_KEY", "test_key"
-    ), patch(
-        "utils.io.track_api_cost"
-    ), patch(
-        "bin.mockup.logger"
+    with (
+        patch("bin.mockup.DatabaseConnection") as mock_db,
+        patch("bin.mockup.save_mockup", return_value=True) as mock_save,
+        patch("bin.mockup.OPENAI_API_KEY", "test_key"),
+        patch("bin.mockup.ANTHROPIC_API_KEY", "test_key"),
+        patch("utils.io.track_api_cost"),
+        patch("bin.mockup.logger"),
     ):
         # Configure the mock database connection
         cursor = test_db.cursor()
@@ -141,14 +141,13 @@ def test_generate_mockup_success(mock_generators, test_db):
 def test_generate_mockup_medium_scoring(mock_generators, test_db):
     """Test generating a mockup for a medium-scoring business."""
     mock_gpt4o, mock_claude = mock_generators
-    with patch("bin.mockup.DatabaseConnection") as mock_db, patch(
-        "bin.mockup.save_mockup", return_value=True
-    ) as mock_save, patch("bin.mockup.OPENAI_API_KEY", "test_key"), patch(
-        "bin.mockup.ANTHROPIC_API_KEY", "test_key"
-    ), patch(
-        "utils.io.track_api_cost"
-    ), patch(
-        "bin.mockup.logger"
+    with (
+        patch("bin.mockup.DatabaseConnection") as mock_db,
+        patch("bin.mockup.save_mockup", return_value=True) as mock_save,
+        patch("bin.mockup.OPENAI_API_KEY", "test_key"),
+        patch("bin.mockup.ANTHROPIC_API_KEY", "test_key"),
+        patch("utils.io.track_api_cost"),
+        patch("bin.mockup.logger"),
     ):
         # Configure the mock database connection
         cursor = test_db.cursor()
@@ -184,14 +183,13 @@ def test_generate_mockup_medium_scoring(mock_generators, test_db):
 def test_generate_mockup_low_scoring(mock_generators, test_db):
     """Test generating a mockup for a low-scoring business."""
     mock_gpt4o, mock_claude = mock_generators
-    with patch("bin.mockup.DatabaseConnection") as mock_db, patch(
-        "bin.mockup.save_mockup", return_value=True
-    ) as mock_save, patch("bin.mockup.OPENAI_API_KEY", "test_key"), patch(
-        "bin.mockup.ANTHROPIC_API_KEY", "test_key"
-    ), patch(
-        "utils.io.track_api_cost"
-    ), patch(
-        "bin.mockup.logger"
+    with (
+        patch("bin.mockup.DatabaseConnection") as mock_db,
+        patch("bin.mockup.save_mockup", return_value=True) as mock_save,
+        patch("bin.mockup.OPENAI_API_KEY", "test_key"),
+        patch("bin.mockup.ANTHROPIC_API_KEY", "test_key"),
+        patch("utils.io.track_api_cost"),
+        patch("bin.mockup.logger"),
     ):
         # Configure the mock database connection
         cursor = test_db.cursor()
@@ -203,9 +201,7 @@ def test_generate_mockup_low_scoring(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(
-            business_data, tier=1, style="modern", resolution="1024x1024"  # Basic tier
-        )
+        result = generate_business_mockup(business_data, tier=1, style="modern", resolution="1024x1024")  # Basic tier
         # Verify the result
         assert result is True
         # Verify that GPT-4o was called with the right parameters
@@ -226,14 +222,13 @@ def test_fallback_to_claude(mock_generators, test_db):
     mock_gpt4o, mock_claude = mock_generators
     # Make GPT-4o fail by returning None for image and HTML
     mock_gpt4o.generate_mockup.return_value = (None, None, {}, "GPT-4o error")
-    with patch("bin.mockup.DatabaseConnection") as mock_db, patch(
-        "bin.mockup.save_mockup", return_value=True
-    ) as mock_save, patch("bin.mockup.OPENAI_API_KEY", "test_key"), patch(
-        "bin.mockup.ANTHROPIC_API_KEY", "test_key"
-    ), patch(
-        "utils.io.track_api_cost"
-    ), patch(
-        "bin.mockup.logger"
+    with (
+        patch("bin.mockup.DatabaseConnection") as mock_db,
+        patch("bin.mockup.save_mockup", return_value=True) as mock_save,
+        patch("bin.mockup.OPENAI_API_KEY", "test_key"),
+        patch("bin.mockup.ANTHROPIC_API_KEY", "test_key"),
+        patch("utils.io.track_api_cost"),
+        patch("bin.mockup.logger"),
     ):
         # Configure the mock database connection
         cursor = test_db.cursor()
@@ -245,9 +240,7 @@ def test_fallback_to_claude(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(
-            business_data, tier=3, style="modern", resolution="1024x1024"
-        )
+        result = generate_business_mockup(business_data, tier=3, style="modern", resolution="1024x1024")
         # Verify the result
         assert result is True
         # Verify that both models were called
@@ -266,12 +259,12 @@ def test_both_models_failing(mock_generators, test_db):
     # Make both models fail
     mock_gpt4o.generate_mockup.return_value = (None, None, {}, "GPT-4o error")
     mock_claude.generate_mockup.return_value = (None, None, {}, "Claude error")
-    with patch("bin.mockup.DatabaseConnection") as mock_db, patch(
-        "bin.mockup.OPENAI_API_KEY", "test_key"
-    ), patch("bin.mockup.ANTHROPIC_API_KEY", "test_key"), patch(
-        "utils.io.track_api_cost"
-    ), patch(
-        "bin.mockup.logger"
+    with (
+        patch("bin.mockup.DatabaseConnection") as mock_db,
+        patch("bin.mockup.OPENAI_API_KEY", "test_key"),
+        patch("bin.mockup.ANTHROPIC_API_KEY", "test_key"),
+        patch("utils.io.track_api_cost"),
+        patch("bin.mockup.logger"),
     ):
         # Configure the mock database connection
         cursor = test_db.cursor()
@@ -283,9 +276,7 @@ def test_both_models_failing(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(
-            business_data, tier=3, style="modern", resolution="1024x1024"
-        )
+        result = generate_business_mockup(business_data, tier=3, style="modern", resolution="1024x1024")
         # Verify the result
         assert result is False
         # Verify that both models were called
@@ -309,14 +300,13 @@ def test_partial_success_html_only(mock_generators, test_db):
         {"usage": {"total_tokens": 100}},
         None,
     )
-    with patch("bin.mockup.DatabaseConnection") as mock_db, patch(
-        "bin.mockup.save_mockup", return_value=True
-    ) as mock_save, patch("bin.mockup.OPENAI_API_KEY", "test_key"), patch(
-        "bin.mockup.ANTHROPIC_API_KEY", "test_key"
-    ), patch(
-        "utils.io.track_api_cost"
-    ), patch(
-        "bin.mockup.logger"
+    with (
+        patch("bin.mockup.DatabaseConnection") as mock_db,
+        patch("bin.mockup.save_mockup", return_value=True) as mock_save,
+        patch("bin.mockup.OPENAI_API_KEY", "test_key"),
+        patch("bin.mockup.ANTHROPIC_API_KEY", "test_key"),
+        patch("utils.io.track_api_cost"),
+        patch("bin.mockup.logger"),
     ):
         # Configure the mock database connection
         cursor = test_db.cursor()
@@ -328,9 +318,7 @@ def test_partial_success_html_only(mock_generators, test_db):
         columns = [description[0] for description in cursor.description]
         business_data = dict(zip(columns, business))
         # Call the function under test
-        result = generate_business_mockup(
-            business_data, tier=3, style="modern", resolution="1024x1024"
-        )
+        result = generate_business_mockup(business_data, tier=3, style="modern", resolution="1024x1024")
         # Verify the result
         assert result is True
         # Verify that a warning was logged about missing image

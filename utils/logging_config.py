@@ -9,9 +9,7 @@ import os
 from typing import Optional
 
 
-def setup_logging(
-    log_level: Optional[str] = None, log_format: Optional[str] = None
-) -> None:
+def setup_logging(log_level: Optional[str] = None, log_format: Optional[str] = None) -> None:
     """
     Configure logging for the application.
     Args:

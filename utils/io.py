@@ -19,9 +19,7 @@ logger = get_logger(__name__)
 # Load environment variables
 load_dotenv()
 # Constants
-DEFAULT_DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db"
-)
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db")
 DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 
 
@@ -45,9 +43,7 @@ class DatabaseConnection:
         # Enable foreign keys
         self.conn.execute("PRAGMA foreign_keys = ON")
         # Configure row factory to return dictionaries
-        self.conn.row_factory = lambda c, r: {
-            col[0]: r[idx] for idx, col in enumerate(c.description)
-        }
+        self.conn.row_factory = lambda c, r: {col[0]: r[idx] for idx, col in enumerate(c.description)}
         self.cursor = self.conn.cursor()
         return self.cursor
 
@@ -172,10 +168,7 @@ def make_api_request(
             if retries <= max_retries:
                 # Exponential backoff
                 sleep_time = retry_delay * (2 ** (retries - 1))
-                logger.warning(
-                    f"API request failed: {e}. Retrying in {sleep_time}s "
-                    f"({retries}/{max_retries})"
-                )
+                logger.warning(f"API request failed: {e}. Retrying in {sleep_time}s " f"({retries}/{max_retries})")
                 time.sleep(sleep_time)
             else:
                 logger.error(f"API request failed after {max_retries} retries: {e}")
@@ -207,9 +200,7 @@ def track_api_cost(
                 """,
                 (service, operation, cost_cents, tier, business_id),
             )
-        logger.debug(
-            f"Tracked cost: {service} {operation}, {cost_cents} cents, tier {tier}"
-        )
+        logger.debug(f"Tracked cost: {service} {operation}, {cost_cents} cents, tier {tier}")
     except Exception as e:
         logger.error(f"Error tracking API cost: {e}")
 

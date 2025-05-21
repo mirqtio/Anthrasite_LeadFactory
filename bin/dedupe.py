@@ -37,9 +37,7 @@ MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "5"))
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3:8b")
 LEVENSHTEIN_THRESHOLD = float(os.getenv("LEVENSHTEIN_THRESHOLD", "0.85"))
-OLLAMA_COST_PER_1K_TOKENS = float(
-    os.getenv("OLLAMA_COST_PER_1K_TOKENS", "0.01")
-)  # $0.01 per 1K tokens
+OLLAMA_COST_PER_1K_TOKENS = float(os.getenv("OLLAMA_COST_PER_1K_TOKENS", "0.01"))  # $0.01 per 1K tokens
 
 
 class LevenshteinMatcher:
@@ -119,9 +117,7 @@ class LevenshteinMatcher:
         if business1["id"] == business2["id"]:
             return False
         # Compare business names
-        name_similarity = self.calculate_similarity(
-            business1["name"], business2["name"]
-        )
+        name_similarity = self.calculate_similarity(business1["name"], business2["name"])
         # Compare phone numbers (if available)
         phone_similarity = 0.0
         if business1.get("phone") and business2.get("phone"):
@@ -133,14 +129,10 @@ class LevenshteinMatcher:
         # Compare addresses (if available)
         address_similarity = 0.0
         if business1.get("address") and business2.get("address"):
-            address_similarity = self.calculate_similarity(
-                business1["address"], business2["address"]
-            )
+            address_similarity = self.calculate_similarity(business1["address"], business2["address"])
         # Calculate combined similarity score
         # Weight: 50% name, 30% phone, 20% address
-        combined_similarity = (
-            0.5 * name_similarity + 0.3 * phone_similarity + 0.2 * address_similarity
-        )
+        combined_similarity = 0.5 * name_similarity + 0.3 * phone_similarity + 0.2 * address_similarity
         # Consider as potential duplicates if combined similarity exceeds threshold
         return combined_similarity >= self.threshold
 
@@ -157,9 +149,7 @@ class OllamaVerifier:
         self.model = model
         self.api_url = api_url
 
-    def verify_duplicates(
-        self, business1: Dict, business2: Dict
-    ) -> Tuple[bool, float, str]:
+    def verify_duplicates(self, business1: Dict, business2: Dict) -> Tuple[bool, float, str]:
         """Verify if two businesses are duplicates using Ollama LLM.
         Args:
             business1: First business record.
@@ -200,9 +190,7 @@ class OllamaVerifier:
             )
             # Parse the response to extract decision
             is_duplicate, confidence, reasoning = self._parse_response(response_text)
-            logger.info(
-                f"Ollama verification result: is_duplicate={is_duplicate}, confidence={confidence:.2f}"
-            )
+            logger.info(f"Ollama verification result: is_duplicate={is_duplicate}, confidence={confidence:.2f}")
             return is_duplicate, confidence, reasoning
         except Exception as e:
             logger.error(f"Error calling Ollama API: {e}")
@@ -257,17 +245,13 @@ Provide your analysis:
             Tuple of (is_duplicate, confidence, reasoning).
         """
         # Extract decision
-        duplicate_match = re.search(
-            r"DUPLICATE:\s*(YES|NO)", response_text, re.IGNORECASE
-        )
+        duplicate_match = re.search(r"DUPLICATE:\s*(YES|NO)", response_text, re.IGNORECASE)
         is_duplicate = duplicate_match and duplicate_match.group(1).upper() == "YES"
         # Extract confidence
         confidence_match = re.search(r"CONFIDENCE:\s*(\d+)", response_text)
         confidence = float(confidence_match.group(1)) / 100 if confidence_match else 0.5
         # Extract reasoning
-        reasoning_match = re.search(
-            r"REASONING:\s*(.*?)(?=$|\n\n)", response_text, re.DOTALL
-        )
+        reasoning_match = re.search(r"REASONING:\s*(.*?)(?=$|\n\n)", response_text, re.DOTALL)
         reasoning = reasoning_match.group(1).strip() if reasoning_match else ""
         return is_duplicate, confidence, reasoning
 
@@ -317,9 +301,7 @@ def get_business_by_id(business_id: int) -> Optional[Dict]:
         return None
 
 
-def merge_businesses(
-    business1: Dict, business2: Dict, is_dry_run: bool = False
-) -> Optional[int]:
+def merge_businesses(business1: Dict, business2: Dict, is_dry_run: bool = False) -> Optional[int]:
     """Merge two business records.
     Args:
         business1: First business record.
@@ -332,9 +314,7 @@ def merge_businesses(
     # Prefer the business with more complete information
     primary_id, secondary_id = select_primary_business(business1, business2)
     if is_dry_run:
-        logger.info(
-            f"[DRY RUN] Would merge business ID {secondary_id} into {primary_id}"
-        )
+        logger.info(f"[DRY RUN] Would merge business ID {secondary_id} into {primary_id}")
         return primary_id
     try:
         with DatabaseConnection() as cursor:
@@ -430,9 +410,7 @@ def calculate_completeness_score(business: Dict) -> float:
     return score / len(fields)
 
 
-def flag_for_review(
-    business1_id: int, business2_id: int, reason: str, similarity_score: float = None
-) -> None:
+def flag_for_review(business1_id: int, business2_id: int, reason: str, similarity_score: float = None) -> None:
     """Flag a pair of businesses for manual review.
     Args:
         business1_id: ID of the first business.
@@ -453,15 +431,9 @@ def flag_for_review(
             """,
                 (business1_id, business2_id, reason, similarity_score),
             )
-            logger.info(
-                f"Flagged businesses {business1_id} and {business2_id} "
-                f"for manual review: {reason}"
-            )
+            logger.info(f"Flagged businesses {business1_id} and {business2_id} " f"for manual review: {reason}")
     except Exception as e:
-        logger.error(
-            f"Error flagging businesses {business1_id} and {business2_id} "
-            f"for review: {e}"
-        )
+        logger.error(f"Error flagging businesses {business1_id} and {business2_id} " f"for review: {e}")
 
 
 def process_duplicate_pair(
@@ -485,9 +457,7 @@ def process_duplicate_pair(
     business1 = get_business_by_id(business1_id)
     business2 = get_business_by_id(business2_id)
     if not business1 or not business2:
-        logger.warning(
-            f"Could not retrieve businesses {business1_id} and/or {business2_id}"
-        )
+        logger.warning(f"Could not retrieve businesses {business1_id} and/or {business2_id}")
         return False, None
     # Check if businesses are potential duplicates using Levenshtein distance
     if not matcher.are_potential_duplicates(business1, business2):
@@ -496,9 +466,7 @@ def process_duplicate_pair(
         )
         return False, None
     # Verify duplicates using Ollama LLM
-    is_duplicate, confidence, reasoning = verifier.verify_duplicates(
-        business1, business2
-    )
+    is_duplicate, confidence, reasoning = verifier.verify_duplicates(business1, business2)
     logger.info(
         f"Duplicate verification for businesses {business1_id} and {business2_id}: "
         f"is_duplicate={is_duplicate}, confidence={confidence:.2f}, reasoning='{reasoning[:100]}...'"
@@ -509,10 +477,7 @@ def process_duplicate_pair(
         return merged_id is not None, merged_id
     else:
         # If not duplicates but same name with different addresses, flag for review
-        if (
-            business1["name"] == business2["name"]
-            and business1["address"] != business2["address"]
-        ):
+        if business1["name"] == business2["name"] and business1["address"] != business2["address"]:
             if not is_dry_run:
                 flag_for_review(
                     business1_id,
@@ -530,12 +495,8 @@ def process_duplicate_pair(
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(
-        description="Identify and merge duplicate business records"
-    )
-    parser.add_argument(
-        "--limit", type=int, help="Limit the number of potential duplicates to process"
-    )
+    parser = argparse.ArgumentParser(description="Identify and merge duplicate business records")
+    parser.add_argument("--limit", type=int, help="Limit the number of potential duplicates to process")
     parser.add_argument(
         "--threshold",
         type=float,
@@ -583,9 +544,7 @@ def main():
         except Exception as e:
             logger.error(f"Error processing duplicate pair {duplicate_pair['id']}: {e}")
             error_count += 1
-    logger.info(
-        f"Deduplication completed. Success: {success_count}, Errors: {error_count}, Skipped: {skipped_count}"
-    )
+    logger.info(f"Deduplication completed. Success: {success_count}, Errors: {error_count}, Skipped: {skipped_count}")
     return 0
 
 

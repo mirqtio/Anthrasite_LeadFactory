@@ -9,9 +9,7 @@ from pathlib import Path
 
 def update_tasks():
     # Path to tasks.json
-    tasks_path = Path(
-        "/Users/charlieirwin/Documents/GitHub/Anthrasite_LeadFactory/tasks/tasks.json"
-    )
+    tasks_path = Path("/Users/charlieirwin/Documents/GitHub/Anthrasite_LeadFactory/tasks/tasks.json")
 
     # Load the tasks
     with open(tasks_path, "r") as f:
@@ -32,9 +30,7 @@ def update_tasks():
         if task.get("title") == "Initialize Database Schema and Seed Helpers":
             task["parallelizable"] = False
             if "tests" in task and "F Seed" in task["tests"]:
-                task["tests"] = [
-                    "F SeedHelpers" if t == "F Seed" else t for t in task["tests"]
-                ]
+                task["tests"] = ["F SeedHelpers" if t == "F Seed" else t for t in task["tests"]]
 
         # 2. Add tests to prometheus_exporter
         elif task.get("title") == "Implement Prometheus Exporter":
@@ -42,10 +38,7 @@ def update_tasks():
                 task["tests"] = ["F MetricsEndpoint"]
 
         # 3. Update CI workflow task
-        elif (
-            "CI" in task.get("title", "")
-            and "workflow" in task.get("title", "").lower()
-        ):
+        elif "CI" in task.get("title", "") and "workflow" in task.get("title", "").lower():
             if "touches" in task and ".github/workflows/ci.yml" in task["touches"]:
                 if "requirements.txt" not in task["touches"]:
                     task["touches"].append("requirements.txt")
@@ -60,25 +53,18 @@ def update_tasks():
                 task["tests"] = ["F BudgetChecks"]
 
     # 6. Add prometheus_alerts as a subtask to prometheus_exporter
-    prometheus_task = next(
-        (t for t in tasks if "Prometheus" in t.get("title", "")), None
-    )
+    prometheus_task = next((t for t in tasks if "Prometheus" in t.get("title", "")), None)
     if prometheus_task:
         if "subtasks" not in prometheus_task:
             prometheus_task["subtasks"] = []
 
         # Check if prometheus_alerts already exists
-        if not any(
-            t.get("title") == "Create Prometheus Alert Rules"
-            for t in prometheus_task["subtasks"]
-        ):
+        if not any(t.get("title") == "Create Prometheus Alert Rules" for t in prometheus_task["subtasks"]):
             prometheus_task["subtasks"].append(
                 {
                     "id": len(prometheus_task["subtasks"]) + 1,
                     "title": "Create Prometheus Alert Rules",
-                    "description": (
-                        "Define and export Prometheus alert rules for monitoring"
-                    ),
+                    "description": ("Define and export Prometheus alert rules for monitoring"),
                     "status": "completed",
                     "parallelizable": True,
                     "parentTaskId": prometheus_task["id"],

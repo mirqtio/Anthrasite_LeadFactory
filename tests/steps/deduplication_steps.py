@@ -320,9 +320,7 @@ def merged_business_highest_score(mock_db):
     # Get the score of the merged business
     cursor.execute("SELECT score FROM businesses WHERE processed = 1 LIMIT 1")
     merged_score = cursor.fetchone()[0]
-    assert (
-        merged_score >= highest_score
-    ), "Merged business does not have the highest score"
+    assert merged_score >= highest_score, "Merged business does not have the highest score"
 
 
 @then("the merged business should have all contact information")
@@ -367,9 +365,7 @@ def confirmed_duplicates_merged(mock_db):
 def businesses_flagged_for_review(mock_db):
     """Verify businesses are flagged for manual review."""
     conn, cursor = mock_db
-    cursor.execute(
-        "SELECT COUNT(*) FROM candidate_duplicate_pairs WHERE status = 'review'"
-    )
+    cursor.execute("SELECT COUNT(*) FROM candidate_duplicate_pairs WHERE status = 'review'")
     count = cursor.fetchone()[0]
     assert count > 0, "No businesses were flagged for manual review"
 
@@ -381,9 +377,7 @@ def businesses_not_automatically_merged(mock_db):
     # Check that no businesses were processed as a result of merging
     cursor.execute("SELECT COUNT(*) FROM businesses WHERE processed = 1")
     count = cursor.fetchone()[0]
-    assert (
-        count == 0
-    ), "Businesses were automatically merged when they should not have been"
+    assert count == 0, "Businesses were automatically merged when they should not have been"
 
 
 @then("the process should continue to the next set of businesses")

@@ -86,18 +86,12 @@ def show_summary() -> None:
     daily_budget = budget_info.get("daily_budget", 0)
     daily_utilization = (daily_cost / daily_budget) * 100 if daily_budget > 0 else 0
     print(f"Daily Budget: {format_currency(daily_budget)}")
-    print(
-        f"Daily Spend:  {format_currency(daily_cost)} ({format_percentage(daily_utilization)} of budget)"
-    )
+    print(f"Daily Spend:  {format_currency(daily_cost)} ({format_percentage(daily_utilization)} of budget)")
     # Print monthly budget
     monthly_budget = budget_info.get("monthly_budget", 0)
-    monthly_utilization = (
-        (monthly_cost / monthly_budget) * 100 if monthly_budget > 0 else 0
-    )
+    monthly_utilization = (monthly_cost / monthly_budget) * 100 if monthly_budget > 0 else 0
     print(f"\nMonthly Budget: {format_currency(monthly_budget)}")
-    print(
-        f"Monthly Spend:  {format_currency(monthly_cost)} ({format_percentage(monthly_utilization)} of budget)"
-    )
+    print(f"Monthly Spend:  {format_currency(monthly_cost)} ({format_percentage(monthly_utilization)} of budget)")
     # Print alerts if any
     if budget_info.get("daily_alert", False):
         print_warning("Daily budget alert threshold reached!")
@@ -139,11 +133,7 @@ def show_scaling_gate_status() -> None:
     """Show the current scaling gate status."""
     print_header("Scaling Gate Status")
     active, reason = is_scaling_gate_active()
-    status = (
-        f"{Colors.FAIL}ACTIVE{Colors.ENDC}"
-        if active
-        else f"{Colors.OKGREEN}INACTIVE{Colors.ENDC}"
-    )
+    status = f"{Colors.FAIL}ACTIVE{Colors.ENDC}" if active else f"{Colors.OKGREEN}INACTIVE{Colors.ENDC}"
     print(f"Status: {status}")
     print(f"Reason: {reason}")
     # Show scaling gate history
@@ -187,9 +177,7 @@ def export_report(period: str, output_file: str) -> None:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Budget Audit Tool for Anthrasite Lead-Factory"
-    )
+    parser = argparse.ArgumentParser(description="Budget Audit Tool for Anthrasite Lead-Factory")
     # Main commands
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
     # Summary command - store in _ to indicate it's intentionally unused
@@ -204,16 +192,12 @@ def parse_args() -> argparse.Namespace:
     )
     # Scaling gate command
     gate_parser = subparsers.add_parser("gate", help="Manage scaling gate")
-    gate_subparsers = gate_parser.add_subparsers(
-        dest="gate_command", help="Scaling gate command"
-    )
+    gate_subparsers = gate_parser.add_subparsers(dest="gate_command", help="Scaling gate command")
     # Enable gate
     enable_parser = gate_subparsers.add_parser("enable", help="Enable the scaling gate")
     enable_parser.add_argument("--reason", help="Reason for enabling the gate")
     # Disable gate
-    disable_parser = gate_subparsers.add_parser(
-        "disable", help="Disable the scaling gate"
-    )
+    disable_parser = gate_subparsers.add_parser("disable", help="Disable the scaling gate")
     disable_parser.add_argument("--reason", help="Reason for disabling the gate")
     # Status gate
     gate_subparsers.add_parser("status", help="Show scaling gate status")
@@ -225,16 +209,10 @@ def parse_args() -> argparse.Namespace:
         default="month",
         help="Time period for the report",
     )
-    export_parser.add_argument(
-        "--output", default="cost_report.json", help="Output file path"
-    )
+    export_parser.add_argument("--output", default="cost_report.json", help="Output file path")
     # Export Prometheus metrics
-    prom_parser = subparsers.add_parser(
-        "export-prometheus", help="Export Prometheus metrics"
-    )
-    prom_parser.add_argument(
-        "--output", default="metrics.prom", help="Output file path"
-    )
+    prom_parser = subparsers.add_parser("export-prometheus", help="Export Prometheus metrics")
+    prom_parser.add_argument("--output", default="metrics.prom", help="Output file path")
     # Set default command
     parser.set_defaults(func=show_summary)
     # Parse arguments

@@ -111,11 +111,11 @@ def mock_sendgrid_client():
 def mock_cost_tracker():
     """Create a mock cost tracker."""
     # Mock the cost tracking functions directly since they're imported at module level
-    with patch("bin.email_queue.log_cost") as mock_log_cost, patch(
-        "bin.email_queue.get_daily_cost"
-    ) as mock_daily_cost, patch(
-        "bin.email_queue.get_monthly_cost"
-    ) as mock_monthly_cost:
+    with (
+        patch("bin.email_queue.log_cost") as mock_log_cost,
+        patch("bin.email_queue.get_daily_cost") as mock_daily_cost,
+        patch("bin.email_queue.get_monthly_cost") as mock_monthly_cost,
+    ):
         # Configure the mock functions
         mock_log_cost.return_value = True
         mock_daily_cost.return_value = 0.0
@@ -263,13 +263,7 @@ def temp_db():
             json.dumps({"phone": "555-1234", "address": "123 Test St"}),
             json.dumps({"lat": 37.7749, "lng": -122.4194}),
             85,
-            json.dumps(
-                {
-                    "improvements": [
-                        {"title": "Test Improvement", "description": "Test description"}
-                    ]
-                }
-            ),
+            json.dumps({"improvements": [{"title": "Test Improvement", "description": "Test description"}]}),
             "<div>Test Mockup</div>",
             1,
             "active",
@@ -294,9 +288,7 @@ def temp_db():
         (
             1,
             "premium",
-            json.dumps(
-                [{"title": "Test Improvement", "description": "Test description"}]
-            ),
+            json.dumps([{"title": "Test Improvement", "description": "Test description"}]),
             base64.b64encode(b"test_image").decode("utf-8"),
             "<div>Test Mockup</div>",
             "gpt-4",
@@ -398,9 +390,7 @@ def temp_db():
                         }
                     ]
                 ),
-                base64.b64encode(f"limit_test_image_{i}".encode("utf-8")).decode(
-                    "utf-8"
-                ),
+                base64.b64encode(f"limit_test_image_{i}".encode("utf-8")).decode("utf-8"),
                 f"<div>Limit Test Mockup {i}</div>",
                 "gpt-4",
             ),
@@ -413,9 +403,7 @@ def temp_db():
 
 
 # Test scenarios - converted to simple unit tests
-def test_send_personalized_email(
-    mock_db_connection, mock_sendgrid_client, mock_cost_tracker
-):
+def test_send_personalized_email(mock_db_connection, mock_sendgrid_client, mock_cost_tracker):
     """Test sending personalized email with mockup."""
     # Mock the necessary components
     business_id = 1
@@ -495,9 +483,7 @@ def test_handle_api_errors(mock_db_connection, mock_sendgrid_client, mock_cost_t
     assert mock_db_connection is not None
 
 
-def test_respect_daily_limit(
-    mock_db_connection, mock_sendgrid_client, mock_cost_tracker
-):
+def test_respect_daily_limit(mock_db_connection, mock_sendgrid_client, mock_cost_tracker):
     """Test respecting daily email limit."""
     # Mock the necessary components for multiple businesses
     mock_cursor = mock_db_connection.cursor.return_value
@@ -506,25 +492,19 @@ def test_respect_daily_limit(
             1,
             "Business 1",
             "email1@example.com",
-            json.dumps(
-                {"html": "<html><body>Mockup 1</body></html>", "text": "Mockup 1"}
-            ),
+            json.dumps({"html": "<html><body>Mockup 1</body></html>", "text": "Mockup 1"}),
         ),
         (
             2,
             "Business 2",
             "email2@example.com",
-            json.dumps(
-                {"html": "<html><body>Mockup 2</body></html>", "text": "Mockup 2"}
-            ),
+            json.dumps({"html": "<html><body>Mockup 2</body></html>", "text": "Mockup 2"}),
         ),
         (
             3,
             "Business 3",
             "email3@example.com",
-            json.dumps(
-                {"html": "<html><body>Mockup 3</body></html>", "text": "Mockup 3"}
-            ),
+            json.dumps({"html": "<html><body>Mockup 3</body></html>", "text": "Mockup 3"}),
         ),
     ]
 
@@ -540,9 +520,7 @@ def test_respect_daily_limit(
     assert daily_limit == 2
 
 
-def test_track_bounce_rates(
-    mock_db_connection, mock_sendgrid_client, mock_cost_tracker
-):
+def test_track_bounce_rates(mock_db_connection, mock_sendgrid_client, mock_cost_tracker):
     """Test tracking bounce rates."""
     # Mock the necessary components
     business_id = 4
@@ -844,9 +822,7 @@ def business_with_high_bounce_rate(temp_db):
 
 # When steps
 @when("I run the email queue process")
-def run_email_queue(
-    mock_sendgrid_client, mock_cost_tracker, business_with_mockup_fixture, temp_db
-):
+def run_email_queue(mock_sendgrid_client, mock_cost_tracker, business_with_mockup_fixture, temp_db):
     """Run the email queue process."""
     # Mock the email queue process
     with patch("bin.email_queue.DatabaseConnection") as mock_db_conn:
@@ -861,9 +837,7 @@ def run_email_queue(
 
 
 @when("I run the email queue process in dry run mode")
-def run_email_queue_dry_run(
-    mock_sendgrid_client, mock_cost_tracker, business_with_mockup_fixture, temp_db
-):
+def run_email_queue_dry_run(mock_sendgrid_client, mock_cost_tracker, business_with_mockup_fixture, temp_db):
     """Run the email queue process in dry run mode."""
     # Mock the email queue process
     with patch("bin.email_queue.DatabaseConnection") as mock_db_conn:

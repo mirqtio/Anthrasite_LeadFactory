@@ -16,21 +16,15 @@ from bin.email_queue import process_business_email
 def test_process_business_email_dry_run():
     """Test that process_business_email returns True in dry run mode."""
     # Mock all dependencies
-    with patch(
-        "bin.email_queue.get_businesses_for_email"
-    ) as mock_get_businesses, patch(
-        "bin.email_queue.load_email_template"
-    ) as mock_load_template, patch(
-        "bin.email_queue.generate_email_content"
-    ) as mock_generate_content, patch(
-        "bin.email_queue.save_email_record"
-    ) as mock_save_email, patch(
-        "bin.email_queue.log_cost"
-    ) as mock_log_cost, patch(
-        "bin.email_queue.logger"
-    ), patch(
-        "bin.email_queue.os.getenv"
-    ) as mock_getenv:
+    with (
+        patch("bin.email_queue.get_businesses_for_email") as mock_get_businesses,
+        patch("bin.email_queue.load_email_template") as mock_load_template,
+        patch("bin.email_queue.generate_email_content") as mock_generate_content,
+        patch("bin.email_queue.save_email_record") as mock_save_email,
+        patch("bin.email_queue.log_cost") as mock_log_cost,
+        patch("bin.email_queue.logger"),
+        patch("bin.email_queue.os.getenv") as mock_getenv,
+    ):
         # Configure mocks
         mock_get_businesses.return_value = [
             {
@@ -60,24 +54,16 @@ def test_process_business_email_dry_run():
 def test_process_business_email_normal_mode():
     """Test that process_business_email returns True in normal mode."""
     # Mock all dependencies
-    with patch(
-        "bin.email_queue.get_businesses_for_email"
-    ) as mock_get_businesses, patch(
-        "bin.email_queue.load_email_template"
-    ) as mock_load_template, patch(
-        "bin.email_queue.generate_email_content"
-    ) as mock_generate_content, patch(
-        "bin.email_queue.save_email_record"
-    ) as mock_save_email, patch(
-        "bin.email_queue.log_cost"
-    ) as mock_log_cost, patch(
-        "bin.email_queue.logger"
-    ), patch(
-        "bin.email_queue.os.getenv"
-    ) as mock_getenv, patch(
-        "bin.email_queue.send_business_email"
-    ) as mock_send_email, patch(
-        "bin.email_queue.SendGridEmailSender"
+    with (
+        patch("bin.email_queue.get_businesses_for_email") as mock_get_businesses,
+        patch("bin.email_queue.load_email_template") as mock_load_template,
+        patch("bin.email_queue.generate_email_content") as mock_generate_content,
+        patch("bin.email_queue.save_email_record") as mock_save_email,
+        patch("bin.email_queue.log_cost") as mock_log_cost,
+        patch("bin.email_queue.logger"),
+        patch("bin.email_queue.os.getenv") as mock_getenv,
+        patch("bin.email_queue.send_business_email") as mock_send_email,
+        patch("bin.email_queue.SendGridEmailSender"),
     ):
         # Configure mocks
         mock_get_businesses.return_value = [
@@ -109,21 +95,15 @@ def test_process_business_email_normal_mode():
 def test_process_business_email_handles_errors_in_dry_run():
     """Test that process_business_email handles errors gracefully in dry run mode."""
     # Mock all dependencies
-    with patch(
-        "bin.email_queue.get_businesses_for_email"
-    ) as mock_get_businesses, patch(
-        "bin.email_queue.load_email_template"
-    ) as mock_load_template, patch(
-        "bin.email_queue.generate_email_content"
-    ) as mock_generate_content, patch(
-        "bin.email_queue.save_email_record"
-    ) as mock_save_email, patch(
-        "bin.email_queue.log_cost"
-    ) as mock_log_cost, patch(
-        "bin.email_queue.logger"
-    ), patch(
-        "bin.email_queue.os.getenv"
-    ) as mock_getenv:
+    with (
+        patch("bin.email_queue.get_businesses_for_email") as mock_get_businesses,
+        patch("bin.email_queue.load_email_template") as mock_load_template,
+        patch("bin.email_queue.generate_email_content") as mock_generate_content,
+        patch("bin.email_queue.save_email_record") as mock_save_email,
+        patch("bin.email_queue.log_cost") as mock_log_cost,
+        patch("bin.email_queue.logger"),
+        patch("bin.email_queue.os.getenv") as mock_getenv,
+    ):
         # Configure mocks to raise exceptions
         mock_get_businesses.side_effect = Exception("Database error")
         mock_load_template.side_effect = Exception("Template error")

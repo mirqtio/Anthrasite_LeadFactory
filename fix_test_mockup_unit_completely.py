@@ -22,10 +22,7 @@ def fix_test_mockup_unit():
 
     for line in lines:
         # Skip the duplicate import line
-        if (
-            "from unittest.mock import patch, MagicMock, ANY" in line
-            and not import_fixed
-        ):
+        if "from unittest.mock import patch, MagicMock, ANY" in line and not import_fixed:
             import_fixed = True
             continue
 

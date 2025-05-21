@@ -128,8 +128,7 @@ SAMPLE_FALLBACK_MOCKUP_RESPONSE = {
         {
             "title": "Improve Page Load Speed",
             "description": (
-                "Your website currently takes 4.5 seconds to load. We can optimize it "
-                "for better performance."
+                "Your website currently takes 4.5 seconds to load. We can optimize it " "for better performance."
             ),
             "impact": "High",
             "implementation_difficulty": "Medium",
@@ -142,10 +141,7 @@ SAMPLE_FALLBACK_MOCKUP_RESPONSE = {
         },
     ],
     "visual_mockup": "Fallback mock image data",
-    "html_snippet": (
-        "<div class='improved-section'><h2>Improved Section</h2>"
-        "<p>Fallback mockup.</p></div>"
-    ),
+    "html_snippet": ("<div class='improved-section'><h2>Improved Section</h2>" "<p>Fallback mockup.</p></div>"),
 }
 
 
@@ -184,9 +180,7 @@ def mockup_api_unavailable(mock_gpt4o_client, mock_claude_client, caplog):
     # Configure the primary model to fail
     mock_gpt4o_client.generate_mockup.side_effect = Exception("Primary API unavailable")
     # Configure the fallback model to fail too
-    mock_claude_client.generate_mockup.side_effect = Exception(
-        "Fallback API also unavailable"
-    )
+    mock_claude_client.generate_mockup.side_effect = Exception("Fallback API also unavailable")
     yield
 
 
@@ -613,9 +607,7 @@ def test_handle_api_errors():
     assert result["retry_count"] == 1, "Retry count should be incremented"
 
     # Verify the retry count was updated in the database
-    cursor.execute(
-        "SELECT mockup_retry_count, mockup_last_attempt FROM businesses WHERE id = 7"
-    )
+    cursor.execute("SELECT mockup_retry_count, mockup_last_attempt FROM businesses WHERE id = 7")
     db_result = cursor.fetchone()
     assert db_result[0] == 1, "Retry count should be updated in the database"
     assert db_result[1] is not None, "Last attempt timestamp should be set"
@@ -654,12 +646,8 @@ def test_handle_api_errors_gracefully():
     mock_primary = MagicMock()
     mock_fallback = MagicMock()
     # Configure both models to fail
-    mock_primary.generate_mockup = MagicMock(
-        side_effect=Exception("Primary API unavailable")
-    )
-    mock_fallback.generate_mockup = MagicMock(
-        side_effect=Exception("Fallback API also unavailable")
-    )
+    mock_primary.generate_mockup = MagicMock(side_effect=Exception("Primary API unavailable"))
+    mock_fallback.generate_mockup = MagicMock(side_effect=Exception("Fallback API also unavailable"))
     # Set up logging
     import logging
 
@@ -718,9 +706,7 @@ def test_handle_api_errors_gracefully():
         record.levelname == "ERROR" for record in log_capture
     ), "Expected an error to be logged but none was found"
     # Verify business was marked for retry
-    cursor.execute(
-        "SELECT mockup_retry_count FROM businesses WHERE id = ?", (business_id,)
-    )
+    cursor.execute("SELECT mockup_retry_count FROM businesses WHERE id = ?", (business_id,))
     db_result = cursor.fetchone()
     assert db_result is not None, "Business not found in database"
     assert db_result[0] > 0, "mockup_retry_count should be greater than 0"
@@ -901,9 +887,7 @@ def test_use_fallback_model_when_primary_model_fails():
 
     # Verify the fallback model was used
     assert model_used == "fallback", "Fallback model should be used when primary fails"
-    assert (
-        mockup_data["model"] == "fallback"
-    ), "Mockup data should be from fallback model"
+    assert mockup_data["model"] == "fallback", "Mockup data should be from fallback model"
 
     # Verify the mockup data was saved to the database
     cursor.execute("SELECT mockup_data FROM businesses WHERE id = 6")
@@ -957,9 +941,7 @@ def test_fallback_model_custom():
     mock_primary = MagicMock()
     mock_fallback = MagicMock()
     # Configure the primary model to fail
-    mock_primary.generate_mockup = MagicMock(
-        side_effect=Exception("Primary API unavailable")
-    )
+    mock_primary.generate_mockup = MagicMock(side_effect=Exception("Primary API unavailable"))
     # Configure the fallback model to succeed
     mock_fallback.generate_mockup = MagicMock(
         return_value={
@@ -1034,16 +1016,12 @@ def test_fallback_model_custom():
     assert mock_primary.generate_mockup.call_count > 0, "Primary model was not called"
     assert mock_fallback.generate_mockup.call_count > 0, "Fallback model was not called"
     # Verify the mockup was saved to the database
-    cursor.execute(
-        "SELECT model_used FROM mockups WHERE business_id = ?", (business_id,)
-    )
+    cursor.execute("SELECT model_used FROM mockups WHERE business_id = ?", (business_id,))
     result = cursor.fetchone()
     assert result is not None, "No mockup was saved to the database"
     assert result[0] == "fallback", "Mockup was not saved with the fallback model"
     # Verify the business was marked as having a mockup
-    cursor.execute(
-        "SELECT mockup_generated FROM businesses WHERE id = ?", (business_id,)
-    )
+    cursor.execute("SELECT mockup_generated FROM businesses WHERE id = ?", (business_id,))
     result = cursor.fetchone()
     assert result is not None, "Business not found"
     assert result[0] == 1, "Business was not marked as having a mockup"
@@ -1100,9 +1078,7 @@ def mockup_api_unavailable_step(mock_gpt4o_client, mock_claude_client, caplog):
     """Simulate mockup API unavailability."""
     # Configure both models to raise exceptions
     mock_gpt4o_client.generate_mockup.side_effect = Exception("Primary API unavailable")
-    mock_claude_client.generate_mockup.side_effect = Exception(
-        "Fallback API unavailable"
-    )
+    mock_claude_client.generate_mockup.side_effect = Exception("Fallback API unavailable")
     # Set log level to capture errors
     import logging
 
@@ -1259,25 +1235,17 @@ def bdd_mockup_setup(temp_db, request):
             "improvements": [
                 {
                     "title": "Improve Page Load Speed",
-                    "description": (
-                        "Your website takes 4.5s to load. "
-                        "We can reduce this to under 2s."
-                    ),
+                    "description": ("Your website takes 4.5s to load. " "We can reduce this to under 2s."),
                     "impact": "High",
                 },
                 {
                     "title": "Enhance Mobile Responsiveness",
-                    "description": (
-                        "Your site doesn't adapt well to mobile devices. "
-                        "We can fix that."
-                    ),
+                    "description": ("Your site doesn't adapt well to mobile devices. " "We can fix that."),
                     "impact": "Medium",
                 },
                 {
                     "title": "Add Clear Call-to-Action",
-                    "description": (
-                        "Your site lacks clear CTAs. We can add prominent buttons."
-                    ),
+                    "description": ("Your site lacks clear CTAs. We can add prominent buttons."),
                     "impact": "High",
                 },
             ],
@@ -1289,18 +1257,12 @@ def bdd_mockup_setup(temp_db, request):
             "improvements": [
                 {
                     "title": "Improve Page Load Speed",
-                    "description": (
-                        "Your website takes 4.5s to load. "
-                        "We can reduce this to under 2s."
-                    ),
+                    "description": ("Your website takes 4.5s to load. " "We can reduce this to under 2s."),
                     "impact": "High",
                 },
                 {
                     "title": "Enhance Mobile Responsiveness",
-                    "description": (
-                        "Your site doesn't adapt well to mobile devices. "
-                        "We can fix that."
-                    ),
+                    "description": ("Your site doesn't adapt well to mobile devices. " "We can fix that."),
                     "impact": "Medium",
                 },
             ],
@@ -1312,10 +1274,7 @@ def bdd_mockup_setup(temp_db, request):
             "improvements": [
                 {
                     "title": "Improve Page Load Speed",
-                    "description": (
-                        "Your website takes 4.5s to load. "
-                        "We can reduce this to under 2s."
-                    ),
+                    "description": ("Your website takes 4.5s to load. " "We can reduce this to under 2s."),
                     "impact": "High",
                 }
             ],
@@ -1387,9 +1346,7 @@ def then_a_premium_mockup_should_be_generated(temp_db):
     mockup_data = json.loads(business["mockup_data"])
     # For high-scoring businesses, we expect at least 3 improvement suggestions
     assert "improvements" in mockup_data, "Mockup data should contain improvements"
-    assert (
-        len(mockup_data["improvements"]) >= 3
-    ), "Premium mockup should have at least 3 improvements"
+    assert len(mockup_data["improvements"]) >= 3, "Premium mockup should have at least 3 improvements"
     # Verify the mockup was saved in the mockups table
     cursor.execute("SELECT * FROM mockups WHERE business_id = 1")
     mockup_record = cursor.fetchone()
@@ -1412,9 +1369,7 @@ def then_a_premium_mockup_should_be_generated(temp_db):
     # Verify the mockup data contains improvements
     mockup_data = json.loads(db_result[0])
     assert "improvements" in mockup_data, "Mockup data should contain improvements"
-    assert (
-        len(mockup_data["improvements"]) > 0
-    ), "Mockup should have at least one improvement"
+    assert len(mockup_data["improvements"]) > 0, "Mockup should have at least one improvement"
 
 
 @then("the mockup should include multiple improvement suggestions")
@@ -1425,9 +1380,7 @@ def then_the_mockup_should_include_multiple_improvement_suggestions(run_mockup_p
     result = cursor.fetchone()
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
-    assert (
-        len(mockup_data["improvements"]) >= 3
-    ), "Expected multiple improvement suggestions"
+    assert len(mockup_data["improvements"]) >= 3, "Expected multiple improvement suggestions"
 
 
 @then("the mockup should be saved to the database")
@@ -1452,23 +1405,13 @@ def then_the_mockup_should_be_saved_to_the_database(temp_db):
         business_id = result["id"]
         mockup_generated = result["mockup_generated"]
         mockup_data = result["mockup_data"]
-        assert (
-            mockup_generated == 1
-        ), f"mockup_generated should be set to 1 for business {business_id}"
-        assert (
-            mockup_data is not None
-        ), f"mockup_data should not be None for business {business_id}"
+        assert mockup_generated == 1, f"mockup_generated should be set to 1 for business {business_id}"
+        assert mockup_data is not None, f"mockup_data should not be None for business {business_id}"
         # Then check the mockups table for HTML content
-        cursor.execute(
-            "SELECT mockup_html FROM mockups WHERE business_id = ?", (business_id,)
-        )
+        cursor.execute("SELECT mockup_html FROM mockups WHERE business_id = ?", (business_id,))
         mockup_result = cursor.fetchone()
-        assert (
-            mockup_result is not None
-        ), f"No mockup record found in database for business {business_id}"
-        assert (
-            mockup_result[0] is not None
-        ), f"mockup_html should not be None for business {business_id}"
+        assert mockup_result is not None, f"No mockup record found in database for business {business_id}"
+        assert mockup_result[0] is not None, f"mockup_html should not be None for business {business_id}"
     conn.close()
 
 
@@ -1503,9 +1446,7 @@ def then_a_standard_mockup_should_be_generated(run_mockup_process):
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
     assert "improvements" in mockup_data, "Mockup data should contain improvements"
-    assert (
-        len(mockup_data["improvements"]) == 2
-    ), "Standard mockup should have exactly 2 improvements"
+    assert len(mockup_data["improvements"]) == 2, "Standard mockup should have exactly 2 improvements"
     conn.close()
 
 
@@ -1522,8 +1463,7 @@ def then_the_mockup_should_include_basic_improvement_suggestions(temp_db):
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
     assert len(mockup_data["improvements"]) == 2, (
-        f"Expected 2 basic improvement suggestions, got "
-        f"{len(mockup_data['improvements'])}"
+        f"Expected 2 basic improvement suggestions, got " f"{len(mockup_data['improvements'])}"
     )
     conn.close()
 
@@ -1545,9 +1485,7 @@ def then_a_basic_mockup_should_be_generated(run_mockup_process):
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
     assert "improvements" in mockup_data, "Mockup data should contain improvements"
-    assert (
-        len(mockup_data["improvements"]) == 1
-    ), "Basic mockup should have exactly 1 improvement"
+    assert len(mockup_data["improvements"]) == 1, "Basic mockup should have exactly 1 improvement"
 
 
 @then("the mockup should include minimal improvement suggestions")
@@ -1563,8 +1501,7 @@ def minimal_suggestions_included(temp_db):
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
     assert len(mockup_data["improvements"]) == 1, (
-        f"Expected 1 minimal improvement suggestion, got "
-        f"{len(mockup_data['improvements'])}"
+        f"Expected 1 minimal improvement suggestion, got " f"{len(mockup_data['improvements'])}"
     )
     conn.close()
 
@@ -1584,9 +1521,7 @@ def error_logged(caplog):
 def marked_for_retry(run_mockup_generation):
     """Verify that the business was marked for retry."""
     generator, conn, cursor = run_mockup_generation
-    cursor.execute(
-        "SELECT mockup_retry_count FROM businesses WHERE mockup_retry_count > 0"
-    )
+    cursor.execute("SELECT mockup_retry_count FROM businesses WHERE mockup_retry_count > 0")
     result = cursor.fetchone()
     assert result is not None, "No business was marked for retry"
     assert result[0] > 0, "mockup_retry_count should be greater than 0"
@@ -1626,9 +1561,7 @@ def business_skipped(fixture_business_without_website):
     # Verify the business was skipped
     assert result is False, "Business with no website should be skipped"
     # Verify mockup_generated is still 0
-    cursor.execute(
-        "SELECT mockup_generated FROM businesses WHERE id = ?", (business_id,)
-    )
+    cursor.execute("SELECT mockup_generated FROM businesses WHERE id = ?", (business_id,))
     db_result = cursor.fetchone()
     assert db_result is not None, "Business not found in database"
     assert db_result[0] == 0, "mockup_generated should remain 0 for skipped businesses"

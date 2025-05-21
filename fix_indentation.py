@@ -14,9 +14,7 @@ def fix_indentation(file_path):
     content = re.sub(r"(\s+)cursor\.execute\(", r"    cursor.execute(", content)
 
     # Ensure consistent indentation for SQL statements
-    content = re.sub(
-        r"    cursor\.execute\(\"\"\"\n\s+", r'    cursor.execute("""\n    ', content
-    )
+    content = re.sub(r"    cursor\.execute\(\"\"\"\n\s+", r'    cursor.execute("""\n    ', content)
 
     with open(file_path, "w") as file:
         file.write(content)

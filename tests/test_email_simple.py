@@ -15,23 +15,16 @@ from bin.email_queue import process_business_email
 def test_process_business_email_dry_run_mode():
     """Test that process_business_email works correctly in dry run mode."""
     # Mock all dependencies
-    with patch(
-        "bin.email_queue.get_businesses_for_email"
-    ) as mock_get_businesses, patch(
-        "bin.email_queue.load_email_template"
-    ) as mock_load_template, patch(
-        "bin.email_queue.generate_email_content"
-    ) as mock_generate_content, patch(
-        "bin.email_queue.save_email_record"
-    ) as mock_save_email, patch(
-        "bin.email_queue.log_cost"
-    ) as mock_log_cost, patch(
-        "bin.email_queue.logger"
-    ), patch(
-        "bin.email_queue.os.getenv"
-    ) as mock_getenv, patch(
-        "bin.email_queue.SendGridEmailSender"
-    ) as mock_sender:
+    with (
+        patch("bin.email_queue.get_businesses_for_email") as mock_get_businesses,
+        patch("bin.email_queue.load_email_template") as mock_load_template,
+        patch("bin.email_queue.generate_email_content") as mock_generate_content,
+        patch("bin.email_queue.save_email_record") as mock_save_email,
+        patch("bin.email_queue.log_cost") as mock_log_cost,
+        patch("bin.email_queue.logger"),
+        patch("bin.email_queue.os.getenv") as mock_getenv,
+        patch("bin.email_queue.SendGridEmailSender") as mock_sender,
+    ):
         # Configure mocks
         mock_get_businesses.return_value = [
             {

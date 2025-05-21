@@ -9,9 +9,7 @@ from pathlib import Path
 
 def apply_qa_fixes():
     # Path to tasks.json
-    tasks_path = Path(
-        "/Users/charlieirwin/Documents/GitHub/Anthrasite_LeadFactory/tasks/tasks.json"
-    )
+    tasks_path = Path("/Users/charlieirwin/Documents/GitHub/Anthrasite_LeadFactory/tasks/tasks.json")
 
     # Load the tasks
     with open(tasks_path, "r") as f:
@@ -61,9 +59,7 @@ def apply_qa_fixes():
         if task.get("title") == "Initialize Database Schema and Seed Helpers":
             task["parallelizable"] = False
             if "tests" in task and "F Seed" in task["tests"]:
-                task["tests"] = [
-                    "F SeedHelpers" if t == "F Seed" else t for t in task["tests"]
-                ]
+                task["tests"] = ["F SeedHelpers" if t == "F Seed" else t for t in task["tests"]]
 
         # 3. Add tests to prometheus_exporter
         elif task.get("title") == "Implement Prometheus Exporter":
@@ -74,9 +70,7 @@ def apply_qa_fixes():
             if "subtasks" not in task:
                 task["subtasks"] = []
 
-            if not any(
-                st.get("title") == "Create Alert Rules" for st in task["subtasks"]
-            ):
+            if not any(st.get("title") == "Create Alert Rules" for st in task["subtasks"]):
                 task["subtasks"].append(
                     {
                         "id": len(task["subtasks"]) + 1,
@@ -91,10 +85,7 @@ def apply_qa_fixes():
                 )
 
         # 4. Update CI workflow task
-        elif (
-            "CI" in task.get("title", "")
-            and "workflow" in task.get("title", "").lower()
-        ):
+        elif "CI" in task.get("title", "") and "workflow" in task.get("title", "").lower():
             if "touches" in task and ".github/workflows/ci.yml" in task["touches"]:
                 if "requirements.txt" not in task["touches"]:
                     task["touches"].append("requirements.txt")

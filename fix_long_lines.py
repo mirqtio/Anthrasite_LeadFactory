@@ -60,9 +60,7 @@ def fix_long_lines_in_file(file_path, max_length=88):
                 fixed_lines.append(line)
 
         # Check if this is a long SQL query
-        elif (
-            "SELECT" in line or "INSERT" in line or "UPDATE" in line or "CREATE" in line
-        ):
+        elif "SELECT" in line or "INSERT" in line or "UPDATE" in line or "CREATE" in line:
             # Break SQL queries at logical points
             for token in [
                 " FROM ",

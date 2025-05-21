@@ -141,9 +141,7 @@ def temp_db() -> Generator[str, None, None]:
             del os.environ["DATABASE_URL"]
 
 
-def test_scrape_businesses(
-    target_zip_code, target_vertical, temp_db, monkeypatch, capsys
-):
+def test_scrape_businesses(target_zip_code, target_vertical, temp_db, monkeypatch, capsys):
     """Test the scrape_businesses function."""
     # Set up test API keys in environment first
     yelp_key = "test_yelp_key"
@@ -235,9 +233,7 @@ def test_scrape_businesses(
 
     # Apply the mocks
     monkeypatch.setattr("bin.scrape.YelpAPI", lambda *args, **kwargs: mock_yelp)
-    monkeypatch.setattr(
-        "bin.scrape.GooglePlacesAPI", lambda *args, **kwargs: mock_google
-    )
+    monkeypatch.setattr("bin.scrape.GooglePlacesAPI", lambda *args, **kwargs: mock_google)
     monkeypatch.setattr("bin.scrape.process_yelp_business", mock_process_yelp)
     monkeypatch.setattr("bin.scrape.process_google_place", mock_process_google)
     monkeypatch.setattr("bin.scrape.get_zip_coordinates", mock_get_zip_coordinates)
@@ -247,9 +243,7 @@ def test_scrape_businesses(
     test_vertical["yelp_alias"] = "restaurants"
     test_vertical["google_alias"] = "restaurant"
     # Call the function
-    yelp_count, google_count = scrape_businesses(
-        target_zip_code, test_vertical, limit=2
-    )
+    yelp_count, google_count = scrape_businesses(target_zip_code, test_vertical, limit=2)
     # Print debug information
     print("\n=== Debug Information ===")
     print(f"Yelp count: {yelp_count}, Google count: {google_count}")
@@ -273,9 +267,7 @@ def test_scrape_businesses(
         print(f"Google businesses in DB: {google_count}")
         # Verify we have the expected number of businesses from each source
         assert yelp_count == 2, f"Expected 2 Yelp businesses in DB, got {yelp_count}"
-        assert (
-            google_count == 2
-        ), f"Expected 2 Google businesses in DB, got {google_count}"
+        assert google_count == 2, f"Expected 2 Google businesses in DB, got {google_count}"
 
 
 def test_main(target_vertical, temp_db, monkeypatch, capsys):
@@ -313,9 +305,7 @@ def test_main(target_vertical, temp_db, monkeypatch, capsys):
         pass  # No need to do anything in test
 
     # Apply the mocks
-    monkeypatch.setattr(
-        "argparse.ArgumentParser.parse_args", lambda _: mock_parse_args()
-    )
+    monkeypatch.setattr("argparse.ArgumentParser.parse_args", lambda _: mock_parse_args())
     monkeypatch.setattr("bin.scrape.get_active_zip_codes", mock_get_active_zip_codes)
     monkeypatch.setattr("bin.scrape.get_verticals", mock_get_verticals)
     monkeypatch.setattr("bin.scrape.scrape_businesses", mock_scrape_businesses)
