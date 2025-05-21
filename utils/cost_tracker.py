@@ -355,6 +355,28 @@ def check_operation_permission(
     )
 
 
+def should_allow_operation(
+    service: str,
+    operation: str,
+    critical_operations: Optional[Dict[str, List[str]]] = None,
+) -> bool:
+    """
+    Determine if an operation should be allowed based on the scaling gate status.
+
+    This is a simplified version of check_operation_permission that returns just a boolean.
+
+    Args:
+        service: The service name
+        operation: The operation name
+        critical_operations: Optional dictionary of critical operations
+
+    Returns:
+        bool: True if the operation is allowed, False otherwise
+    """
+    permitted, _ = check_operation_permission(service, operation, critical_operations)
+    return permitted
+
+
 def get_cost_metrics() -> List[str]:
     """
     Get Prometheus metrics for API costs.
