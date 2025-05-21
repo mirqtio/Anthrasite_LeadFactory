@@ -34,8 +34,8 @@
           "id": 3,
           "title": "Test and debug lead enrichment",
           "description": "Verify tech stack detection and website analysis",
-          "details": "Run tests for the enrichment pipeline. Verify that website analysis and tech stack detection work as expected.",
-          "status": "in-progress",
+          "details": "Run tests for the enrichment pipeline. Verify that website analysis and tech stack detection work as expected.\n\nCurrent Status (Completed 2025-05-21):\n- Fixed all test failures in test_enrich.py\n- Updated Wappalyzer integration to work with newer version (1.0.13)\n- Modified TechStackAnalyzer class to handle different API structures\n- Added proper error handling and result format conversion\n- Installed missing dependencies (pyyaml, python-Levenshtein)\n- All enrichment tests are now passing successfully",
+          "status": "done",
           "dependencies": [
             3
           ],
@@ -63,8 +63,8 @@
           "id": 5,
           "title": "Test and debug scoring logic",
           "description": "Verify lead scoring rules and calculations",
-          "details": "Run tests for the scoring logic. Verify that scores are calculated correctly based on the defined rules.",
-          "status": "in-progress",
+          "details": "Run tests for the scoring logic. Verify that scores are calculated correctly based on the defined rules.\n\nCurrent Status (Completed 2025-05-21):\n- Fixed all test failures in test_score.py\n- Verified scoring rules for tech stack, performance, and location\n- Implemented proper handling of missing data\n- Ensured rule weights are applied correctly\n- All scoring tests are now passing successfully",
+          "status": "done",
           "dependencies": [
             5
           ],
@@ -74,7 +74,7 @@
           "id": 6,
           "title": "Test and debug mockup generation",
           "description": "Verify GPT-4o/Claude integration for mockup generation",
-          "details": "Run tests for the mockup generation. Verify that mockups are generated correctly and stored properly.",
+          "details": "Run tests for the mockup generation. Verify that mockups are generated correctly and stored properly.\n\nCurrent Status (In Progress 2025-05-21):\n- Fixed indentation errors in test_mockup.py\n- Corrected variable naming issues and redundant return statements\n- Still encountering issues with test fixtures and database state\n- Need to fix assertions and database setup for mockup tests\n- Several tests still failing with database-related errors",
           "status": "in-progress",
           "dependencies": [
             6
@@ -96,7 +96,7 @@
           "id": 8,
           "title": "Run comprehensive BDD tests",
           "description": "Execute all BDD tests for end-to-end validation",
-          "details": "Run the complete BDD test suite. Verify that all acceptance criteria are met for each feature.",
+          "details": "Run the complete BDD test suite. Verify that all acceptance criteria are met for each feature.\n\nCurrent Status (In Progress 2025-05-21):\n- Created step definition files for enrichment and deduplication features\n- Implemented test scenarios, fixtures, and assertions for BDD tests\n- Added proper test structure with pytest-bdd decorators\n- Created in-memory database fixtures for isolated testing\n- Still encountering issues with mock setup and test assertions\n- Need to fix function signatures and database state handling",
           "status": "in-progress",
           "dependencies": [
             8
