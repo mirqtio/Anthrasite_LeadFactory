@@ -1,0 +1,48 @@
+# Task ID: 27
+# Title: Feature Development Workflow Template
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Standard workflow for developing, testing, and committing each feature
+# Details:
+This task defines the standard workflow that should be followed for each feature implementation:
+
+1. **Development Phase**
+   - Implement the feature according to the requirements
+   - Add appropriate error handling and logging
+   - Include unit tests and integration tests
+   - Add or update documentation
+
+2. **Testing Phase**
+   - Run all unit tests (`pytest tests/`)
+   - Run all BDD tests (`pytest tests/ --bdd`)
+   - Verify code coverage meets standards
+   - Perform manual testing as needed
+
+3. **Quality Assurance Phase**
+   - Run static analysis tools (ruff, bandit)
+   - Run code formatting (black)
+   - Fix any issues identified by the tools
+   - Verify all tests still pass after fixes
+
+4. **Pre-Commit Phase**
+   - Run pre-commit hooks locally (`pre-commit run --all-files`)
+   - Fix any issues identified by the hooks
+   - Verify the feature works as expected after fixes
+
+5. **Commit Phase**
+   - Create a feature branch with a descriptive name
+   - Commit changes with a clear message
+   - Push to remote repository
+   - Create a pull request with detailed description
+
+6. **CI Verification Phase**
+   - Verify CI pipeline passes
+   - Address any issues identified by CI
+   - Request code review if needed
+   - Merge only when CI is green
+
+This workflow should be followed for every feature to ensure consistent quality and reliability.
+
+# Test Strategy:
+

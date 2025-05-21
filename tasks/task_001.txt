@@ -69,4 +69,3 @@ Created etc/verticals.yml file containing mappings for the three required vertic
 
 The mapping structure ensures consistent categorization across different data sources and enables proper filtering of business listings. The file was successfully tested with the test_seed_helpers.py BDD test to verify integration with the application.
 </info added on 2025-05-20T00:46:31.753Z>
-

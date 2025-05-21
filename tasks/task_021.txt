@@ -1,0 +1,70 @@
+# Task ID: 21
+# Title: Metrics and Alerts Completeness
+# Status: done
+# Dependencies: 20
+# Priority: medium
+# Description: Implement additional metrics and alerts for batch completion, cost tracking, and GPU usage
+# Details:
+Implement the following metrics and alerts:
+
+1. Batch-completion gauge - Write `batch_end_timestamp` at end of run and alert if no completion by 05:00 EST
+2. Cost-per-lead metric - Compute at run end (`total_cost/processed_leads`) and export; add optional alert if Tier-1 > $3
+3. GPU cost metric - When burst flag is on, increment `gpu_cost_usd_total` hourly; alert daily if > $25
+
+These metrics will provide better visibility into system performance, cost efficiency, and resource utilization, enabling proactive monitoring and optimization.
+
+# Test Strategy:
+All code changes for metrics and alerts implementation must follow the standard Feature Development Workflow Template (Task #27), including development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. Each metric and alert should be thoroughly tested in isolation and as part of the integrated system.
+
+# Subtasks:
+## 1. Implement Batch-Completion Gauge and Alerts [done]
+### Dependencies: None
+### Description: Develop and implement the batch-completion gauge that writes the batch_end_timestamp at the end of each run and creates an alert if no completion is detected by 05:00 EST.
+### Details:
+1. Create a function to record batch_end_timestamp when a batch run completes
+2. Implement a monitoring check that verifies completion status by 05:00 EST
+3. Set up alert notification system (email/Slack) if completion is not detected
+4. Add logging for successful completions and alert triggers
+5. Test the system with simulated late completions to verify alert functionality
+
+## 2. Develop Cost-Per-Lead Metric and Alerts [done]
+### Dependencies: None
+### Description: Create a metric that calculates cost-per-lead at the end of each run by dividing total_cost by processed_leads, export this data, and implement an optional alert if Tier-1 cost exceeds $3.
+### Details:
+1. Implement calculation logic for cost-per-lead metric (total_cost/processed_leads)
+2. Create data export mechanism for the metric to analytics dashboard
+3. Add configuration for Tier-1 cost threshold alert (default $3)
+4. Implement alert notification when threshold is exceeded
+5. Include historical tracking to show cost trends over time
+
+## 3. Implement GPU Cost Tracking and Alerts [done]
+### Dependencies: None
+### Description: Create a system to track GPU costs by incrementing gpu_cost_usd_total hourly when the burst flag is enabled, and implement a daily alert if the cost exceeds $25.
+### Details:
+1. Develop mechanism to detect when burst flag is enabled
+2. Implement hourly incrementation of gpu_cost_usd_total metric
+3. Create daily cost aggregation and threshold checking logic
+4. Set up alert system for when daily GPU costs exceed $25
+5. Add reporting dashboard component to visualize GPU usage and costs over time
+
+## 4. Implement GPU_BURST Flag for Cost Tracking [done]
+### Dependencies: 21.3
+### Description: Ensure GPU cost metric increments when GPU_BURST=1 environment flag is set
+### Details:
+1. Implement detection of GPU_BURST=1 environment variable
+2. Modify the GPU cost tracking system to check this flag before incrementing costs
+3. Add hourly incrementation of gpu_cost_usd_total when flag is enabled
+4. Create a test environment with GPU_BURST flag to verify functionality
+5. Document the GPU_BURST flag in the environment variable documentation
+6. Ensure the daily alert triggers correctly when costs exceed $25
+
+## 5. Workflow Compliance Verification [done]
+### Dependencies: 21.1, 21.2, 21.3, 21.4
+### Description: Ensure all metrics and alerts implementations comply with the Feature Development Workflow Template
+### Details:
+1. Review all code changes against the Feature Development Workflow Template (Task #27)
+2. Verify that proper testing, quality assurance, and pre-commit checks have been performed
+3. Confirm CI verification has been completed for all implementations
+4. Document compliance with the workflow for each metric and alert component
+5. Address any workflow compliance gaps before considering the task complete
+

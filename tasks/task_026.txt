@@ -1,0 +1,41 @@
+# Task ID: 26
+# Title: Pre-commit Static Analysis Setup
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Add pre-commit hooks for ruff, bandit, and black to enforce code quality standards
+# Details:
+Implement the following pre-commit static analysis features:
+
+1. Add `.pre-commit-config.yaml` with ruff, bandit, and black --check configurations
+2. Install pre-commit hooks in the repository
+3. Update CI pipeline to run `pre-commit run --all-files` as part of the build process
+4. Add documentation for developers on how to work with the pre-commit hooks
+5. Ensure all existing code passes the new static analysis checks
+
+This implementation will enforce code quality standards at commit time, reducing the likelihood of quality issues making it into the codebase and ensuring consistent formatting and security practices. Implementing this first will ensure all subsequent code changes follow the established standards.
+
+Note: All code changes must follow the standard workflow for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete, as defined in the Feature Development Workflow Template (Task #27).
+
+# Test Strategy:
+All implementation work for this task should follow the Feature Development Workflow Template (Task #27), ensuring proper development, testing, quality assurance, pre-commit checks, and CI verification before completion.
+
+# Subtasks:
+## 1. Configure Pre-commit Hooks [done]
+### Dependencies: None
+### Description: Create and configure .pre-commit-config.yaml with ruff, bandit, and black hooks
+### Details:
+Create a .pre-commit-config.yaml file in the repository root with configurations for ruff (linting), bandit (security checks), and black (code formatting). Install pre-commit in the development environment and set up the hooks in the repository. Ensure all existing code passes these checks, making necessary adjustments to comply with the standards.
+
+## 2. Update CI Pipeline [done]
+### Dependencies: 26.1
+### Description: Integrate pre-commit checks into the CI/CD pipeline
+### Details:
+Modify the CI pipeline configuration to run 'pre-commit run --all-files' as part of the build process. This ensures all code changes are validated against the static analysis checks before merging. Configure the pipeline to fail if any pre-commit checks fail, providing clear error messages about which checks failed and why.
+
+## 3. Document Pre-commit Workflow [done]
+### Dependencies: 26.1
+### Description: Create documentation for developers on using pre-commit hooks
+### Details:
+Create comprehensive documentation explaining how developers should work with the pre-commit hooks. Include instructions for installation, usage, troubleshooting common issues, and how to temporarily bypass hooks if necessary. Explain the purpose of each hook and the standards they enforce. Add this documentation to the project's developer guide or README. Reference the Feature Development Workflow Template (Task #27) to explain how pre-commit hooks fit into the overall development process.
+

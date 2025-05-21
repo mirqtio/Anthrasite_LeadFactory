@@ -29,3 +29,24 @@ repos:
         exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
         # Run in check mode (will fail if files need formatting)
         args: [--check]
+
+-   repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        # Run bandit with medium level security checks
+        args: ['-ll', '-i']
+        # Only run on Python files
+        types: [python]
+        # Exclude tests and virtual environments
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
+
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: debug-statements
+      - id: check-ast

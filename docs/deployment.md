@@ -209,13 +209,13 @@ else
   CURRENT_COUNT=$(cat "$FAILURE_COUNT_FILE")
   NEW_COUNT=$((CURRENT_COUNT + 1))
   echo $NEW_COUNT > "$FAILURE_COUNT_FILE"
-  
+
   # Check if threshold reached
   if [ $NEW_COUNT -ge $THRESHOLD ]; then
     # Start Docker stack
     cd /leadfactory-backup
     docker-compose up -d
-    
+
     # Send alert
     echo "Primary server down. Standby activated at $(date)" | mail -s "ALERT: Lead-Factory Failover Activated" alerts@anthrasite.com
   fi

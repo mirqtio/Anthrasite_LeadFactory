@@ -294,10 +294,402 @@
       "description": "Address remaining linting and static code analysis issues before merging to main",
       "details": "Fix the remaining code quality issues identified by flake8 and ruff, including:\n1. Undefined variables in test_enrich.py\n2. Unused variable assignments in test files\n3. Function redefinition issues\n4. Import order problems\n5. Any remaining PEP8 violations\n\nThese issues need to be fixed before merging to the main branch to ensure code quality standards are maintained.",
       "testStrategy": "",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         17
       ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Fix Undefined Variables in test_enrich.py",
+          "description": "Address all undefined variable issues identified by static code analysis tools in test_enrich.py file.",
+          "dependencies": [],
+          "details": "1. Run flake8 and ruff specifically on test_enrich.py to identify all undefined variables\n2. For each undefined variable, either define it properly or import it from the appropriate module\n3. Ensure all test functions have proper variable scoping\n4. Verify that all assertions use properly defined variables\n5. Document any intentional variable usage patterns that might trigger false positives",
+          "status": "done",
+          "testStrategy": "After fixing, run the test suite to ensure tests still pass. Then run flake8 and ruff again to verify no undefined variable issues remain in this file."
+        },
+        {
+          "id": 2,
+          "title": "Remove Unused Variable Assignments in Test Files",
+          "description": "Identify and eliminate all unused variable assignments across test files to improve code cleanliness.",
+          "dependencies": [],
+          "details": "1. Run static analysis tools to identify all unused variable assignments in test files\n2. For each unused variable, determine if it can be safely removed\n3. If the variable is needed for clarity but not used, prefix with underscore (_) to indicate intentional non-use\n4. Remove any test setup code that creates variables never referenced\n5. Check for and fix any test assertions that don't actually use their computed values",
+          "status": "done",
+          "testStrategy": "Run the test suite after each file modification to ensure tests continue to pass. Verify with static analysis tools that unused variable warnings are resolved."
+        },
+        {
+          "id": 3,
+          "title": "Resolve Function Redefinition Issues",
+          "description": "Fix all instances where functions are redefined within the same scope, causing potential confusion and code quality issues.",
+          "dependencies": [],
+          "details": "1. Identify all function redefinition warnings from static analysis tools\n2. For each redefinition, determine if it's intentional or accidental\n3. Rename functions with unique names if both implementations are needed\n4. Remove duplicate function definitions if they're redundant\n5. Consider refactoring to use class inheritance or composition instead of function redefinition\n6. Check for test helper functions that might be redefined across test files and move to common utilities",
+          "status": "done",
+          "testStrategy": "Run tests after fixing each redefinition issue to ensure functionality is preserved. Verify static analysis tools no longer report function redefinition problems."
+        },
+        {
+          "id": 4,
+          "title": "Fix Import Order Problems",
+          "description": "Correct all import statements to follow the project's import order conventions and PEP8 guidelines.",
+          "dependencies": [],
+          "details": "1. Review the project's import order conventions (typically: standard library, third-party, local imports)\n2. Run isort or similar tool to automatically fix most import order issues\n3. Manually review and fix any remaining import order problems\n4. Ensure imports are grouped properly with appropriate spacing between groups\n5. Remove any unused imports identified during analysis\n6. Fix any wildcard imports (from module import *) by explicitly importing only what's needed",
+          "status": "done",
+          "testStrategy": "Run static analysis tools after changes to verify import order issues are resolved. No specific functional tests needed as import order doesn't affect functionality."
+        },
+        {
+          "id": 5,
+          "title": "Address Remaining PEP8 Violations",
+          "description": "Fix any other PEP8 style violations not covered by the previous subtasks to ensure full code quality compliance.",
+          "dependencies": [],
+          "details": "1. Run flake8 with PEP8 checking enabled to identify all remaining style issues\n2. Fix line length violations by breaking long lines appropriately\n3. Correct indentation issues throughout the codebase\n4. Fix whitespace issues (trailing whitespace, missing whitespace around operators)\n5. Ensure proper naming conventions for variables, functions, and classes\n6. Address any other style issues reported by the tools",
+          "status": "done",
+          "testStrategy": "Run flake8 and ruff after changes to verify all PEP8 violations are resolved. Run the full test suite to ensure no functionality was broken during style fixes."
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Email Deliverability Hardening",
+      "description": "Implement email deliverability improvements to reduce bounce rates, track spam complaints, and add metrics",
+      "details": "Implement the following email deliverability hardening features:\n\n1. Lower the bounce threshold to 2% (last 7 days) before any send\n2. Implement automatic IP/sub-user switching when bounce > 2%\n3. Add spam-rate tracking via SendGrid stats\n4. Add Prometheus metrics and Grafana alerts for bounce and spam rates\n5. Create BDD tests for high-bounce and spam complaint scenarios\n\nThese improvements are critical for maintaining email deliverability and compliance with email sending best practices.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Lower bounce threshold to 2% for email sends",
+          "description": "Modify the email sending system to check bounce rates over the last 7 days and prevent sends when the rate exceeds 2%",
+          "dependencies": [],
+          "details": "1. Update the pre-send validation logic to query bounce rates for the last 7 days\n2. Implement a threshold check of 2% maximum bounce rate\n3. Create a blocking mechanism that prevents sends when threshold is exceeded\n4. Add appropriate error messaging for marketing users\n5. Document the new threshold in the email sending guidelines",
+          "status": "pending",
+          "testStrategy": "Create unit tests that mock bounce rate data and verify send blocking behavior at different threshold levels"
+        },
+        {
+          "id": 2,
+          "title": "Implement automatic IP/sub-user switching mechanism",
+          "description": "Develop a system that automatically switches to alternative IPs or sub-users when bounce rates exceed 2%",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create a pool of alternative IPs and sub-users in SendGrid\n2. Develop logic to automatically select the next available IP/sub-user when bounce threshold is exceeded\n3. Implement a rotation strategy that considers IP warming and reputation\n4. Add logging for IP/sub-user switches\n5. Create a recovery mechanism to return to primary IPs when bounce rates normalize",
+          "status": "pending",
+          "testStrategy": "Develop integration tests with SendGrid API to verify switching behavior under simulated high bounce conditions"
+        },
+        {
+          "id": 3,
+          "title": "Add spam-rate tracking via SendGrid stats",
+          "description": "Integrate with SendGrid's statistics API to track and store spam complaint rates for all email campaigns",
+          "dependencies": [],
+          "details": "1. Set up regular polling of SendGrid stats API for spam complaint data\n2. Create a database schema to store historical spam rate data\n3. Implement an aggregation mechanism for calculating spam rates across different time periods\n4. Add an admin dashboard view to display current and historical spam rates\n5. Document the spam rate tracking methodology for the team",
+          "status": "pending",
+          "testStrategy": "Create mock SendGrid API responses and verify correct calculation and storage of spam rates"
+        },
+        {
+          "id": 4,
+          "title": "Add Prometheus metrics and Grafana alerts",
+          "description": "Implement monitoring for bounce and spam rates using Prometheus metrics and set up Grafana alerts for threshold violations",
+          "dependencies": [
+            1,
+            3
+          ],
+          "details": "1. Define and expose Prometheus metrics for bounce rates and spam complaint rates\n2. Configure metric collection intervals and retention policies\n3. Create Grafana dashboards to visualize bounce and spam rate trends\n4. Set up alert rules for when rates approach or exceed thresholds\n5. Configure alert notifications via appropriate channels (Slack, email, PagerDuty)",
+          "status": "pending",
+          "testStrategy": "Test metric exposure endpoints and verify alert triggering using synthetic data"
+        },
+        {
+          "id": 5,
+          "title": "Create BDD tests for high-bounce and spam complaint scenarios",
+          "description": "Develop behavior-driven development tests that validate the system's response to high bounce rates and spam complaints",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Define Gherkin scenarios for high bounce rate detection and handling\n2. Create scenarios for spam complaint tracking and alerting\n3. Implement step definitions that simulate SendGrid API responses\n4. Add scenarios for IP/sub-user switching under high bounce conditions\n5. Create end-to-end tests that verify the complete workflow from detection to alerting",
+          "status": "pending",
+          "testStrategy": "Use a BDD framework like Cucumber to create readable, maintainable tests that document the expected system behavior"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "CAN-SPAM Compliance Implementation",
+      "description": "Add required CAN-SPAM compliance elements to email templates and implement unsubscribe functionality",
+      "details": "Implement the following CAN-SPAM compliance features:\n\n1. Add physical postal address (Anthrasite PO Box) to both HTML and plain-text email templates\n2. Add plain-English unsubscribe instructions and functional unsubscribe link to all email templates\n3. Implement unsubscribe handling in the database to record opt-outs\n4. Modify email sending logic to skip leads that have opted out\n5. Create BDD tests to verify compliance elements are present in emails\n\nThese improvements are necessary for legal compliance with the CAN-SPAM Act and to maintain good sending practices.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [
+        19
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Add Physical Postal Address to Email Templates",
+          "description": "Add the Anthrasite PO Box address to both HTML and plain-text email templates",
+          "dependencies": [],
+          "details": "Modify all email template files to include the company's physical postal address (Anthrasite PO Box) in both HTML and plain-text formats. Ensure the address is properly formatted and appears in the footer section of all templates. This is a required element for CAN-SPAM compliance.",
+          "status": "pending",
+          "testStrategy": "Create unit tests to verify the presence of the physical address in all email template renderings. Include tests for both HTML and plain-text versions."
+        },
+        {
+          "id": 2,
+          "title": "Implement Unsubscribe Instructions and Functionality",
+          "description": "Add clear unsubscribe instructions and functional unsubscribe links to all email templates",
+          "dependencies": [
+            1
+          ],
+          "details": "Add plain-English unsubscribe instructions and a functional unsubscribe link to all email templates. Create an unsubscribe landing page that confirms the user's opt-out request. Ensure the unsubscribe link is clearly visible and properly formatted in both HTML and plain-text emails. The unsubscribe mechanism should be simple and require no more than one step from the recipient.",
+          "status": "pending",
+          "testStrategy": "Test the unsubscribe link functionality across different email clients. Verify that clicking the link properly redirects to the unsubscribe confirmation page. Create BDD tests to verify the presence and functionality of unsubscribe elements."
+        },
+        {
+          "id": 3,
+          "title": "Implement Database Tracking and Email Filtering for Opt-Outs",
+          "description": "Create database structure for tracking opt-outs and modify email sending logic to respect unsubscribe preferences",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement database schema changes to track user opt-out status. Create necessary tables or fields to record unsubscribe timestamps and status. Modify the email sending logic to check the opt-out status before sending any email, ensuring that users who have unsubscribed do not receive further communications. Implement a process to handle unsubscribe requests within 10 business days as required by CAN-SPAM.",
+          "status": "pending",
+          "testStrategy": "Create integration tests to verify that the email sending system properly filters out unsubscribed recipients. Test the database recording of opt-out status. Implement BDD scenarios that verify the entire unsubscribe flow from email receipt to database update to email filtering."
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Metrics and Alerts Completeness",
+      "description": "Implement additional metrics and alerts for batch completion, cost tracking, and GPU usage",
+      "details": "Implement the following metrics and alerts:\n\n1. Batch-completion gauge - Write `batch_end_timestamp` at end of run and alert if no completion by 05:00 EST\n2. Cost-per-lead metric - Compute at run end (`total_cost/processed_leads`) and export; add optional alert if Tier-1 > $3\n3. GPU cost metric - When burst flag is on, increment `gpu_cost_usd_total` hourly; alert daily if > $25\n\nThese metrics will provide better visibility into system performance, cost efficiency, and resource utilization, enabling proactive monitoring and optimization.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [
+        20
+      ],
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Batch-Completion Gauge and Alerts",
+          "description": "Develop and implement the batch-completion gauge that writes the batch_end_timestamp at the end of each run and creates an alert if no completion is detected by 05:00 EST.",
+          "dependencies": [],
+          "details": "1. Create a function to record batch_end_timestamp when a batch run completes\n2. Implement a monitoring check that verifies completion status by 05:00 EST\n3. Set up alert notification system (email/Slack) if completion is not detected\n4. Add logging for successful completions and alert triggers\n5. Test the system with simulated late completions to verify alert functionality",
+          "status": "pending",
+          "testStrategy": "Test with normal batch completions and simulated delayed completions to ensure alerts trigger appropriately. Verify timestamp recording accuracy and alert delivery."
+        },
+        {
+          "id": 2,
+          "title": "Develop Cost-Per-Lead Metric and Alerts",
+          "description": "Create a metric that calculates cost-per-lead at the end of each run by dividing total_cost by processed_leads, export this data, and implement an optional alert if Tier-1 cost exceeds $3.",
+          "dependencies": [],
+          "details": "1. Implement calculation logic for cost-per-lead metric (total_cost/processed_leads)\n2. Create data export mechanism for the metric to analytics dashboard\n3. Add configuration for Tier-1 cost threshold alert (default $3)\n4. Implement alert notification when threshold is exceeded\n5. Include historical tracking to show cost trends over time",
+          "status": "pending",
+          "testStrategy": "Test with various cost and lead count scenarios to verify calculation accuracy. Confirm export functionality and alert triggering at the $3 threshold for Tier-1 leads."
+        },
+        {
+          "id": 3,
+          "title": "Implement GPU Cost Tracking and Alerts",
+          "description": "Create a system to track GPU costs by incrementing gpu_cost_usd_total hourly when the burst flag is enabled, and implement a daily alert if the cost exceeds $25.",
+          "dependencies": [],
+          "details": "1. Develop mechanism to detect when burst flag is enabled\n2. Implement hourly incrementation of gpu_cost_usd_total metric\n3. Create daily cost aggregation and threshold checking logic\n4. Set up alert system for when daily GPU costs exceed $25\n5. Add reporting dashboard component to visualize GPU usage and costs over time",
+          "status": "pending",
+          "testStrategy": "Test with simulated burst flag scenarios to verify hourly cost incrementation. Confirm daily aggregation logic and alert triggering when the $25 threshold is exceeded."
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Raw Data Retention Implementation",
+      "description": "Implement raw data retention for scraped HTML and LLM interactions to meet compliance requirements",
+      "details": "Implement the following raw data retention features:\n\n1. Persist raw HTML of each scraped homepage (compressed) and store the path in the database\n2. Log LLM prompt and response JSON (for deduplication and mockup generation) in a new `llm_logs` table\n3. Ensure no data cleanup occurs for at least 90 days (document retention policy)\n4. Add documentation for the data retention policy and implementation\n\nThese features will ensure compliance with data retention requirements and provide an audit trail for system operations.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [
+        21
+      ],
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement HTML Storage for Scraped Homepages",
+          "description": "Create a system to compress and store raw HTML from scraped homepages and record the storage path in the database",
+          "dependencies": [],
+          "details": "1. Implement compression algorithm for HTML content\n2. Create storage directory structure with appropriate permissions\n3. Modify scraper to save compressed HTML after each successful scrape\n4. Add database column to store file path reference\n5. Update existing code to record file paths for each scrape\n6. Implement error handling for storage failures",
+          "status": "pending",
+          "testStrategy": "Verify compression ratio is acceptable (>70%), confirm file paths are correctly stored in database, and test recovery of original HTML from compressed storage"
+        },
+        {
+          "id": 2,
+          "title": "Create LLM Logging System",
+          "description": "Develop a logging system to record all LLM prompts and responses in a new database table",
+          "dependencies": [],
+          "details": "1. Create new `llm_logs` table with appropriate schema (timestamp, user_id, prompt_text, response_json, model_version, etc.)\n2. Implement logging middleware to capture all LLM interactions\n3. Add indexing for efficient querying\n4. Ensure proper JSON serialization/deserialization\n5. Add metadata fields for deduplication purposes\n6. Implement query interface for audit purposes",
+          "status": "pending",
+          "testStrategy": "Test with various LLM interactions to ensure all data is properly captured, verify JSON integrity is maintained, and confirm query performance meets requirements"
+        },
+        {
+          "id": 3,
+          "title": "Implement 90-Day Retention Policy",
+          "description": "Configure data retention mechanisms to ensure all raw data is preserved for at least 90 days and document the implementation",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Create retention policy configuration in system settings\n2. Implement scheduled job to identify but not delete data older than 90 days\n3. Add warning system for approaching deletion dates\n4. Create admin interface for retention policy management\n5. Write comprehensive documentation covering data retention implementation\n6. Document compliance aspects and audit procedures\n7. Add data export functionality for records prior to potential deletion",
+          "status": "pending",
+          "testStrategy": "Simulate time passage to verify 90-day retention works correctly, test admin controls for policy management, and validate documentation completeness against compliance requirements"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Database Migration to Supabase Postgres",
+      "description": "Migrate from local SQLite to Supabase Postgres and implement backup and recovery procedures",
+      "details": "Implement the following database migration and durability features:\n\n1. Switch from local SQLite to Supabase Postgres using DATABASE_URL environment variable\n2. Add nightly pg_dump into RSYNC backup set\n3. Ensure WAL (Write-Ahead Logging) and point-in-time recovery are enabled or documented\n4. Update README and deployment guide with new database configuration\n5. Update tests and CI pipeline to spin up Postgres service for testing\n\nThis migration will improve database durability, scalability, and backup capabilities while maintaining compatibility with existing code.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [
+        22
+      ],
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Postgres Connection and Data Migration",
+          "description": "Switch from local SQLite to Supabase Postgres by configuring the DATABASE_URL environment variable and migrating existing data",
+          "dependencies": [],
+          "details": "1. Add Postgres client library to project dependencies\n2. Configure connection using DATABASE_URL environment variable\n3. Create schema migration scripts to convert SQLite schema to Postgres\n4. Develop and test data migration utility to transfer existing data\n5. Implement connection pooling and error handling for Postgres",
+          "status": "pending",
+          "testStrategy": "Create integration tests that verify successful connection to Postgres and data integrity after migration"
+        },
+        {
+          "id": 2,
+          "title": "Set Up Backup Procedures",
+          "description": "Implement nightly pg_dump backups and integrate with existing RSYNC backup system",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create automated pg_dump script for nightly database backups\n2. Configure backup retention policies\n3. Integrate pg_dump output with existing RSYNC backup set\n4. Implement monitoring and alerting for backup failures\n5. Test backup restoration process to verify backup integrity",
+          "status": "pending",
+          "testStrategy": "Create automated tests that verify backup creation, RSYNC integration, and successful restoration from backups"
+        },
+        {
+          "id": 3,
+          "title": "Configure WAL and Point-in-Time Recovery",
+          "description": "Enable and configure Write-Ahead Logging (WAL) and point-in-time recovery capabilities in Supabase Postgres",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Verify WAL is enabled in Supabase Postgres configuration\n2. Configure appropriate WAL settings for application needs\n3. Set up archiving of WAL files\n4. Document and test point-in-time recovery procedures\n5. Create disaster recovery runbook with step-by-step instructions",
+          "status": "pending",
+          "testStrategy": "Simulate database failures and verify successful point-in-time recovery using WAL archives"
+        },
+        {
+          "id": 4,
+          "title": "Update Documentation and CI Pipeline",
+          "description": "Update README, deployment guide, tests, and CI pipeline to reflect the new Postgres database configuration",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "1. Update README with new database configuration instructions\n2. Revise deployment guide with Postgres setup requirements\n3. Modify existing tests to work with Postgres instead of SQLite\n4. Update CI pipeline to spin up Postgres service for testing\n5. Create database migration guide for existing installations",
+          "status": "pending",
+          "testStrategy": "Verify CI pipeline successfully runs all tests against Postgres and documentation accurately reflects the new setup process"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Failover Threshold Adjustment",
+      "description": "Change the HEALTH_CHECK_FAILURES_THRESHOLD to 2 consecutive failures to match the spec",
+      "details": "Implement the following failover tweak:\n\n1. Change the HEALTH_CHECK_FAILURES_THRESHOLD to 2 consecutive failures (currently set to a different value)\n2. Update any related documentation to reflect this change\n3. Test the failover mechanism with the new threshold to ensure it works as expected\n\nThis change will align the system with the Phase 0 \"Lead-Factory\" spec v1.3 requirements and improve system reliability by triggering failover after fewer consecutive failures.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [
+        23
+      ],
+      "priority": "low",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Update HEALTH_CHECK_FAILURES_THRESHOLD Constant",
+          "description": "Change the HEALTH_CHECK_FAILURES_THRESHOLD constant to 2 consecutive failures and update related documentation",
+          "dependencies": [],
+          "details": "1. Locate the HEALTH_CHECK_FAILURES_THRESHOLD constant in the codebase\n2. Change its value from the current setting to 2 consecutive failures\n3. Update any related documentation to reflect this change\n4. Create a pull request with these changes\n5. Reference the Phase 0 'Lead-Factory' spec v1.3 requirements in the PR description",
+          "status": "pending",
+          "testStrategy": "Perform a code review to verify the constant has been updated correctly and documentation changes are accurate"
+        },
+        {
+          "id": 2,
+          "title": "Test Failover Mechanism with New Threshold",
+          "description": "Verify the failover mechanism works correctly with the new threshold of 2 consecutive failures",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Set up a test environment that simulates health check failures\n2. Verify that failover is triggered after exactly 2 consecutive failures\n3. Ensure the system recovers properly after failover\n4. Document test results and any edge cases discovered\n5. Verify behavior aligns with the Phase 0 'Lead-Factory' spec v1.3 requirements",
+          "status": "pending",
+          "testStrategy": "Create automated tests that simulate 1, 2, and 3 consecutive failures to verify the system behaves as expected in each scenario"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Pre-commit Static Analysis Setup",
+      "description": "Add pre-commit hooks for ruff, bandit, and black to enforce code quality standards",
+      "details": "Implement the following pre-commit static analysis features:\n\n1. Add `.pre-commit-config.yaml` with ruff, bandit, and black --check configurations\n2. Install pre-commit hooks in the repository\n3. Update CI pipeline to run `pre-commit run --all-files` as part of the build process\n4. Add documentation for developers on how to work with the pre-commit hooks\n5. Ensure all existing code passes the new static analysis checks\n\nThis implementation will enforce code quality standards at commit time, reducing the likelihood of quality issues making it into the codebase and ensuring consistent formatting and security practices.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [
+        24
+      ],
+      "priority": "low",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Configure Pre-commit Hooks",
+          "description": "Create and configure the pre-commit hooks for ruff, bandit, and black in the repository",
+          "dependencies": [],
+          "details": "1. Create a `.pre-commit-config.yaml` file in the repository root\n2. Configure hooks for ruff (linting), bandit (security analysis), and black (code formatting)\n3. Install pre-commit in the development environment\n4. Run `pre-commit install` to activate the hooks\n5. Test the hooks on existing code and fix any issues to ensure all code passes the checks",
+          "status": "pending",
+          "testStrategy": "Manually verify that committing code with style/security issues fails and that the hooks provide appropriate feedback. Ensure all existing code passes the checks after necessary fixes."
+        },
+        {
+          "id": 2,
+          "title": "Update CI Pipeline",
+          "description": "Integrate pre-commit checks into the CI pipeline to enforce code quality standards",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Modify the CI configuration files to include a step that runs `pre-commit run --all-files`\n2. Ensure the CI build fails if any pre-commit checks fail\n3. Configure appropriate error messages and reporting\n4. Test the CI pipeline with both compliant and non-compliant code to verify functionality",
+          "status": "pending",
+          "testStrategy": "Submit PRs with both compliant and non-compliant code to verify the CI pipeline correctly identifies and blocks code that doesn't meet the standards."
+        },
+        {
+          "id": 3,
+          "title": "Document Pre-commit Workflow",
+          "description": "Create comprehensive documentation for developers on how to work with the pre-commit hooks",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Create a dedicated section in the developer documentation about pre-commit hooks\n2. Include installation instructions for pre-commit\n3. Explain the purpose of each hook (ruff, bandit, black)\n4. Document how to handle common issues and error messages\n5. Provide examples of how to temporarily bypass hooks if necessary\n6. Include information on how the CI pipeline enforces these checks",
+          "status": "pending",
+          "testStrategy": "Have developers review the documentation and follow the instructions to set up pre-commit hooks on a clean environment to verify clarity and completeness."
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Pre-commit Static Analysis Setup",
+      "description": "Add pre-commit hooks for ruff, bandit, and black to enforce code quality standards",
+      "details": "Implement the following pre-commit static analysis features:\n\n1. Add `.pre-commit-config.yaml` with ruff, bandit, and black --check configurations\n2. Install pre-commit hooks in the repository\n3. Update CI pipeline to run `pre-commit run --all-files` as part of the build process\n4. Add documentation for developers on how to work with the pre-commit hooks\n5. Ensure all existing code passes the new static analysis checks\n\nThis implementation will enforce code quality standards at commit time, reducing the likelihood of quality issues making it into the codebase and ensuring consistent formatting and security practices. Implementing this first will ensure all subsequent code changes follow the established standards.",
+      "testStrategy": "",
+      "status": "pending",
+      "dependencies": [],
       "priority": "high",
       "subtasks": []
     }

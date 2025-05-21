@@ -61,6 +61,43 @@ groups:
     annotations:
       summary: "Email queue backlog"
       description: "Email queue has {{ $value }} pending emails"
+      
+  # Email deliverability alerts
+  - alert: BounceRateWarning
+    expr: leadfactory_email_bounce_rate > 0.01
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High email bounce rate warning"
+      description: "Email bounce rate is at {{ $value | humanizePercentage }} (warning threshold: 1%)"
+      
+  - alert: BounceRateCritical
+    expr: leadfactory_email_bounce_rate > 0.02
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Critical email bounce rate"
+      description: "Email bounce rate is at {{ $value | humanizePercentage }} (critical threshold: 2%). Email sending is blocked."
+      
+  - alert: SpamRateWarning
+    expr: leadfactory_email_spam_rate > 0.0005
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High email spam complaint rate warning"
+      description: "Email spam complaint rate is at {{ $value | humanizePercentage }} (warning threshold: 0.05%)"
+      
+  - alert: SpamRateCritical
+    expr: leadfactory_email_spam_rate > 0.001
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Critical email spam complaint rate"
+      description: "Email spam complaint rate is at {{ $value | humanizePercentage }} (critical threshold: 0.1%). Email sending is blocked."
 
   # API health alerts
   - alert: APIFailureRate

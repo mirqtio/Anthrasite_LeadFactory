@@ -225,7 +225,7 @@ bin/health_check.sh --force-boot
 
 The health check script:
 1. Monitors the primary instance health endpoint
-2. Tracks failure count with configurable threshold
+2. Tracks failure count with configurable threshold (set to 2 consecutive failures per Phase 0 v1.3 spec)
 3. Automatically boots the Docker stack on the backup VPS when threshold is reached
 4. Sends notifications via email and Slack
 
@@ -248,7 +248,7 @@ Configuration is stored in `etc/health_check_config.yml`.
    # Add to crontab
    # Nightly backup at 2:00 AM
    0 2 * * * /path/to/bin/rsync_backup.sh >> /path/to/logs/rsync_backup_cron.log 2>&1
-   
+
    # Health check every 5 minutes
    */5 * * * * /path/to/bin/health_check.sh >> /path/to/logs/health_check_cron.log 2>&1
    ```
@@ -265,14 +265,40 @@ pytest tests/
 pytest tests/test_scraper.py
 ```
 
+## Development Workflow
+
+### Pre-commit Hooks
+
+The project uses pre-commit hooks to enforce code quality standards. These hooks run automatically before each commit to ensure code meets quality and security requirements.
+
+Key pre-commit hooks include:
+- **Ruff**: Fast Python linting
+- **Black**: Code formatting
+- **Bandit**: Security vulnerability scanning
+- **Pre-commit-hooks**: File checks (trailing whitespace, YAML validation, etc.)
+
+For setup instructions and usage guide, see [Pre-commit Workflow Guide](docs/pre-commit-workflow.md).
+
+### Feature Development Workflow
+
+All feature development follows the standardized workflow:
+
+1. **Development Phase**: Implement features with error handling and logging
+2. **Testing Phase**: Run unit tests and BDD tests
+3. **Quality Assurance Phase**: Run static analysis tools (ruff, bandit) and code formatting (black)
+4. **Pre-Commit Phase**: Run pre-commit hooks locally and fix any issues
+5. **Commit Phase**: Create feature branch with descriptive name and commit
+6. **CI Verification Phase**: Verify CI pipeline passes before merging
+
 ## Continuous Integration
 
 The project uses GitHub Actions for continuous integration. The CI pipeline includes:
 
-1. **Linting**: Checks code quality using flake8, black, and isort
-2. **Testing**: Runs unit tests and BDD acceptance tests with coverage reporting
-3. **Database Validation**: Verifies database schema integrity
-4. **Docker Build**: Creates and validates a Docker image
+1. **Pre-commit Checks**: Runs all pre-commit hooks to enforce code quality
+2. **Linting**: Checks code quality using flake8, black, and isort
+3. **Testing**: Runs unit tests and BDD acceptance tests with coverage reporting
+4. **Database Validation**: Verifies database schema integrity
+5. **Docker Build**: Creates and validates a Docker image
 
 The CI workflow runs automatically on:
 - Push to `main` and `develop` branches

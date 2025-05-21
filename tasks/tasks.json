@@ -294,7 +294,7 @@
       "description": "Address remaining linting and static code analysis issues before merging to main",
       "details": "Fix the remaining code quality issues identified by flake8 and ruff, including:\n1. Undefined variables in test_enrich.py\n2. Unused variable assignments in test files\n3. Function redefinition issues\n4. Import order problems\n5. Any remaining PEP8 violations\n\nThese issues need to be fixed before merging to the main branch to ensure code quality standards are maintained.",
       "testStrategy": "",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         17
       ],
@@ -342,10 +342,469 @@
           "description": "Fix any other PEP8 style violations not covered by the previous subtasks to ensure full code quality compliance.",
           "dependencies": [],
           "details": "1. Run flake8 with PEP8 checking enabled to identify all remaining style issues\n2. Fix line length violations by breaking long lines appropriately\n3. Correct indentation issues throughout the codebase\n4. Fix whitespace issues (trailing whitespace, missing whitespace around operators)\n5. Ensure proper naming conventions for variables, functions, and classes\n6. Address any other style issues reported by the tools",
-          "status": "in-progress",
+          "status": "done",
           "testStrategy": "Run flake8 and ruff after changes to verify all PEP8 violations are resolved. Run the full test suite to ensure no functionality was broken during style fixes."
         }
       ]
+    },
+    {
+      "id": 19,
+      "title": "Email Deliverability Hardening",
+      "description": "Implement email deliverability improvements to reduce bounce rates, track spam complaints, and add metrics",
+      "status": "done",
+      "dependencies": [
+        "26"
+      ],
+      "priority": "high",
+      "details": "Implement the following email deliverability hardening features:\n\n1. Lower the bounce threshold to 2% (last 7 days) before any send\n2. Implement automatic IP/sub-user switching when bounce > 2%\n3. Add spam-rate tracking via SendGrid stats\n4. Add Prometheus metrics and Grafana alerts for bounce and spam rates\n5. Create BDD tests for high-bounce and spam complaint scenarios\n\nThese improvements are critical for maintaining email deliverability and compliance with email sending best practices.",
+      "testStrategy": "All code changes must follow the standard workflow for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. Refer to the Feature Development Workflow Template (Task #27) for the complete process that must be followed.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Lower bounce threshold to 2% for email sends",
+          "description": "Modify the email sending system to check bounce rates over the last 7 days and prevent sends when the rate exceeds 2%",
+          "dependencies": [],
+          "details": "1. Update the pre-send validation logic to query bounce rates for the last 7 days\n2. Implement a threshold check of 2% maximum bounce rate\n3. Create a blocking mechanism that prevents sends when threshold is exceeded\n4. Add appropriate error messaging for marketing users\n5. Document the new threshold in the email sending guidelines",
+          "status": "done",
+          "testStrategy": "Create unit tests that mock bounce rate data and verify send blocking behavior at different threshold levels. Follow the Feature Development Workflow Template (Task #27) for development and testing procedures."
+        },
+        {
+          "id": 2,
+          "title": "Implement automatic IP/sub-user switching mechanism",
+          "description": "Develop a system that automatically switches to alternative IPs or sub-users when bounce rates exceed 2%",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create a pool of alternative IPs and sub-users in SendGrid\n2. Develop logic to automatically select the next available IP/sub-user when bounce threshold is exceeded\n3. Implement a rotation strategy that considers IP warming and reputation\n4. Add logging for IP/sub-user switches\n5. Create a recovery mechanism to return to primary IPs when bounce rates normalize",
+          "status": "done",
+          "testStrategy": "Develop integration tests with SendGrid API to verify switching behavior under simulated high bounce conditions. Ensure all code follows the Feature Development Workflow Template (Task #27)."
+        },
+        {
+          "id": 3,
+          "title": "Add spam-rate tracking via SendGrid stats",
+          "description": "Integrate with SendGrid's statistics API to track and store spam complaint rates for all email campaigns",
+          "dependencies": [],
+          "details": "1. Set up regular polling of SendGrid stats API for spam complaint data\n2. Create a database schema to store historical spam rate data\n3. Implement an aggregation mechanism for calculating spam rates across different time periods\n4. Add an admin dashboard view to display current and historical spam rates\n5. Document the spam rate tracking methodology for the team",
+          "status": "done",
+          "testStrategy": "Create mock SendGrid API responses and verify correct calculation and storage of spam rates. Follow the standard workflow from Task #27 for all development and testing activities."
+        },
+        {
+          "id": 4,
+          "title": "Add Prometheus metrics and Grafana alerts",
+          "description": "Implement monitoring for bounce and spam rates using Prometheus metrics and set up Grafana alerts for threshold violations",
+          "dependencies": [
+            1,
+            3
+          ],
+          "details": "1. Define and expose Prometheus metrics for bounce rates and spam complaint rates\n2. Configure metric collection intervals and retention policies\n3. Create Grafana dashboards to visualize bounce and spam rate trends\n4. Set up alert rules for when rates approach or exceed thresholds\n5. Configure alert notifications via appropriate channels (Slack, email, PagerDuty)",
+          "status": "done",
+          "testStrategy": "Test metric exposure endpoints and verify alert triggering using synthetic data. Adhere to the Feature Development Workflow Template (Task #27) for all implementation steps."
+        },
+        {
+          "id": 5,
+          "title": "Create BDD tests for high-bounce and spam complaint scenarios",
+          "description": "Develop behavior-driven development tests that validate the system's response to high bounce rates and spam complaints",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Define Gherkin scenarios for high bounce rate detection and handling\n2. Create scenarios for spam complaint tracking and alerting\n3. Implement step definitions that simulate SendGrid API responses\n4. Add scenarios for IP/sub-user switching under high bounce conditions\n5. Create end-to-end tests that verify the complete workflow from detection to alerting",
+          "status": "done",
+          "testStrategy": "Use a BDD framework like Cucumber to create readable, maintainable tests that document the expected system behavior. Follow the Feature Development Workflow Template (Task #27) for test development and execution."
+        },
+        {
+          "id": 6,
+          "title": "Configure Environment Variables and Alert Rules",
+          "description": "Set explicit environment variables and create alert rules for bounce and spam rates",
+          "details": "1. Set BOUNCE_RATE_THRESHOLD=0.02 in environment configuration\n2. Set MONTHLY_BUDGET=250 in environment configuration\n3. Create BounceHigh alert rule (warning ≥ 1%, critical ≥ 2%)\n4. Create SpamHigh alert rule (warning ≥ 0.05%, critical ≥ 0.1%)\n5. Document all environment variables and alert rules in the project documentation\n6. Ensure CI pipeline uses these environment variables for testing",
+          "status": "done",
+          "dependencies": [
+            1,
+            3,
+            4
+          ],
+          "parentTaskId": 19,
+          "testStrategy": "Verify all environment variables and alert rules in development, staging, and production environments. Follow the Feature Development Workflow Template (Task #27) for implementation and verification."
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "CAN-SPAM Compliance Implementation",
+      "description": "Add required CAN-SPAM compliance elements to email templates and implement unsubscribe functionality",
+      "status": "done",
+      "dependencies": [
+        "23"
+      ],
+      "priority": "high",
+      "details": "Implement the following CAN-SPAM compliance features:\n\n1. Add physical postal address (Anthrasite PO Box) to both HTML and plain-text email templates\n2. Add plain-English unsubscribe instructions and functional unsubscribe link to all email templates\n3. Implement unsubscribe handling in the database to record opt-outs\n4. Modify email sending logic to skip leads that have opted out\n5. Create BDD tests to verify compliance elements are present in emails\n\nThese improvements are necessary for legal compliance with the CAN-SPAM Act and to maintain good sending practices.",
+      "testStrategy": "All code changes for CAN-SPAM compliance must follow the standard Feature Development Workflow Template (Task #27) for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. This includes unit tests for template modifications, integration tests for database changes, and BDD tests for the complete unsubscribe flow.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Add Physical Postal Address to Email Templates",
+          "description": "Add the Anthrasite PO Box address to both HTML and plain-text email templates",
+          "dependencies": [],
+          "details": "Modify all email template files to include the company's physical postal address (Anthrasite PO Box) in both HTML and plain-text formats. Ensure the address is properly formatted and appears in the footer section of all templates. This is a required element for CAN-SPAM compliance.",
+          "status": "done",
+          "testStrategy": "Create unit tests to verify the presence of the physical address in all email template renderings. Include tests for both HTML and plain-text versions. Follow the Feature Development Workflow Template (Task #27) for development and testing."
+        },
+        {
+          "id": 2,
+          "title": "Implement Unsubscribe Instructions and Functionality",
+          "description": "Add clear unsubscribe instructions and functional unsubscribe links to all email templates",
+          "dependencies": [
+            1
+          ],
+          "details": "Add plain-English unsubscribe instructions and a functional unsubscribe link to all email templates. Create an unsubscribe landing page that confirms the user's opt-out request. Ensure the unsubscribe link is clearly visible and properly formatted in both HTML and plain-text emails. The unsubscribe mechanism should be simple and require no more than one step from the recipient.",
+          "status": "done",
+          "testStrategy": "Test the unsubscribe link functionality across different email clients. Verify that clicking the link properly redirects to the unsubscribe confirmation page. Create BDD tests to verify the presence and functionality of unsubscribe elements. Adhere to the Feature Development Workflow Template (Task #27) for all development and testing activities."
+        },
+        {
+          "id": 3,
+          "title": "Implement Database Tracking and Email Filtering for Opt-Outs",
+          "description": "Create database structure for tracking opt-outs and modify email sending logic to respect unsubscribe preferences",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement database schema changes to track user opt-out status. Create necessary tables or fields to record unsubscribe timestamps and status. Modify the email sending logic to check the opt-out status before sending any email, ensuring that users who have unsubscribed do not receive further communications. Implement a process to handle unsubscribe requests within 10 business days as required by CAN-SPAM.",
+          "status": "done",
+          "testStrategy": "Create integration tests to verify that the email sending system properly filters out unsubscribed recipients. Test the database recording of opt-out status. Implement BDD scenarios that verify the entire unsubscribe flow from email receipt to database update to email filtering. Follow the Feature Development Workflow Template (Task #27) for all stages of development and testing."
+        },
+        {
+          "id": 4,
+          "title": "Implement BDD Tests for Unsubscribe Functionality",
+          "description": "Create BDD tests to verify unsubscribe link works correctly and opt-out status is properly tracked in the database",
+          "details": "1. Create Gherkin scenarios for the unsubscribe process\n2. Implement step definitions for testing unsubscribe link functionality\n3. Add scenarios to verify opt-out status is correctly recorded in the database\n4. Test that opted-out users are excluded from future email sends\n5. Verify unsubscribe link appears correctly in both HTML and plain text emails\n6. Ensure tests run against the new Postgres database",
+          "status": "done",
+          "dependencies": [
+            2,
+            3
+          ],
+          "parentTaskId": 20,
+          "testStrategy": "Follow the Feature Development Workflow Template (Task #27) for all BDD test development, ensuring proper quality assurance, pre-commit checks, and CI verification."
+        },
+        {
+          "id": 5,
+          "title": "Verify Compliance with Feature Development Workflow",
+          "description": "Ensure all CAN-SPAM compliance implementations follow the standard development workflow",
+          "details": "Review all code changes related to CAN-SPAM compliance to ensure they adhere to the Feature Development Workflow Template (Task #27). This includes:\n1. Proper development practices\n2. Comprehensive testing at unit, integration, and BDD levels\n3. Quality assurance review\n4. Pre-commit checks\n5. CI verification\n\nThis task serves as a final verification step before considering the CAN-SPAM compliance implementation complete.",
+          "status": "done",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "parentTaskId": 20,
+          "testStrategy": "Create a checklist based on the Feature Development Workflow Template to verify all required steps have been completed for each subtask."
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Metrics and Alerts Completeness",
+      "description": "Implement additional metrics and alerts for batch completion, cost tracking, and GPU usage",
+      "status": "done",
+      "dependencies": [
+        20
+      ],
+      "priority": "medium",
+      "details": "Implement the following metrics and alerts:\n\n1. Batch-completion gauge - Write `batch_end_timestamp` at end of run and alert if no completion by 05:00 EST\n2. Cost-per-lead metric - Compute at run end (`total_cost/processed_leads`) and export; add optional alert if Tier-1 > $3\n3. GPU cost metric - When burst flag is on, increment `gpu_cost_usd_total` hourly; alert daily if > $25\n\nThese metrics will provide better visibility into system performance, cost efficiency, and resource utilization, enabling proactive monitoring and optimization.",
+      "testStrategy": "All code changes for metrics and alerts implementation must follow the standard Feature Development Workflow Template (Task #27), including development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. Each metric and alert should be thoroughly tested in isolation and as part of the integrated system.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Batch-Completion Gauge and Alerts",
+          "description": "Develop and implement the batch-completion gauge that writes the batch_end_timestamp at the end of each run and creates an alert if no completion is detected by 05:00 EST.",
+          "dependencies": [],
+          "details": "1. Create a function to record batch_end_timestamp when a batch run completes\n2. Implement a monitoring check that verifies completion status by 05:00 EST\n3. Set up alert notification system (email/Slack) if completion is not detected\n4. Add logging for successful completions and alert triggers\n5. Test the system with simulated late completions to verify alert functionality",
+          "status": "done",
+          "testStrategy": "Test with normal batch completions and simulated delayed completions to ensure alerts trigger appropriately. Verify timestamp recording accuracy and alert delivery. Follow the Feature Development Workflow Template (Task #27) for all implementation steps."
+        },
+        {
+          "id": 2,
+          "title": "Develop Cost-Per-Lead Metric and Alerts",
+          "description": "Create a metric that calculates cost-per-lead at the end of each run by dividing total_cost by processed_leads, export this data, and implement an optional alert if Tier-1 cost exceeds $3.",
+          "dependencies": [],
+          "details": "1. Implement calculation logic for cost-per-lead metric (total_cost/processed_leads)\n2. Create data export mechanism for the metric to analytics dashboard\n3. Add configuration for Tier-1 cost threshold alert (default $3)\n4. Implement alert notification when threshold is exceeded\n5. Include historical tracking to show cost trends over time",
+          "status": "done",
+          "testStrategy": "Test with various cost and lead count scenarios to verify calculation accuracy. Confirm export functionality and alert triggering at the $3 threshold for Tier-1 leads. Adhere to the Feature Development Workflow Template (Task #27) throughout implementation."
+        },
+        {
+          "id": 3,
+          "title": "Implement GPU Cost Tracking and Alerts",
+          "description": "Create a system to track GPU costs by incrementing gpu_cost_usd_total hourly when the burst flag is enabled, and implement a daily alert if the cost exceeds $25.",
+          "dependencies": [],
+          "details": "1. Develop mechanism to detect when burst flag is enabled\n2. Implement hourly incrementation of gpu_cost_usd_total metric\n3. Create daily cost aggregation and threshold checking logic\n4. Set up alert system for when daily GPU costs exceed $25\n5. Add reporting dashboard component to visualize GPU usage and costs over time",
+          "status": "done",
+          "testStrategy": "Test with simulated burst flag scenarios to verify hourly cost incrementation. Confirm daily aggregation logic and alert triggering when the $25 threshold is exceeded. Follow the Feature Development Workflow Template (Task #27) for all development and testing phases."
+        },
+        {
+          "id": 4,
+          "title": "Implement GPU_BURST Flag for Cost Tracking",
+          "description": "Ensure GPU cost metric increments when GPU_BURST=1 environment flag is set",
+          "details": "1. Implement detection of GPU_BURST=1 environment variable\n2. Modify the GPU cost tracking system to check this flag before incrementing costs\n3. Add hourly incrementation of gpu_cost_usd_total when flag is enabled\n4. Create a test environment with GPU_BURST flag to verify functionality\n5. Document the GPU_BURST flag in the environment variable documentation\n6. Ensure the daily alert triggers correctly when costs exceed $25",
+          "status": "done",
+          "dependencies": [
+            3
+          ],
+          "parentTaskId": 21,
+          "testStrategy": "Test with GPU_BURST flag enabled and disabled to verify proper cost tracking behavior. Follow the Feature Development Workflow Template (Task #27) for implementation and testing."
+        },
+        {
+          "id": 5,
+          "title": "Workflow Compliance Verification",
+          "description": "Ensure all metrics and alerts implementations comply with the Feature Development Workflow Template",
+          "details": "1. Review all code changes against the Feature Development Workflow Template (Task #27)\n2. Verify that proper testing, quality assurance, and pre-commit checks have been performed\n3. Confirm CI verification has been completed for all implementations\n4. Document compliance with the workflow for each metric and alert component\n5. Address any workflow compliance gaps before considering the task complete",
+          "status": "done",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "parentTaskId": 21,
+          "testStrategy": "Review documentation and evidence of workflow compliance for each implementation. Verify that all required steps in the Feature Development Workflow Template have been followed."
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Raw Data Retention Implementation",
+      "description": "Implement raw data retention for scraped HTML and LLM interactions to meet compliance requirements",
+      "status": "done",
+      "dependencies": [
+        "20"
+      ],
+      "priority": "medium",
+      "details": "Implement the following raw data retention features:\n\n1. Persist raw HTML of each scraped homepage (compressed) and store the path in the database\n2. Log LLM prompt and response JSON (for deduplication and mockup generation) in a new `llm_logs` table\n3. Ensure no data cleanup occurs for at least 90 days (document retention policy)\n4. Add documentation for the data retention policy and implementation\n\nThese features will ensure compliance with data retention requirements and provide an audit trail for system operations.",
+      "testStrategy": "All code changes must follow the standard workflow for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. Refer to the Feature Development Workflow Template (Task #27) for the complete process.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement HTML Storage for Scraped Homepages",
+          "description": "Create a system to compress and store raw HTML from scraped homepages and record the storage path in the database",
+          "dependencies": [],
+          "details": "1. Implement compression algorithm for HTML content\n2. Create storage directory structure with appropriate permissions\n3. Modify scraper to save compressed HTML after each successful scrape\n4. Add database column to store file path reference\n5. Update existing code to record file paths for each scrape\n6. Implement error handling for storage failures",
+          "status": "done",
+          "testStrategy": "Verify compression ratio is acceptable (>70%), confirm file paths are correctly stored in database, and test recovery of original HTML from compressed storage. Follow the Feature Development Workflow Template (Task #27) for complete testing procedures."
+        },
+        {
+          "id": 2,
+          "title": "Create LLM Logging System",
+          "description": "Develop a logging system to record all LLM prompts and responses in a new database table",
+          "dependencies": [],
+          "details": "1. Create new `llm_logs` table with appropriate schema (timestamp, user_id, prompt_text, response_json, model_version, etc.)\n2. Implement logging middleware to capture all LLM interactions\n3. Add indexing for efficient querying\n4. Ensure proper JSON serialization/deserialization\n5. Add metadata fields for deduplication purposes\n6. Implement query interface for audit purposes",
+          "status": "done",
+          "testStrategy": "Test with various LLM interactions to ensure all data is properly captured, verify JSON integrity is maintained, and confirm query performance meets requirements. Follow the Feature Development Workflow Template (Task #27) for complete testing procedures."
+        },
+        {
+          "id": 3,
+          "title": "Implement 90-Day Retention Policy",
+          "description": "Configure data retention mechanisms to ensure all raw data is preserved for at least 90 days and document the implementation",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Create retention policy configuration in system settings\n2. Implement scheduled job to identify but not delete data older than 90 days\n3. Add warning system for approaching deletion dates\n4. Create admin interface for retention policy management\n5. Write comprehensive documentation covering data retention implementation\n6. Document compliance aspects and audit procedures\n7. Add data export functionality for records prior to potential deletion",
+          "status": "done",
+          "testStrategy": "Simulate time passage to verify 90-day retention works correctly, test admin controls for policy management, and validate documentation completeness against compliance requirements. Follow the Feature Development Workflow Template (Task #27) for complete testing procedures."
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Database Migration to Supabase Postgres",
+      "description": "Migrate from local SQLite to Supabase Postgres and implement backup and recovery procedures",
+      "status": "done",
+      "dependencies": [
+        "19"
+      ],
+      "priority": "medium",
+      "details": "Implement the following database migration and durability features:\n\n1. Switch from local SQLite to Supabase Postgres using DATABASE_URL environment variable\n2. Add nightly pg_dump into RSYNC backup set\n3. Ensure WAL (Write-Ahead Logging) and point-in-time recovery are enabled or documented\n4. Update README and deployment guide with new database configuration\n5. Update tests and CI pipeline to spin up Postgres service for testing\n\nThis migration will improve database durability, scalability, and backup capabilities while maintaining compatibility with existing code.",
+      "testStrategy": "All code changes must follow the standard Feature Development Workflow Template (Task #27) for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. This includes proper unit and integration testing of database connections, migration processes, backup procedures, and recovery mechanisms.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Postgres Connection and Data Migration",
+          "description": "Switch from local SQLite to Supabase Postgres by configuring the DATABASE_URL environment variable and migrating existing data",
+          "dependencies": [],
+          "details": "1. Add Postgres client library to project dependencies\n2. Configure connection using DATABASE_URL environment variable\n3. Create schema migration scripts to convert SQLite schema to Postgres\n4. Develop and test data migration utility to transfer existing data\n5. Implement connection pooling and error handling for Postgres",
+          "status": "done",
+          "testStrategy": "Create integration tests that verify successful connection to Postgres and data integrity after migration. Follow the Feature Development Workflow Template (Task #27) for all testing procedures."
+        },
+        {
+          "id": 2,
+          "title": "Set Up Backup Procedures",
+          "description": "Implement nightly pg_dump backups and integrate with existing RSYNC backup system",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create automated pg_dump script for nightly database backups\n2. Configure backup retention policies\n3. Integrate pg_dump output with existing RSYNC backup set\n4. Implement monitoring and alerting for backup failures\n5. Test backup restoration process to verify backup integrity",
+          "status": "done",
+          "testStrategy": "Create automated tests that verify backup creation, RSYNC integration, and successful restoration from backups. Adhere to the Feature Development Workflow Template (Task #27) for all development and testing phases."
+        },
+        {
+          "id": 3,
+          "title": "Configure WAL and Point-in-Time Recovery",
+          "description": "Enable and configure Write-Ahead Logging (WAL) and point-in-time recovery capabilities in Supabase Postgres",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Verify WAL is enabled in Supabase Postgres configuration\n2. Configure appropriate WAL settings for application needs\n3. Set up archiving of WAL files\n4. Document and test point-in-time recovery procedures\n5. Create disaster recovery runbook with step-by-step instructions",
+          "status": "done",
+          "testStrategy": "Simulate database failures and verify successful point-in-time recovery using WAL archives. Follow the quality assurance process outlined in the Feature Development Workflow Template (Task #27)."
+        },
+        {
+          "id": 4,
+          "title": "Update Documentation and CI Pipeline",
+          "description": "Update README, deployment guide, tests, and CI pipeline to reflect the new Postgres database configuration",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "1. Update README with new database configuration instructions\n2. Revise deployment guide with Postgres setup requirements\n3. Modify existing tests to work with Postgres instead of SQLite\n4. Update CI pipeline to spin up Postgres service for testing\n5. Create database migration guide for existing installations",
+          "status": "done",
+          "testStrategy": "Verify CI pipeline successfully runs all tests against Postgres and documentation accurately reflects the new setup process. Ensure all changes pass through the complete Feature Development Workflow (Task #27) including pre-commit checks and CI verification."
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Failover Threshold Adjustment",
+      "description": "Change the HEALTH_CHECK_FAILURES_THRESHOLD to 2 consecutive failures to match the spec",
+      "status": "done",
+      "dependencies": [
+        "22"
+      ],
+      "priority": "low",
+      "details": "Implement the following failover tweak:\n\n1. Change the HEALTH_CHECK_FAILURES_THRESHOLD to 2 consecutive failures (currently set to a different value)\n2. Update any related documentation to reflect this change\n3. Test the failover mechanism with the new threshold to ensure it works as expected\n\nThis change will align the system with the Phase 0 \"Lead-Factory\" spec v1.3 requirements and improve system reliability by triggering failover after fewer consecutive failures.",
+      "testStrategy": "All code changes must follow the standard Feature Development Workflow Template (Task #27) for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Update HEALTH_CHECK_FAILURES_THRESHOLD Constant",
+          "description": "Change the HEALTH_CHECK_FAILURES_THRESHOLD constant to 2 consecutive failures and update related documentation",
+          "dependencies": [],
+          "details": "1. Locate the HEALTH_CHECK_FAILURES_THRESHOLD constant in the codebase\n2. Change its value from the current setting to 2 consecutive failures\n3. Update any related documentation to reflect this change\n4. Create a pull request with these changes\n5. Reference the Phase 0 'Lead-Factory' spec v1.3 requirements in the PR description",
+          "status": "done",
+          "testStrategy": "Perform a code review to verify the constant has been updated correctly and documentation changes are accurate. Follow the Feature Development Workflow Template (Task #27) for all development and testing steps."
+        },
+        {
+          "id": 2,
+          "title": "Test Failover Mechanism with New Threshold",
+          "description": "Verify the failover mechanism works correctly with the new threshold of 2 consecutive failures",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Set up a test environment that simulates health check failures\n2. Verify that failover is triggered after exactly 2 consecutive failures\n3. Ensure the system recovers properly after failover\n4. Document test results and any edge cases discovered\n5. Verify behavior aligns with the Phase 0 'Lead-Factory' spec v1.3 requirements",
+          "status": "done",
+          "testStrategy": "Create automated tests that simulate 1, 2, and 3 consecutive failures to verify the system behaves as expected in each scenario. Ensure all testing follows the Feature Development Workflow Template (Task #27) including quality assurance and CI verification steps."
+        },
+        {
+          "id": 3,
+          "title": "Workflow Compliance Verification",
+          "description": "Ensure all changes comply with the Feature Development Workflow Template",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Review all code changes to ensure they follow the Feature Development Workflow Template (Task #27)\n2. Verify that all pre-commit checks have been executed and passed\n3. Confirm that CI verification has been completed successfully\n4. Ensure proper documentation of the changes in accordance with the workflow\n5. Get final approval from the relevant stakeholders before closing the task",
+          "status": "done",
+          "testStrategy": "Use the checklist from the Feature Development Workflow Template (Task #27) to verify all required steps have been completed properly."
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Pre-commit Static Analysis Setup",
+      "description": "Add pre-commit hooks for ruff, bandit, and black to enforce code quality standards",
+      "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Implement the following pre-commit static analysis features:\n\n1. Add `.pre-commit-config.yaml` with ruff, bandit, and black --check configurations\n2. Install pre-commit hooks in the repository\n3. Update CI pipeline to run `pre-commit run --all-files` as part of the build process\n4. Add documentation for developers on how to work with the pre-commit hooks\n5. Ensure all existing code passes the new static analysis checks\n\nThis implementation will enforce code quality standards at commit time, reducing the likelihood of quality issues making it into the codebase and ensuring consistent formatting and security practices. Implementing this first will ensure all subsequent code changes follow the established standards.\n\nNote: All code changes must follow the standard workflow for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete, as defined in the Feature Development Workflow Template (Task #27).",
+      "testStrategy": "All implementation work for this task should follow the Feature Development Workflow Template (Task #27), ensuring proper development, testing, quality assurance, pre-commit checks, and CI verification before completion.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Configure Pre-commit Hooks",
+          "description": "Create and configure .pre-commit-config.yaml with ruff, bandit, and black hooks",
+          "dependencies": [],
+          "details": "Create a .pre-commit-config.yaml file in the repository root with configurations for ruff (linting), bandit (security checks), and black (code formatting). Install pre-commit in the development environment and set up the hooks in the repository. Ensure all existing code passes these checks, making necessary adjustments to comply with the standards.",
+          "status": "done",
+          "testStrategy": "Verify hooks installation with 'pre-commit list'. Test each hook individually with 'pre-commit run <hook-id>' and collectively with 'pre-commit run --all-files'. Follow the Feature Development Workflow Template (Task #27) for implementation and verification."
+        },
+        {
+          "id": 2,
+          "title": "Update CI Pipeline",
+          "description": "Integrate pre-commit checks into the CI/CD pipeline",
+          "dependencies": [
+            1
+          ],
+          "details": "Modify the CI pipeline configuration to run 'pre-commit run --all-files' as part of the build process. This ensures all code changes are validated against the static analysis checks before merging. Configure the pipeline to fail if any pre-commit checks fail, providing clear error messages about which checks failed and why.",
+          "status": "done",
+          "testStrategy": "Submit a test PR with both compliant and non-compliant code to verify the CI pipeline correctly identifies and reports issues. Ensure this work follows the Feature Development Workflow Template (Task #27)."
+        },
+        {
+          "id": 3,
+          "title": "Document Pre-commit Workflow",
+          "description": "Create documentation for developers on using pre-commit hooks",
+          "dependencies": [
+            1
+          ],
+          "details": "Create comprehensive documentation explaining how developers should work with the pre-commit hooks. Include instructions for installation, usage, troubleshooting common issues, and how to temporarily bypass hooks if necessary. Explain the purpose of each hook and the standards they enforce. Add this documentation to the project's developer guide or README. Reference the Feature Development Workflow Template (Task #27) to explain how pre-commit hooks fit into the overall development process.",
+          "status": "done",
+          "testStrategy": "Have a developer unfamiliar with pre-commit follow the documentation to set up their environment and verify they can successfully use the hooks. Ensure documentation clearly references the Feature Development Workflow Template (Task #27)."
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Feature Development Workflow Template",
+      "description": "Standard workflow for developing, testing, and committing each feature",
+      "details": "This task defines the standard workflow that should be followed for each feature implementation:\n\n1. **Development Phase**\n   - Implement the feature according to the requirements\n   - Add appropriate error handling and logging\n   - Include unit tests and integration tests\n   - Add or update documentation\n\n2. **Testing Phase**\n   - Run all unit tests (`pytest tests/`)\n   - Run all BDD tests (`pytest tests/ --bdd`)\n   - Verify code coverage meets standards\n   - Perform manual testing as needed\n\n3. **Quality Assurance Phase**\n   - Run static analysis tools (ruff, bandit)\n   - Run code formatting (black)\n   - Fix any issues identified by the tools\n   - Verify all tests still pass after fixes\n\n4. **Pre-Commit Phase**\n   - Run pre-commit hooks locally (`pre-commit run --all-files`)\n   - Fix any issues identified by the hooks\n   - Verify the feature works as expected after fixes\n\n5. **Commit Phase**\n   - Create a feature branch with a descriptive name\n   - Commit changes with a clear message\n   - Push to remote repository\n   - Create a pull request with detailed description\n\n6. **CI Verification Phase**\n   - Verify CI pipeline passes\n   - Address any issues identified by CI\n   - Request code review if needed\n   - Merge only when CI is green\n\nThis workflow should be followed for every feature to ensure consistent quality and reliability.",
+      "testStrategy": "",
+      "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "subtasks": []
+    },
+    {
+      "id": 28,
+      "title": "Task #28: Web Interface for HTML and LLM Logs Browsing",
+      "description": "Implement a user-friendly web interface that allows users to browse, search, filter, and export stored HTML and LLM logs, enhancing the raw data retention features by providing easy access to historical data.",
+      "details": "This task involves creating a web-based interface for accessing the HTML and LLM logs stored as part of the Raw Data Retention Implementation (Task #22). The implementation should:\n\n1. Create a responsive web interface using appropriate frontend frameworks (e.g., React, Vue.js)\n2. Implement backend API endpoints to query and retrieve log data\n3. Develop filtering capabilities by:\n   - Date range (from/to)\n   - Business ID\n   - Request type\n   - Response status\n   - Content type (HTML/LLM)\n4. Include pagination for handling large datasets efficiently\n5. Implement search functionality to find specific content within logs\n6. Add data export features in common formats (CSV, JSON)\n7. Ensure proper authentication and authorization to protect sensitive log data\n8. Include data visualization components for basic analytics (e.g., request volume over time)\n9. Implement responsive design for both desktop and mobile access\n10. Add user preferences for default views and filters\n\nThe implementation should follow the Feature Development Workflow Template (Task #27) and ensure that the interface is intuitive and performs well even with large log datasets. Consider implementing caching strategies to improve performance when querying frequently accessed logs.",
+      "testStrategy": "Testing for this feature should include:\n\n1. Unit tests:\n   - Test all API endpoints for retrieving and filtering log data\n   - Verify correct implementation of search algorithms\n   - Test data export functionality for accuracy and completeness\n\n2. Integration tests:\n   - Verify the web interface correctly communicates with the backend\n   - Test that filters correctly narrow down the dataset\n   - Ensure pagination works correctly with various page sizes\n\n3. Performance tests:\n   - Benchmark load times with various dataset sizes\n   - Test response times for complex filter combinations\n   - Verify export functionality performs adequately with large datasets\n\n4. UI/UX tests:\n   - Conduct usability testing with potential users\n   - Verify responsive design works across different devices and screen sizes\n   - Test accessibility compliance using automated tools\n\n5. Security tests:\n   - Verify authentication and authorization controls\n   - Test for common web vulnerabilities (XSS, CSRF)\n   - Ensure sensitive log data is properly protected\n\n6. Acceptance criteria:\n   - Users can successfully filter logs by all specified criteria\n   - Search functionality returns relevant results\n   - Exports contain all selected data in the correct format\n   - Interface is responsive and loads within acceptable time limits\n   - All features work in supported browsers\n\nDocument test results and any performance metrics as part of the task completion.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "subtasks": []
+    },
+    {
+      "id": 29,
+      "title": "Task #29: Advanced Analytics for Lead Generation Optimization",
+      "description": "Implement advanced analytics capabilities that leverage machine learning to optimize lead generation by analyzing lead quality, conversion rates, and ROI, providing actionable insights through predictive models and automated reporting.",
+      "details": "This task involves building a comprehensive analytics system that extends the existing metrics and cost tracking infrastructure to provide deeper insights into lead generation performance. Key components include:\n\n1. Data Integration:\n   - Connect to existing lead data sources and metrics database\n   - Implement ETL processes to prepare data for advanced analysis\n   - Ensure proper data cleaning and normalization for machine learning\n\n2. Machine Learning Models:\n   - Develop predictive models to score lead quality based on historical conversion data\n   - Implement pattern recognition algorithms to identify characteristics of successful leads\n   - Create recommendation engines for targeting strategies to maximize ROI\n   - Build anomaly detection to identify unusual patterns or opportunities\n\n3. Analytics Dashboard:\n   - Integrate new analytics into the existing metrics dashboard\n   - Create visualizations for lead quality distribution, conversion funnels, and ROI analysis\n   - Implement interactive filters and drill-down capabilities\n   - Design executive summary views with key performance indicators\n\n4. Automated Reporting:\n   - Develop weekly and monthly report generation with actionable insights\n   - Implement natural language generation for insight summaries\n   - Create export functionality in multiple formats (PDF, CSV, Excel)\n   - Set up automated delivery via email or notification system\n\n5. System Architecture:\n   - Ensure scalability to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Design for modularity to allow future analytics extensions\n   - Follow the Feature Development Workflow Template (Task #27)\n\nDependencies:\n- This task depends on the completion of Metrics and Alerts Completeness (Task #21)\n- Must integrate seamlessly with existing metrics dashboard\n\nTechnical Requirements:\n- Use appropriate ML libraries (scikit-learn, TensorFlow, or PyTorch)\n- Implement proper model validation and testing procedures\n- Ensure all analytics are explainable and transparent\n- Follow data privacy best practices",
+      "testStrategy": "The testing strategy for the Advanced Analytics for Lead Generation Optimization will include:\n\n1. Data Processing Validation:\n   - Verify data integration from all sources is complete and accurate\n   - Test ETL processes with sample datasets of varying sizes and characteristics\n   - Validate data cleaning and normalization procedures maintain data integrity\n   - Confirm proper handling of edge cases (missing data, outliers, etc.)\n\n2. Machine Learning Model Testing:\n   - Implement cross-validation to assess model performance\n   - Measure accuracy, precision, recall, and F1 scores for classification models\n   - Use RMSE, MAE, and R² for regression models\n   - Conduct A/B testing comparing model recommendations against baseline strategies\n   - Perform sensitivity analysis to understand model robustness\n   - Test with historical data to verify predictive accuracy\n\n3. Dashboard and Visualization Testing:\n   - Verify all visualizations render correctly across browsers and devices\n   - Test interactive elements function as expected\n   - Validate drill-down capabilities and data filtering\n   - Ensure dashboard performance under various load conditions\n   - Conduct usability testing with stakeholders to ensure insights are clear and actionable\n\n4. Report Generation Testing:\n   - Verify automated reports generate on schedule\n   - Validate report content accuracy against source data\n   - Test report delivery mechanisms (email, notifications)\n   - Ensure export functionality works for all supported formats\n   - Verify natural language summaries accurately reflect the data insights\n\n5. Integration Testing:\n   - Test integration with existing metrics dashboard\n   - Verify dependencies on Metrics and Alerts system function correctly\n   - Ensure analytics system doesn't negatively impact performance of other systems\n\n6. User Acceptance Testing:\n   - Conduct structured UAT sessions with marketing and sales teams\n   - Verify insights are actionable and valuable to business users\n   - Collect feedback on usability and feature completeness\n   - Document any enhancement requests for future iterations\n\n7. Performance and Load Testing:\n   - Benchmark system performance with increasing data volumes\n   - Test concurrent user access scenarios\n   - Verify response times meet requirements under peak loads\n\nSuccess Criteria:\n- All machine learning models achieve minimum accuracy thresholds (to be defined with stakeholders)\n- Reports generate successfully with accurate insights\n- Dashboard integrates seamlessly with existing metrics system\n- System can process the full historical dataset within performance parameters\n- Marketing team can successfully use insights to improve targeting strategies",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "subtasks": []
+    },
+    {
+      "id": 30,
+      "title": "Task #30: Scalable Architecture Implementation for High-Volume Lead Processing",
+      "description": "Implement a scalable architecture for the Anthrasite LeadFactory system to efficiently process increased lead volumes while maintaining performance, with the goal of handling at least 10x the current capacity without degradation.",
+      "details": "This task involves enhancing the LeadFactory system's architecture to support significant growth in lead processing volume. Implementation should follow these key steps:\n\n1. Horizontal Scaling Implementation:\n   - Refactor application components to be stateless where possible\n   - Implement load balancing for web tier using a suitable solution (e.g., Nginx, HAProxy, or cloud provider load balancer)\n   - Configure auto-scaling groups based on CPU utilization, memory usage, and request queue length\n   - Ensure session persistence and data consistency across scaled instances\n\n2. Database Optimization:\n   - Analyze and optimize existing database queries (add indexes, rewrite inefficient queries)\n   - Implement database read replicas for scaling read operations\n   - Consider database sharding strategy for write-heavy operations\n   - Implement connection pooling and query caching where appropriate\n\n3. Caching Layer Implementation:\n   - Add Redis or Memcached for caching frequently accessed data\n   - Implement cache invalidation strategies\n   - Configure TTL (Time-To-Live) policies for different data types\n   - Add monitoring for cache hit/miss rates\n\n4. Queue-based Processing:\n   - Implement message queue system (RabbitMQ, AWS SQS, etc.) for asynchronous task processing\n   - Refactor lead processing workflows to utilize queue-based architecture\n   - Implement retry mechanisms and dead-letter queues for failed operations\n   - Create worker services that can scale independently based on queue depth\n\n5. Auto-scaling Configuration:\n   - Define appropriate scaling metrics (CPU, memory, queue depth, request latency)\n   - Implement auto-scaling policies with appropriate cool-down periods\n   - Set up alerts for scaling events and resource constraints\n   - Document scaling thresholds and expected behavior\n\n6. Performance Monitoring:\n   - Implement comprehensive metrics collection across all system components\n   - Set up dashboards for real-time monitoring of system performance\n   - Configure alerting for performance degradation\n   - Implement distributed tracing to identify bottlenecks\n\n7. Documentation:\n   - Update system architecture diagrams\n   - Document scaling strategies and limitations\n   - Create runbooks for managing scaled infrastructure\n   - Document performance expectations and SLAs\n\nThis implementation should follow the Feature Development Workflow Template (Task #27) and integrate with existing infrastructure and deployment strategies. Consider potential impacts on related systems, particularly the advanced analytics capabilities (Task #29) and the web interface for logs browsing (Task #28).",
+      "testStrategy": "The scalable architecture implementation should be thoroughly tested using the following approach:\n\n1. Unit Testing:\n   - Test individual components for thread safety and concurrency handling\n   - Verify proper implementation of caching mechanisms\n   - Ensure queue producers and consumers handle edge cases correctly\n   - Test database query optimizations for correctness\n\n2. Integration Testing:\n   - Verify proper interaction between all system components\n   - Test failover scenarios between scaled instances\n   - Validate data consistency across distributed components\n   - Ensure cache invalidation works correctly across the system\n\n3. Load Testing:\n   - Establish current system performance baseline\n   - Conduct incremental load tests (2x, 5x, 10x current volume)\n   - Use tools like JMeter, Locust, or k6 to simulate high lead volumes\n   - Measure and record key performance metrics:\n     * Response time (average, 95th percentile, 99th percentile)\n     * Throughput (leads processed per second)\n     * Error rates under load\n     * Resource utilization (CPU, memory, disk I/O, network)\n   - Test auto-scaling triggers and verify proper scaling behavior\n\n4. Stress Testing:\n   - Push system beyond target capacity to identify breaking points\n   - Measure recovery time after overload conditions\n   - Identify resource bottlenecks under extreme load\n\n5. Chaos Testing:\n   - Simulate component failures (database, cache, queue, application servers)\n   - Verify system resilience and graceful degradation\n   - Test recovery procedures and data consistency after failures\n\n6. Endurance Testing:\n   - Run system at 70-80% capacity for extended periods (24+ hours)\n   - Monitor for memory leaks, resource exhaustion, or performance degradation\n   - Verify system stability during prolonged operation\n\n7. Acceptance Criteria:\n   - System must handle 10x current lead volume with less than 20% increase in response time\n   - Auto-scaling must activate appropriately based on defined metrics\n   - No data loss during scaling events or component failures\n   - All critical paths must have 99.9% availability during load tests\n   - Database query performance must remain within defined thresholds\n   - Monitoring dashboards must accurately reflect system performance\n\n8. Documentation Verification:\n   - Ensure all architectural changes are properly documented\n   - Verify runbooks for managing scaled infrastructure are accurate\n   - Confirm monitoring dashboards provide necessary visibility\n\nThe testing process should be automated where possible and integrated into the CI/CD pipeline to ensure ongoing performance as the system evolves.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "subtasks": []
     }
   ]
 }

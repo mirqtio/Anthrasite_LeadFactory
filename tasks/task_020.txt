@@ -1,0 +1,63 @@
+# Task ID: 20
+# Title: CAN-SPAM Compliance Implementation
+# Status: done
+# Dependencies: 23
+# Priority: high
+# Description: Add required CAN-SPAM compliance elements to email templates and implement unsubscribe functionality
+# Details:
+Implement the following CAN-SPAM compliance features:
+
+1. Add physical postal address (Anthrasite PO Box) to both HTML and plain-text email templates
+2. Add plain-English unsubscribe instructions and functional unsubscribe link to all email templates
+3. Implement unsubscribe handling in the database to record opt-outs
+4. Modify email sending logic to skip leads that have opted out
+5. Create BDD tests to verify compliance elements are present in emails
+
+These improvements are necessary for legal compliance with the CAN-SPAM Act and to maintain good sending practices.
+
+# Test Strategy:
+All code changes for CAN-SPAM compliance must follow the standard Feature Development Workflow Template (Task #27) for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. This includes unit tests for template modifications, integration tests for database changes, and BDD tests for the complete unsubscribe flow.
+
+# Subtasks:
+## 1. Add Physical Postal Address to Email Templates [done]
+### Dependencies: None
+### Description: Add the Anthrasite PO Box address to both HTML and plain-text email templates
+### Details:
+Modify all email template files to include the company's physical postal address (Anthrasite PO Box) in both HTML and plain-text formats. Ensure the address is properly formatted and appears in the footer section of all templates. This is a required element for CAN-SPAM compliance.
+
+## 2. Implement Unsubscribe Instructions and Functionality [done]
+### Dependencies: 20.1
+### Description: Add clear unsubscribe instructions and functional unsubscribe links to all email templates
+### Details:
+Add plain-English unsubscribe instructions and a functional unsubscribe link to all email templates. Create an unsubscribe landing page that confirms the user's opt-out request. Ensure the unsubscribe link is clearly visible and properly formatted in both HTML and plain-text emails. The unsubscribe mechanism should be simple and require no more than one step from the recipient.
+
+## 3. Implement Database Tracking and Email Filtering for Opt-Outs [done]
+### Dependencies: 20.2
+### Description: Create database structure for tracking opt-outs and modify email sending logic to respect unsubscribe preferences
+### Details:
+Implement database schema changes to track user opt-out status. Create necessary tables or fields to record unsubscribe timestamps and status. Modify the email sending logic to check the opt-out status before sending any email, ensuring that users who have unsubscribed do not receive further communications. Implement a process to handle unsubscribe requests within 10 business days as required by CAN-SPAM.
+
+## 4. Implement BDD Tests for Unsubscribe Functionality [done]
+### Dependencies: 20.2, 20.3
+### Description: Create BDD tests to verify unsubscribe link works correctly and opt-out status is properly tracked in the database
+### Details:
+1. Create Gherkin scenarios for the unsubscribe process
+2. Implement step definitions for testing unsubscribe link functionality
+3. Add scenarios to verify opt-out status is correctly recorded in the database
+4. Test that opted-out users are excluded from future email sends
+5. Verify unsubscribe link appears correctly in both HTML and plain text emails
+6. Ensure tests run against the new Postgres database
+
+## 5. Verify Compliance with Feature Development Workflow [done]
+### Dependencies: 20.1, 20.2, 20.3, 20.4
+### Description: Ensure all CAN-SPAM compliance implementations follow the standard development workflow
+### Details:
+Review all code changes related to CAN-SPAM compliance to ensure they adhere to the Feature Development Workflow Template (Task #27). This includes:
+1. Proper development practices
+2. Comprehensive testing at unit, integration, and BDD levels
+3. Quality assurance review
+4. Pre-commit checks
+5. CI verification
+
+This task serves as a final verification step before considering the CAN-SPAM compliance implementation complete.
+

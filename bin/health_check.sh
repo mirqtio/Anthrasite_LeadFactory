@@ -36,7 +36,7 @@ VERBOSE=false
 PRIMARY_URL="http://localhost:8080/health"
 PRIMARY_EXPECTED_STATUS=200
 PRIMARY_TIMEOUT=10
-FAILURE_THRESHOLD=3
+FAILURE_THRESHOLD=2  # Changed from 3 to 2 to match Phase 0 v1.3 spec
 BACKUP_HOST="backup.example.com"
 BACKUP_USER="backup"
 BACKUP_PORT=22
@@ -63,11 +63,11 @@ parse_yaml() {
     local s
     local w
     local fs
-    
+
     s='[[:space:]]*'
     w='[a-zA-Z0-9_]*'
     fs="$(echo @|tr @ '\034')"
-    
+
     (
         sed -e '/- [^\"]'"[^\']"'.*: /s|\([ ]*\)- \([[:space:]]*\)|\1-\'$'\n''  \1\2|g' |
         sed -ne '/^--/s|--||g; s|\"|\\\"|g; s/[[:space:]]*$//g;' \
@@ -217,7 +217,7 @@ trap 'rm -f "$LOCK_FILE"; log "INFO" "Health check process terminated"; exit 1' 
 if [ -f "$CONFIG_FILE" ]; then
     log "INFO" "Loading configuration from $CONFIG_FILE"
     eval "$(parse_yaml "$CONFIG_FILE")"
-    
+
     # Override defaults with config values
     PRIMARY_URL=${health_check_primary_url:-$PRIMARY_URL}
     PRIMARY_EXPECTED_STATUS=${health_check_primary_expected_status:-$PRIMARY_EXPECTED_STATUS}
@@ -232,7 +232,7 @@ if [ -f "$CONFIG_FILE" ]; then
     NOTIFY_SLACK_WEBHOOK=${health_check_notify_slack_webhook:-$NOTIFY_SLACK_WEBHOOK}
 else
     log "WARNING" "Config file not found: $CONFIG_FILE, using defaults"
-    
+
     # Create a sample config file
     SAMPLE_CONFIG="${PROJECT_ROOT}/etc/health_check_config.yml.sample"
     mkdir -p "$(dirname "$SAMPLE_CONFIG")"
@@ -244,10 +244,10 @@ health_check:
     url: http://localhost:8080/health
     expected_status: 200
     timeout: 10  # seconds
-  
+
   # Failure threshold
   failure_threshold: 3
-  
+
   # Backup instance details
   backup:
     host: backup.example.com
@@ -255,13 +255,13 @@ health_check:
     port: 22
     key_file: ~/.ssh/backup_key
     docker_compose_path: /home/backup/anthrasite_backup/latest/docker-compose.yml
-  
+
   # Notification settings
   notify:
     email: alerts@example.com
     slack_webhook: https://hooks.slack.com/services/XXXX/YYYY/ZZZZ
 EOF
-    
+
     log "INFO" "Created sample config file at $SAMPLE_CONFIG"
 fi
 
@@ -278,47 +278,47 @@ if [ "$FORCE_BOOT" = true ]; then
     if [ "$CHECK_ONLY" = true ]; then
         log "WARNING" "Both --check-only and --force-boot specified, --force-boot takes precedence"
     fi
-    
+
     # Set failure count to threshold to trigger boot
     FAILURE_COUNT=$FAILURE_THRESHOLD
 else
     # Perform health check
     log "INFO" "Checking health of primary instance: $PRIMARY_URL"
-    
+
     # Use curl to check health endpoint
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m "$PRIMARY_TIMEOUT" "$PRIMARY_URL" 2>/dev/null || echo "000")
-    
+
     if [ "$HTTP_STATUS" = "$PRIMARY_EXPECTED_STATUS" ]; then
         log "INFO" "Primary instance is healthy (HTTP status: $HTTP_STATUS)"
         reset_failure_count
-        
+
         # Clean up lock file
         rm -f "$LOCK_FILE"
-        
+
         log "INFO" "Health check completed successfully"
         exit 0
     else
         log "WARNING" "Primary instance is unhealthy (HTTP status: $HTTP_STATUS, expected: $PRIMARY_EXPECTED_STATUS)"
         increment_failure_count
-        
+
         log "INFO" "Failure count: $FAILURE_COUNT/$FAILURE_THRESHOLD"
-        
+
         if [ "$FAILURE_COUNT" -lt "$FAILURE_THRESHOLD" ]; then
             log "INFO" "Below failure threshold, not booting backup yet"
-            
+
             # Clean up lock file
             rm -f "$LOCK_FILE"
-            
+
             exit 4
         else
             log "WARNING" "Failure threshold reached ($FAILURE_COUNT/$FAILURE_THRESHOLD)"
-            
+
             if [ "$CHECK_ONLY" = true ]; then
                 log "INFO" "Check-only mode enabled, not booting backup"
-                
+
                 # Clean up lock file
                 rm -f "$LOCK_FILE"
-                
+
                 exit 5
             fi
         fi
@@ -328,46 +328,46 @@ fi
 # If we reach here, we need to boot the backup
 if [ "$CHECK_ONLY" = false ]; then
     log "INFO" "Booting backup instance on $BACKUP_HOST"
-    
+
     # Set SSH options
     SSH_OPTS="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=10"
     if [ -n "$BACKUP_KEY_FILE" ] && [ "$BACKUP_KEY_FILE" != "~/.ssh/backup_key" ]; then
         SSH_OPTS="$SSH_OPTS -i $BACKUP_KEY_FILE"
     fi
-    
+
     # Test SSH connection
     log "INFO" "Testing SSH connection to ${BACKUP_USER}@${BACKUP_HOST}:${BACKUP_PORT}"
     if ! ssh $SSH_OPTS -p "$BACKUP_PORT" "${BACKUP_USER}@${BACKUP_HOST}" "echo 'SSH connection successful'" >> "$LOG_FILE" 2>&1; then
         log "ERROR" "SSH connection failed"
-        
+
         # Send notification
         send_notification "Anthrasite Lead-Factory - Backup Boot Failed" "SSH connection to backup server failed. Manual intervention required."
-        
+
         # Clean up lock file
         rm -f "$LOCK_FILE"
-        
+
         exit 6
     fi
-    
+
     # Boot Docker stack on backup
     log "INFO" "Starting Docker stack on backup server"
     if ! ssh $SSH_OPTS -p "$BACKUP_PORT" "${BACKUP_USER}@${BACKUP_HOST}" "cd $(dirname "$DOCKER_COMPOSE_PATH") && docker-compose -f $(basename "$DOCKER_COMPOSE_PATH") up -d" >> "$LOG_FILE" 2>&1; then
         log "ERROR" "Failed to start Docker stack on backup server"
-        
+
         # Send notification
         send_notification "Anthrasite Lead-Factory - Backup Boot Failed" "Failed to start Docker stack on backup server. Manual intervention required."
-        
+
         # Clean up lock file
         rm -f "$LOCK_FILE"
-        
+
         exit 6
     fi
-    
+
     # Update state
     set_last_boot
-    
+
     log "INFO" "Backup instance booted successfully"
-    
+
     # Send notification
     send_notification "Anthrasite Lead-Factory - Backup Booted" "Primary instance failed $FAILURE_COUNT health checks. Backup instance has been booted successfully."
 fi
@@ -376,29 +376,29 @@ fi
 send_notification() {
     local subject="$1"
     local message="$2"
-    
+
     # Send email notification
     if [ -n "$NOTIFY_EMAIL" ]; then
         log "INFO" "Sending email notification to $NOTIFY_EMAIL"
-        
+
         if command -v mail > /dev/null; then
             echo -e "$message" | mail -s "$subject" -a "$LOG_FILE" "$NOTIFY_EMAIL"
         else
             log "WARNING" "mail command not found, skipping email notification"
         fi
     fi
-    
+
     # Send Slack notification
     if [ -n "$NOTIFY_SLACK_WEBHOOK" ]; then
         log "INFO" "Sending Slack notification"
-        
+
         local color="danger"
         if [[ "$subject" == *"Booted"* ]]; then
             color="warning"
         fi
-        
+
         local slack_message="{\"text\":\"$subject\",\"attachments\":[{\"color\":\"$color\",\"text\":\"$message\"}]}"
-        
+
         if command -v curl > /dev/null; then
             curl -s -X POST -H 'Content-type: application/json' --data "$slack_message" "$NOTIFY_SLACK_WEBHOOK" >> "$LOG_FILE" 2>&1
         else

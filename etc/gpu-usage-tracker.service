@@ -1,0 +1,15 @@
+[Unit]
+Description=Anthrasite Lead-Factory GPU Usage Tracker
+After=network.target
+
+[Service]
+Type=simple
+User=leadfactory
+WorkingDirectory=/opt/leadfactory
+ExecStart=/opt/leadfactory/bin/track_gpu_usage.py
+Restart=always
+RestartSec=30
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -117,7 +117,7 @@ else
         echo "Error: You need to run this script as root to set up a cron job for another user."
         exit 1
     fi
-    
+
     (sudo -u "$CRON_USER" crontab -l 2>/dev/null | grep -v "$NIGHTLY_SCRIPT" || true; echo "$CRON_ENTRY") | sudo -u "$CRON_USER" crontab -
     echo "Cron job installed for user $CRON_USER."
 fi

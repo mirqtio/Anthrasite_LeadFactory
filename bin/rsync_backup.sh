@@ -47,11 +47,11 @@ parse_yaml() {
     local s
     local w
     local fs
-    
+
     s='[[:space:]]*'
     w='[a-zA-Z0-9_]*'
     fs="$(echo @|tr @ '\034')"
-    
+
     (
         sed -e '/- [^\"]'"[^\']"'.*: /s|\([ ]*\)- \([[:space:]]*\)|\1-\'$'\n''  \1\2|g' |
         sed -ne '/^--/s|--||g; s|\"|\\\"|g; s/[[:space:]]*$//g;' \
@@ -145,7 +145,7 @@ trap 'rm -f "$LOCK_FILE"; log "INFO" "Backup process terminated"; exit 1' INT TE
 # Check if config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
     log "ERROR" "Config file not found: $CONFIG_FILE"
-    
+
     # Create a sample config file
     SAMPLE_CONFIG="${PROJECT_ROOT}/etc/backup_config.yml.sample"
     mkdir -p "$(dirname "$SAMPLE_CONFIG")"
@@ -158,38 +158,38 @@ backup:
     user: backup
     port: 22
     key_file: ~/.ssh/backup_key
-  
+
   # Directories to backup
   directories:
     - db
     - logs
     - etc
     - bin
-  
+
   # Files to backup
   files:
     - .env
     - README.md
-  
+
   # Exclude patterns
   exclude:
     - "*.tmp"
     - "*.log.gz"
     - "__pycache__"
     - ".git"
-  
+
   # Retention policy
   retention:
     daily: 7
     weekly: 4
     monthly: 3
-  
+
   # Notification settings
   notify:
     email: alerts@example.com
     slack_webhook: https://hooks.slack.com/services/XXXX/YYYY/ZZZZ
 EOF
-    
+
     log "ERROR" "Created sample config file at $SAMPLE_CONFIG"
     log "ERROR" "Please update the config file with your settings and try again"
     exit 1
@@ -290,22 +290,22 @@ ssh $SSH_OPTS -p "${backup_remote_port}" "${backup_remote_user}@${backup_remote_
 # Apply retention policy
 if [ -n "${backup_retention_daily}" ] && [ "${backup_retention_daily}" -gt 0 ]; then
     log "INFO" "Applying retention policy: keeping ${backup_retention_daily} daily backups"
-    
+
     # Get list of backup directories sorted by date (oldest first)
     BACKUP_DIRS=$(ssh $SSH_OPTS -p "${backup_remote_port}" "${backup_remote_user}@${backup_remote_host}" "find ${REMOTE_BACKUP_DIR} -maxdepth 1 -type d -name \"????-??-??\" | sort")
-    
+
     # Count number of backups
     BACKUP_COUNT=$(echo "$BACKUP_DIRS" | wc -l)
-    
+
     # Calculate number of backups to delete
     DELETE_COUNT=$((BACKUP_COUNT - backup_retention_daily))
-    
+
     if [ "$DELETE_COUNT" -gt 0 ]; then
         log "INFO" "Removing $DELETE_COUNT old backups"
-        
+
         # Get directories to delete
         DIRS_TO_DELETE=$(echo "$BACKUP_DIRS" | head -n "$DELETE_COUNT")
-        
+
         # Delete old backups
         for dir in $DIRS_TO_DELETE; do
             if [ "$DRY_RUN" = true ]; then
@@ -323,11 +323,11 @@ fi
 # Send notification if configured
 if [ -n "${backup_notify_email}" ]; then
     log "INFO" "Sending email notification to ${backup_notify_email}"
-    
+
     # Create email content
     EMAIL_SUBJECT="Anthrasite Lead-Factory Backup - $(date +"%Y-%m-%d")"
     EMAIL_BODY="Backup completed successfully at $(date).\n\nBackup location: ${backup_remote_user}@${backup_remote_host}:${REMOTE_BACKUP_DATE_DIR}\n\nSee attached log file for details."
-    
+
     if [ "$DRY_RUN" = true ]; then
         log "INFO" "DRY RUN: Would send email to ${backup_notify_email}"
     else
@@ -342,10 +342,10 @@ fi
 
 if [ -n "${backup_notify_slack_webhook}" ]; then
     log "INFO" "Sending Slack notification"
-    
+
     # Create Slack message
     SLACK_MESSAGE="{\"text\":\"Anthrasite Lead-Factory Backup - $(date +"%Y-%m-%d")\",\"attachments\":[{\"color\":\"good\",\"text\":\"Backup completed successfully at $(date).\\nBackup location: ${backup_remote_user}@${backup_remote_host}:${REMOTE_BACKUP_DATE_DIR}\"}]}"
-    
+
     if [ "$DRY_RUN" = true ]; then
         log "INFO" "DRY RUN: Would send Slack notification"
     else

@@ -50,12 +50,12 @@ log_metric() {
     local duration="$3"
     local count="$4"
     local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-    
+
     # Create metrics file if it doesn't exist
     if [ ! -f "$METRICS_FILE" ]; then
         echo '{"metrics":[]}' > "$METRICS_FILE"
     fi
-    
+
     # Add metric to JSON file
     local tmp_file="${METRICS_FILE}.tmp"
     jq ".metrics += [{\"timestamp\": \"$timestamp\", \"stage\": \"$stage\", \"status\": \"$status\", \"duration_seconds\": $duration, \"count\": $count}]" "$METRICS_FILE" > "$tmp_file"
@@ -68,26 +68,26 @@ run_stage() {
     local stage_name="$2"
     local script="$3"
     local args="$4"
-    
+
     # Check if stage should be skipped
     if [[ " ${SKIP_STAGES[@]} " =~ " ${stage_num} " ]]; then
         log "INFO" "Skipping stage $stage_num: $stage_name"
         return 0
     fi
-    
+
     log "INFO" "Starting stage $stage_num: $stage_name"
-    
+
     # Measure execution time
     local start_time=$(date +%s)
-    
+
     # Run the script
     if [ "$DEBUG" = true ]; then
         log "DEBUG" "Running: $PYTHON_CMD $script $args"
     fi
-    
+
     local count=0
     local status="success"
-    
+
     if [ "$DRY_RUN" = true ] && [ "$stage_num" != "1" ]; then
         # In dry-run mode, don't actually run stages 2-6 except with --dry-run flag
         log "INFO" "DRY RUN: Would execute $PYTHON_CMD $script $args"
@@ -101,21 +101,26 @@ run_stage() {
             log_metric "$stage_name" "$status" $(($(date +%s) - start_time)) $count
             exit 1
         fi
-        
+
         # Extract count of processed items if available
         if [[ $output =~ Processed\ ([0-9]+)\ items ]]; then
             count=${BASH_REMATCH[1]}
         fi
-        
+
         log "INFO" "$output"
     fi
-    
+
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
-    
+
     log "INFO" "Completed stage $stage_num: $stage_name in $duration seconds"
     log_metric "$stage_name" "$status" $duration $count
     
+    # Record stage completion in batch tracker
+    # Calculate completion percentage based on stage number (1-6)
+    local completion_percentage=$(( (stage_num * 100) / 6 ))
+    $PYTHON_CMD -c "from utils.batch_tracker import record_batch_stage_completion; record_batch_stage_completion('${stage_name,,}', $completion_percentage)"
+
     return 0
 }
 
@@ -196,6 +201,10 @@ log "INFO" "Starting Anthrasite Lead-Factory nightly batch process"
 log "INFO" "Project root: $PROJECT_ROOT"
 log "INFO" "Log file: $LOG_FILE"
 
+# Record batch start in batch tracker
+log "INFO" "Recording batch start in batch tracker"
+$PYTHON_CMD -c "from utils.batch_tracker import record_batch_start; record_batch_start()"
+
 if [ "$DEBUG" = true ]; then
     log "DEBUG" "Debug mode enabled"
 fi
@@ -227,7 +236,21 @@ run_stage 6 "Email Queue" "${SCRIPT_DIR}/06_email_queue.py" "$COMMON_ARGS"
 # Log completion
 log "INFO" "Nightly batch process completed successfully"
 
-# Make the script executable
-chmod +x "${SCRIPT_DIR}/run_nightly.sh"
+# Record batch end in batch tracker
+log "INFO" "Recording batch end in batch tracker"
+$PYTHON_CMD -c "from utils.batch_tracker import record_batch_end; record_batch_end()"
 
+# Update cost metrics at batch end
+log "INFO" "Calculating cost metrics..."
+python -m utils.cost_metrics --calculate-costs --record-metrics
+
+# Process any pending websites for HTML storage
+echo "Processing pending websites for HTML storage..."
+python bin/process_raw_data.py --process-websites
+
+# Clean up expired data based on retention policy
+echo "Cleaning up expired data..."
+python bin/cleanup_expired_data.py
+
+echo "Nightly batch completed successfully!"
 exit 0

@@ -99,15 +99,15 @@ CREATE TABLE IF NOT EXISTS cost_tracking (
 
 -- Create a view for candidate duplicate pairs based on email
 CREATE VIEW IF NOT EXISTS candidate_pairs_email AS
-SELECT 
-    b1.id as id1, 
+SELECT
+    b1.id as id1,
     b2.id as id2,
     b1.email as email
-FROM 
+FROM
     businesses b1
-JOIN 
+JOIN
     businesses b2 ON b1.email = b2.email AND b1.id < b2.id
-WHERE 
+WHERE
     b1.active = TRUE AND b2.active = TRUE AND b1.email IS NOT NULL;
 
 -- Create indexes for performance
@@ -124,14 +124,14 @@ CREATE INDEX IF NOT EXISTS idx_cost_tracking_service ON cost_tracking(service);
 CREATE INDEX IF NOT EXISTS idx_cost_tracking_tier ON cost_tracking(tier);
 
 -- Create trigger to update updated_at timestamp on businesses
-CREATE TRIGGER IF NOT EXISTS update_businesses_timestamp 
+CREATE TRIGGER IF NOT EXISTS update_businesses_timestamp
 AFTER UPDATE ON businesses
 BEGIN
     UPDATE businesses SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
 -- Create trigger to update updated_at timestamp on features
-CREATE TRIGGER IF NOT EXISTS update_features_timestamp 
+CREATE TRIGGER IF NOT EXISTS update_features_timestamp
 AFTER UPDATE ON features
 BEGIN
     UPDATE features SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
@@ -143,40 +143,40 @@ END;
 
 -- Create a view for high-score businesses ready for mockup generation
 CREATE VIEW IF NOT EXISTS high_score_businesses AS
-SELECT 
-    b.id, 
-    b.name, 
-    b.website, 
-    b.email, 
+SELECT
+    b.id,
+    b.name,
+    b.website,
+    b.email,
     b.score,
     b.tier,
     f.tech_stack
-FROM 
+FROM
     businesses b
-LEFT JOIN 
+LEFT JOIN
     features f ON b.id = f.business_id
-WHERE 
-    b.active = TRUE 
+WHERE
+    b.active = TRUE
     AND b.score > 50
     AND b.website IS NOT NULL
     AND f.tech_stack IS NOT NULL
-ORDER BY 
+ORDER BY
     b.score DESC;
 
 -- Create a view for email-ready businesses
 CREATE VIEW IF NOT EXISTS email_ready_businesses AS
-SELECT 
-    b.id, 
-    b.name, 
-    b.email, 
+SELECT
+    b.id,
+    b.name,
+    b.email,
     b.tier,
     m.mockup_png
-FROM 
+FROM
     businesses b
-LEFT JOIN 
+LEFT JOIN
     mockups m ON b.id = m.business_id
-WHERE 
-    b.active = TRUE 
+WHERE
+    b.active = TRUE
     AND b.email IS NOT NULL
     AND NOT EXISTS (SELECT 1 FROM emails e WHERE e.business_id = b.id)
     AND (b.tier = 1 OR (b.tier > 1 AND m.mockup_png IS NOT NULL));

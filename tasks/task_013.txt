@@ -51,5 +51,3 @@ Added scaling gate thresholds and configuration constants, implemented is_scalin
 ### Dependencies: None
 ### Description: Add integration with budget reporting to display scaling gate history
 ### Details:
-
-

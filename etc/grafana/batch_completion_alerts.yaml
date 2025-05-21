@@ -1,0 +1,182 @@
+apiVersion: 1
+
+groups:
+  - name: BatchCompletionAlerts
+    folder: Anthrasite
+    interval: 1m
+    rules:
+      - name: BatchNotCompletedOnTime
+        condition: B
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: anthrasite_batch_completion_percentage < 100
+              intervalMs: 60000
+              maxDataPoints: 43200
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 5h
+        annotations:
+          description: "Batch processing has not completed on time. Current completion: {{ $values.A }}%"
+          summary: "Batch not completed on time"
+        labels:
+          severity: warning
+          service: leadfactory
+          team: data-engineering
+      
+      - name: BatchCompletionFailed
+        condition: B
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: anthrasite_batch_completion_success == 0
+              intervalMs: 60000
+              maxDataPoints: 43200
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10m
+        annotations:
+          description: "Batch processing has failed. Check the logs for more information."
+          summary: "Batch completion failed"
+        labels:
+          severity: critical
+          service: leadfactory
+          team: data-engineering
+      
+      - name: HighCostPerLead
+        condition: B
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: anthrasite_batch_cost_per_lead > 0.75
+              intervalMs: 60000
+              maxDataPoints: 43200
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 30m
+        annotations:
+          description: "Cost per lead is higher than threshold: ${{ $values.A }}"
+          summary: "High cost per lead detected"
+        labels:
+          severity: warning
+          service: leadfactory
+          team: data-engineering
+      
+      - name: HighGPUCost
+        condition: B
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: anthrasite_batch_gpu_cost_dollars > 20
+              intervalMs: 60000
+              maxDataPoints: 43200
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 15m
+        annotations:
+          description: "GPU cost has exceeded threshold: ${{ $values.A }}"
+          summary: "High GPU cost detected"
+        labels:
+          severity: warning
+          service: leadfactory
+          team: data-engineering

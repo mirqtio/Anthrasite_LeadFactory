@@ -5,10 +5,10 @@ health_check:
     url: http://localhost:8080/health
     expected_status: 200
     timeout: 10  # seconds
-  
-  # Failure threshold
-  failure_threshold: 3
-  
+
+  # Failure threshold - set to 2 consecutive failures per Phase 0 v1.3 spec
+  failure_threshold: 2
+
   # Backup instance details
   backup:
     host: backup.example.com
@@ -16,7 +16,7 @@ health_check:
     port: 22
     key_file: ~/.ssh/backup_key
     docker_compose_path: /home/backup/anthrasite_backup/latest/docker-compose.yml
-  
+
   # Notification settings
   notify:
     email: alerts@anthrasite.com

@@ -1,0 +1,15 @@
+[Unit]
+Description=Anthrasite Lead-Factory Batch Completion Monitor
+After=network.target
+
+[Service]
+Type=simple
+User=leadfactory
+WorkingDirectory=/opt/leadfactory
+ExecStart=/opt/leadfactory/bin/batch_completion_monitor.py
+Restart=always
+RestartSec=30
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
