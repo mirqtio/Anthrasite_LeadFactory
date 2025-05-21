@@ -124,13 +124,13 @@ def temp_db():
         # Create indexes for business_merges table
         cursor.execute(
             """
-        CREATE INDEX IF NOT EXISTS idx_merges_source 
+        CREATE INDEX IF NOT EXISTS idx_merges_source
         ON business_merges(source_business_id)
         """
         )
         cursor.execute(
             """
-        CREATE INDEX IF NOT EXISTS idx_merges_target 
+        CREATE INDEX IF NOT EXISTS idx_merges_target
         ON business_merges(target_business_id)
         """
         )
@@ -151,8 +151,8 @@ def temp_db():
         AFTER UPDATE ON candidate_duplicate_pairs
         FOR EACH ROW
         BEGIN
-            UPDATE candidate_duplicate_pairs 
-            SET updated_at = CURRENT_TIMESTAMP 
+            UPDATE candidate_duplicate_pairs
+            SET updated_at = CURRENT_TIMESTAMP
             WHERE id = OLD.id;
         END;
         """
@@ -188,9 +188,9 @@ def test_exact_duplicates(temp_db):
         INSERT INTO businesses
         (id, name, address, city, state, zip, phone, website, email, status, score)
         VALUES
-            (1, 'Test Business', '123 Main St', 'Anytown', 'CA', '12345', 
+            (1, 'Test Business', '123 Main St', 'Anytown', 'CA', '12345',
              '555-123-4567', 'http://test.com', 'test@example.com', 'pending', 85),
-            (2, 'Test Business', '123 Main St', 'Anytown', 'CA', '12345', 
+            (2, 'Test Business', '123 Main St', 'Anytown', 'CA', '12345',
              '555-123-4567', 'http://test.com', 'test@example.com', 'pending', 90)
         """
         )
@@ -256,8 +256,8 @@ def test_exact_duplicates(temp_db):
                     assert (
                         mock_process_pair.called
                     ), "Expected process_duplicate_pair to be called"
-                    # Since we're mocking process_duplicate_pair, manually update the database
-                    # to reflect what would have happened if the function was actually called
+                    # Since we're mocking process_duplicate_pair, manually update the DB
+                    # to reflect what would happen if function was actually called
                     real_cursor.execute(
                         """
                     UPDATE candidate_duplicate_pairs
@@ -265,7 +265,7 @@ def test_exact_duplicates(temp_db):
                     WHERE business1_id = 1 AND business2_id = 2
                     """
                     )
-                    # Update the businesses table to show one business was merged into the other
+                    # Update businesses table to show one business merged into other
                     real_cursor.execute(
                         """
                     UPDATE businesses
@@ -372,8 +372,8 @@ def test_similar_businesses(temp_db):
                     assert (
                         mock_process_pair.called
                     ), "Expected process_duplicate_pair to be called"
-                    # Since we're mocking process_duplicate_pair, manually update the database
-                    # to reflect what would have happened if the function was actually called
+                    # Since we're mocking process_duplicate_pair, manually update the DB
+                    # to reflect what would happen if function was actually called
                     real_cursor.execute(
                         """
                     UPDATE candidate_duplicate_pairs
@@ -381,7 +381,7 @@ def test_similar_businesses(temp_db):
                     WHERE business1_id = 1 AND business2_id = 2
                     """
                     )
-                    # Update the businesses table to show one business was merged into the other
+                    # Update businesses table to show one business merged into other
                     real_cursor.execute(
                         """
                     UPDATE businesses
@@ -430,7 +430,8 @@ def test_skip_processed_businesses(temp_db):
         cursor.execute(
             """
         INSERT OR REPLACE INTO candidate_duplicate_pairs
-        (business1_id, business2_id, similarity_score, status, verified_by_llm, llm_confidence, llm_reasoning)
+        (business1_id, business2_id, similarity_score, status, verified_by_llm,
+         llm_confidence, llm_reasoning)
         VALUES (?, ?, 1.0, 'processed', 1, 0.9, 'Already processed')
         """,
             (1, 2),
@@ -487,6 +488,6 @@ def test_skip_processed_businesses(temp_db):
                             break
                     assert (
                         completion_message_found
-                    ), f"Expected a 'Deduplication completed' message, got: {log_messages}"
+                    ), f"Expected 'Deduplication completed' message, got: {log_messages}"
     finally:
         conn.close()
