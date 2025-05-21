@@ -10,3 +10,4 @@ pytest-mock>=3.10.0
 flake8>=4.0.0
 black>=22.3.0
 isort>=5.10.1
+Wappalyzer>=0.8.0

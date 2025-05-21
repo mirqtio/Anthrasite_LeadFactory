@@ -4,6 +4,7 @@ Unit tests for the scaling gate functionality in the Anthrasite Lead-Factory.
 
 import os
 import sys
+import json
 import unittest
 import tempfile
 import shutil
@@ -31,26 +32,36 @@ class TestScalingGate(unittest.TestCase):
         # Create a temporary directory for test files
         self.test_dir = tempfile.mkdtemp()
 
-        # Store the original history file path
+        # Save original paths
+        self.original_lockfile = utils.cost_tracker.SCALING_GATE_LOCKFILE
         self.original_history_file = utils.cost_tracker.SCALING_GATE_HISTORY_FILE
 
-        # Set up a test history file
+        # Set up test paths
+        self.test_lockfile = os.path.join(self.test_dir, "scaling_gate.lock")
         self.test_history_file = os.path.join(
             self.test_dir, "scaling_gate_history.json"
         )
 
-        # Update the module's constant for testing
+        # Override paths for testing
+        utils.cost_tracker.SCALING_GATE_LOCKFILE = self.test_lockfile
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = self.test_history_file
-
-        # Ensure the directory exists
-        os.makedirs(os.path.dirname(self.test_history_file), exist_ok=True)
-
-        # Ensure the file exists and is empty
+        
+        # Ensure the scaling gate is inactive at the start of each test
+        if os.path.exists(self.test_lockfile):
+            os.remove(self.test_lockfile)
+            
+        # Initialize the history file with an empty structure
         with open(self.test_history_file, "w") as f:
-            f.write("[]")
+            json.dump({"history": []}, f)
+
+        # Directory is already created in tempfile.mkdtemp()
 
     def tearDown(self):
         """Clean up after tests."""
+        # Restore original paths
+        utils.cost_tracker.SCALING_GATE_LOCKFILE = self.original_lockfile
+        utils.cost_tracker.SCALING_GATE_HISTORY_FILE = self.original_history_file
+        
         # Remove the temporary directory and its contents
         shutil.rmtree(self.test_dir)
 
@@ -94,7 +105,7 @@ class TestScalingGate(unittest.TestCase):
         # Check history
         history = get_scaling_gate_history()
         self.assertEqual(len(history), 1)
-        self.assertTrue(history[0]["activated"])
+        self.assertEqual(history[0]["status"], "activated")
         self.assertEqual(history[0]["reason"], "Test activation")
 
     def test_deactivate_gate(self):
@@ -110,12 +121,20 @@ class TestScalingGate(unittest.TestCase):
             active, _ = is_scaling_gate_active()
             self.assertFalse(active)
 
-            # Check history - we can't guarantee the exact number of entries
-            # due to database state, but we can check the most recent entry
-            history = get_scaling_gate_history(limit=1)
-            if history:  # Only check if we have history
-                self.assertFalse(history[0]["activated"])
-                self.assertIn("Test deactivation", history[0]["reason"])
+            # Get all history entries to find the deactivation entry
+            history = get_scaling_gate_history(limit=10)
+            
+            # Find the deactivation entry
+            deactivation_entry = None
+            for entry in history:
+                if entry["reason"] == "Test deactivation":
+                    deactivation_entry = entry
+                    break
+                    
+            # Verify the deactivation entry
+            self.assertIsNotNone(deactivation_entry, "Deactivation entry not found in history")
+            self.assertEqual(deactivation_entry["status"], "deactivated")
+            self.assertEqual(deactivation_entry["reason"], "Test deactivation")
         except sqlite3.OperationalError as e:
             if "no such table" in str(e):
                 self.skipTest("Database tables not set up for testing")
@@ -166,14 +185,15 @@ class TestScalingGate(unittest.TestCase):
             else:
                 raise
 
-    @patch("utils.cost_tracker.datetime")
-    @patch("utils.cost_tracker.datetime")
+    @patch('utils.cost_tracker.datetime')
     def test_timestamps(self, mock_datetime):
         """Test that timestamps are recorded correctly."""
         try:
             # Set a fixed datetime for testing
             test_time = datetime(2023, 1, 1, 12, 0, 0)
             mock_datetime.now.return_value = test_time
+            # Format the expected timestamp string the same way as in the code
+            expected_timestamp = test_time.strftime("%Y-%m-%d %H:%M:%S")
 
             # Perform an action that records a timestamp
             set_scaling_gate(True, "Test timestamp")
@@ -181,7 +201,9 @@ class TestScalingGate(unittest.TestCase):
             # Check the timestamp in history
             history = get_scaling_gate_history(limit=1)
             if history:  # Only check if we have history
-                self.assertEqual(history[0]["timestamp"], test_time.timestamp())
+                self.assertEqual(history[0]["timestamp"], expected_timestamp)
+            else:
+                self.fail("No history entries found")
         except sqlite3.OperationalError as e:
             if "no such table" in str(e):
                 self.skipTest("Database tables not set up for testing")
