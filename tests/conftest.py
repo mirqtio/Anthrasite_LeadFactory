@@ -20,9 +20,11 @@ if bin_dir not in sys.path:
 
 
 # Mock the track_api_cost function to avoid actual API cost tracking during tests
-def mock_track_api_cost(model, tokens_in, tokens_out, endpoint):
-    """Mock function for tracking API costs during tests."""
-    return True
+from unittest.mock import MagicMock
+
+# Create a MagicMock object instead of a regular function
+mock_track_api_cost = MagicMock(return_value=True)
+mock_track_api_cost.__name__ = 'mock_track_api_cost'
 
 
 # Create a mock for the Wappalyzer module
