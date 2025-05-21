@@ -24,6 +24,18 @@ SCALING_GATE_FILE = os.getenv(
     os.path.join(os.path.dirname(__file__), "../data/scaling_gate.json"),
 )
 
+# Path to scaling gate lock file
+SCALING_GATE_LOCKFILE = os.getenv(
+    "SCALING_GATE_LOCKFILE",
+    os.path.join(os.path.dirname(__file__), "../data/scaling_gate.lock"),
+)
+
+# Path to scaling gate history file
+SCALING_GATE_HISTORY_FILE = os.getenv(
+    "SCALING_GATE_HISTORY_FILE",
+    os.path.join(os.path.dirname(__file__), "../data/scaling_gate_history.json"),
+)
+
 # Ensure the scaling gate file directory exists
 os.makedirs(os.path.dirname(SCALING_GATE_FILE), exist_ok=True)
 
