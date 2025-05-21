@@ -25,6 +25,24 @@ def mock_track_api_cost(model, tokens_in, tokens_out, endpoint):
     return True
 
 
+# Create a mock for the Wappalyzer module
+class MockWappalyzer:
+    def __init__(self, *args, **kwargs):
+        pass
+        
+    def analyze(self, *args, **kwargs):
+        return {"technologies": []}
+
+class MockWebPage:
+    def __init__(self, *args, **kwargs):
+        pass
+
+# Patch the Wappalyzer module
+sys.modules['wappalyzer'] = type('wappalyzer', (), {
+    'Wappalyzer': MockWappalyzer,
+    'WebPage': MockWebPage
+})
+
 # Patch the track_api_cost function before importing modules that use it
 patch("utils.io.track_api_cost", mock_track_api_cost).start()
 # We need to import utils after patching to ensure the mock is applied
