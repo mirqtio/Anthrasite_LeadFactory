@@ -602,3 +602,24 @@ def export_cost_report(output_file: str = "cost_report.json"):
     except Exception as e:
         logger.error(f"Failed to export cost report: {e}")
         return False
+
+
+def export_prometheus_metrics(output_file: str = "metrics.txt"):
+    """
+    Export Prometheus metrics to a text file.
+
+    Args:
+        output_file: The path to the output file
+
+    Returns:
+        bool: True if the metrics were exported successfully
+    """
+    metrics = get_cost_metrics()
+
+    try:
+        with open(output_file, "w") as f:
+            f.write("\n".join(metrics))
+        return True
+    except Exception as e:
+        logger.error(f"Failed to export Prometheus metrics: {e}")
+        return False
