@@ -10,6 +10,8 @@ from contextlib import contextmanager
 from typing import Any, Dict, Generator
 from unittest.mock import MagicMock
 import pytest
+
+
 @contextmanager
 def db_connection(db_path: str) -> Generator[sqlite3.Connection, None, None]:
     """Context manager for database connections."""
@@ -19,11 +21,15 @@ def db_connection(db_path: str) -> Generator[sqlite3.Connection, None, None]:
         yield conn
     finally:
         conn.close()
+
+
 # Test fixtures
 @pytest.fixture
 def target_zip_code() -> str:
     """Return a test ZIP code."""
     return "10002"
+
+
 @pytest.fixture
 def target_vertical() -> Dict[str, Any]:
     """Return a test vertical configuration."""
@@ -32,6 +38,8 @@ def target_vertical() -> Dict[str, Any]:
         "yelp_categories": "restaurants",
         "google_categories": "restaurant",
     }
+
+
 @pytest.fixture
 def temp_db() -> Generator[str, None, None]:
     """Create a temporary database for testing with the correct schema."""
@@ -131,6 +139,8 @@ def temp_db() -> Generator[str, None, None]:
             os.unlink(temp_db_path)
         if "DATABASE_URL" in os.environ:
             del os.environ["DATABASE_URL"]
+
+
 def test_scrape_businesses(
     target_zip_code, target_vertical, temp_db, monkeypatch, capsys
 ):
@@ -143,6 +153,7 @@ def test_scrape_businesses(
     # Now import the module after setting environment variables
     sys.modules.pop("bin.scrape", None)  # Clear any existing import
     from bin.scrape import scrape_businesses  # Only import what's needed
+
     # Verify environment variables are set correctly
     assert os.environ.get("YELP_KEY") == yelp_key
     assert os.environ.get("GOOGLE_KEY") == google_key
@@ -165,6 +176,7 @@ def test_scrape_businesses(
         ],
         None,  # No error
     )
+
     # Mock the process functions to insert into the test database
     def mock_process_yelp(business, category):
         with db_connection(temp_db) as conn:
@@ -186,6 +198,7 @@ def test_scrape_businesses(
             )
             conn.commit()
             return cursor.lastrowid
+
     def mock_process_google(place, category, google_api):
         with db_connection(temp_db) as conn:
             cursor = conn.cursor()
@@ -206,9 +219,11 @@ def test_scrape_businesses(
             )
             conn.commit()
             return cursor.lastrowid
+
     # Mock the get_zip_coordinates function
     def mock_get_zip_coordinates(zip_code):
         return "40.7128,-74.0060"  # Return mock coordinates
+
     # Mock the load_yaml_config function
     def mock_load_yaml_config(path):
         return {
@@ -217,6 +232,7 @@ def test_scrape_businesses(
                 "google": {"radius": 40000, "type": "business"},
             }
         }
+
     # Apply the mocks
     monkeypatch.setattr("bin.scrape.YelpAPI", lambda *args, **kwargs: mock_yelp)
     monkeypatch.setattr(
@@ -260,6 +276,8 @@ def test_scrape_businesses(
         assert (
             google_count == 2
         ), f"Expected 2 Google businesses in DB, got {google_count}"
+
+
 def test_main(target_vertical, temp_db, monkeypatch, capsys):
     """Test the main function."""
     # Set up test API keys in environment first
@@ -270,6 +288,7 @@ def test_main(target_vertical, temp_db, monkeypatch, capsys):
     # Now import the module after setting environment variables
     sys.modules.pop("bin.scrape", None)  # Clear any existing import
     from bin.scrape import main  # Only import what's needed
+
     # Mock the command line arguments
     def mock_parse_args():
         class Args:
@@ -277,16 +296,22 @@ def test_main(target_vertical, temp_db, monkeypatch, capsys):
             # Changed from zip_code to zip to match the argument name in main()
             zip = None
             vertical = target_vertical["name"]
+
         return Args()
+
     # Mock the required functions
     def mock_get_active_zip_codes():
         return [{"zip": "10002", "metro": "Test Metro"}]
+
     def mock_get_verticals():
         return [target_vertical]
+
     def mock_scrape_businesses(zip_code, vertical, limit):
         return (1, 1)  # (yelp_count, google_count)
+
     def mock_mark_zip_done(zip_code):
         pass  # No need to do anything in test
+
     # Apply the mocks
     monkeypatch.setattr(
         "argparse.ArgumentParser.parse_args", lambda _: mock_parse_args()

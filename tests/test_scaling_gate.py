@@ -14,7 +14,6 @@ from unittest.mock import patch
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import utils.cost_tracker
 from utils.cost_tracker import (
     is_scaling_gate_active,
@@ -31,29 +30,23 @@ class TestScalingGate(unittest.TestCase):
         """Set up test environment."""
         # Create a temporary directory for test files
         self.test_dir = tempfile.mkdtemp()
-
         # Save original paths
         self.original_lockfile = utils.cost_tracker.SCALING_GATE_LOCKFILE
         self.original_history_file = utils.cost_tracker.SCALING_GATE_HISTORY_FILE
-
         # Set up test paths
         self.test_lockfile = os.path.join(self.test_dir, "scaling_gate.lock")
         self.test_history_file = os.path.join(
             self.test_dir, "scaling_gate_history.json"
         )
-
         # Override paths for testing
         utils.cost_tracker.SCALING_GATE_LOCKFILE = self.test_lockfile
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = self.test_history_file
-        
         # Ensure the scaling gate is inactive at the start of each test
         if os.path.exists(self.test_lockfile):
             os.remove(self.test_lockfile)
-            
         # Initialize the history file with an empty structure
         with open(self.test_history_file, "w") as f:
             json.dump({"history": []}, f)
-
         # Directory is already created in tempfile.mkdtemp()
 
     def tearDown(self):
@@ -61,13 +54,10 @@ class TestScalingGate(unittest.TestCase):
         # Restore original paths
         utils.cost_tracker.SCALING_GATE_LOCKFILE = self.original_lockfile
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = self.original_history_file
-        
         # Remove the temporary directory and its contents
         shutil.rmtree(self.test_dir)
-
         # Restore the original history file path
         utils.cost_tracker.SCALING_GATE_HISTORY_FILE = self.original_history_file
-
         # Reload the module to reset any module-level state
         import importlib
 
@@ -91,7 +81,6 @@ class TestScalingGate(unittest.TestCase):
         try:
             # Activate the gate
             set_scaling_gate(True, "Test activation")
-
             # Check the status
             active, reason = is_scaling_gate_active()
             self.assertTrue(active)
@@ -101,7 +90,6 @@ class TestScalingGate(unittest.TestCase):
                 self.skipTest("Database tables not set up for testing")
             else:
                 raise
-
         # Check history
         history = get_scaling_gate_history()
         self.assertEqual(len(history), 1)
@@ -113,26 +101,23 @@ class TestScalingGate(unittest.TestCase):
         try:
             # First activate the gate
             set_scaling_gate(True, "Test activation")
-
             # Then deactivate it
             set_scaling_gate(False, "Test deactivation")
-
             # Check the status
             active, _ = is_scaling_gate_active()
             self.assertFalse(active)
-
             # Get all history entries to find the deactivation entry
             history = get_scaling_gate_history(limit=10)
-            
             # Find the deactivation entry
             deactivation_entry = None
             for entry in history:
                 if entry["reason"] == "Test deactivation":
                     deactivation_entry = entry
                     break
-                    
             # Verify the deactivation entry
-            self.assertIsNotNone(deactivation_entry, "Deactivation entry not found in history")
+            self.assertIsNotNone(
+                deactivation_entry, "Deactivation entry not found in history"
+            )
             self.assertEqual(deactivation_entry["status"], "deactivated")
             self.assertEqual(deactivation_entry["reason"], "Test deactivation")
         except sqlite3.OperationalError as e:
@@ -145,16 +130,13 @@ class TestScalingGate(unittest.TestCase):
         """Test operation permission checking."""
         # By default, all operations should be allowed when gate is inactive
         self.assertTrue(should_allow_operation("test_service", "test_operation")[0])
-
         # Skip the rest of the test if database tables aren't set up
         try:
             # Activate the gate
             set_scaling_gate(True, "Test operation permission")
-
             # Non-critical operations should be blocked
             allowed, _ = should_allow_operation("test_service", "test_operation")
             self.assertFalse(allowed)
-
             # Critical operations should be allowed
             for op in ["health_check", "metrics", "admin_status"]:
                 allowed, _ = should_allow_operation("test_service", op)
@@ -171,11 +153,9 @@ class TestScalingGate(unittest.TestCase):
             # Add some test entries
             for i in range(5):
                 set_scaling_gate(i % 2 == 0, f"Test {i}")
-
             # Check that we can retrieve the history
             history = get_scaling_gate_history()
             self.assertLessEqual(len(history), 10)  # Default limit is 10
-
             # Check that the limit parameter works
             limited_history = get_scaling_gate_history(limit=3)
             self.assertLessEqual(len(limited_history), 3)
@@ -185,7 +165,7 @@ class TestScalingGate(unittest.TestCase):
             else:
                 raise
 
-    @patch('utils.cost_tracker.datetime')
+    @patch("utils.cost_tracker.datetime")
     def test_timestamps(self, mock_datetime):
         """Test that timestamps are recorded correctly."""
         try:
@@ -194,10 +174,8 @@ class TestScalingGate(unittest.TestCase):
             mock_datetime.now.return_value = test_time
             # Format the expected timestamp string the same way as in the code
             expected_timestamp = test_time.strftime("%Y-%m-%d %H:%M:%S")
-
             # Perform an action that records a timestamp
             set_scaling_gate(True, "Test timestamp")
-
             # Check the timestamp in history
             history = get_scaling_gate_history(limit=1)
             if history:  # Only check if we have history
@@ -215,12 +193,10 @@ class TestScalingGate(unittest.TestCase):
         try:
             # Activate the gate
             set_scaling_gate(True, "Test critical operations")
-
             # Critical operations should be allowed
             for op in ["health_check", "metrics", "admin_status"]:
                 allowed, _ = should_allow_operation("test_service", op)
                 self.assertTrue(allowed, f"Operation {op} should be allowed")
-
             # Non-critical operations should be blocked
             for op in ["send_email", "process_data"]:
                 allowed, _ = should_allow_operation("test_service", op)
@@ -236,25 +212,19 @@ class TestScalingGate(unittest.TestCase):
         # Create a read-only directory
         read_only_dir = os.path.join(self.test_dir, "readonly")
         os.makedirs(read_only_dir, mode=0o555)
-
         # Store the original file path
         original_file = utils.cost_tracker.SCALING_GATE_HISTORY_FILE
-
         try:
             # Point the history file to the read-only directory
             test_file = os.path.join(read_only_dir, "history.json")
             utils.cost_tracker.SCALING_GATE_HISTORY_FILE = test_file
-
             # This should not raise an exception
             set_scaling_gate(True, "Test file permissions")
-
             # The operation should still work, just not persist
             active, _ = is_scaling_gate_active()
             self.assertTrue(active)
-
             # But the history file shouldn't exist due to permissions
             self.assertFalse(os.path.exists(test_file))
-
         finally:
             # Restore the original file path
             utils.cost_tracker.SCALING_GATE_HISTORY_FILE = original_file
@@ -277,11 +247,9 @@ class TestScalingGate(unittest.TestCase):
         # Run concurrent updates
         with ThreadPoolExecutor(max_workers=10) as executor:
             executor.map(toggle_gate, range(num_operations))
-
         # Check that history has the expected number of entries
         history = get_scaling_gate_history()
         self.assertLessEqual(len(history), num_operations)
-
         # Check that the history is in chronological order
         for i in range(1, len(history)):
             self.assertLessEqual(history[i]["timestamp"], history[i - 1]["timestamp"])
@@ -296,11 +264,9 @@ class TestScalingGate(unittest.TestCase):
         # Create a malformed history file
         with open(self.test_history_file, "w") as f:
             f.write("{invalid json}")
-
         # This should not raise an exception
         history = get_scaling_gate_history()
         self.assertIsInstance(history, list)
-
         # The file should have been reset or left as is (implementation detail)
         # We don't check the file content as it's managed by the database
 

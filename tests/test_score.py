@@ -1,20 +1,21 @@
 """
 BDD tests for the lead scoring (04_score.py)
 """
+
 import os
 import sys
-import yaml
 import pytest
 import tempfile
 import sqlite3
 from pathlib import Path
-from pytest_bdd import scenario, given, when, then
-from unittest.mock import patch, MagicMock, mock_open
+from pytest_bdd import given, when, then, scenarios
+from unittest.mock import patch, MagicMock
+
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 # Now we can import project modules
-from utils.io import DatabaseConnection  # noqa: E402
+
 # Feature file path
 FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/scoring.feature")
 # Create a feature file if it doesn't exist
@@ -52,6 +53,8 @@ Feature: Lead Scoring
         )
 # Load the scenarios from the feature file
 scenarios(FEATURE_FILE)
+
+
 # Fixtures
 @pytest.fixture
 def temp_db():
@@ -97,6 +100,8 @@ def temp_db():
     yield db_path
     # Clean up the temporary file
     os.unlink(db_path)
+
+
 # Given steps
 @given("a business with a modern tech stack")
 def business_with_modern_tech_stack(temp_db):
@@ -125,6 +130,8 @@ def business_with_modern_tech_stack(temp_db):
     conn.commit()
     conn.close()
     return temp_db
+
+
 @given("a business with good performance metrics")
 def business_with_good_performance(temp_db):
     """Create a business with good performance metrics."""
@@ -152,6 +159,8 @@ def business_with_good_performance(temp_db):
     conn.commit()
     conn.close()
     return temp_db
+
+
 @given("a business in a target location")
 def business_in_target_location(temp_db):
     """Create a business in a target location."""
@@ -177,6 +186,8 @@ def business_in_target_location(temp_db):
     conn.commit()
     conn.close()
     return temp_db
+
+
 @given("a business with incomplete data")
 def business_with_incomplete_data(temp_db):
     """Create a business with incomplete data."""
@@ -201,6 +212,8 @@ def business_with_incomplete_data(temp_db):
     conn.commit()
     conn.close()
     return temp_db
+
+
 @given("a business with mixed scores")
 def business_with_mixed_scores(temp_db):
     """Create a business with mixed scores."""
@@ -229,6 +242,8 @@ def business_with_mixed_scores(temp_db):
     conn.commit()
     conn.close()
     return temp_db
+
+
 # When steps
 @when("the scoring process runs")
 def scoring_process_runs(temp_db):
@@ -243,7 +258,10 @@ def scoring_process_runs(temp_db):
         mock_cursor.fetchall.return_value = []
         # Run the scoring process
         from bin import score
+
         score.main()
+
+
 @when("the scoring process runs with rule weights")
 def scoring_process_runs_with_weights(temp_db):
     """Run the scoring process with rule weights."""
@@ -265,7 +283,10 @@ def scoring_process_runs_with_weights(temp_db):
         }
         # Run the scoring process
         from bin import score
+
         score.main()
+
+
 # Then steps
 @then("the business should receive a high tech score")
 def high_tech_score(temp_db):
@@ -276,6 +297,8 @@ def high_tech_score(temp_db):
     score = cursor.fetchone()[0]
     conn.close()
     assert score > 0.7, f"Tech score {score} is not high enough"
+
+
 @then("the business should receive a high performance score")
 def high_performance_score(temp_db):
     """Verify that the business received a high performance score."""
@@ -287,6 +310,8 @@ def high_performance_score(temp_db):
     score = cursor.fetchone()[0]
     conn.close()
     assert score > 0.7, f"Performance score {score} is not high enough"
+
+
 @then("the business should receive a high location score")
 def high_location_score(temp_db):
     """Verify that the business received a high location score."""
@@ -298,6 +323,8 @@ def high_location_score(temp_db):
     score = cursor.fetchone()[0]
     conn.close()
     assert score > 0.7, f"Location score {score} is not high enough"
+
+
 @then("the business should receive default scores for missing data")
 def default_scores_for_missing_data(temp_db):
     """Verify that the business received default scores for missing data."""
@@ -315,6 +342,8 @@ def default_scores_for_missing_data(temp_db):
     assert (
         tech_score == 0 and performance_score == 0
     ), "Default scores were not applied correctly"
+
+
 @then("the final score should reflect the weighted rules")
 def weighted_final_score(temp_db):
     """Verify that the final score reflects the weighted rules."""
@@ -330,10 +359,8 @@ def weighted_final_score(temp_db):
     tech_score, performance_score, location_score, final_score = cursor.fetchone()
     conn.close()
     # Calculate the expected weighted score
-    expected_score = (
-        tech_score * 0.5 + performance_score * 0.3 + location_score * 0.2
+    expected_score = tech_score * 0.5 + performance_score * 0.3 + location_score * 0.2
+    assert abs(final_score - expected_score) < 0.01, (
+        f"Final score {final_score} does not match expected "
+        f"weighted score {expected_score}"
     )
-    assert (
-        abs(final_score - expected_score) < 0.01
-    ), (f"Final score {final_score} does not match expected "
-        f"weighted score {expected_score}")

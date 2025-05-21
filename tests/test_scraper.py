@@ -1,6 +1,7 @@
 """
 BDD tests for the lead scraper (01_scrape.py)
 """
+
 import argparse
 import os
 import sys
@@ -12,6 +13,7 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 import pytest
 from pytest_bdd import given, when, then, scenario, parsers
+
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # Set up test environment variables before importing the module
@@ -21,8 +23,11 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 # Now import the scraper module and specific components
 from bin import scrape
 from bin.scrape import YelpAPI, GooglePlacesAPI, main
+
 # Reload the module to ensure it picks up the test environment variables
 importlib.reload(scrape)
+
+
 # Context manager for database connections
 @contextmanager
 def db_connection(db_path: str) -> Generator[sqlite3.Connection, None, None]:
@@ -34,6 +39,8 @@ def db_connection(db_path: str) -> Generator[sqlite3.Connection, None, None]:
         yield conn
     finally:
         conn.close()
+
+
 # Feature file path
 FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/scraper.feature")
 # Create a feature file if it doesn't exist
@@ -79,11 +86,15 @@ Feature: Lead Scraper
     And duplicate businesses should be skipped
 """
         )
+
+
 # Test fixtures
 @pytest.fixture
 def target_zip_code() -> str:
     """Return a test ZIP code."""
     return "10002"
+
+
 @pytest.fixture
 def target_vertical() -> dict:
     """Return a test vertical configuration."""
@@ -92,6 +103,8 @@ def target_vertical() -> dict:
         "yelp_categories": "restaurants",
         "google_categories": "restaurant",
     }
+
+
 @pytest.fixture
 def mock_db_connection():
     """Create a mock database connection."""
@@ -100,6 +113,8 @@ def mock_db_connection():
     conn.cursor.return_value = cursor
     cursor.fetchall.return_value = []
     return conn
+
+
 @pytest.fixture
 def mock_yelp_api():
     """Create a mock Yelp API."""
@@ -136,6 +151,8 @@ def mock_yelp_api():
             ]
         }
         yield instance
+
+
 @pytest.fixture
 def mock_google_places_api():
     """Create a mock Google Places API."""
@@ -162,6 +179,8 @@ def mock_google_places_api():
             ]
         }
         yield instance
+
+
 @pytest.fixture
 def temp_db():
     """Create a temporary database for testing."""
@@ -256,19 +275,27 @@ def temp_db():
     finally:
         if "DATABASE_URL" in os.environ:
             del os.environ["DATABASE_URL"]
+
+
 # Scenarios
 @scenario(FEATURE_FILE, "Scrape businesses from Yelp API")
 def test_scrape_from_yelp():
     """Test scraping businesses from Yelp API."""
     pass
+
+
 @scenario(FEATURE_FILE, "Scrape businesses from Google Places API")
 def test_scrape_from_google():
     """Test scraping businesses from Google Places API."""
     pass
+
+
 @scenario(FEATURE_FILE, "Handle API errors gracefully")
 def test_handle_api_errors():
     """Test handling API errors gracefully."""
     pass
+
+
 def test_skip_existing_businesses(run_scraper):
     """Test skipping existing businesses."""
     # Access the mock objects
@@ -281,6 +308,8 @@ def test_skip_existing_businesses(run_scraper):
     # In a real test, we would verify that only new businesses were added
     # and that duplicates were skipped
     assert True, "Skipping existing businesses test passed"
+
+
 # Fixtures for test functions
 @pytest.fixture
 def mock_yelp_api_for_test():
@@ -311,6 +340,8 @@ def mock_yelp_api_for_test():
             None,
         )  # Return 5 businesses
         yield mock_instance
+
+
 @pytest.fixture
 def mock_google_places_api_for_test():
     """Create a mock Google Places API for testing."""
@@ -351,6 +382,8 @@ def mock_google_places_api_for_test():
             None,
         )
         yield mock_instance
+
+
 @pytest.fixture
 def existing_businesses(monkeypatch):
     """Add some test businesses to the mock database."""
@@ -381,6 +414,7 @@ def existing_businesses(monkeypatch):
             "active": True,
         },
     ]
+
     # Create a mock for save_business that checks for duplicates
     def mock_save_business(business_data):
         # Check if business already exists
@@ -394,9 +428,12 @@ def existing_businesses(monkeypatch):
         business_data["id"] = len(existing_businesses) + 1
         existing_businesses.append(business_data)
         return business_data["id"]
+
     # Apply the mock
     monkeypatch.setattr("utils.io.save_business", mock_save_business)
     return existing_businesses
+
+
 @pytest.fixture(autouse=True)
 def setup_environment(monkeypatch):
     """Set up test environment variables and patches."""
@@ -447,19 +484,26 @@ def setup_environment(monkeypatch):
             "connection": mock_conn,
             "cursor": mock_cursor,
         }
+
+
 @pytest.fixture
 def mock_db_operations(monkeypatch):
     """Mock the database operations."""
     saved_businesses = []
+
     def mock_save_business(business_data):
         saved_businesses.append(business_data)
         return len(saved_businesses)  # Return a mock business ID
+
     def mock_mark_zip_done(zip_code, source):
         pass  # No need to do anything for this in tests
+
     # Mock the database operations
     monkeypatch.setattr("utils.io.save_business", mock_save_business)
     monkeypatch.setattr("utils.io.mark_zip_done", mock_mark_zip_done)
     return saved_businesses
+
+
 @pytest.fixture
 def run_scraper(monkeypatch, setup_environment, temp_db):
     """Fixture to run the scraper with mocked dependencies."""
@@ -626,12 +670,16 @@ def run_scraper(monkeypatch, setup_environment, temp_db):
                 "mock_save_business": mock_save_business,
                 "mock_coords": mock_coords,
             }
+
+
 # Given steps
 @given("the database is initialized")
 def database_initialized(temp_db):
     """Ensure the database is initialized."""
     # The temp_db fixture handles initialization
     pass
+
+
 @given("the API keys are configured")
 def api_keys_configured():
     """Configure API keys for testing."""
@@ -639,14 +687,20 @@ def api_keys_configured():
     os.environ["GOOGLE_PLACES_API_KEY"] = "test_google_key"
     os.environ["YELP_KEY"] = "test_yelp_key"
     os.environ["GOOGLE_KEY"] = "test_google_key"
+
+
 @given(parsers.parse('a target ZIP code "{zip_code}"'))
 def given_target_zip_code(zip_code):
     """Set the target ZIP code."""
     return zip_code
+
+
 @given(parsers.parse('a target vertical "{vertical}"'))
 def given_target_vertical(vertical):
     """Set the target vertical."""
     return vertical
+
+
 @given("the API is unavailable")
 def api_unavailable(run_scraper):
     """Simulate API being unavailable."""
@@ -660,8 +714,11 @@ def api_unavailable(run_scraper):
         run_scraper["env"]["logger"].error.reset_mock()
     else:
         import logging
+
         logger = logging.getLogger("bin.scrape")
         logger.error("API Error")
+
+
 @given("some businesses already exist in the database")
 def existing_businesses_step(temp_db):
     """Add some businesses to the database."""
@@ -724,6 +781,8 @@ def existing_businesses_step(temp_db):
         )
         conn.commit()
     conn.close()
+
+
 # When steps
 @when("I run the scraper for Yelp API")
 def run_scraper_yelp(mock_yelp_api_for_test, target_zip_code, target_vertical, temp_db):
@@ -762,12 +821,15 @@ def run_scraper_yelp(mock_yelp_api_for_test, target_zip_code, target_vertical, t
             None,
         )  # Generate 5 businesses
         from bin.scrape import scrape_businesses
+
         vertical_info = {
             "name": target_vertical,
             "yelp_categories": "restaurants",
             "google_categories": "restaurant",
         }
         return scrape_businesses(target_zip_code, vertical_info, limit=5)
+
+
 @when("I run the scraper for Google Places API")
 def run_scraper_google(
     mock_google_places_api_for_test, target_zip_code, target_vertical, temp_db
@@ -790,8 +852,7 @@ def run_scraper_google(
                 {
                     "place_id": f"place_test_{i}",
                     "name": f"Test Business {i}",
-                    "formatted_address":
-                        f"{i}56 Test Ave, Test City, TS {target_zip_code}",
+                    "formatted_address": f"{i}56 Test Ave, Test City, TS {target_zip_code}",
                     "formatted_phone_number": f"987-654-{3210 + i}",
                     "website": f"https://test-google-{i}.example.com",
                     "rating": 4.0 + (i * 0.05),  # Vary ratings slightly
@@ -808,12 +869,15 @@ def run_scraper_google(
             None,
         )  # Generate 5 businesses
         from bin.scrape import scrape_businesses
+
         vertical_info = {
             "name": target_vertical,
             "yelp_categories": "restaurants",
             "google_categories": "restaurant",
         }
         return scrape_businesses(target_zip_code, vertical_info, limit=5)
+
+
 @when("I run the scraper")
 def run_scraper_step(run_scraper):
     """Run the scraper with the test configuration."""
@@ -822,16 +886,22 @@ def run_scraper_step(run_scraper):
         run_scraper["yelp"],
         run_scraper["google"],
     )  # Return only the API mocks for backward compatibility
+
+
 @when("I run the scraper for Yelp API")
 def run_yelp_scraper(run_scraper):
     """Run the scraper for Yelp API specifically."""
     mock_yelp = run_scraper["yelp"]
     return mock_yelp
+
+
 @when("I run the scraper for Google Places API")
 def run_google_scraper(run_scraper):
     """Run the scraper for Google Places API specifically."""
     mock_google = run_scraper["google"]
     return mock_google
+
+
 # Then steps
 @then("at least 5 businesses should be found")
 def businesses_found(run_scraper):
@@ -857,10 +927,12 @@ def businesses_found(run_scraper):
         google_ok = False
         google_count = 0
     # At least one of the APIs should have been called successfully
-    assert (
-        yelp_ok or google_ok
-    ), (f"Expected at least 5 businesses from either Yelp or Google, got {yelp_count} "
-         f"from Yelp and {google_count} from Google")
+    assert yelp_ok or google_ok, (
+        f"Expected at least 5 businesses from either Yelp or Google, got {yelp_count} "
+        f"from Yelp and {google_count} from Google"
+    )
+
+
 @then("the businesses should have the required fields")
 def businesses_have_required_fields(run_scraper):
     """Verify that businesses have the required fields."""
@@ -884,12 +956,16 @@ def businesses_have_required_fields(run_scraper):
         assert "types" in place
         # For testing purposes, we'll consider this a success
         # The actual implementation would check for more fields
+
+
 @then("the businesses should be saved to the database")
 def businesses_saved_to_db(run_scraper):
     """Verify that businesses were saved to the database."""
     # For testing purposes, we'll consider this a success
     # In a real test, we would verify that businesses were saved to the database
     assert True, "Businesses saved to database test passed"
+
+
 @then("the error should be logged")
 def error_logged(caplog):
     """Verify that the error was logged."""
@@ -897,11 +973,15 @@ def error_logged(caplog):
     assert any(
         record.levelname == "ERROR" for record in caplog.records
     ), "Expected error to be logged"
+
+
 @then("the process should continue without crashing")
 def process_continues():
     """Verify that the process continues without crashing."""
     # If we get here, the process didn't crash
     assert True
+
+
 @then("only new businesses should be added")
 def only_new_businesses_added(temp_db, existing_businesses):
     """Verify that only new businesses were added."""
@@ -918,6 +998,8 @@ def only_new_businesses_added(temp_db, existing_businesses):
     assert (
         new_count == initial_count
     ), "New businesses were added when they should have been skipped"
+
+
 @then("duplicate businesses should be skipped")
 def duplicates_skipped(temp_db):
     """Verify that duplicate businesses were skipped."""

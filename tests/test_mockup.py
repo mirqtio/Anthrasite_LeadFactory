@@ -1,6 +1,7 @@
 """
 BDD tests for the mockup generation (05_mockup.py)
 """
+
 import json
 import os
 import sys
@@ -8,16 +9,20 @@ import pytest
 import sqlite3
 import tempfile
 from unittest.mock import patch, MagicMock
+
 # Import the mock from conftest
 from conftest import mock_track_api_cost
+
 # Now import the modules that use track_api_cost
 from bin.mockup import (
     generate_business_mockup,
 )
 from utils.io import DatabaseConnection
+
 # Import test utilities after setting up mocks
 import pytest_bdd
 from pytest_bdd import scenario, given, when, then
+
 # Register scenarios from the feature file
 pytest_bdd.scenarios("features/mockup.feature")
 # Add project root to path
@@ -131,9 +136,7 @@ SAMPLE_FALLBACK_MOCKUP_RESPONSE = {
         },
         {
             "title": "Mobile Responsiveness",
-            "description": (
-                "Your website needs better mobile responsiveness."
-            ),
+            "description": ("Your website needs better mobile responsiveness."),
             "impact": "High",
             "implementation_difficulty": "Medium",
         },
@@ -144,6 +147,8 @@ SAMPLE_FALLBACK_MOCKUP_RESPONSE = {
         "<p>Fallback mockup.</p></div>"
     ),
 }
+
+
 # Test fixtures
 @pytest.fixture
 def mock_db_connection():
@@ -153,6 +158,8 @@ def mock_db_connection():
     conn.cursor.return_value = cursor
     cursor.fetchall.return_value = []
     return conn
+
+
 @pytest.fixture
 def mock_gpt4o_client():
     """Create a mock GPT-4o client."""
@@ -160,6 +167,8 @@ def mock_gpt4o_client():
         instance = mock.return_value
         instance.generate_mockup.return_value = SAMPLE_MOCKUP_RESPONSE
         yield instance
+
+
 @pytest.fixture
 def mock_claude_client():
     """Create a mock Claude client."""
@@ -167,6 +176,8 @@ def mock_claude_client():
         instance = mock.return_value
         instance.generate_mockup.return_value = SAMPLE_FALLBACK_MOCKUP_RESPONSE
         yield instance
+
+
 @pytest.fixture
 def mockup_api_unavailable(mock_gpt4o_client, mock_claude_client, caplog):
     """Simulate mockup API unavailability."""
@@ -177,6 +188,8 @@ def mockup_api_unavailable(mock_gpt4o_client, mock_claude_client, caplog):
         "Fallback API also unavailable"
     )
     yield
+
+
 @pytest.fixture(autouse=True)
 def reset_mocks():
     """Reset all mocks before each test."""
@@ -187,10 +200,14 @@ def reset_mocks():
     yield
     print("\nTest finished. Mock calls:", mock_track_api_cost.mock_calls)
     mock_track_api_cost.reset_mock()
+
+
 @pytest.fixture
 def mock_cost_tracker():
     """Return the mock track_api_cost function."""
     return mock_track_api_cost
+
+
 @pytest.fixture
 def temp_db():
     """Create a temporary database for testing."""
@@ -422,6 +439,8 @@ def temp_db():
         os.unlink(db_path)
     except OSError:
         pass
+
+
 # Business data fixtures (prefixed with fixture_ to avoid conflicts with
 # step definitions)
 @pytest.fixture
@@ -433,6 +452,8 @@ def fixture_high_scoring_business(temp_db):
     business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
     conn.close()
     return business
+
+
 @pytest.fixture
 def fixture_medium_scoring_business(temp_db):
     """Get a medium-scoring business with website data."""
@@ -442,6 +463,8 @@ def fixture_medium_scoring_business(temp_db):
     business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
     conn.close()
     return business
+
+
 @pytest.fixture
 def fixture_low_scoring_business(temp_db):
     """Get a low-scoring business with website data."""
@@ -451,6 +474,8 @@ def fixture_low_scoring_business(temp_db):
     business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
     conn.close()
     return business
+
+
 @pytest.fixture
 def fixture_business_with_website(temp_db):
     """Get a business with website data."""
@@ -460,6 +485,8 @@ def fixture_business_with_website(temp_db):
     business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
     conn.close()
     return business
+
+
 @pytest.fixture
 def fixture_business_without_website(temp_db):
     """Get a business without website data."""
@@ -478,28 +505,38 @@ def fixture_business_without_website(temp_db):
     result = cursor.fetchone()
     # Return both the business and the connection for later verification
     return {"business": result, "conn": conn, "cursor": cursor}
+
+
 # Scenarios
 @scenario(FEATURE_FILE, "Generate mockup for high-scoring business")
 def test_high_score_mockup():
     """Test generating mockup for high-scoring business."""
     # This test will use the bdd_mockup_setup fixture via the step definitions
     pass
+
+
 @scenario(FEATURE_FILE, "Generate mockup for medium-scoring business")
 def test_medium_score_mockup():
     """Test generating mockup for medium-scoring business."""
     # This test will use the bdd_mockup_setup fixture via the step definitions
     pass
+
+
 @scenario(FEATURE_FILE, "Generate mockup for low-scoring business")
 def test_low_score_mockup():
     """Test generating mockup for low-scoring business."""
     # This test will use the bdd_mockup_setup fixture via the step definitions
     pass
+
+
 @pytest.mark.skip(reason="Using custom test function instead")
 @scenario(FEATURE_FILE, "Handle API errors gracefully")
 def test_handle_api_errors():
     """Test handling API errors gracefully."""
     # This test is skipped in favor of the custom test
     pass
+
+
 # Custom test function that doesn't rely on BDD fixtures
 def test_handle_api_errors_gracefully():
     """Custom test for handling API errors gracefully."""
@@ -538,25 +575,30 @@ def test_handle_api_errors_gracefully():
     )
     # Set up logging
     import logging
+
     logger = logging.getLogger("test_logger")
     logger.setLevel(logging.ERROR)
     log_capture = []
+
     class TestHandler(logging.Handler):
         def emit(self, record):
             log_capture.append(record)
+
     handler = TestHandler()
     logger.addHandler(handler)
+
     # Create a MockupGenerator that will use our mocks
     class TestMockupGenerator:
         def __init__(self, primary_model, fallback_model, logger):
             self.primary = primary_model
             self.fallback = fallback_model
             self.logger = logger
+
         def generate_mockup_for_business(self, business_id, conn, cursor):
             try:
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
-                model_used = "primary"
+                model_used = \"primary\"  # noqa: F841 - for future reference
             except Exception as e:
                 self.logger.error(f"Primary model failed: {e}")
                 try:
@@ -579,6 +621,7 @@ def test_handle_api_errors_gracefully():
                     return None
             # If we get here, one of the models succeeded
             return mockup_data
+
     # Run the test
     generator = TestMockupGenerator(mock_primary, mock_fallback, logger)
     result = generator.generate_mockup_for_business(business_id, conn, cursor)
@@ -598,12 +641,16 @@ def test_handle_api_errors_gracefully():
     assert result is None, "Expected result to be None when both models fail"
     # Clean up
     conn.close()
+
+
 @pytest.mark.skip(reason="Using custom test function instead")
 @scenario(FEATURE_FILE, "Skip businesses without website data")
 def test_skip_businesses_without_website_data():
     """Test skipping businesses without website data."""
     # This test is skipped in favor of the custom test
     pass
+
+
 # Custom test function that doesn't rely on BDD fixtures
 def test_skip_no_website_custom():
     """Custom test for skipping businesses without website data."""
@@ -628,6 +675,7 @@ def test_skip_no_website_custom():
         (4, "Business Without Website", 75, None),
     )
     conn.commit()
+
     # Create a simple mockup generator function that skips businesses without websites
     def test_mockup_generator(business_id, conn, cursor):
         # Check if the business has a website
@@ -638,6 +686,7 @@ def test_skip_no_website_custom():
             return False
         # If we get here, the business has a website and would be processed
         return True
+
     # Run the test function with our business ID
     business_id = 4
     result = test_mockup_generator(business_id, conn, cursor)
@@ -645,12 +694,16 @@ def test_skip_no_website_custom():
     assert result is False, "Business with no website should be skipped"
     # Clean up
     conn.close()
+
+
 @pytest.mark.skip(reason="Using custom test function instead")
 @scenario(FEATURE_FILE, "Use fallback model when primary model fails")
 def test_use_fallback_model_when_primary_model_fails():
     """Test using fallback model when primary model fails."""
     # This test is skipped in favor of the custom test
     pass
+
+
 # Custom test function that doesn't rely on BDD fixtures
 def test_fallback_model_custom():
     """Custom test for using fallback model when primary model fails."""
@@ -711,16 +764,18 @@ def test_fallback_model_custom():
             "visual_mockup": "base64_encoded_image_data",
         }
     )
+
     # Create a MockupGenerator that will use our mocks
     class TestMockupGenerator:
         def __init__(self, primary_model, fallback_model):
             self.primary = primary_model
             self.fallback = fallback_model
+
         def generate_mockup_for_business(self, business_id, conn, cursor):
             try:
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
-                model_used = "primary"
+                model_used = \"primary\"  # noqa: F841 - for future reference
             except Exception as e:
                 print(f"Primary model failed: {e}")
                 # Fall back to the secondary model
@@ -756,6 +811,7 @@ def test_fallback_model_custom():
             )
             conn.commit()
             return mockup_data
+
     # Create and run the generator
     generator = TestMockupGenerator(mock_primary, mock_fallback)
     generator.generate_mockup_for_business(business_id, conn, cursor)
@@ -778,36 +834,52 @@ def test_fallback_model_custom():
     assert result[0] == 1, "Business was not marked as having a mockup"
     # Clean up
     conn.close()
+
+
 # Given steps
 @given("the database is initialized")
 def db_initialized(temp_db):
     """Ensure the database is initialized."""
     assert os.path.exists(temp_db)
+
+
 @given("the API keys are configured")
 def api_keys_configured():
     """Configure API keys for testing."""
     os.environ["OPENAI_API_KEY"] = "test_openai_key"
     os.environ["ANTHROPIC_API_KEY"] = "test_anthropic_key"
+
+
 @given("a high-scoring business with website data")
 def high_scoring_business(fixture_high_scoring_business):
     """Get a high-scoring business with website data."""
     return fixture_high_scoring_business["id"]
+
+
 @given("a medium-scoring business with website data")
 def medium_scoring_business(fixture_medium_scoring_business):
     """Get a medium-scoring business with website data."""
     return fixture_medium_scoring_business["id"]
+
+
 @given("a low-scoring business with website data")
 def low_scoring_business(fixture_low_scoring_business):
     """Get a low-scoring business with website data."""
     return fixture_low_scoring_business["id"]
+
+
 @given("a business with website data")
 def business_with_website(fixture_business_with_website):
     """Get a business with website data."""
     return fixture_business_with_website["id"]
+
+
 @given("a business without website data")
 def business_without_website(fixture_business_without_website):
     """Get a business without website data."""
     return fixture_business_without_website["business"]["id"]
+
+
 @given("the mockup generation API is unavailable")
 def mockup_api_unavailable_step(mock_gpt4o_client, mock_claude_client, caplog):
     """Simulate mockup API unavailability."""
@@ -818,6 +890,7 @@ def mockup_api_unavailable_step(mock_gpt4o_client, mock_claude_client, caplog):
     )
     # Set log level to capture errors
     import logging
+
     caplog.set_level(logging.ERROR)
     # Run the mockup generation which should trigger errors
     try:
@@ -826,6 +899,8 @@ def mockup_api_unavailable_step(mock_gpt4o_client, mock_claude_client, caplog):
         # Expected to fail, but we want to capture the logs
         pass
     return caplog
+
+
 @given("the primary model is unavailable")
 @pytest.fixture
 def mock_fallback_model_test():
@@ -891,6 +966,8 @@ def mock_fallback_model_test():
         "mock_fallback": mock_fallback,
         "business_id": 5,
     }
+
+
 # When steps
 @pytest.fixture(scope="function")
 def bdd_mockup_setup(temp_db, request):
@@ -1065,14 +1142,20 @@ def bdd_mockup_setup(temp_db, request):
     # We'll keep the connection open throughout the test
     # The connection will be closed by the temp_db fixture's finalizer
     return result
+
+
 @pytest.fixture
 def run_mockup_process(bdd_mockup_setup):
     """Run the mockup generation process."""
     return bdd_mockup_setup
+
+
 @when("I run the mockup generation process")
 def when_i_run_the_mockup_generation_process(run_mockup_process):
     """Run the mockup generation process."""
     return run_mockup_process
+
+
 @then("a premium mockup should be generated")
 def then_a_premium_mockup_should_be_generated(temp_db):
     """Verify that a premium mockup was generated."""
@@ -1117,6 +1200,8 @@ def then_a_premium_mockup_should_be_generated(temp_db):
     assert (
         len(mockup_data["improvements"]) > 0
     ), "Mockup should have at least one improvement"
+
+
 @then("the mockup should include multiple improvement suggestions")
 def then_the_mockup_should_include_multiple_improvement_suggestions(run_mockup_process):
     """Verify that the mockup includes multiple improvement suggestions."""
@@ -1128,6 +1213,8 @@ def then_the_mockup_should_include_multiple_improvement_suggestions(run_mockup_p
     assert (
         len(mockup_data["improvements"]) >= 3
     ), "Expected multiple improvement suggestions"
+
+
 @then("the mockup should be saved to the database")
 def then_the_mockup_should_be_saved_to_the_database(temp_db):
     """Verify that the mockup was saved to the database."""
@@ -1168,6 +1255,8 @@ def then_the_mockup_should_be_saved_to_the_database(temp_db):
             mockup_result[0] is not None
         ), f"mockup_html should not be None for business {business_id}"
     conn.close()
+
+
 @then("the cost should be tracked")
 def cost_tracked(temp_db):
     """Verify that the cost was tracked."""
@@ -1180,6 +1269,8 @@ def cost_tracked(temp_db):
     results = cursor.fetchall()
     assert len(results) > 0, "No cost tracking entries were found"
     conn.close()
+
+
 @then("a standard mockup should be generated")
 def then_a_standard_mockup_should_be_generated(run_mockup_process):
     """Verify that a standard mockup was generated."""
@@ -1201,6 +1292,8 @@ def then_a_standard_mockup_should_be_generated(run_mockup_process):
         len(mockup_data["improvements"]) == 2
     ), "Standard mockup should have exactly 2 improvements"
     conn.close()
+
+
 @then("the mockup should include basic improvement suggestions")
 def then_the_mockup_should_include_basic_improvement_suggestions(temp_db):
     """Verify that the mockup includes basic improvement suggestions."""
@@ -1213,11 +1306,13 @@ def then_the_mockup_should_include_basic_improvement_suggestions(temp_db):
     result = cursor.fetchone()
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
-    assert (
-        len(mockup_data["improvements"]) == 2
-    ), (f"Expected 2 basic improvement suggestions, got "
-        f"{len(mockup_data['improvements'])}")
+    assert len(mockup_data["improvements"]) == 2, (
+        f"Expected 2 basic improvement suggestions, got "
+        f"{len(mockup_data['improvements'])}"
+    )
     conn.close()
+
+
 @then("a basic mockup should be generated")
 def then_a_basic_mockup_should_be_generated(run_mockup_process):
     """Verify that a basic mockup was generated."""
@@ -1238,6 +1333,8 @@ def then_a_basic_mockup_should_be_generated(run_mockup_process):
     assert (
         len(mockup_data["improvements"]) == 1
     ), "Basic mockup should have exactly 1 improvement"
+
+
 @then("the mockup should include minimal improvement suggestions")
 def minimal_suggestions_included(temp_db):
     """Verify that the mockup includes minimal improvement suggestions."""
@@ -1250,11 +1347,13 @@ def minimal_suggestions_included(temp_db):
     result = cursor.fetchone()
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
-    assert (
-        len(mockup_data["improvements"]) == 1
-    ), (f"Expected 1 minimal improvement suggestion, got "
-        f"{len(mockup_data['improvements'])}")
+    assert len(mockup_data["improvements"]) == 1, (
+        f"Expected 1 minimal improvement suggestion, got "
+        f"{len(mockup_data['improvements'])}"
+    )
     conn.close()
+
+
 @then("the error should be logged")
 def error_logged(caplog):
     """Verify that errors were logged."""
@@ -1264,6 +1363,8 @@ def error_logged(caplog):
     assert any(
         record.levelname == "ERROR" for record in caplog.records
     ), "Expected an error to be logged but none was found"
+
+
 @then("the business should be marked for retry")
 def marked_for_retry(run_mockup_generation):
     """Verify that the business was marked for retry."""
@@ -1275,11 +1376,15 @@ def marked_for_retry(run_mockup_generation):
     assert result is not None, "No business was marked for retry"
     assert result[0] > 0, "mockup_retry_count should be greater than 0"
     conn.close()
+
+
 @then("the process should continue without crashing")
 def process_continues():
     """Verify that the process continues without crashing."""
     # If we get here, the process didn't crash
     assert True
+
+
 @then("the business should be skipped")
 def business_skipped(fixture_business_without_website):
     """Verify that the business was skipped."""
@@ -1289,6 +1394,7 @@ def business_skipped(fixture_business_without_website):
     business = fixture_business_without_website["business"]
     # Get the business ID from the fixture
     business_id = business[0]  # For SQLite Row objects, use index access
+
     # Create a simple mockup generator function that skips businesses without websites
     def test_mockup_generator(business_id, conn, cursor):
         # Check if the business has a website
@@ -1299,6 +1405,7 @@ def business_skipped(fixture_business_without_website):
             return False
         # If we get here, the business has a website and would be processed
         return True
+
     # Run the test function with the business ID from the fixture
     result = test_mockup_generator(business_id, conn, cursor)
     # Verify the business was skipped
@@ -1312,17 +1419,23 @@ def business_skipped(fixture_business_without_website):
     assert db_result[0] == 0, "mockup_generated should remain 0 for skipped businesses"
     # Clean up
     conn.close()
+
+
 @then("the mockup generation process should continue to the next business")
 def process_continues_to_next():
     """Verify that the mockup generation process continues to the next business."""
     # If we get here, the process continued to the next business
     assert True
+
+
 @then("the fallback model should be used")
 def fallback_model_used(mock_claude_client):
     """Verify that the fallback model was used."""
     # Verification already done in the fixture
     # Just return True to indicate success
     return True
+
+
 @then("a mockup should still be generated")
 def mockup_still_generated(run_mockup_generation):
     """Verify that a mockup was still generated."""
@@ -1339,6 +1452,8 @@ def mockup_still_generated(run_mockup_generation):
     assert result[0] == 1, "mockup_generated should be 1"
     assert result[1] is not None, "mockup_data should not be None"
     conn.close()
+
+
 @then("the cost should be tracked for the fallback model")
 def fallback_cost_tracked(mock_cost_tracker):
     """Verify that the cost was tracked for the fallback model."""

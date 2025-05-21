@@ -1,16 +1,20 @@
 """
 Simple unit tests for the dedupe module without BDD framework
 """
+
 import os
 import sys
 import pytest
 from unittest.mock import patch, MagicMock
 import sqlite3
 import tempfile
+
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the deduplication module
 from bin import dedupe
+
+
 @pytest.fixture
 def temp_db():
     """Create a temporary database for testing with all required tables and indexes."""
@@ -166,6 +170,8 @@ def temp_db():
                 os.unlink(path)
         except Exception as e:
             print(f"Error cleaning up temporary database: {e}", file=sys.stderr)
+
+
 def test_exact_duplicates(temp_db):
     """Test identifying exact duplicate businesses."""
     # Connect to the test database
@@ -199,7 +205,7 @@ def test_exact_duplicates(temp_db):
         )
         conn.commit()
         # Create a real connection to our test database
-        real_conn = conn
+        real_conn = conn  # noqa: F841 - kept for clarity in test structure
         real_cursor = cursor
         # Mock the DatabaseConnection class to use our test database
         with patch("bin.dedupe.DatabaseConnection") as mock_db_conn:
@@ -211,15 +217,19 @@ def test_exact_duplicates(temp_db):
             mock_db_conn.return_value = mock_db_instance
             mock_db_instance.__enter__.return_value = mock_conn
             mock_conn.cursor.return_value = mock_cursor
+
             # Make execute and fetch methods use the real cursor
             def execute_side_effect(query, *args, **kwargs):
                 if args:
                     return real_cursor.execute(query, *args)
                 return real_cursor.execute(query)
+
             def fetchall_side_effect():
                 return real_cursor.fetchall()
+
             def fetchone_side_effect():
                 return real_cursor.fetchone()
+
             mock_cursor.execute.side_effect = execute_side_effect
             mock_cursor.fetchall.side_effect = fetchall_side_effect
             mock_cursor.fetchone.side_effect = fetchone_side_effect
@@ -278,6 +288,8 @@ def test_exact_duplicates(temp_db):
         ), f"Expected status 'merged' or 'processed', got {pair['status']}"
     finally:
         conn.close()
+
+
 def test_similar_businesses(temp_db):
     """Test identifying similar businesses with fuzzy matching."""
     # Connect to the test database
@@ -309,7 +321,7 @@ def test_similar_businesses(temp_db):
         )
         conn.commit()
         # Create a real connection to our test database
-        real_conn = conn
+        real_conn = conn  # noqa: F841 - kept for clarity in test structure
         real_cursor = cursor
         # Mock the DatabaseConnection class to use our test database
         with patch("bin.dedupe.DatabaseConnection") as mock_db_conn:
@@ -321,15 +333,19 @@ def test_similar_businesses(temp_db):
             mock_db_conn.return_value = mock_db_instance
             mock_db_instance.__enter__.return_value = mock_conn
             mock_conn.cursor.return_value = mock_cursor
+
             # Make execute and fetch methods use the real cursor
             def execute_side_effect(query, *args, **kwargs):
                 if args:
                     return real_cursor.execute(query, *args)
                 return real_cursor.execute(query)
+
             def fetchall_side_effect():
                 return real_cursor.fetchall()
+
             def fetchone_side_effect():
                 return real_cursor.fetchone()
+
             mock_cursor.execute.side_effect = execute_side_effect
             mock_cursor.fetchall.side_effect = fetchall_side_effect
             mock_cursor.fetchone.side_effect = fetchone_side_effect
@@ -388,6 +404,8 @@ def test_similar_businesses(temp_db):
         ), f"Expected status 'merged' or 'processed', got {pair['status']}"
     finally:
         conn.close()
+
+
 def test_skip_processed_businesses(temp_db):
     """Test skipping already processed businesses."""
     # Connect to the test database
@@ -419,7 +437,7 @@ def test_skip_processed_businesses(temp_db):
         )
         conn.commit()
         # Create a real connection to our test database
-        real_conn = conn
+        real_conn = conn  # noqa: F841 - kept for clarity in test structure
         real_cursor = cursor
         # Mock the DatabaseConnection class to use our test database
         with patch("bin.dedupe.DatabaseConnection") as mock_db_conn:
@@ -431,15 +449,19 @@ def test_skip_processed_businesses(temp_db):
             mock_db_conn.return_value = mock_db_instance
             mock_db_instance.__enter__.return_value = mock_conn
             mock_conn.cursor.return_value = mock_cursor
+
             # Make execute and fetch methods use the real cursor
             def execute_side_effect(query, *args, **kwargs):
                 if args:
                     return real_cursor.execute(query, *args)
                 return real_cursor.execute(query)
+
             def fetchall_side_effect():
                 return real_cursor.fetchall()
+
             def fetchone_side_effect():
                 return real_cursor.fetchone()
+
             mock_cursor.execute.side_effect = execute_side_effect
             mock_cursor.fetchall.side_effect = fetchall_side_effect
             mock_cursor.fetchone.side_effect = fetchone_side_effect

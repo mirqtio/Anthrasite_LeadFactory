@@ -1,6 +1,7 @@
 """
 Tests for the lead enrichment (02_enrich.py)
 """
+
 import os
 import sys
 import json
@@ -11,10 +12,12 @@ import responses
 import requests
 from unittest.mock import patch, MagicMock
 from pytest_bdd import scenario, given, when, then, parsers
+
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the enrichment module
 from bin import enrich
+
 # Feature file path
 FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/enrichment.feature")
 # Create a feature file if it doesn't exist
@@ -75,12 +78,16 @@ SAMPLE_HTML = """
 </body>
 </html>
 """
+
+
 # Test fixtures
 @pytest.fixture
 def mock_requests():
     """Mock requests for testing web requests."""
     with responses.RequestsMock() as rsps:
         yield rsps
+
+
 @pytest.fixture
 def mock_db_connection():
     """Create a mock database connection."""
@@ -89,6 +96,8 @@ def mock_db_connection():
     conn.cursor.return_value = cursor
     cursor.fetchall.return_value = []
     return conn
+
+
 @pytest.fixture
 def mock_website_analyzer():
     """Create a mock website analyzer."""
@@ -111,6 +120,8 @@ def mock_website_analyzer():
             None,
         )
         yield instance
+
+
 @pytest.fixture
 def temp_db():
     """Create a temporary database for testing."""
@@ -256,13 +267,17 @@ def temp_db():
     # Clean up
     if os.path.exists(path):
         os.unlink(path)
+
+
 # Unit tests for TechStackAnalyzer
 class TestTechStackAnalyzer:
     """Tests for the TechStackAnalyzer class."""
+
     @pytest.fixture
     def analyzer(self):
         """Create a TechStackAnalyzer instance for testing."""
         return enrich.TechStackAnalyzer()
+
     def test_analyze_website_success(self, analyzer, mock_requests):
         """Test successful website analysis."""
         # Mock the website response
@@ -298,16 +313,19 @@ class TestTechStackAnalyzer:
                 assert "WordPress" in result
                 assert "PHP" in result
                 assert "MySQL" in result
+
     def test_analyze_website_invalid_url(self, analyzer):
         """Test analysis with invalid URL."""
         result, error = analyzer.analyze_website("")
         assert error is not None
         assert "No URL provided" in error
+
     def test_analyze_website_invalid_domain(self, analyzer):
         """Test analysis with invalid domain."""
         result, error = analyzer.analyze_website("invalid-url")
         assert error is not None
         assert "Failed to fetch website" in error
+
     def test_analyze_website_request_error(self, analyzer, mock_requests):
         """Test handling of request errors."""
         # Mock a failed request
@@ -315,6 +333,7 @@ class TestTechStackAnalyzer:
         result, error = analyzer.analyze_website(SAMPLE_WEBSITE)
         assert error is not None
         assert "404" in error
+
     def test_analyze_website_timeout(self, analyzer, mock_requests):
         """Test handling of request timeouts."""
         # Mock a timeout
@@ -326,51 +345,71 @@ class TestTechStackAnalyzer:
         result, error = analyzer.analyze_website(SAMPLE_WEBSITE)
         assert error is not None
         assert "timed out" in error.lower()
+
+
 # BDD Scenarios
 @scenario(FEATURE_FILE, "Enrich business with website data")
 def test_enrich_with_website():
     """Test enriching a business with website data."""
     pass
+
+
 @scenario(FEATURE_FILE, "Enrich business without website")
 def test_enrich_without_website():
     """Test enriching a business without a website."""
     pass
+
+
 @scenario(FEATURE_FILE, "Handle API errors gracefully")
 def test_handle_api_errors():
     """Test handling API errors gracefully."""
     pass
+
+
 @scenario(FEATURE_FILE, "Skip already enriched businesses")
 def test_skip_enriched_businesses():
     """Test skipping already enriched businesses."""
     pass
+
+
 @scenario(FEATURE_FILE, "Prioritize businesses by score")
 def test_prioritize_by_score():
     """Test prioritizing businesses by score."""
     # The BDD scenario will handle the test steps
     pass
+
+
 # When steps
 @when("I run the enrichment process")
 def run_enrichment_process():
     """Run the enrichment process."""
     # This will be implemented to call the actual enrichment function
     pass
+
+
 @when("I run the enrichment process with prioritization")
 def run_enrichment_process_with_prioritization():
     """Run the enrichment process with score-based prioritization."""
     # This will be implemented to call the actual enrichment function with
     # prioritization
     pass
+
+
 # Given steps
 @given("the database is initialized")
 def db_initialized(temp_db):
     """Ensure the database is initialized."""
     assert os.path.exists(temp_db)
+
+
 @given("the API keys are configured")
 def api_keys_configured():
     """Configure API keys for testing."""
     os.environ["CLEARBIT_API_KEY"] = "test_clearbit_key"
     os.environ["HUNTER_API_KEY"] = "test_hunter_key"
     os.environ["WAPPALYZER_API_KEY"] = "test_wappalyzer_key"
+
+
 @given("a business with a website")
 def business_with_website(temp_db):
     """Get a business with a website."""
@@ -392,18 +431,24 @@ def business_with_website(temp_db):
         "name": "Test Business",
         "website": "https://example.com",
     }
+
+
 @then("the business should have technical stack information")
 def check_technical_stack():
     """Verify that the business has technical stack information."""
     # In a real test, we would check the database or mock the response
     # For now, we'll just pass the test
     pass
+
+
 @then("the business should have performance metrics")
 def check_performance_metrics():
     """Verify that the business has performance metrics."""
     # In a real test, we would check the database or mock the response
     # For now, we'll just pass the test
     pass
+
+
 @then("the enriched data should be saved to the database")
 def check_enriched_data_saved(temp_db):
     """Verify that the enriched data was saved to the database."""
@@ -418,6 +463,8 @@ def check_enriched_data_saved(temp_db):
     assert result is not None
     assert result[0] == "enriched"
     conn.close()
+
+
 @pytest.fixture
 def multiple_businesses_with_scores(temp_db):
     """Create multiple test businesses with different scores."""
@@ -441,10 +488,14 @@ def multiple_businesses_with_scores(temp_db):
     conn.commit()
     conn.close()
     return businesses
+
+
 @given("multiple businesses with different scores")
 def given_multiple_businesses_with_scores(multiple_businesses_with_scores):
     """BDD step for multiple businesses with different scores."""
     return multiple_businesses_with_scores
+
+
 @then("businesses should be processed in descending score order")
 def check_processing_order(multiple_businesses_with_scores):
     """Verify that businesses are processed in descending score order."""
@@ -463,6 +514,8 @@ def check_processing_order(multiple_businesses_with_scores):
     # Close the cursor but not the connection as it's managed by the fixture
     cursor.close()
     return business_id
+
+
 @given("a business without a website")
 def business_without_website(temp_db):
     """Get a business without a website."""
@@ -474,10 +527,14 @@ def business_without_website(temp_db):
     business_id = cursor.fetchone()[0]
     conn.close()
     return business_id
+
+
 @given("the enrichment API is unavailable")
 def enrichment_api_unavailable(mock_website_analyzer):
     """Simulate API unavailability."""
     mock_website_analyzer.analyze_website.side_effect = Exception("API unavailable")
+
+
 @given("a business that has already been enriched")
 def already_enriched_business(temp_db):
     """Get a business that has already been enriched."""
@@ -487,6 +544,8 @@ def already_enriched_business(temp_db):
     business_id = cursor.fetchone()[0]
     conn.close()
     return business_id
+
+
 # ... (rest of the code remains the same)
 @then("the business should have contact information")
 def has_contact_info():
@@ -494,52 +553,70 @@ def has_contact_info():
     # This step is a placeholder since we don't have contact information
     # in the current implementation
     pass
+
+
 @then("the enriched data should be saved to the database")
 def data_saved_to_db(temp_db):
     """Verify that the enriched data was saved to the database."""
     # In a real test, we would query the database and verify the data
     # For this mock test, we'll just assert True
     assert True
+
+
 @then("the business should be marked for manual review")
 def marked_for_manual_review():
     """Verify that the business was marked for manual review."""
     # In a real test, we would check the database for the status
     # For this mock test, we'll just assert True
     assert True
+
+
 @then(parsers.parse('the business should have a status of "{status}"'))
 def has_status(status):
     """Verify that the business has the specified status."""
     # In a real test, we would check the database for the status
     # For this mock test, we'll just assert True
     assert True
+
+
 @then("the enrichment process should continue to the next business")
 def process_continues():
     """Verify that the enrichment process continues to the next business."""
     # If we got here, the process didn't crash
     assert True
+
+
 @then("the error should be logged")
 def error_logged():
     """Verify that errors were logged."""
     # In a real test, we would check the log output
     # For this mock test, we'll just assert True
     assert True
+
+
 @then("the business should be marked for retry")
 def marked_for_retry():
     """Verify that the business was marked for retry."""
     # In a real test, we would check the database for the retry flag
     # For this mock test, we'll just assert True
     assert True
+
+
 @then("the process should continue without crashing")
 def process_continues_after_error():
     """Verify that the process continues without crashing after an error."""
     # If we got here, the process didn't crash
     assert True
+
+
 @then("the business should be skipped")
 def business_skipped():
     """Verify that the business was skipped."""
     # In a real test, we would verify that the business wasn't processed
     # For this mock test, we'll just assert True
     assert True
+
+
 @then("businesses should be processed in descending score order")
 def processed_in_score_order(multiple_businesses_with_scores):
     """Verify that businesses were processed in descending score order."""

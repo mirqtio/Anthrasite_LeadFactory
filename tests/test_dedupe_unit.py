@@ -1,17 +1,22 @@
 """
 Unit tests for the dedupe module focusing on core functionality
 """
+
 import os
 import sys
 import pytest
 from unittest.mock import patch, MagicMock
+
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the deduplication module
 from bin import dedupe
+
 # Import the classes directly from the dedupe module
 OllamaVerifier = dedupe.OllamaVerifier
 LevenshteinMatcher = dedupe.LevenshteinMatcher
+
+
 @pytest.fixture
 def mock_db():
     """Create a mock database connection for testing."""
@@ -40,6 +45,8 @@ def mock_db():
         "email": "test@example.com",
     }
     return mock_conn, mock_cursor
+
+
 def test_get_potential_duplicates():
     """Test retrieving potential duplicate pairs."""
     # Create expected result
@@ -63,6 +70,8 @@ def test_get_potential_duplicates():
         mock_get_pairs.assert_called_once_with(limit=10)
         # Verify the function returned the expected result
         assert result == expected_result, f"Expected {expected_result}, got {result}"
+
+
 def test_process_duplicate_pair():
     """Test processing a duplicate pair."""
     # Create test data
@@ -108,7 +117,7 @@ def test_process_duplicate_pair():
         with patch("bin.dedupe.merge_businesses") as mock_merge:
             mock_merge.return_value = 1  # Return merged business ID
             # Mock the database connection last (innermost)
-            with patch("bin.dedupe.DatabaseConnection") as mock_db_conn:
+            with patch("bin.dedupe.DatabaseConnection") as mock_db_conn:  # noqa: F841
                 # Call the function
                 success, merged_id = dedupe.process_duplicate_pair(
                     duplicate_pair=duplicate_pair,
@@ -127,6 +136,8 @@ def test_process_duplicate_pair():
                 # Verify the function returned the expected result
                 assert success is True, f"Expected success=True, got {success}"
                 assert merged_id == 1, f"Expected merged_id=1, got {merged_id}"
+
+
 def test_process_duplicate_pair_dry_run():
     """Test processing a duplicate pair in dry run mode."""
     # Create test data
@@ -203,6 +214,8 @@ def test_process_duplicate_pair_dry_run():
                 assert (
                     merged_id is None
                 ), f"Expected merged_id=None in dry run mode, got {merged_id}"
+
+
 def test_main_function():
     """Test the main function."""
     # Mock the command line arguments
@@ -234,6 +247,8 @@ def test_main_function():
                 ), "Expected process_duplicate_pair to be called"
                 # Verify the function returned the expected result
                 assert result == 0, f"Expected result=0, got {result}"
+
+
 def test_skip_processed_businesses():
     """Test skipping already processed businesses."""
     # Create a test business pair with 'processed' status
@@ -287,6 +302,7 @@ def test_skip_processed_businesses():
                     # to check if it's called with processed pairs
                     original_process_pair = dedupe.process_duplicate_pair
                     processed_pairs_processed = []
+
                     def mock_process_pair(
                         duplicate_pair, matcher, verifier, is_dry_run=False
                     ):
@@ -296,6 +312,7 @@ def test_skip_processed_businesses():
                         return original_process_pair(
                             duplicate_pair, matcher, verifier, is_dry_run
                         )
+
                     # Mock the process_duplicate_pair function with our implementation
                     with patch(
                         "bin.dedupe.process_duplicate_pair",
@@ -312,5 +329,7 @@ def test_skip_processed_businesses():
                             # Add a comment about how to fix this behavior
                             # To fix this, we would need to modify the main function
                             # to skip pairs with status != 'pending'
+
+
 if __name__ == "__main__":
     pytest.main(["-v", __file__])

@@ -1,13 +1,15 @@
 """
 Pytest configuration and fixtures for testing.
 """
+
 import os
 import sys
 import sqlite3
 import atexit
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import pytest
+
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.parent)
 sys.path.insert(0, project_root)
@@ -15,18 +17,26 @@ sys.path.insert(0, project_root)
 bin_dir = os.path.join(project_root, "bin")
 if bin_dir not in sys.path:
     sys.path.insert(0, bin_dir)
+
+
 # Mock the track_api_cost function to avoid actual API cost tracking during tests
 def mock_track_api_cost(model, tokens_in, tokens_out, endpoint):
     """Mock function for tracking API costs during tests."""
     return True
+
+
 # Patch the track_api_cost function before importing modules that use it
-patch('utils.io.track_api_cost', mock_track_api_cost).start()
-# Import utils after patching
-import utils
+patch("utils.io.track_api_cost", mock_track_api_cost).start()
+# We need to import utils after patching to ensure the mock is applied
+# This is an intentional out-of-order import for testing purposes
+import utils  # noqa: E402
+
 # Apply the mock to the imported module
 utils.io.track_api_cost = mock_track_api_cost
 # Make sure to clean up after tests
 atexit.register(patch.stopall)
+
+
 # Fixture to reset mocks between tests
 @pytest.fixture(autouse=True)
 def reset_mocks():
@@ -34,6 +44,8 @@ def reset_mocks():
     mock_track_api_cost.reset_mock()
     yield
     mock_track_api_cost.reset_mock()
+
+
 @pytest.fixture
 def run_mockup_generation(
     mock_gpt4o_client,
@@ -109,6 +121,7 @@ def run_mockup_generation(
         conn.commit()
         # Call the generate_business_mockup function directly
         from bin.mockup import generate_business_mockup
+
         # Patch the DatabaseConnection to use our test connection
         with patch("bin.mockup.DatabaseConnection") as mock_db_conn, patch(
             "utils.io.DatabaseConnection"

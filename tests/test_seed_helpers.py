@@ -49,11 +49,9 @@ def test_verticals_file_exists():
 def test_zips_contains_required_zips():
     """Test that zips.csv contains the required zip codes"""
     required_zips = ["10002", "98908", "46032"]
-
     with open(ZIPS_FILE, "r") as f:
         reader = csv.DictReader(f)
         zips = [row["zip"] for row in reader]
-
     for zip_code in required_zips:
         assert zip_code in zips, f"Required zip code {zip_code} not found in zips.csv"
 
@@ -61,12 +59,9 @@ def test_zips_contains_required_zips():
 def test_verticals_contains_required_verticals():
     """Test that verticals.yml contains the required verticals"""
     required_verticals = ["HVAC", "Plumbers", "Vets"]
-
     with open(VERTICALS_FILE, "r") as f:
         data = yaml.safe_load(f)
-
     vertical_names = [v["name"] for v in data["verticals"]]
-
     for vertical in required_verticals:
         assert (
             vertical in vertical_names
@@ -77,15 +72,12 @@ def test_schema_creation(db_connection):
     """Test that the schema can be created successfully"""
     with open(MIGRATION_FILE, "r") as f:
         sql = f.read()
-
     cursor = db_connection.cursor()
     cursor.executescript(sql)
     db_connection.commit()
-
     # Check that all required tables exist
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = [row[0] for row in cursor.fetchall()]
-
     required_tables = [
         "zip_queue",
         "verticals",
@@ -109,27 +101,21 @@ def test_seed_zip_queue(db_connection):
     # Setup the database
     with open(MIGRATION_FILE, "r") as f:
         sql = f.read()
-
     cursor = db_connection.cursor()
     cursor.executescript(sql)
-
     # Read the zips from the CSV
     with open(ZIPS_FILE, "r") as f:
         reader = csv.DictReader(f)
         zips_data = list(reader)
-
     # Insert the zips into the database
     for row in zips_data:
         cursor.execute(
             "INSERT INTO zip_queue (zip, metro, done) VALUES (?, ?, ?)",
             (row["zip"], row["metro"], False),
         )
-
     db_connection.commit()
-
     # Check that the zips are in the database
     cursor.execute("SELECT zip, done FROM zip_queue WHERE zip = '10002'")
     result = cursor.fetchone()
-
     assert result is not None, "Zip 10002 not found in zip_queue"
     assert result[1] == 0, "Zip 10002 should have done=false"

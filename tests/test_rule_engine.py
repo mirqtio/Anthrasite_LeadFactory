@@ -1,14 +1,17 @@
 """
 Tests for the RuleEngine class in bin/score.py
 """
+
 import os
 import sys
 import pytest
 import tempfile
+
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the RuleEngine class
 from bin.score import RuleEngine
+
 # Sample rules for testing
 SAMPLE_RULES = """
 settings:
@@ -52,6 +55,8 @@ multipliers:
       has_multiple_locations: true
     multiplier: 1.2
 """
+
+
 @pytest.fixture
 def sample_rules_file():
     """Create a temporary YAML file with sample rules."""
@@ -59,6 +64,8 @@ def sample_rules_file():
         f.write(SAMPLE_RULES)
     yield f.name
     os.unlink(f.name)
+
+
 def test_rule_engine_initialization(sample_rules_file):
     """Test that RuleEngine initializes correctly with rules file."""
     engine = RuleEngine(sample_rules_file)
@@ -66,6 +73,8 @@ def test_rule_engine_initialization(sample_rules_file):
     assert len(engine.rules) == 4
     assert len(engine.multipliers) == 2
     assert "tech_stack_contains" in engine.condition_evaluators
+
+
 def test_calculate_score_basic(sample_rules_file):
     """Test basic score calculation with no matching rules."""
     engine = RuleEngine(sample_rules_file)
@@ -73,6 +82,8 @@ def test_calculate_score_basic(sample_rules_file):
     score, applied_rules = engine.calculate_score(business_data)
     assert score == 50  # Base score
     assert len(applied_rules) == 0
+
+
 def test_tech_stack_rule(sample_rules_file):
     """Test scoring with tech stack rule."""
     engine = RuleEngine(sample_rules_file)
@@ -89,6 +100,8 @@ def test_tech_stack_rule(sample_rules_file):
     # (PHP 7.2 is considered outdated)
     assert score == 75
     assert any(r["name"] == "wordpress" for r in applied_rules)
+
+
 def test_multiple_rules(sample_rules_file):
     """Test scoring with multiple matching rules."""
     engine = RuleEngine(sample_rules_file)
@@ -107,6 +120,8 @@ def test_multiple_rules(sample_rules_file):
     # + Target Location (5) = 65
     assert score == 65
     assert len(applied_rules) == 4
+
+
 def test_multiplier(sample_rules_file):
     """Test that multipliers are applied correctly."""
     engine = RuleEngine(sample_rules_file)
@@ -120,6 +135,8 @@ def test_multiplier(sample_rules_file):
     # -> 89 (floating point)
     assert abs(score - 90) <= 1  # Allow for floating point rounding
     assert len(applied_rules) == 2  # Both multipliers applied
+
+
 def test_score_bounds(sample_rules_file):
     """Test that score is bounded by min and max values."""
     # Create a rule that would push the score above max
@@ -140,6 +157,8 @@ def test_score_bounds(sample_rules_file):
     # (50 + 10 - 15 + 5) * 1.5 * 1.2 = 50 * 1.8 = 89.999... -> 89 (floating point)
     score, _ = engine.calculate_score(business_data)
     assert abs(score - 90) <= 1  # Allow for floating point rounding
+
+
 def test_condition_evaluators(sample_rules_file):
     """Test various condition evaluators."""
     engine = RuleEngine(sample_rules_file)

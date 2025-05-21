@@ -6,7 +6,6 @@ import pytest
 import requests
 import unittest.mock as mock
 from prometheus_client.parser import text_string_to_metric_families
-from prometheus_client import REGISTRY, Counter, Gauge, Histogram
 
 
 @pytest.fixture
@@ -39,18 +38,15 @@ budget_usage_ratio{period="daily"} 0.45
 def test_metrics_endpoint_available(mock_metrics_response):
     """Test that the metrics endpoint is available and returns 200."""
     # Instead of making a real HTTP request, we'll mock the response
-    with mock.patch('requests.get') as mock_get:
+    with mock.patch("requests.get") as mock_get:
         # Create a mock response object
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.text = mock_metrics_response
-        
         # Configure the mock to return our mock response
         mock_get.return_value = mock_response
-        
         # Make the request (which will be mocked)
         response = requests.get("http://localhost:8000/metrics", timeout=5)
-        
         # Verify the response
         assert response.status_code == 200, "Metrics endpoint should return 200"
 
@@ -59,7 +55,6 @@ def test_metrics_include_required_gauges(mock_metrics_response):
     """Test that required gauges are present in the metrics output."""
     # Parse the mock metrics response directly
     metrics = text_string_to_metric_families(mock_metrics_response)
-
     required_metrics = [
         "batch_runtime_seconds",
         "pipeline_stage_duration_seconds",
@@ -68,11 +63,9 @@ def test_metrics_include_required_gauges(mock_metrics_response):
         "email_queue_size",
         "budget_usage_ratio",
     ]
-
     metric_names = set()
     for family in metrics:
         metric_names.add(family.name)
-
     for metric in required_metrics:
         assert metric in metric_names, f"Required metric {metric} not found in metrics"
 
@@ -84,15 +77,12 @@ def test_alert_rules_file_exists():
 
     alert_rules_path = Path("etc/alert_rules.yml")
     assert alert_rules_path.exists(), "Alert rules file does not exist"
-
     # Try to load the YAML to validate syntax
     with open(alert_rules_path, "r") as f:
         rules = yaml.safe_load(f)
-
     # Basic validation of alert rules structure
     assert "groups" in rules, "Alert rules should have 'groups' key"
     assert len(rules["groups"]) > 0, "Alert rules should have at least one group"
-
     # Check for required alert rules
     required_alerts = [
         "MonthlyBudgetWarning",
@@ -103,12 +93,10 @@ def test_alert_rules_file_exists():
         "EmailQueueBacklog",
         "APIFailureRate",
     ]
-
     alert_names = []
     for group in rules["groups"]:
         for rule in group.get("rules", []):
             if "alert" in rule:
                 alert_names.append(rule["alert"])
-
     for alert in required_alerts:
         assert alert in alert_names, f"Required alert rule {alert} not found"

@@ -1,6 +1,7 @@
 """
 BDD tests for the email queue (06_email_queue.py)
 """
+
 import os
 import sys
 import json
@@ -10,10 +11,12 @@ from unittest.mock import patch, MagicMock
 import sqlite3
 import tempfile
 import base64
+
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the email queue module
 from bin import email_queue
+
 # Feature file path
 FEATURE_FILE = os.path.join(os.path.dirname(__file__), "features/email_queue.feature")
 # Create a feature file if it doesn't exist
@@ -76,6 +79,8 @@ SAMPLE_EMAIL_RESPONSE = {
     "status": "sent",
     "tracking_id": "tracking-123",
 }
+
+
 # Test fixtures
 @pytest.fixture
 def mock_db_connection():
@@ -90,6 +95,8 @@ def mock_db_connection():
         cursor.fetchall.return_value = []
         cursor.fetchone.return_value = None
         yield conn
+
+
 @pytest.fixture
 def mock_sendgrid_client():
     """Create a mock SendGrid client."""
@@ -98,6 +105,8 @@ def mock_sendgrid_client():
         instance.send_email.return_value = SAMPLE_EMAIL_RESPONSE
         # Add any additional mock configurations needed
         yield instance
+
+
 @pytest.fixture
 def mock_cost_tracker():
     """Create a mock cost tracker."""
@@ -116,6 +125,8 @@ def mock_cost_tracker():
             "get_daily_cost": mock_daily_cost,
             "get_monthly_cost": mock_monthly_cost,
         }
+
+
 @pytest.fixture
 def temp_db():
     """Create a temporary database for testing."""
@@ -399,6 +410,8 @@ def temp_db():
     # Clean up
     conn.close()
     os.unlink(path)
+
+
 # Test scenarios
 @pytest.mark.skip(reason="Not implemented yet")
 @scenario(FEATURE_FILE, "Send personalized email with mockup")
@@ -411,6 +424,8 @@ def test_send_personalized_email(
 ):
     """Test sending personalized email with mockup."""
     pass
+
+
 @pytest.mark.skip(reason="Not implemented yet")
 @scenario(FEATURE_FILE, "Skip businesses without mockup data")
 def test_skip_no_mockup(
@@ -422,6 +437,8 @@ def test_skip_no_mockup(
 ):
     """Test skipping businesses without mockup data."""
     pass
+
+
 @pytest.mark.skip(reason="Not implemented yet")
 @scenario(FEATURE_FILE, "Handle API errors gracefully")
 def test_handle_api_errors(
@@ -434,6 +451,8 @@ def test_handle_api_errors(
 ):
     """Test handling API errors gracefully."""
     pass
+
+
 @pytest.mark.skip(reason="Not implemented yet")
 @scenario(FEATURE_FILE, "Respect daily email limit")
 def test_respect_daily_limit(
@@ -446,6 +465,8 @@ def test_respect_daily_limit(
 ):
     """Test respecting daily email limit."""
     pass
+
+
 @pytest.mark.skip(reason="Not implemented yet")
 @scenario(FEATURE_FILE, "Track bounce rates")
 def test_track_bounce_rates(
@@ -457,6 +478,8 @@ def test_track_bounce_rates(
 ):
     """Test tracking bounce rates."""
     pass
+
+
 @pytest.mark.skip(reason="Not implemented yet")
 @scenario(FEATURE_FILE, "Use dry run mode")
 def test_dry_run_mode(
@@ -468,17 +491,23 @@ def test_dry_run_mode(
 ):
     """Test using dry run mode."""
     pass
+
+
 # Given steps
 @given("the database is initialized")
 def db_initialized(temp_db):
     """Ensure the database is initialized."""
     # The temp_db fixture already initializes the database
     pass
+
+
 @given("the API keys are configured")
 def api_keys_configured():
     """Configure API keys for testing."""
     # Mock the API keys for testing
     os.environ["SENDGRID_API_KEY"] = "test_sendgrid_key"
+
+
 @pytest.fixture
 def business_with_mockup_fixture(temp_db):
     """Fixture that provides a business with mockup data."""
@@ -544,14 +573,20 @@ def business_with_mockup_fixture(temp_db):
     business = cursor.fetchone()
     # Return the business and connection for later use
     return {"business": business, "conn": conn, "cursor": cursor}
+
+
 @given("a high-scoring business with mockup data")
 def given_high_scoring_business_with_mockup(business_with_mockup_fixture):
     """Get a high-scoring business with mockup data."""
     return business_with_mockup_fixture
+
+
 @given("a business with mockup data")
 def given_business_with_mockup(business_with_mockup_fixture):
     """Get any business with mockup data."""
     return business_with_mockup_fixture
+
+
 @pytest.fixture
 def business_without_mockup_fixture(temp_db):
     """Fixture that provides a business without mockup data."""
@@ -589,15 +624,21 @@ def business_without_mockup_fixture(temp_db):
     business = cursor.fetchone()
     # Return the business and connection for later use
     return {"business": business, "conn": conn, "cursor": cursor}
+
+
 @given("a business without mockup data")
 def given_business_without_mockup(business_without_mockup_fixture):
     """Get a business without mockup data."""
     return business_without_mockup_fixture
+
+
 @pytest.fixture
 def email_api_unavailable(mock_sendgrid_client):
     """Simulate email sending API unavailability."""
     mock_sendgrid_client.send_email.side_effect = Exception("Email API unavailable")
     return mock_sendgrid_client
+
+
 @pytest.fixture
 def multiple_businesses_with_mockup(temp_db):
     """Get multiple businesses with mockup data."""
@@ -611,6 +652,8 @@ def multiple_businesses_with_mockup(temp_db):
     # Ensure we have at least 3 businesses with mockups
     assert len(businesses) >= 3, "Not enough businesses with mockups for this test"
     return {"businesses": businesses, "conn": conn, "cursor": cursor}
+
+
 @pytest.fixture
 def daily_email_limit(limit=2):
     """Set the daily email limit."""
@@ -621,6 +664,8 @@ def daily_email_limit(limit=2):
         os.environ["DAILY_EMAIL_LIMIT"] = original_limit
     else:
         del os.environ["DAILY_EMAIL_LIMIT"]
+
+
 @pytest.fixture
 def business_with_high_bounce_rate(temp_db):
     """Get a business with a high bounce rate domain."""
@@ -683,6 +728,8 @@ def business_with_high_bounce_rate(temp_db):
     business = cursor.fetchone()
     # Return the business and connection for later use
     return {"business": business, "conn": conn, "cursor": cursor}
+
+
 # When steps
 @when("I run the email queue process")
 def run_email_queue(
@@ -699,6 +746,8 @@ def run_email_queue(
         # Run the email queue process
         email_queue.process_email_queue(limit=10, dry_run=False, verbose=True)
     return {"conn": conn, "cursor": cursor}
+
+
 @when("I run the email queue process in dry run mode")
 def run_email_queue_dry_run(
     mock_sendgrid_client, mock_cost_tracker, business_with_mockup_fixture, temp_db
@@ -714,90 +763,126 @@ def run_email_queue_dry_run(
         # Run the email queue process in dry run mode
         email_queue.process_email_queue(limit=10, dry_run=True, verbose=True)
     return {"conn": conn, "cursor": cursor}
+
+
 # Then steps
 @then("a personalized email should be sent")
 def personalized_email_sent(mock_sendgrid_client):
     """Verify that a personalized email was sent."""
     mock_sendgrid_client.send_email.assert_called_once()
+
+
 @then("the email should include the mockup data")
 def email_includes_mockup(mock_sendgrid_client):
     """Verify that the email includes the mockup data."""
     # Check that the mockup data was included in the email
     call_args = mock_sendgrid_client.send_email.call_args[0]
     assert "mockup" in call_args[1].lower() or "mockup" in call_args[2].lower()
+
+
 @then("the email should have a personalized subject line")
 def email_has_personalized_subject():
     """Verify that the email has a personalized subject line."""
     # This would check that the subject line includes the business name
     pass
+
+
 @then("the email record should be saved to the database")
 def email_record_saved():
     """Verify that the email record was saved to the database."""
     # This would check that an email record was saved to the database
     pass
+
+
 @then("the cost should be tracked")
 def cost_tracked(mock_cost_tracker):
     """Verify that the cost was tracked."""
     mock_cost_tracker["log_cost"].assert_called_once()
+
+
 @then("the business should be skipped")
 def business_skipped():
     """Verify that the business was skipped."""
     # This would check that the business was skipped
     pass
+
+
 @then("the email queue process should continue to the next business")
 def process_continues_to_next():
     """Verify that the email queue process continues to the next business."""
     # If we get here, the process continued to the next business
     pass
+
+
 @then("the error should be logged")
 def error_logged():
     """Verify that errors were logged."""
     # This would check that errors were logged
     pass
+
+
 @then("the business should be marked for retry")
 def marked_for_retry():
     """Verify that the business was marked for retry."""
     # This would check that the business was marked for retry
     pass
+
+
 @then("the process should continue without crashing")
 def process_continues():
     """Verify that the process continues without crashing."""
     # If we get here, the process didn't crash
     pass
+
+
 @then("only {count:d} emails should be sent")
 def only_n_emails_sent(mock_sendgrid_client, count):
     """Verify that only n emails were sent."""
     assert mock_sendgrid_client.send_email.call_count == count
+
+
 @then("the process should stop after reaching the limit")
 def process_stops_at_limit():
     """Verify that the process stops after reaching the limit."""
     # This would check that the process stopped after reaching the limit
     pass
+
+
 @then("the remaining businesses should be left for the next run")
 def businesses_left_for_next_run():
     """Verify that the remaining businesses were left for the next run."""
     # This would check that the remaining businesses were left for the next run
     pass
+
+
 @then("the business should be flagged for manual review")
 def flagged_for_manual_review():
     """Verify that the business was flagged for manual review."""
     # This would check that the business was flagged for manual review
     pass
+
+
 @then("no email should be sent to the high bounce rate domain")
 def no_email_to_high_bounce_rate(mock_sendgrid_client):
     """Verify that no email was sent to the high bounce rate domain."""
     # Check that no email was sent to the high bounce rate domain
     for call in mock_sendgrid_client.send_email.call_args_list:
         assert "highrisk.com" not in call[0][0]
+
+
 @then("the email should be prepared but not sent")
 def email_prepared_not_sent(mock_sendgrid_client):
     """Verify that the email was prepared but not sent."""
     mock_sendgrid_client.send_email.assert_not_called()
+
+
 @then("the process should log the email content")
 def process_logs_email_content():
     """Verify that the process logs the email content."""
     # This would check that the email content was logged
     pass
+
+
 @then("no cost should be tracked")
 def no_cost_tracked(mock_cost_tracker):
     """Verify that no cost was tracked."""

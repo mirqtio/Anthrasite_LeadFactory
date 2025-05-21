@@ -5,7 +5,6 @@ Tests for the metrics module.
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch
-
 from utils.metrics import app, update_metrics
 
 # Create test client
@@ -38,17 +37,14 @@ def test_metrics_endpoint(mock_cost_data, mock_budget_data):
         mock_get_costs.return_value = mock_cost_data
         mock_budget.return_value = mock_budget_data
         mock_gate.return_value = (False, "Below threshold")
-
         # Make request
         response = client.get("/metrics")
-
         # Assert response
         assert response.status_code == 200
         assert (
             response.headers["Content-Type"]
             == "text/plain; version=0.0.4; charset=utf-8"
         )
-
         # Check if metrics are in the response
         metrics = response.text
         assert "lead_factory_daily_cost" in metrics
@@ -68,7 +64,6 @@ def test_scaling_gate_status():
     """Test the /scaling-gate/status endpoint."""
     with patch("utils.metrics.is_scaling_gate_active") as mock_gate:
         mock_gate.return_value = (True, "Test reason")
-
         response = client.get("/scaling-gate/status")
         assert response.status_code == 200
         data = response.json()
@@ -81,7 +76,6 @@ def test_daily_costs_endpoint(mock_cost_data):
     """Test the /costs/daily endpoint."""
     with patch("utils.metrics.get_cost_breakdown_by_service") as mock_get_costs:
         mock_get_costs.return_value = mock_cost_data
-
         response = client.get("/costs/daily")
         assert response.status_code == 200
         assert response.json() == mock_cost_data
@@ -91,7 +85,6 @@ def test_monthly_costs_endpoint(mock_cost_data):
     """Test the /costs/monthly endpoint."""
     with patch("utils.metrics.get_cost_breakdown_by_service") as mock_get_costs:
         mock_get_costs.return_value = mock_cost_data
-
         response = client.get("/costs/monthly")
         assert response.status_code == 200
         assert response.json() == mock_cost_data
@@ -102,15 +95,15 @@ def test_http_metrics():
     # Make a request to ensure metrics are generated
     response = client.get("/health")
     assert response.status_code == 200
-
     # Check metrics
     metrics_response = client.get("/metrics")
     metrics_text = metrics_response.text
-    
     # Check for HTTP metrics in the response
     # We don't need to check exact values, just that the metrics exist
     assert "http_requests_total" in metrics_text, "HTTP requests metric not found"
-    assert "http_request_duration_seconds" in metrics_text, "HTTP duration metric not found"
+    assert (
+        "http_request_duration_seconds" in metrics_text
+    ), "HTTP duration metric not found"
 
 
 def test_update_metrics(mock_cost_data, mock_budget_data):
@@ -122,10 +115,8 @@ def test_update_metrics(mock_cost_data, mock_budget_data):
         mock_get_costs.return_value = mock_cost_data
         mock_budget.return_value = mock_budget_data
         mock_gate.return_value = (False, "Below threshold")
-
         # Call the function
         update_metrics()
-
         # Verify the mocks were called
         assert mock_get_costs.call_count == 2  # Called once for daily, once for monthly
         mock_budget.assert_called_once()
