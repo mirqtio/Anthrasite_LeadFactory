@@ -96,6 +96,8 @@ def delete_database_records(
                     # Use a safer approach with a fixed query structure and validated placeholders
                     # The placeholders string is constructed from a list comprehension with fixed values
                     # This is safe because we're not using user input in the query structure
+                    # Using string concatenation with placeholders is safe here because
+                    # placeholders are generated from a fixed pattern, not from user input
                     query = (
                         "DELETE FROM raw_html_storage WHERE html_path IN ("
                         + placeholders
