@@ -2,16 +2,13 @@
 """
 Anthrasite Lead-Factory: Lead Enrichment (02_enrich.py)
 Analyzes business websites to extract tech stack and performance metrics.
-
 Usage:
     python bin/02_enrich.py [--limit N] [--id BUSINESS_ID] [--tier TIER]
-
 Options:
     --limit N        Limit the number of businesses to process (default: all)
     --id BUSINESS_ID Process only the specified business ID
     --tier TIER      Override the tier level (1, 2, or 3)
 """
-
 import argparse
 import concurrent.futures
 import json
@@ -19,16 +16,14 @@ import os
 import sys
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
-
 import requests
 from dotenv import load_dotenv
 
 # Import Wappalyzer (using the new API structure)
-import wappalyzer
+from wappalyzer import Wappalyzer, WebPage
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 # Import logging configuration first
 from utils.logging_config import get_logger
 
@@ -37,10 +32,8 @@ from utils.io import DatabaseConnection, make_api_request, track_api_cost
 
 # Load environment variables
 load_dotenv()
-
 # Set up logging
 logger = get_logger(__name__)
-
 # Constants
 DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
@@ -48,7 +41,6 @@ CURRENT_TIER = int(os.getenv("TIER", "1"))
 PAGESPEED_API_KEY = os.getenv("PAGESPEED_KEY")
 SCREENSHOT_ONE_KEY = os.getenv("SCREENSHOT_ONE_KEY")
 SEMRUSH_KEY = os.getenv("SEMRUSH_KEY")
-
 # Cost tracking constants (in cents)
 PAGESPEED_COST = 0  # PageSpeed API is free
 SCREENSHOT_ONE_COST = 5  # $0.05 per screenshot
@@ -60,15 +52,14 @@ class TechStackAnalyzer:
 
     def __init__(self):
         """Initialize the tech stack analyzer."""
-        # No initialization needed for new Wappalyzer API
+        # Initialize the Wappalyzer instance
+        self.wappalyzer = Wappalyzer.latest()
         logger.info("Wappalyzer initialized successfully")
 
     def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
         """Analyze a website to identify technologies used.
-
         Args:
             url: Website URL.
-
         Returns:
             Tuple of (tech_stack_data, error_message).
             If successful, error_message is None.
@@ -76,15 +67,12 @@ class TechStackAnalyzer:
         """
         if not url:
             return {}, "No URL provided"
-
         # Ensure URL has a scheme
         if not url.startswith(("http://", "https://")):
             url = f"https://{url}"
-
         # Always proceed with the new API
         # No need to check for initialization with the new API structure
         pass
-
         try:
             # Fetch the website content
             response = requests.get(
@@ -95,40 +83,27 @@ class TechStackAnalyzer:
                 timeout=30,
             )
             response.raise_for_status()
-
-            # Use the new Wappalyzer API structure
-            # The new API doesn't need HTML directly - it will fetch the URL itself
-
-            # Use the analyze function directly from wappalyzer module
-            result_dict = wappalyzer.analyze(url)
-
+            # Create a WebPage instance with the response content
+            webpage = WebPage.new_from_url(url)
+            # Analyze the webpage using Wappalyzer
+            analysis = self.wappalyzer.analyze_with_categories(webpage)
             # For test compatibility, we need to return a set of technologies
             # But we'll also maintain the categorized dictionary for actual use
             tech_set = set()
             tech_data = {}
-
-            # Check if the URL is in the results
-            if url in result_dict:
-                # Get the technologies for this URL
-                technologies = result_dict[url]
-
-                # Process each technology
-                for tech_name, tech_info in technologies.items():
-                    # Add to the set for test compatibility
-                    tech_set.add(tech_name)
-
-                    # Get the category (first one if multiple)
-                    categories = tech_info.get("categories", ["Other"])
-                    category = categories[0] if categories else "Other"
-
-                    # Add to our categorized tech_data dict
-                    if category not in tech_data:
-                        tech_data[category] = []
-                    tech_data[category].append(tech_name)
-
+            # Process the analysis results
+            for tech_name, tech_info in analysis.items():
+                # Add to the set for test compatibility
+                tech_set.add(tech_name)
+                # Get the categories
+                categories = tech_info.get("categories", ["Other"])
+                category = categories[0] if categories else "Other"
+                # Add to our categorized tech_data dict
+                if category not in tech_data:
+                    tech_data[category] = []
+                tech_data[category].append(tech_name)
             # Return the set for test compatibility
             return tech_set, None
-
         except requests.exceptions.RequestException as e:
             error_msg = f"Failed to fetch website {url}: {str(e)}"
             logger.error(error_msg)
@@ -144,7 +119,6 @@ class PageSpeedAnalyzer:
 
     def __init__(self, api_key: Optional[str] = None):
         """Initialize the PageSpeed analyzer.
-
         Args:
             api_key: Google PageSpeed Insights API key.
         """
@@ -152,10 +126,8 @@ class PageSpeedAnalyzer:
 
     def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
         """Analyze a website's performance using PageSpeed Insights.
-
         Args:
             url: Website URL.
-
         Returns:
             Tuple of (performance_data, error_message).
             If successful, error_message is None.
@@ -163,21 +135,17 @@ class PageSpeedAnalyzer:
         """
         if not url:
             return {}, "No URL provided"
-
         # Ensure URL has a scheme
         if not url.startswith(("http://", "https://")):
             url = f"https://{url}"
-
         api_url = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
         params = {
             "url": url,
             "strategy": "mobile",
             "category": ["performance", "accessibility", "best-practices", "seo"],
         }
-
         if self.api_key:
             params["key"] = self.api_key
-
         response_data, error = make_api_request(
             url=api_url,
             params=params,
@@ -187,16 +155,13 @@ class PageSpeedAnalyzer:
             cost_cents=PAGESPEED_COST,
             tier=CURRENT_TIER,
         )
-
         if error:
             return {}, error
-
         try:
             # Extract Core Web Vitals and other metrics
             lighthouse_result = response_data.get("lighthouseResult", {})
             audits = lighthouse_result.get("audits", {})
             categories = lighthouse_result.get("categories", {})
-
             performance_data = {
                 "performance_score": int(
                     categories.get("performance", {}).get("score", 0) * 100
@@ -225,9 +190,7 @@ class PageSpeedAnalyzer:
                     "numericValue"
                 ),
             }
-
             return performance_data, None
-
         except Exception as e:
             logger.error(f"Error parsing PageSpeed results for {url}: {e}")
             return {}, f"Error parsing PageSpeed results: {str(e)}"
@@ -238,7 +201,6 @@ class ScreenshotGenerator:
 
     def __init__(self, api_key: str):
         """Initialize the screenshot generator.
-
         Args:
             api_key: ScreenshotOne API key.
         """
@@ -246,10 +208,8 @@ class ScreenshotGenerator:
 
     def capture_screenshot(self, url: str) -> Tuple[Optional[str], Optional[str]]:
         """Capture a screenshot of a website.
-
         Args:
             url: Website URL.
-
         Returns:
             Tuple of (screenshot_url, error_message).
             If successful, error_message is None.
@@ -257,11 +217,9 @@ class ScreenshotGenerator:
         """
         if not url:
             return None, "No URL provided"
-
         # Ensure URL has a scheme
         if not url.startswith(("http://", "https://")):
             url = f"https://{url}"
-
         api_url = "https://api.screenshotone.com/take"
         params = {
             "access_key": self.api_key,
@@ -273,12 +231,10 @@ class ScreenshotGenerator:
             "full_page": "false",
             "timeout": str(DEFAULT_TIMEOUT * 1000),  # Convert to milliseconds
         }
-
         try:
             # Make the request directly to get the image
             response = requests.get(api_url, params=params, timeout=DEFAULT_TIMEOUT)
             response.raise_for_status()
-
             # Track the cost
             track_api_cost(
                 service="screenshotone",
@@ -286,19 +242,15 @@ class ScreenshotGenerator:
                 cost_cents=SCREENSHOT_ONE_COST,
                 tier=CURRENT_TIER,
             )
-
             # For a real implementation, we would upload this to Supabase Storage
             # For the prototype, we'll return a dummy URL
             screenshot_url = (
                 f"https://storage.supabase.co/mockups/{urlparse(url).netloc}.png"
             )
-
             return screenshot_url, None
-
         except requests.exceptions.RequestException as e:
             logger.warning(f"Error capturing screenshot for {url}: {e}")
             return None, f"Error capturing screenshot: {str(e)}"
-
         except Exception as e:
             logger.error(f"Error processing screenshot for {url}: {e}")
             return None, f"Error processing screenshot: {str(e)}"
@@ -309,7 +261,6 @@ class SEMrushAnalyzer:
 
     def __init__(self, api_key: str):
         """Initialize the SEMrush analyzer.
-
         Args:
             api_key: SEMrush API key.
         """
@@ -317,10 +268,8 @@ class SEMrushAnalyzer:
 
     def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
         """Analyze a website using SEMrush Site Audit.
-
         Args:
             url: Website URL.
-
         Returns:
             Tuple of (audit_data, error_message).
             If successful, error_message is None.
@@ -328,21 +277,17 @@ class SEMrushAnalyzer:
         """
         if not url:
             return {}, "No URL provided"
-
         # Ensure URL has a scheme
         if not url.startswith(("http://", "https://")):
             url = f"https://{url}"
-
         # Extract domain
         domain = urlparse(url).netloc
-
         api_url = "https://api.semrush.com/reports/v1/site-audit/summary.json"
         params = {
             "key": self.api_key,
             "url": domain,
             "limit": "10",  # Limit to top 10 issues
         }
-
         response_data, error = make_api_request(
             url=api_url,
             params=params,
@@ -352,10 +297,8 @@ class SEMrushAnalyzer:
             cost_cents=SEMRUSH_SITE_AUDIT_COST,
             tier=CURRENT_TIER,
         )
-
         if error:
             return {}, error
-
         try:
             # Process the SEMrush data
             # For the prototype, we'll return a simplified version
@@ -368,9 +311,7 @@ class SEMrushAnalyzer:
                 "warnings": response_data.get("warnings", 0),
                 "notices": response_data.get("notices", 0),
             }
-
             return audit_data, None
-
         except Exception as e:
             logger.error(f"Error parsing SEMrush results for {url}: {e}")
             return {}, f"Error parsing SEMrush results: {str(e)}"
@@ -380,11 +321,9 @@ def get_businesses_to_enrich(
     limit: Optional[int] = None, business_id: Optional[int] = None
 ) -> List[Dict]:
     """Get list of businesses to enrich.
-
     Args:
         limit: Maximum number of businesses to return.
         business_id: Specific business ID to return.
-
     Returns:
         List of dictionaries containing business information.
     """
@@ -408,12 +347,9 @@ def get_businesses_to_enrich(
                 if limit:
                     query += f" LIMIT {limit}"
                 cursor.execute(query)
-
             businesses = cursor.fetchall()
-
         logger.info(f"Found {len(businesses)} businesses to enrich")
         return businesses
-
     except Exception as e:
         logger.error(f"Error getting businesses to enrich: {e}")
         return []
@@ -427,14 +363,12 @@ def save_features(
     semrush_json: Optional[Dict] = None,
 ) -> bool:
     """Save features information to database.
-
     Args:
         business_id: Business ID.
         tech_stack: Tech stack information.
         page_speed: PageSpeed information.
         screenshot_url: URL to screenshot (Tier 2+).
         semrush_json: SEMrush Site Audit data (Tier 3 only).
-
     Returns:
         True if successful, False otherwise.
     """
@@ -442,8 +376,8 @@ def save_features(
         with DatabaseConnection() as cursor:
             cursor.execute(
                 """
-                INSERT INTO features 
-                (business_id, tech_stack, page_speed, screenshot_url, semrush_json) 
+                INSERT INTO features
+                (business_id, tech_stack, page_speed, screenshot_url, semrush_json)
                 VALUES (?, ?, ?, ?, ?)
                 """,
                 (
@@ -456,7 +390,6 @@ def save_features(
             )
         logger.info(f"Saved features for business ID {business_id}")
         return True
-
     except Exception as e:
         logger.error(f"Error saving features for business ID {business_id}: {e}")
         return False
@@ -464,43 +397,34 @@ def save_features(
 
 def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
     """Enrich a business with tech stack and performance data.
-
     Args:
         business: Business information.
         tier: Tier level (1, 2, or 3).
-
     Returns:
         True if successful, False otherwise.
     """
     business_id = business["id"]
     website = business["website"]
-
     if not website:
         logger.warning(f"No website for business ID {business_id}")
         return False
-
     logger.info(
         f"Enriching business ID {business_id} with website {website} (Tier {tier})"
     )
-
     # Initialize analyzers
     tech_analyzer = TechStackAnalyzer()
     pagespeed_analyzer = PageSpeedAnalyzer(PAGESPEED_API_KEY)
-
     # Analyze tech stack
     tech_stack, tech_error = tech_analyzer.analyze_website(website)
     if tech_error:
         logger.warning(f"Error analyzing tech stack for {website}: {tech_error}")
-
     # Analyze performance
     performance_data, perf_error = pagespeed_analyzer.analyze_website(website)
     if perf_error:
         logger.warning(f"Error analyzing performance for {website}: {perf_error}")
-
     # Tier-specific enrichment
     screenshot_url = None
     semrush_data = None
-
     # Tier 2+: Capture screenshot
     if tier >= 2 and SCREENSHOT_ONE_KEY:
         screenshot_generator = ScreenshotGenerator(SCREENSHOT_ONE_KEY)
@@ -511,7 +435,6 @@ def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
             logger.warning(
                 f"Error capturing screenshot for {website}: {screenshot_error}"
             )
-
     # Tier 3: SEMrush Site Audit
     if tier >= 3 and SEMRUSH_KEY:
         semrush_analyzer = SEMrushAnalyzer(SEMRUSH_KEY)
@@ -520,7 +443,6 @@ def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
             logger.warning(
                 f"Error analyzing with SEMrush for {website}: {semrush_error}"
             )
-
     # Save features to database
     success = save_features(
         business_id=business_id,
@@ -529,7 +451,6 @@ def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
         screenshot_url=screenshot_url,
         semrush_json=semrush_data,
     )
-
     return success
 
 
@@ -546,24 +467,18 @@ def main():
         "--tier", type=int, choices=[1, 2, 3], help="Override the tier level"
     )
     args = parser.parse_args()
-
     # Get tier level
     tier = args.tier if args.tier is not None else CURRENT_TIER
     logger.info(f"Running enrichment with Tier {tier}")
-
     # Get businesses to enrich
     businesses = get_businesses_to_enrich(limit=args.limit, business_id=args.id)
-
     if not businesses:
         logger.warning("No businesses to enrich")
         return 0
-
     logger.info(f"Enriching {len(businesses)} businesses")
-
     # Process businesses
     success_count = 0
     error_count = 0
-
     # Use ThreadPoolExecutor for parallel processing
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=MAX_CONCURRENT_REQUESTS
@@ -573,7 +488,6 @@ def main():
             executor.submit(enrich_business, business, tier): business
             for business in businesses
         }
-
         # Process results as they complete
         for future in concurrent.futures.as_completed(future_to_business):
             business = future_to_business[future]
@@ -586,7 +500,6 @@ def main():
             except Exception as e:
                 logger.error(f"Error enriching business ID {business['id']}: {e}")
                 error_count += 1
-
     logger.info(
         f"Enrichment completed. Success: {success_count}, Errors: {error_count}"
     )

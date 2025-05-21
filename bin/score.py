@@ -2,16 +2,13 @@
 """
 Anthrasite Lead-Factory: Scoring Logic (04_score.py)
 Applies scoring rules defined in scoring_rules.yml to calculate lead scores.
-
 Usage:
     python bin/04_score.py [--limit N] [--id BUSINESS_ID] [--recalculate]
-
 Options:
     --limit N        Limit the number of businesses to process (default: all)
     --id BUSINESS_ID Process only the specified business ID
     --recalculate    Recalculate scores for businesses that already have scores
 """
-
 import os
 import sys
 import argparse
@@ -25,13 +22,10 @@ from utils.io import DatabaseConnection
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 # Set up logging
 logger = get_logger(__name__)
-
 # Load environment variables
 load_dotenv()
-
 # Constants
 DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
@@ -48,7 +42,6 @@ class RuleEngine:
 
     def __init__(self, rules_file: str = RULES_FILE):
         """Initialize the rule engine.
-
         Args:
             rules_file: Path to the YAML file containing scoring rules.
         """
@@ -57,7 +50,6 @@ class RuleEngine:
         self.settings = {}
         self.multipliers = []
         self.load_rules()
-
         # Define condition evaluators
         self.condition_evaluators = {
             "tech_stack_contains": self._eval_tech_stack_contains,
@@ -90,15 +82,12 @@ class RuleEngine:
         try:
             with open(self.rules_file, "r") as f:
                 data = yaml.safe_load(f)
-
             self.settings = data.get("settings", {})
             self.rules = data.get("rules", [])
             self.multipliers = data.get("multipliers", [])
-
             logger.info(
                 f"Loaded {len(self.rules)} rules and {len(self.multipliers)} multipliers from {self.rules_file}"
             )
-
         except Exception as e:
             logger.error(f"Error loading rules from {self.rules_file}: {e}")
             # Use default settings if loading fails
@@ -113,29 +102,24 @@ class RuleEngine:
 
     def calculate_score(self, business_data: Dict) -> Tuple[int, List[Dict]]:
         """Calculate score for a business based on the defined rules.
-
         Args:
             business_data: Business data including tech stack, performance metrics, etc.
-
         Returns:
             Tuple of (final_score, applied_rules).
         """
         # Start with base score
         score = self.settings.get("base_score", 50)
         applied_rules = []
-
         # Apply each rule
         for rule in self.rules:
             rule_name = rule.get("name", "unnamed_rule")
             rule_condition = rule.get("condition", {})
             rule_score = rule.get("score", 0)
             rule_description = rule.get("description", "")
-
             # Evaluate rule condition
             if self._evaluate_condition(rule_condition, business_data):
                 # Apply score adjustment
                 score += rule_score
-
                 # Record applied rule
                 applied_rules.append(
                     {
@@ -144,9 +128,7 @@ class RuleEngine:
                         "score_adjustment": rule_score,
                     }
                 )
-
                 logger.debug(f"Applied rule '{rule_name}': {rule_score:+d} points")
-
         # Apply multipliers
         multiplier_value = 1.0
         for multiplier in self.multipliers:
@@ -154,12 +136,10 @@ class RuleEngine:
             multiplier_condition = multiplier.get("condition", {})
             multiplier_factor = multiplier.get("multiplier", 1.0)
             multiplier_description = multiplier.get("description", "")
-
             # Evaluate multiplier condition
             if self._evaluate_condition(multiplier_condition, business_data):
                 # Apply multiplier
                 multiplier_value *= multiplier_factor
-
                 # Record applied multiplier
                 applied_rules.append(
                     {
@@ -168,35 +148,28 @@ class RuleEngine:
                         "multiplier": multiplier_factor,
                     }
                 )
-
                 logger.debug(
                     f"Applied multiplier '{multiplier_name}': x{multiplier_factor:.2f}"
                 )
-
         # Apply multiplier to score
         score = int(score * multiplier_value)
-
         # Ensure score is within min/max bounds
         min_score = self.settings.get("min_score", 0)
         max_score = self.settings.get("max_score", 100)
         score = max(min_score, min(score, max_score))
-
         return score, applied_rules
 
     def _evaluate_condition(self, condition: Dict, business_data: Dict) -> bool:
         """Evaluate a rule condition against business data.
-
         Args:
             condition: Rule condition definition.
             business_data: Business data to evaluate against.
-
         Returns:
             True if condition is met, False otherwise.
         """
         # Handle empty condition (always true)
         if not condition:
             return True
-
         # Evaluate each condition key
         for key, value in condition.items():
             if key in self.condition_evaluators:
@@ -206,7 +179,6 @@ class RuleEngine:
             else:
                 logger.warning(f"Unknown condition type: {key}")
                 return False
-
         # All conditions passed
         return True
 
@@ -228,14 +200,11 @@ class RuleEngine:
         tech_stack = self._get_tech_stack(business_data)
         technology = condition.get("technology", "")
         version = condition.get("version", "")
-
         if technology not in tech_stack:
             return False
-
         tech_version = self._get_tech_version(business_data, technology)
         if not tech_version:
             return False
-
         return self._compare_versions(tech_version, version) < 0
 
     def _eval_tech_stack_version_gt(self, condition: Dict, business_data: Dict) -> bool:
@@ -243,14 +212,11 @@ class RuleEngine:
         tech_stack = self._get_tech_stack(business_data)
         technology = condition.get("technology", "")
         version = condition.get("version", "")
-
         if technology not in tech_stack:
             return False
-
         tech_version = self._get_tech_version(business_data, technology)
         if not tech_version:
             return False
-
         return self._compare_versions(tech_version, version) > 0
 
     def _eval_performance_score_lt(self, threshold: int, business_data: Dict) -> bool:
@@ -301,7 +267,6 @@ class RuleEngine:
         website = business_data.get("website", "")
         if not website:
             return False
-
         website_content = self._get_website_content(business_data)
         return any(pattern in website_content for pattern in patterns)
 
@@ -365,7 +330,6 @@ class RuleEngine:
         """Get tech stack from business data."""
         features = business_data.get("features", {})
         tech_stack_json = features.get("tech_stack", "{}")
-
         if isinstance(tech_stack_json, str):
             try:
                 tech_stack = json.loads(tech_stack_json)
@@ -373,17 +337,14 @@ class RuleEngine:
                 tech_stack = {}
         else:
             tech_stack = tech_stack_json
-
         return tech_stack
 
     def _get_tech_version(self, business_data: Dict, technology: str) -> Optional[str]:
         """Get version of a specific technology from business data."""
         tech_stack = self._get_tech_stack(business_data)
         tech_info = tech_stack.get(technology, {})
-
         if isinstance(tech_info, dict):
             return tech_info.get("version")
-
         return None
 
     def _get_performance_score(self, business_data: Dict) -> int:
@@ -395,7 +356,6 @@ class RuleEngine:
         """Get Largest Contentful Paint from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
-
         if isinstance(page_speed_json, str):
             try:
                 page_speed = json.loads(page_speed_json)
@@ -403,14 +363,12 @@ class RuleEngine:
                 page_speed = {}
         else:
             page_speed = page_speed_json
-
         return page_speed.get("largest_contentful_paint", 0)
 
     def _get_cls(self, business_data: Dict) -> float:
         """Get Cumulative Layout Shift from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
-
         if isinstance(page_speed_json, str):
             try:
                 page_speed = json.loads(page_speed_json)
@@ -418,14 +376,12 @@ class RuleEngine:
                 page_speed = {}
         else:
             page_speed = page_speed_json
-
         return page_speed.get("cumulative_layout_shift", 0)
 
     def _get_seo_score(self, business_data: Dict) -> int:
         """Get SEO score from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
-
         if isinstance(page_speed_json, str):
             try:
                 page_speed = json.loads(page_speed_json)
@@ -433,14 +389,12 @@ class RuleEngine:
                 page_speed = {}
         else:
             page_speed = page_speed_json
-
         return page_speed.get("seo_score", 0)
 
     def _get_accessibility_score(self, business_data: Dict) -> int:
         """Get accessibility score from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
-
         if isinstance(page_speed_json, str):
             try:
                 page_speed = json.loads(page_speed_json)
@@ -448,14 +402,12 @@ class RuleEngine:
                 page_speed = {}
         else:
             page_speed = page_speed_json
-
         return page_speed.get("accessibility_score", 0)
 
     def _get_semrush_errors(self, business_data: Dict) -> int:
         """Get SEMrush errors count from business data."""
         features = business_data.get("features", {})
         semrush_json = features.get("semrush_json", "{}")
-
         if isinstance(semrush_json, str):
             try:
                 semrush = json.loads(semrush_json)
@@ -463,14 +415,12 @@ class RuleEngine:
                 semrush = {}
         else:
             semrush = semrush_json
-
         return semrush.get("errors", 0)
 
     def _get_semrush_score(self, business_data: Dict) -> int:
         """Get SEMrush score from business data."""
         features = business_data.get("features", {})
         semrush_json = features.get("semrush_json", "{}")
-
         if isinstance(semrush_json, str):
             try:
                 semrush = json.loads(semrush_json)
@@ -478,7 +428,6 @@ class RuleEngine:
                 semrush = {}
         else:
             semrush = semrush_json
-
         return semrush.get("total_score", 0)
 
     def _get_website_content(self, business_data: Dict) -> str:
@@ -489,11 +438,9 @@ class RuleEngine:
 
     def _compare_versions(self, version1: str, version2: str) -> int:
         """Compare two version strings.
-
         Args:
             version1: First version string.
             version2: Second version string.
-
         Returns:
             -1 if version1 < version2, 0 if version1 == version2, 1 if version1 > version2.
         """
@@ -511,20 +458,17 @@ class RuleEngine:
 
         v1_parts = normalize_version(version1)
         v2_parts = normalize_version(version2)
-
         # Compare version components
         for i in range(min(len(v1_parts), len(v2_parts))):
             if v1_parts[i] < v2_parts[i]:
                 return -1
             if v1_parts[i] > v2_parts[i]:
                 return 1
-
         # If all components are equal, compare lengths
         if len(v1_parts) < len(v2_parts):
             return -1
         if len(v1_parts) > len(v2_parts):
             return 1
-
         return 0
 
 
@@ -534,12 +478,10 @@ def get_businesses_to_score(
     recalculate: bool = False,
 ) -> List[Dict]:
     """Get list of businesses to score.
-
     Args:
         limit: Maximum number of businesses to return.
         business_id: Specific business ID to return.
         recalculate: If True, include businesses that already have scores.
-
     Returns:
         List of dictionaries containing business information.
     """
@@ -548,42 +490,31 @@ def get_businesses_to_score(
             # Build query based on parameters
             query_parts = ["SELECT b.*, f.* FROM businesses b"]
             query_parts.append("LEFT JOIN features f ON b.id = f.business_id")
-
             where_clauses = []
             params = []
-
             # Add business ID filter if specified
             if business_id:
                 where_clauses.append("b.id = ?")
                 params.append(business_id)
-
             # Add status filter
             where_clauses.append("b.status = 'active'")
-
             # Add features filter
             where_clauses.append("f.id IS NOT NULL")
-
             # Add score filter if not recalculating
             if not recalculate:
                 where_clauses.append("b.score IS NULL")
-
             # Combine where clauses
             if where_clauses:
                 query_parts.append("WHERE " + " AND ".join(where_clauses))
-
             # Add limit if specified
             if limit:
                 query_parts.append(f"LIMIT {limit}")
-
             # Execute query
             query = " ".join(query_parts)
             cursor.execute(query, params)
-
             businesses = cursor.fetchall()
-
         logger.info(f"Found {len(businesses)} businesses to score")
         return businesses
-
     except Exception as e:
         logger.error(f"Error getting businesses to score: {e}")
         return []
@@ -593,12 +524,10 @@ def save_business_score(
     business_id: int, score: int, applied_rules: List[Dict]
 ) -> bool:
     """Save business score to database.
-
     Args:
         business_id: Business ID.
         score: Calculated score.
         applied_rules: List of applied rules.
-
     Returns:
         True if successful, False otherwise.
     """
@@ -613,10 +542,8 @@ def save_business_score(
                 """,
                 (score, json.dumps(applied_rules), business_id),
             )
-
         logger.info(f"Saved score {score} for business ID {business_id}")
         return True
-
     except Exception as e:
         logger.error(f"Error saving score for business ID {business_id}: {e}")
         return False
@@ -624,29 +551,22 @@ def save_business_score(
 
 def score_business(business: Dict, rule_engine: RuleEngine) -> bool:
     """Score a business using the rule engine.
-
     Args:
         business: Business data.
         rule_engine: RuleEngine instance.
-
     Returns:
         True if successful, False otherwise.
     """
     business_id = business["id"]
-
     try:
         # Calculate score
         score, applied_rules = rule_engine.calculate_score(business)
-
         logger.info(
             f"Calculated score {score} for business ID {business_id} with {len(applied_rules)} applied rules"
         )
-
         # Save score to database
         success = save_business_score(business_id, score, applied_rules)
-
         return success
-
     except Exception as e:
         logger.error(f"Error scoring business ID {business_id}: {e}")
         return False
@@ -667,25 +587,19 @@ def main():
         help="Recalculate scores for businesses that already have scores",
     )
     args = parser.parse_args()
-
     # Initialize rule engine
     rule_engine = RuleEngine()
-
     # Get businesses to score
     businesses = get_businesses_to_score(
         limit=args.limit, business_id=args.id, recalculate=args.recalculate
     )
-
     if not businesses:
         logger.warning("No businesses to score")
         return 0
-
     logger.info(f"Scoring {len(businesses)} businesses")
-
     # Process businesses
     success_count = 0
     error_count = 0
-
     for business in businesses:
         try:
             success = score_business(business, rule_engine)
@@ -693,11 +607,9 @@ def main():
                 success_count += 1
             else:
                 error_count += 1
-
         except Exception as e:
             logger.error(f"Error processing business ID {business['id']}: {e}")
             error_count += 1
-
     logger.info(f"Scoring completed. Success: {success_count}, Errors: {error_count}")
     return 0
 

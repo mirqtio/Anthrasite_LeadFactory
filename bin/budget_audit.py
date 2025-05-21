@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """
 Budget Audit Tool for Anthrasite Lead-Factory
-
 This script provides a command-line interface for monitoring and managing the budget
 and scaling gate status of the Anthrasite Lead-Factory system.
 """
-
 import argparse
 import os
 import sys
@@ -26,10 +24,8 @@ from utils.cost_tracker import (
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 # Load environment variables
 load_dotenv()
-
 # Set up logging
 logger = get_logger(__name__)
 
@@ -81,34 +77,27 @@ def format_percentage(value: float) -> str:
 def show_summary() -> None:
     """Show a summary of current budget status."""
     print_header("Budget Summary")
-
     # Get current costs
     daily_cost = get_daily_cost()
     monthly_cost = get_monthly_cost()
-
     # Get budget thresholds
     budget_info = check_budget_thresholds()
-
     # Print daily budget
     daily_budget = budget_info.get("daily_budget", 0)
     daily_utilization = (daily_cost / daily_budget) * 100 if daily_budget > 0 else 0
-
     print(f"Daily Budget: {format_currency(daily_budget)}")
     print(
         f"Daily Spend:  {format_currency(daily_cost)} ({format_percentage(daily_utilization)} of budget)"
     )
-
     # Print monthly budget
     monthly_budget = budget_info.get("monthly_budget", 0)
     monthly_utilization = (
         (monthly_cost / monthly_budget) * 100 if monthly_budget > 0 else 0
     )
-
     print(f"\nMonthly Budget: {format_currency(monthly_budget)}")
     print(
         f"Monthly Spend:  {format_currency(monthly_cost)} ({format_percentage(monthly_utilization)} of budget)"
     )
-
     # Print alerts if any
     if budget_info.get("daily_alert", False):
         print_warning("Daily budget alert threshold reached!")
@@ -120,28 +109,22 @@ def show_cost_breakdown(period: str = "day") -> None:
     """Show cost breakdown by service and operation."""
     period_display = "Daily" if period == "day" else "Monthly"
     print_header(f"{period_display} Cost Breakdown by Service")
-
     # Get cost breakdown by service
     costs_by_service = get_cost_breakdown_by_service(period=period)
-
     if not costs_by_service:
         print("No cost data available.")
         return
-
     # Print table header
     print(f"{'Service':<20} {'Amount':>15}")
     print("-" * 35)
-
     # Print each service's cost
     total = 0
     for service, cost in costs_by_service.items():
         print(f"{service:<20} {format_currency(cost):>15}")
         total += cost
-
     # Print total
     print("-" * 35)
     print(f"{'Total':<20} {format_currency(total):>15}")
-
     # Show top operations for each service
     print_header(f"\n{period_display} Top Operations by Cost")
     for service in costs_by_service.keys():
@@ -155,17 +138,14 @@ def show_cost_breakdown(period: str = "day") -> None:
 def show_scaling_gate_status() -> None:
     """Show the current scaling gate status."""
     print_header("Scaling Gate Status")
-
     active, reason = is_scaling_gate_active()
     status = (
         f"{Colors.FAIL}ACTIVE{Colors.ENDC}"
         if active
         else f"{Colors.OKGREEN}INACTIVE{Colors.ENDC}"
     )
-
     print(f"Status: {status}")
     print(f"Reason: {reason}")
-
     # Show scaling gate history
     history = get_scaling_gate_history(limit=5)
     if history:
@@ -180,10 +160,8 @@ def show_scaling_gate_status() -> None:
 def manage_scaling_gate(activate: bool, reason: str = "") -> None:
     """Enable or disable the scaling gate."""
     action = "activate" if activate else "deactivate"
-
     if not reason:
         reason = input(f"Enter reason to {action} the scaling gate: ")
-
     try:
         success = set_scaling_gate(activate, reason)
         if success:
@@ -212,13 +190,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Budget Audit Tool for Anthrasite Lead-Factory"
     )
-
     # Main commands
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
-
     # Summary command - store in _ to indicate it's intentionally unused
     _ = subparsers.add_parser("summary", help="Show budget summary")
-
     # Cost breakdown command
     cost_parser = subparsers.add_parser("costs", help="Show cost breakdown")
     cost_parser.add_argument(
@@ -227,26 +202,21 @@ def parse_args() -> argparse.Namespace:
         default="day",
         help="Time period (day or month)",
     )
-
     # Scaling gate command
     gate_parser = subparsers.add_parser("gate", help="Manage scaling gate")
     gate_subparsers = gate_parser.add_subparsers(
         dest="gate_command", help="Scaling gate command"
     )
-
     # Enable gate
     enable_parser = gate_subparsers.add_parser("enable", help="Enable the scaling gate")
     enable_parser.add_argument("--reason", help="Reason for enabling the gate")
-
     # Disable gate
     disable_parser = gate_subparsers.add_parser(
         "disable", help="Disable the scaling gate"
     )
     disable_parser.add_argument("--reason", help="Reason for disabling the gate")
-
     # Status gate
     gate_subparsers.add_parser("status", help="Show scaling gate status")
-
     # Export command
     export_parser = subparsers.add_parser("export", help="Export cost report")
     export_parser.add_argument(
@@ -258,7 +228,6 @@ def parse_args() -> argparse.Namespace:
     export_parser.add_argument(
         "--output", default="cost_report.json", help="Output file path"
     )
-
     # Export Prometheus metrics
     prom_parser = subparsers.add_parser(
         "export-prometheus", help="Export Prometheus metrics"
@@ -266,13 +235,10 @@ def parse_args() -> argparse.Namespace:
     prom_parser.add_argument(
         "--output", default="metrics.prom", help="Output file path"
     )
-
     # Set default command
     parser.set_defaults(func=show_summary)
-
     # Parse arguments
     args = parser.parse_args()
-
     # Map commands to functions
     if args.command == "summary":
         args.func = show_summary
@@ -289,7 +255,6 @@ def parse_args() -> argparse.Namespace:
         args.func = lambda: export_report(args.period, args.output)
     elif args.command == "export-prometheus":
         args.func = lambda: export_prometheus_metrics(args.output)
-
     return args
 
 
