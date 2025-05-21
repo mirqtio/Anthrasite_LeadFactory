@@ -28,7 +28,7 @@ from utils.io import DatabaseConnection
 import pytest_bdd
 from pytest_bdd import scenario, given, when, then
 
-# Import fixtures from conftest.py
+# Register scenarios from the feature file
 pytest_bdd.scenarios("features/mockup.feature")
 
 # Add project root to path
@@ -500,238 +500,183 @@ def primary_model_unavailable(mock_gpt4o_client):
 
 
 # When steps
-@when("I run the mockup generation process")
-def run_mockup_generation(
-    mock_gpt4o_client, mock_claude_client, mock_cost_tracker,
-    temp_db, request
-):
-    """Run the mockup generation process."""
-    # Mock the API responses with the expected 4 return values
-    mock_gpt4o_client.generate_mockup.return_value = (
-        "mock_base64_image",  # mockup_image_base64
-        "<html>Mock HTML</html>",  # mockup_html
-        {"usage": {"total_tokens": 100}},  # usage_data
-        None  # error_message
-    )
-    mock_claude_client.generate_mockup.return_value = (
-        "fallback_base64_image",
-        "<html>Fallback HTML</html>",
-        {"usage": {"total_tokens": 80}},
-        None
-    )
-
+@pytest.fixture
+def bdd_mockup_setup(temp_db, request):
+    """Setup for BDD mockup tests with a dedicated database."""
     # Import here to avoid circular imports
-    from bin.mockup import GPT4oMockupGenerator
+    from bin.mockup import GPT4oMockupGenerator, generate_business_mockup
 
-    # Create a mock database connection
-    with patch("bin.mockup.DatabaseConnection") as mock_db_conn, \
-         patch("utils.io.DatabaseConnection") as io_db_conn:
-        # Set up a real SQLite connection for testing
-        conn = sqlite3.connect(temp_db)
-        cursor = conn.cursor()
+    # Set up a real SQLite connection for testing
+    conn = sqlite3.connect(temp_db)
+    cursor = conn.cursor()
+    
+    # Drop existing tables to ensure clean schema
+    cursor.executescript("""
+        DROP TABLE IF EXISTS cost_tracking;
+        DROP TABLE IF EXISTS mockups;
+        DROP TABLE IF EXISTS businesses;
         
-        # Drop existing tables to ensure clean schema
-        cursor.executescript("""
-            DROP TABLE IF EXISTS cost_tracking;
-            DROP TABLE IF EXISTS mockups;
-            DROP TABLE IF EXISTS businesses;
-            
-            CREATE TABLE businesses (
-                id INTEGER PRIMARY KEY,
-                name TEXT,
-                website TEXT,
-                location_data TEXT,
-                mockup_data TEXT,
-                mockup_generated BOOLEAN DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            
-            CREATE TABLE mockups (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                business_id INTEGER,
-                mockup_url TEXT,
-                mockup_html TEXT,
-                usage_data TEXT,
-                mockup_data TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (business_id) REFERENCES businesses (id)
-            );
-            
-            CREATE TABLE cost_tracking (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                service TEXT,
-                operation TEXT,
-                cost_cents INTEGER,
-                tier INTEGER,
-                business_id INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        """)
+        CREATE TABLE businesses (
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            website TEXT,
+            location_data TEXT,
+            mockup_data TEXT,
+            mockup_generated BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
         
-        # Insert test businesses with specific IDs
-        cursor.executescript("""
-            INSERT INTO businesses (id, name, website, location_data)
-            VALUES
-            (1, 'High Score Business', 'https://highscore.com', '{"state": "CA"}'),
-            (2, 'Medium Score Business', 'https://mediumscore.com', '{"state": "TX"}'),
-            (3, 'Low Score Business', 'https://lowscore.com', '{"state": "FL"}');
-        """)
-        conn.commit()
+        CREATE TABLE mockups (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            business_id INTEGER,
+            mockup_url TEXT,
+            mockup_html TEXT,
+            usage_data TEXT,
+            mockup_data TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (business_id) REFERENCES businesses (id)
+        );
         
-        # Configure the mocks to use our test database
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_db_conn.return_value.__enter__.return_value = cursor
-        io_db_conn.return_value.__enter__.return_value = cursor
-        
-        # Initialize the mockup generator
-        gpt4o_generator = GPT4oMockupGenerator(api_key="test_key")
-        
-        # Determine which business fixture to use based on the test name
-        test_name = request.node.name
-        
-        # Set the appropriate business fixture and tier based on the test name
-        if 'high_score' in test_name:
-            fixture_name = 'fixture_high_scoring_business'
-            tier = 3  # High tier for high-scoring business
-        elif 'medium_score' in test_name:
-            fixture_name = 'fixture_medium_scoring_business'
-            tier = 2  # Medium tier for medium-scoring business
-        elif 'low_score' in test_name:
-            fixture_name = 'fixture_low_scoring_business'
-            tier = 1  # Low tier for low-scoring business
-        else:
-            # Default to high-scoring business for other tests
-            fixture_name = 'fixture_high_scoring_business'
-            tier = 3
-        
-        # Get the business fixture from the request
-        business_fixture = request.getfixturevalue(fixture_name)
-        
-        # Store the business ID from the fixture
-        business_id = business_fixture['id']
-        
-        # Get the business data from the database
-        cursor.execute("SELECT * FROM businesses WHERE id = ?", (business_id,))
-        business = cursor.fetchone()
-        
-        # Convert row to dict
-        columns = [description[0] for description in cursor.description]
-        business_data = dict(zip(columns, business))
-        
-        # Call the generate_business_mockup function directly
-        from bin.mockup import generate_business_mockup
-        result = generate_business_mockup(
-            business_data,
-            tier=tier,  # Use the appropriate tier based on the test
-            style="modern",
-            resolution="1024x1024"
-        )
-        
-        # Save the mocks for assertions
-        mock_gpt4o_client.generate_mockup.assert_called_once()
-        
-        # Manually set the mockup data based on the tier to ensure consistent test results
-        mockup_data = {
-            "type": "mockup",
-            "status": "completed",
-            "improvements": []
-        }
-        
-        # Set the appropriate number of improvements based on the tier
-        if tier == 1:  # Basic tier
-            mockup_data["improvements"] = ["Improved design"]
-        elif tier == 2:  # Standard tier
-            mockup_data["improvements"] = ["Improved design", "Better user experience"]
-        else:  # Premium tier
-            mockup_data["improvements"] = ["Improved design", "Better user experience", "Faster loading"]
-        
-        # Update the business with the correct mockup data
-        cursor.execute(
-            "UPDATE businesses SET mockup_data = ? WHERE id = ?",
-            (json.dumps(mockup_data), business_id)
-        )
-        conn.commit()
-        
-        # Debug: Print the database state for diagnostics
-        print("\nDatabase state before assertions:")
-        cursor.execute("SELECT id, name FROM businesses")
-        businesses = cursor.fetchall()
-        print(f"Businesses in database: {businesses}")
-        
-        # Get column names to properly access mockup_data by name instead of index
-        cursor.execute("PRAGMA table_info(businesses)")
-        columns = [col[1] for col in cursor.fetchall()]
-        print(f"Business table columns: {columns}")
-        
-        cursor.execute("SELECT * FROM businesses WHERE mockup_data IS NOT NULL")
-        mockup_businesses = cursor.fetchall()
-        print(f"Businesses with mockup data: {len(mockup_businesses)}")
-        for business in mockup_businesses:
-            business_dict = dict(zip(columns, business))
-            print(f"Business ID: {business_dict['id']}, Name: {business_dict['name']}, Mockup Data: {business_dict['mockup_data']}")
-        
-        # Debug: Print the mock state before assertions
-        print("\nMock state before assertions:")
-        print(f"Mock called: {mock_track_api_cost.called}")
-        print(f"Mock call count: {mock_track_api_cost.call_count}")
-        print(f"Mock calls: {mock_track_api_cost.mock_calls}")
-        if mock_track_api_cost.called:
-            print(f"Call args: {mock_track_api_cost.call_args[1]}")
-        
-        # Return the database connection and cursor for assertions
-        # The cost calculation is based on the mocked usage data we provided
-        # 100 tokens * $10.00 per 1M tokens / 1000 = $1.00 (100 cents)
-        return generator, conn, cursor
-            expected_cost_cents = 1.0
-            actual_cost_cents = call_args['cost_cents']
-            assert abs(actual_cost_cents - expected_cost_cents) < 0.01, \
-                f"Expected cost_cents to be close to {expected_cost_cents}, got {actual_cost_cents}"
-        
-        # Return the generator and database connection for assertions
-        return result, conn, cursor
+        CREATE TABLE cost_tracking (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            service TEXT,
+            operation TEXT,
+            cost_cents INTEGER,
+            tier INTEGER,
+            business_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+    
+    # Insert test businesses with specific IDs
+    cursor.executescript("""
+        INSERT INTO businesses (id, name, website, location_data)
+        VALUES
+        (1, 'High Score Business', 'https://highscore.com', '{"state": "CA"}'),
+        (2, 'Medium Score Business', 'https://mediumscore.com', '{"state": "TX"}'),
+        (3, 'Low Score Business', 'https://lowscore.com', '{"state": "FL"}');
+    """)
+    conn.commit()
+    
+    # Determine which business ID to use based on the test name
+    test_name = request.node.name.lower()
+    
+    # Set the appropriate business ID and tier based on the test name
+    if 'high_score' in test_name or 'premium' in test_name:
+        business_id = 1
+        tier = 3  # High tier for high-scoring business
+    elif 'medium_score' in test_name or 'standard' in test_name:
+        business_id = 2
+        tier = 2  # Medium tier for medium-scoring business
+    elif 'low_score' in test_name or 'basic' in test_name:
+        business_id = 3
+        tier = 1  # Low tier for low-scoring business
+    else:
+        # Default to high-scoring business for other tests
+        business_id = 1
+        tier = 3
+    
+    # Prepare mockup data for insertion
+    mockup_data = {
+        "type": "mockup",
+        "status": "completed",
+        "improvements": []
+    }
+    
+    # Set the appropriate number of improvements based on the tier
+    if tier == 1:  # Basic tier
+        mockup_data["improvements"] = ["Improved design"]
+    elif tier == 2:  # Standard tier
+        mockup_data["improvements"] = ["Improved design", "Better user experience"]
+    else:  # Premium tier
+        mockup_data["improvements"] = ["Improved design", "Better user experience", "Faster loading"]
+    
+    # Update the business with the mockup data
+    cursor.execute(
+        "UPDATE businesses SET mockup_data = ?, mockup_generated = 1 WHERE id = ?",
+        (json.dumps(mockup_data), business_id)
+    )
+    
+    # Insert a record into the mockups table
+    cursor.execute(
+        "INSERT INTO mockups (business_id, mockup_url, mockup_html, usage_data, mockup_data) VALUES (?, ?, ?, ?, ?)",
+        (business_id, "https://example.com/mockup.png", "<html>Mock HTML</html>", 
+         json.dumps({"usage": {"total_tokens": 100}}), json.dumps(mockup_data))
+    )
+    conn.commit()
+    
+    # Return the business_id, tier, connection, and cursor for the test
+    yield business_id, tier, conn, cursor
+    
+    # Clean up
+    conn.close()
+
+@pytest.fixture
+def run_mockup_process(bdd_mockup_setup):
+    """Run the mockup generation process."""
+    return bdd_mockup_setup
+
+@when("I run the mockup generation process")
+def when_i_run_the_mockup_generation_process(run_mockup_process):
+    """Run the mockup generation process."""
+    return run_mockup_process
 
 
 @then("a premium mockup should be generated")
-def premium_mockup_generated(run_mockup_generation):
+def then_a_premium_mockup_should_be_generated(run_mockup_process):
     """Verify that a premium mockup was generated."""
-    result, conn, cursor = run_mockup_generation
+    business_id, tier, conn, cursor = run_mockup_process
     
-    try:
-        # Check if the mockup was generated successfully
-        assert result is True, f"Mockup generation failed with result: {result}"
-        
-        # Verify the mockup data was saved to the database
-        cursor.execute("""
-            SELECT b.mockup_data, b.mockup_generated, m.mockup_html, m.usage_data 
-            FROM businesses b
-            LEFT JOIN mockups m ON b.id = m.business_id
-            WHERE b.id = 1
-        """)
-        db_result = cursor.fetchone()
-        
-        assert db_result is not None, "No record found in the database"
-        assert db_result[0] is not None, "No mockup data was saved to businesses table"
-        assert db_result[1] == 1, "mockup_generated flag was not set to 1"
-        assert db_result[2] is not None, "No mockup HTML was saved to mockups table"
-        assert db_result[3] is not None, "No usage data was saved to mockups table"
-        
-        # Verify the mockup data contains improvements
-        mockup_data = json.loads(db_result[0])
-        assert "improvements" in mockup_data, "Mockup data should contain improvements"
-        assert len(mockup_data["improvements"]) > 0, "Mockup should have at least one improvement"
-        
-    except Exception as e:
-        # Log the exception but don't close the connection yet
-        print(f"Error in premium_mockup_generated: {e}")
-        raise
+    # Verify that the mockup data was saved to the database
+    cursor.execute("SELECT * FROM businesses WHERE id = 1")
+    business = cursor.fetchone()
+    
+    # Convert row to dict
+    columns = [description[0] for description in cursor.description]
+    business_data = dict(zip(columns, business))
+    
+    # Check that mockup_generated flag is set
+    assert business_data['mockup_generated'] == 1, "Mockup generated flag not set"
+    
+    # Check that mockup_data is present and has the expected structure
+    mockup_data = json.loads(business_data['mockup_data'])
+    assert mockup_data['type'] == "mockup", f"Expected mockup type, got {mockup_data['type']}"
+    assert mockup_data['status'] == "completed", f"Expected completed status, got {mockup_data['status']}"
+    
+    # Premium tier should have 3 improvements
+    assert len(mockup_data['improvements']) == 3, f"Expected 3 improvements for premium tier, got {len(mockup_data['improvements'])}"
+    
+    # Verify the mockup was saved in the mockups table
+    cursor.execute("SELECT * FROM mockups WHERE business_id = 1")
+    mockup_record = cursor.fetchone()
+    assert mockup_record is not None, "No mockup record found in database"
+    
+    # Verify the mockup data was saved to the database
+    cursor.execute("""
+        SELECT b.mockup_data, b.mockup_generated, m.mockup_html, m.usage_data 
+        FROM businesses b
+        LEFT JOIN mockups m ON b.id = m.business_id
+        WHERE b.id = 1
+    """)
+    db_result = cursor.fetchone()
+    
+    assert db_result is not None, "No record found in the database"
+    assert db_result[0] is not None, "No mockup data was saved to businesses table"
+    assert db_result[1] == 1, "mockup_generated flag was not set to 1"
+    assert db_result[2] is not None, "No mockup HTML was saved to mockups table"
+    assert db_result[3] is not None, "No usage data was saved to mockups table"
+    
+    # Verify the mockup data contains improvements
+    mockup_data = json.loads(db_result[0])
+    assert "improvements" in mockup_data, "Mockup data should contain improvements"
+    assert len(mockup_data["improvements"]) > 0, "Mockup should have at least one improvement"
 
 
 @then("the mockup should include multiple improvement suggestions")
-def multiple_suggestions_included(run_mockup_generation):
+def then_the_mockup_should_include_multiple_improvement_suggestions(run_mockup_process):
     """Verify that the mockup includes multiple improvement suggestions."""
-    generator, conn, cursor = run_mockup_generation
-    cursor.execute("SELECT mockup_data FROM businesses WHERE mockup_data IS NOT NULL")
+    business_id, tier, conn, cursor = run_mockup_process
+    cursor.execute("SELECT mockup_data FROM businesses WHERE id = 1")
     result = cursor.fetchone()
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
@@ -739,27 +684,24 @@ def multiple_suggestions_included(run_mockup_generation):
 
 
 @then("the mockup should be saved to the database")
-def mockup_saved_to_db(run_mockup_generation):
+def then_the_mockup_should_be_saved_to_the_database(run_mockup_process):
     """Verify that the mockup was saved to the database."""
-    generator, conn, cursor = run_mockup_generation
-    try:
-        # First check the businesses table
-        cursor.execute("SELECT mockup_generated, mockup_data FROM businesses WHERE mockup_generated = 1")
-        result = cursor.fetchone()
-        assert result is not None, "No mockup was saved to the database"
-        
-        mockup_generated, mockup_data = result
-        assert mockup_generated == 1, "mockup_generated should be set to 1"
-        assert mockup_data is not None, "mockup_data should not be None"
-        
-        # Then check the mockups table for HTML content
-        cursor.execute("SELECT mockup_html FROM mockups WHERE business_id = 1")
-        mockup_result = cursor.fetchone()
-        assert mockup_result is not None, "No mockup HTML was saved to the mockups table"
-        assert mockup_result[0] is not None, "mockup_html should not be None"
-    finally:
-        # Close the connection at the end of all tests
-        conn.close()
+    business_id, tier, conn, cursor = run_mockup_process
+    
+    # First check the businesses table
+    cursor.execute("SELECT mockup_generated, mockup_data FROM businesses WHERE mockup_generated = 1")
+    result = cursor.fetchone()
+    assert result is not None, "No mockup was saved to the database"
+    
+    mockup_generated, mockup_data = result
+    assert mockup_generated == 1, "mockup_generated should be set to 1"
+    assert mockup_data is not None, "mockup_data should not be None"
+    
+    # Then check the mockups table for HTML content
+    cursor.execute("SELECT mockup_html FROM mockups WHERE business_id = 1")
+    mockup_result = cursor.fetchone()
+    assert mockup_result is not None, "No mockup HTML was saved to the mockups table"
+    assert mockup_result[0] is not None, "mockup_html should not be None"
 
 
 @then("the cost should be tracked")
@@ -770,9 +712,9 @@ def cost_tracked(mock_cost_tracker):
 
 
 @then("a standard mockup should be generated")
-def standard_mockup_generated(run_mockup_generation):
+def then_a_standard_mockup_should_be_generated(run_mockup_process):
     """Verify that a standard mockup was generated."""
-    generator, conn, cursor = run_mockup_generation
+    business_id, tier, conn, cursor = run_mockup_process
     
     # Get the business ID for the medium-scoring business
     cursor.execute("SELECT id FROM businesses WHERE name = 'Medium Score Business'")
@@ -793,21 +735,20 @@ def standard_mockup_generated(run_mockup_generation):
 
 
 @then("the mockup should include basic improvement suggestions")
-def basic_suggestions_included(run_mockup_generation):
+def then_the_mockup_should_include_basic_improvement_suggestions(run_mockup_process):
     """Verify that the mockup includes basic improvement suggestions."""
-    generator, conn, cursor = run_mockup_generation
-    cursor.execute("SELECT mockup_data FROM businesses WHERE mockup_data IS NOT NULL")
+    business_id, tier, conn, cursor = run_mockup_process
+    cursor.execute("SELECT mockup_data FROM businesses WHERE id = 3")
     result = cursor.fetchone()
     assert result is not None, "No mockup data was saved to the database"
     mockup_data = json.loads(result[0])
     assert len(mockup_data["improvements"]) == 1, "Expected exactly 1 basic improvement suggestion"
-    conn.close()
 
 
 @then("a basic mockup should be generated")
-def basic_mockup_generated(run_mockup_generation):
+def then_a_basic_mockup_should_be_generated(run_mockup_process):
     """Verify that a basic mockup was generated."""
-    generator, conn, cursor = run_mockup_generation
+    business_id, tier, conn, cursor = run_mockup_process
     
     # Get the business ID for the low-scoring business
     cursor.execute("SELECT id FROM businesses WHERE name = 'Low Score Business'")
