@@ -35,6 +35,9 @@ class MockWappalyzer:
     def analyze(self, *args, **kwargs):
         return {"technologies": []}
     
+    def analyze_with_categories(self, *args, **kwargs):
+        return {"technologies": []}
+    
     @classmethod
     def latest(cls):
         return cls()
