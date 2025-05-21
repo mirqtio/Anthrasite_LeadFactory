@@ -11,7 +11,7 @@ import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_bdd import given, scenario, then, when
+from pytest_bdd import given, then, when
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
