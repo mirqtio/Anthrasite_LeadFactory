@@ -70,4 +70,3 @@ These issues need to be fixed before merging to the main branch to ensure code q
 4. Fix whitespace issues (trailing whitespace, missing whitespace around operators)
 5. Ensure proper naming conventions for variables, functions, and classes
 6. Address any other style issues reported by the tools
-

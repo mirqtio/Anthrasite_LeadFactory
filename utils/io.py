@@ -6,9 +6,7 @@ Handles database connections, logging, and API requests.
 import os
 import sqlite3
 import time
-import urllib.parse
-from contextlib import contextmanager
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Tuple
 
 import psycopg2
 import psycopg2.extras
@@ -39,7 +37,7 @@ _pg_pool = None
 
 def get_postgres_pool():
     """Get or create the Postgres connection pool.
-    
+
     Returns:
         A connection pool for Postgres connections.
     """
@@ -61,14 +59,14 @@ def get_postgres_pool():
 
 class DatabaseConnection:
     """Context manager for database connections.
-    
+
     Supports both SQLite and Postgres connections based on environment configuration.
     If DATABASE_URL is set, uses Postgres, otherwise falls back to SQLite.
     """
 
     def __init__(self, db_path: Optional[str] = None):
         """Initialize database connection.
-        
+
         Args:
             db_path: Path to SQLite database file. If None, uses default path.
                      Only used if DATABASE_URL is not set (SQLite mode).
@@ -88,7 +86,7 @@ class DatabaseConnection:
                 # Fall back to SQLite if pool creation failed
                 self.is_postgres = False
                 return self._connect_sqlite()
-            
+
             try:
                 self.pool_connection = pool.getconn()
                 self.conn = self.pool_connection
@@ -103,7 +101,7 @@ class DatabaseConnection:
         else:
             # Use SQLite connection
             return self._connect_sqlite()
-    
+
     def _connect_sqlite(self):
         """Establish SQLite database connection and return cursor."""
         # Ensure data directory exists
@@ -127,11 +125,11 @@ class DatabaseConnection:
             # No exception, commit changes
             if self.conn:
                 self.conn.commit()
-        
+
         # Close cursor and connection
         if self.cursor:
             self.cursor.close()
-        
+
         if self.is_postgres:
             # Return connection to pool
             if self.pool_connection and get_postgres_pool():

@@ -115,7 +115,7 @@ run_stage() {
 
     log "INFO" "Completed stage $stage_num: $stage_name in $duration seconds"
     log_metric "$stage_name" "$status" $duration $count
-    
+
     # Record stage completion in batch tracker
     # Calculate completion percentage based on stage number (1-6)
     local completion_percentage=$(( (stage_num * 100) / 6 ))

@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import utility functions
-from utils.io import (DatabaseConnection, get_active_zip_codes, get_verticals, load_yaml_config,
+from utils.io import (get_active_zip_codes, get_verticals, load_yaml_config,
                       make_api_request, mark_zip_done, save_business)
 # Import logging configuration first
 from utils.logging_config import get_logger
@@ -228,28 +228,28 @@ def extract_email_from_website(website: str, business_id: Optional[int] = None) 
     """
     if not website:
         return None
-    
+
     try:
         # Import raw data retention utilities
         from utils.raw_data_retention import fetch_website_html, store_html
-        
+
         # Fetch HTML content
         html_content = fetch_website_html(website)
-        
+
         # Store HTML content if business_id is provided
         if html_content and business_id:
             html_path = store_html(html_content, website, business_id)
             logger.info(f"Stored HTML for business {business_id}, website: {website}, path: {html_path}")
-        
+
         # Extract email from domain (placeholder for actual email extraction)
         from urllib.parse import urlparse
         domain = urlparse(website).netloc
         if domain:
             return f"info@{domain}"
-            
+
     except Exception as e:
         logger.warning(f"Error extracting email from website {website}: {e}")
-    
+
     return None
 
 

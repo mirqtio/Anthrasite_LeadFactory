@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS raw_html_storage (
 DO $$
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
+        SELECT 1 FROM information_schema.columns
         WHERE table_name = 'businesses' AND column_name = 'html_path'
     ) THEN
         ALTER TABLE businesses ADD COLUMN html_path TEXT;

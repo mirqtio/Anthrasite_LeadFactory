@@ -6,17 +6,13 @@ Handles unsubscribe requests for CAN-SPAM compliance.
 
 import os
 import sys
-import json
-import logging
-from typing import Dict, Optional
-from urllib.parse import parse_qs
+from typing import Optional
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, Response, Form, HTTPException
+from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,7 +28,8 @@ load_dotenv()
 
 # Constants
 PORT = int(os.getenv("UNSUBSCRIBE_PORT", "8080"))
-HOST = os.getenv("UNSUBSCRIBE_HOST", "0.0.0.0")
+# Default to localhost for security, can be overridden with UNSUBSCRIBE_HOST env var
+HOST = os.getenv("UNSUBSCRIBE_HOST", "127.0.0.1")
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
 # Create FastAPI app
@@ -307,26 +304,26 @@ async def process_unsubscribe(
             "unsubscribe.html",
             {"request": request, "email": email, "success": False, "error": "Invalid email address"}
         )
-    
+
     # Check if already unsubscribed
     if is_email_unsubscribed(email):
         return templates.TemplateResponse(
             "unsubscribe_success.html",
             {"request": request, "email": email}
         )
-    
+
     # Combine reason and comments
     reason_text = reason or "No reason provided"
     if comments:
         reason_text += f" - Comments: {comments}"
-    
+
     # Get client IP and user agent
     client_ip = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
-    
+
     # Add to unsubscribe list
     success = add_unsubscribe(email, reason_text, client_ip, user_agent)
-    
+
     if success:
         logger.info(f"User unsubscribed: {email}, Reason: {reason_text}")
         return templates.TemplateResponse(

@@ -33,7 +33,7 @@ log() {
 create_mock_endpoint() {
   local port="$1"
   local status="$2"
-  
+
   # Create a simple HTTP server using Python
   python3 -c "
 import http.server
@@ -46,7 +46,7 @@ class MockHandler(http.server.BaseHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.end_headers()
         self.wfile.write(b'{\"status\": \"$status\"}')
-    
+
     def log_message(self, format, *args):
         # Suppress log messages
         return
@@ -61,20 +61,20 @@ except OSError as e:
     print(f'Error: {e}')
     sys.exit(1)
 " &
-  
+
   # Store the PID of the Python server
   echo $! > /tmp/mock_server_$port.pid
-  
+
   # Give the server a moment to start
   sleep 1
-  
+
   log "INFO" "Started mock endpoint on port $port with status $status"
 }
 
 # Function to stop the mock endpoint
 stop_mock_endpoint() {
   local port="$1"
-  
+
   if [ -f "/tmp/mock_server_$port.pid" ]; then
     local pid=$(cat "/tmp/mock_server_$port.pid")
     kill $pid 2>/dev/null || true
@@ -86,7 +86,7 @@ stop_mock_endpoint() {
 # Function to create a test configuration file
 create_test_config() {
   local port="$1"
-  
+
   cat > "$TEST_CONFIG_FILE" << EOF
 # Test health check configuration
 health_check:
@@ -112,14 +112,14 @@ health_check:
     email: ""
     slack_webhook: ""
 EOF
-  
+
   log "INFO" "Created test configuration file at $TEST_CONFIG_FILE"
 }
 
 # Function to create a test state file
 create_test_state() {
   local failures="$1"
-  
+
   cat > "$TEST_STATE_FILE" << EOF
 {
   "last_check": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
@@ -128,20 +128,20 @@ create_test_state() {
   "last_boot": "$(date -u -v-1d +"%Y-%m-%dT%H:%M:%SZ")"
 }
 EOF
-  
+
   log "INFO" "Created test state file with $failures failures"
 }
 
 # Function to run the health check script with test configuration
 run_health_check() {
   log "INFO" "Running health check script with test configuration"
-  
+
   # Run the health check script with test configuration
   $HEALTH_CHECK_SCRIPT --config="$TEST_CONFIG_FILE" --check-only --verbose 2>&1 | tee -a "$LOG_FILE"
-  
+
   # Get the exit code
   local exit_code=${PIPESTATUS[0]}
-  
+
   log "INFO" "Health check script exited with code $exit_code"
   return $exit_code
 }
@@ -149,10 +149,10 @@ run_health_check() {
 # Function to check the state file for consecutive failures
 check_state_failures() {
   local expected_failures="$1"
-  
+
   if [ -f "$TEST_STATE_FILE" ]; then
     local failures=$(grep -o '"consecutive_failures": [0-9]*' "$TEST_STATE_FILE" | awk '{print $2}')
-    
+
     if [ "$failures" -eq "$expected_failures" ]; then
       log "INFO" "State file shows $failures consecutive failures as expected"
       return 0
@@ -173,18 +173,18 @@ run_test_case() {
   local endpoint_status="$3"
   local expected_failures="$4"
   local expected_boot="$5"
-  
+
   log "INFO" "=== Running test case: $test_name ==="
-  
+
   # Create test state with initial failures
   create_test_state $initial_failures
-  
+
   # Create mock endpoint with specified status
   create_mock_endpoint 8081 $endpoint_status
-  
+
   # Create test configuration
   create_test_config 8081
-  
+
   # Run health check script
   if [ "$expected_boot" = "true" ]; then
     log "INFO" "Expecting boot to be triggered"
@@ -193,14 +193,14 @@ run_test_case() {
     log "INFO" "Not expecting boot to be triggered"
     run_health_check
   fi
-  
+
   # Check state file for consecutive failures
   check_state_failures $expected_failures
   local state_check_result=$?
-  
+
   # Stop mock endpoint
   stop_mock_endpoint 8081
-  
+
   # Return test result
   if [ $state_check_result -eq 0 ]; then
     log "INFO" "Test case passed: $test_name"
@@ -214,13 +214,13 @@ run_test_case() {
 # Function to clean up after tests
 cleanup() {
   log "INFO" "Cleaning up test resources"
-  
+
   # Stop any running mock endpoints
   stop_mock_endpoint 8081
-  
+
   # Remove test files
   rm -f "$TEST_CONFIG_FILE" "$TEST_STATE_FILE"
-  
+
   log "INFO" "Cleanup complete"
 }
 
@@ -230,19 +230,19 @@ trap cleanup EXIT
 # Main test function
 run_tests() {
   log "INFO" "Starting health check threshold tests"
-  
+
   # Test case 1: 0 failures + success = 0 failures
   run_test_case "0 failures + success = 0 failures" 0 200 0 false
-  
+
   # Test case 2: 0 failures + failure = 1 failure
   run_test_case "0 failures + failure = 1 failure" 0 500 1 false
-  
+
   # Test case 3: 1 failure + failure = 2 failures (should trigger boot)
   run_test_case "1 failure + failure = 2 failures (should trigger boot)" 1 500 2 true
-  
+
   # Test case 4: 1 failure + success = 0 failures
   run_test_case "1 failure + success = 0 failures" 1 200 0 false
-  
+
   log "INFO" "All tests completed"
 }
 

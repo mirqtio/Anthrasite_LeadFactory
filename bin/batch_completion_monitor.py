@@ -7,7 +7,6 @@ Monitors batch completion status and sends alerts if batches don't complete on t
 import os
 import sys
 import time
-import logging
 import smtplib
 import argparse
 from datetime import datetime
@@ -36,11 +35,11 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", os.getenv("SENDGRID_API_KEY", ""))
 
 def send_alert_email(subject: str, message: str) -> bool:
     """Send an alert email.
-    
+
     Args:
         subject: Email subject.
         message: Email message.
-        
+
     Returns:
         True if successful, False otherwise.
     """
@@ -50,19 +49,19 @@ def send_alert_email(subject: str, message: str) -> bool:
         msg["From"] = ALERT_EMAIL_FROM
         msg["To"] = ALERT_EMAIL_TO
         msg["Subject"] = subject
-        
+
         # Add message body
         msg.attach(MIMEText(message, "plain"))
-        
+
         # Connect to SMTP server
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        
+
         # Send email
         server.send_message(msg)
         server.quit()
-        
+
         logger.info(f"Sent alert email: {subject}")
         return True
     except Exception as e:
@@ -73,11 +72,11 @@ def send_alert_email(subject: str, message: str) -> bool:
 def check_and_alert() -> None:
     """Check batch completion status and send alerts if needed."""
     completed_on_time, reason = check_batch_completion()
-    
+
     if not completed_on_time:
         # Get detailed batch status
         status = get_batch_status()
-        
+
         # Create alert message
         subject = f"ALERT: Batch Completion Failure - {reason}"
         message = f"""
@@ -94,18 +93,18 @@ Batch Details:
 
 Stage Completion:
 """
-        
+
         # Add stage completion details
         stages = status.get('stages', {})
         for stage, details in stages.items():
             message += f"- {stage.title()}: {details.get('completion_percentage', 0):.2f}% at {details.get('timestamp', 'Unknown')}\n"
-        
+
         # Add recent alerts
         message += "\nRecent Alerts:\n"
         alerts = status.get('alerts', [])
         for alert in alerts:
             message += f"- {alert.get('timestamp', 'Unknown')}: {alert.get('message', 'Unknown')}\n"
-        
+
         # Send alert
         send_alert_email(subject, message)
         logger.warning(f"Batch completion alert sent: {reason}")
@@ -115,18 +114,18 @@ Stage Completion:
 
 def monitor_batch_completion(interval: int = CHECK_INTERVAL) -> None:
     """Monitor batch completion status continuously.
-    
+
     Args:
         interval: Check interval in seconds.
     """
     logger.info(f"Starting batch completion monitor (interval: {interval}s)")
-    
+
     while True:
         try:
             check_and_alert()
         except Exception as e:
             logger.error(f"Error in batch completion monitor: {e}")
-        
+
         # Sleep until next check
         time.sleep(interval)
 
@@ -146,7 +145,7 @@ def main() -> int:
         help="Run check once and exit",
     )
     args = parser.parse_args()
-    
+
     try:
         if args.once:
             # Run check once
@@ -159,7 +158,7 @@ def main() -> int:
     except Exception as e:
         logger.error(f"Batch completion monitor failed: {e}")
         return 1
-    
+
     return 0
 
 

@@ -35,13 +35,13 @@ def cost_tracker_file():
     """Create a temporary cost tracker file for testing."""
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         temp_file.write(b"{}")
-    
+
     # Set environment variable to use the temp file
     original_file = os.environ.get("COST_TRACKER_FILE")
     os.environ["COST_TRACKER_FILE"] = temp_file.name
-    
+
     yield temp_file.name
-    
+
     # Clean up
     os.unlink(temp_file.name)
     if original_file:
@@ -55,20 +55,20 @@ def mock_database():
     """Create a temporary SQLite database for testing."""
     with tempfile.NamedTemporaryFile(delete=False, suffix='.db') as temp_file:
         pass
-    
+
     # Set environment variable to use the temp database
     original_db = os.environ.get("DATABASE_URL")
     os.environ["DATABASE_URL"] = temp_file.name
-    
+
     # Create test database
     conn = sqlite3.connect(temp_file.name)
     cursor = conn.cursor()
     cursor.execute("CREATE TABLE businesses (id INTEGER PRIMARY KEY, name TEXT, email TEXT)")
     conn.commit()
     conn.close()
-    
+
     yield temp_file.name
-    
+
     # Clean up
     os.unlink(temp_file.name)
     if original_db:
@@ -89,24 +89,24 @@ def step_impl(context):
 def step_impl(context, count):
     """Add leads to the database."""
     context.lead_count = count
-    
+
     # Connect to database
     conn = sqlite3.connect(context.mock_database)
     cursor = conn.cursor()
-    
+
     # Clear existing data
     cursor.execute("DELETE FROM businesses")
-    
+
     # Add test leads
     for i in range(count):
         cursor.execute(
             "INSERT INTO businesses (name, email) VALUES (?, ?)",
             (f"Business {i}", f"business{i}@example.com")
         )
-    
+
     conn.commit()
     conn.close()
-    
+
     # Verify lead count
     assert get_lead_count() == count
 
@@ -115,16 +115,16 @@ def step_impl(context, count):
 def step_impl(context, cost):
     """Set the total monthly cost."""
     context.monthly_cost = cost
-    
+
     # Get current data
     data = get_cost_data()
-    
+
     # Update monthly costs
     data["monthly_costs"] = {"total": cost}
-    
+
     # Save updated data
     save_cost_data(data)
-    
+
     # Verify total monthly cost
     assert get_total_monthly_cost() == cost
 
@@ -139,7 +139,7 @@ def step_impl(context):
 def step_impl(context, cost):
     """Verify the cost per lead."""
     assert context.cost_per_lead == cost
-    
+
     # Also verify it was saved in the cost data
     data = get_cost_data()
     assert data["cost_per_lead"] == cost
@@ -157,13 +157,13 @@ def step_impl(context):
 def step_impl(context, cost):
     """Set the cost per lead."""
     context.cost_per_lead = cost
-    
+
     # Get current data
     data = get_cost_data()
-    
+
     # Update cost per lead
     data["cost_per_lead"] = cost
-    
+
     # Save updated data
     save_cost_data(data)
 
@@ -213,7 +213,7 @@ def step_impl(context, cost):
 def step_impl(context, cost):
     """Verify the GPU cost was incremented."""
     assert context.tracked is True
-    
+
     # Verify the cost was saved in the cost data
     data = get_cost_data()
     assert data["gpu_costs"]["total"] == cost
@@ -225,7 +225,7 @@ def step_impl(context, cost):
 def step_impl(context):
     """Verify the GPU cost was not incremented."""
     assert context.tracked is False
-    
+
     # Verify the cost was not saved in the cost data
     data = get_cost_data()
     assert data["gpu_costs"]["total"] == 0
@@ -249,16 +249,16 @@ def step_impl(context):
 def step_impl(context, cost):
     """Set the daily GPU cost."""
     context.daily_gpu_cost = cost
-    
+
     # Get current data
     data = get_cost_data()
-    
+
     # Update GPU costs
     if "gpu_costs" not in data:
         data["gpu_costs"] = {"total": 0.0, "daily": 0.0, "monthly": 0.0}
-    
+
     data["gpu_costs"]["daily"] = cost
-    
+
     # Save updated data
     save_cost_data(data)
 
@@ -267,16 +267,16 @@ def step_impl(context, cost):
 def step_impl(context, cost):
     """Set the monthly GPU cost."""
     context.monthly_gpu_cost = cost
-    
+
     # Get current data
     data = get_cost_data()
-    
+
     # Update GPU costs
     if "gpu_costs" not in data:
         data["gpu_costs"] = {"total": 0.0, "daily": 0.0, "monthly": 0.0}
-    
+
     data["gpu_costs"]["monthly"] = cost
-    
+
     # Save updated data
     save_cost_data(data)
 
@@ -330,7 +330,7 @@ def step_impl(context):
     assert "total_monthly_cost" in context.results
     assert "monthly_budget" in context.results
     assert "budget_utilization" in context.results
-    
+
     # Verify the cost per lead metric was updated
     context.mock_record.assert_called_once()
 

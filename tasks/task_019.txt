@@ -79,4 +79,3 @@ All code changes must follow the standard workflow for development, testing, qua
 4. Create SpamHigh alert rule (warning ≥ 0.05%, critical ≥ 0.1%)
 5. Document all environment variables and alert rules in the project documentation
 6. Ensure CI pipeline uses these environment variables for testing
-

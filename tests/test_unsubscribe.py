@@ -42,7 +42,7 @@ def mock_db():
     # Create in-memory SQLite database
     conn = sqlite3.connect(":memory:")
     cursor = conn.cursor()
-    
+
     # Create unsubscribes table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS unsubscribes (
@@ -54,7 +54,7 @@ def mock_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # Create emails table for testing
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS emails (
@@ -70,7 +70,7 @@ def mock_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # Create businesses table for testing
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS businesses (
@@ -83,16 +83,16 @@ def mock_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     conn.commit()
-    
+
     # Mock DatabaseConnection to use in-memory database
     with patch("utils.io.DatabaseConnection") as mock:
         db_mock = MagicMock()
         db_mock.__enter__.return_value = cursor
         mock.return_value = db_mock
         yield cursor
-    
+
     # Close connection
     conn.close()
 
@@ -136,7 +136,7 @@ def try_to_send_email(mock_db, email):
     # Get the business ID
     mock_db.execute("SELECT id FROM businesses WHERE email = ?", (email,))
     business_id = mock_db.fetchone()[0]
-    
+
     # Create business data
     business = {
         "id": business_id,
@@ -144,11 +144,11 @@ def try_to_send_email(mock_db, email):
         "email": email,
         "contact_name": "Test User",
     }
-    
+
     # Mock email sender
     email_sender = MagicMock()
     email_sender.send_email.return_value = (True, "test-message-id", None)
-    
+
     # Try to send email
     return send_business_email(business, email_sender, "Test template", is_dry_run=True)
 

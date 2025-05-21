@@ -86,7 +86,7 @@ def update_metrics():
     try:
         # Update batch completion metrics
         update_batch_metrics()
-        
+
         # Update cost metrics
         daily_costs = get_cost_breakdown_by_service(period="day")
         monthly_costs = get_cost_breakdown_by_service(period="month")
@@ -114,27 +114,26 @@ def update_metrics():
 
         # Update scaling gate status
         SCALING_GATE_STATUS.set(1 if is_scaling_gate_active() else 0)
-        
+
         # Update cost per lead metric if leads exist
         try:
             import sqlite3
-            from pathlib import Path
-            
+
             # Connect to database
             db_path = os.getenv("DATABASE_PATH", "leadfactory.db")
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            
+
             # Get total number of leads
             cursor.execute("SELECT COUNT(*) FROM businesses")
             total_leads = cursor.fetchone()[0]
-            
+
             # Calculate cost per lead if leads exist
             if total_leads > 0:
                 cost_per_lead = total_monthly_cost / total_leads
                 COST_PER_LEAD_GAUGE.set(cost_per_lead)
                 logger.debug(f"Cost per lead: ${cost_per_lead:.2f}")
-            
+
             # Check if GPU burst mode is active
             gpu_burst = os.getenv("GPU_BURST", "0") == "1"
             if gpu_burst:
@@ -142,7 +141,7 @@ def update_metrics():
                 gpu_cost = daily_costs.get("openai", 0) * 0.8  # Estimate 80% of OpenAI cost is GPU
                 GPU_COST_GAUGE.labels(operation="mockup_generation").set(gpu_cost)
                 logger.debug(f"GPU cost for mockup generation: ${gpu_cost:.2f}")
-            
+
             conn.close()
         except Exception as e:
             logger.warning(f"Error updating cost per lead metric: {e}")
@@ -224,7 +223,7 @@ def start_metrics_server(host: str = "127.0.0.1", port: int = 8000):
         port: Port to listen on.
     """
     import uvicorn
-    
+
     # Start batch metrics updater thread
     logger.info("Starting batch metrics updater thread")
     start_metrics_updater(interval_seconds=int(os.getenv("BATCH_METRICS_UPDATE_INTERVAL", "60")))

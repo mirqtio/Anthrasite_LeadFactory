@@ -48,7 +48,7 @@ groups:
           severity: warning
           service: leadfactory
           team: data-engineering
-      
+
       - name: BatchCompletionFailed
         condition: B
         data:
@@ -92,7 +92,7 @@ groups:
           severity: critical
           service: leadfactory
           team: data-engineering
-      
+
       - name: HighCostPerLead
         condition: B
         data:
@@ -136,7 +136,7 @@ groups:
           severity: warning
           service: leadfactory
           team: data-engineering
-      
+
       - name: HighGPUCost
         condition: B
         data:

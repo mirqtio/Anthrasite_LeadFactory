@@ -40,7 +40,7 @@ jobs:
       - name: Run pre-commit hooks
         run: |
           pre-commit run --all-files
-          
+
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -192,7 +192,7 @@ jobs:
               print('All required tables exist in SQLite')
           conn.close()
           "
-          
+
       - name: Create migration script for Postgres
         run: |
           # Create a migration script for Postgres
@@ -216,7 +216,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Features table
           CREATE TABLE IF NOT EXISTS features (
               id SERIAL PRIMARY KEY,
@@ -229,7 +229,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Mockups table
           CREATE TABLE IF NOT EXISTS mockups (
               id SERIAL PRIMARY KEY,
@@ -239,7 +239,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Emails table
           CREATE TABLE IF NOT EXISTS emails (
               id SERIAL PRIMARY KEY,
@@ -253,7 +253,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Candidate duplicate pairs table
           CREATE TABLE IF NOT EXISTS candidate_duplicate_pairs (
               id SERIAL PRIMARY KEY,
@@ -265,7 +265,7 @@ jobs:
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               CONSTRAINT unique_pair UNIQUE (business_id_1, business_id_2)
           );
-          
+
           -- Business merges table
           CREATE TABLE IF NOT EXISTS business_merges (
               id SERIAL PRIMARY KEY,
@@ -275,7 +275,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Zip queue table
           CREATE TABLE IF NOT EXISTS zip_queue (
               id SERIAL PRIMARY KEY,
@@ -285,7 +285,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Verticals table
           CREATE TABLE IF NOT EXISTS verticals (
               id SERIAL PRIMARY KEY,
@@ -294,7 +294,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Cost tracking table
           CREATE TABLE IF NOT EXISTS cost_tracking (
               id SERIAL PRIMARY KEY,
@@ -304,7 +304,7 @@ jobs:
               details JSONB,
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Email metrics table
           CREATE TABLE IF NOT EXISTS email_metrics (
               id SERIAL PRIMARY KEY,
@@ -319,7 +319,7 @@ jobs:
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          
+
           -- Create indexes
           CREATE INDEX IF NOT EXISTS idx_businesses_name ON businesses(name);
           CREATE INDEX IF NOT EXISTS idx_businesses_zip ON businesses(zip);
@@ -335,12 +335,12 @@ jobs:
           CREATE INDEX IF NOT EXISTS idx_cost_tracking_date ON cost_tracking(date);
           CREATE INDEX IF NOT EXISTS idx_email_metrics_date ON email_metrics(date);
           EOL
-          
+
       - name: Validate Postgres schema
         run: |
           # Apply schema to Postgres
           PGPASSWORD=postgres psql -h localhost -U postgres -d leadfactory_test -f scripts/postgres_schema.sql
-          
+
           # Check for required tables in Postgres
           python -c "
           import psycopg2, sys

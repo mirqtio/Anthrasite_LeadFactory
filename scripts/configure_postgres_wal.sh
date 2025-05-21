@@ -64,16 +64,16 @@ if [[ "$IS_SUPABASE" == *"t"* ]]; then
     log "Connected to Supabase PostgreSQL server"
     log "NOTE: Supabase already has WAL and point-in-time recovery configured by default"
     log "No additional configuration needed for Supabase PostgreSQL"
-    
+
     # Verify WAL settings
     log "Verifying WAL settings on Supabase PostgreSQL"
     WAL_LEVEL=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SHOW wal_level;")
     ARCHIVE_MODE=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SHOW archive_mode;")
-    
+
     log "Current WAL settings:"
     log "  wal_level: $WAL_LEVEL"
     log "  archive_mode: $ARCHIVE_MODE"
-    
+
     log "Supabase PostgreSQL configuration verified"
     exit 0
 fi

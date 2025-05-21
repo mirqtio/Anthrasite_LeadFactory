@@ -35,17 +35,17 @@ def batch_tracker_file():
     """Create a temporary batch tracker file for testing."""
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         temp_file.write(b"{}")
-    
+
     # Set environment variable to use the temp file
     original_file = os.environ.get("BATCH_TRACKER_FILE")
     os.environ["BATCH_TRACKER_FILE"] = temp_file.name
-    
+
     # Set deadline timezone and hour for testing
     os.environ["BATCH_COMPLETION_DEADLINE_HOUR"] = "5"
     os.environ["BATCH_COMPLETION_TIMEZONE"] = "America/New_York"
-    
+
     yield temp_file.name
-    
+
     # Clean up
     os.unlink(temp_file.name)
     if original_file:
@@ -75,7 +75,7 @@ def step_impl(context):
     """Verify the batch start timestamp was saved."""
     with open(context.batch_tracker_file, "r") as f:
         data = json.load(f)
-    
+
     assert "current_batch_start" in data
     # Verify timestamp is in ISO format and recent
     start_time = datetime.fromisoformat(data["current_batch_start"])
@@ -88,7 +88,7 @@ def step_impl(context):
     """Verify the batch completion gauge was reset."""
     with open(context.batch_tracker_file, "r") as f:
         data = json.load(f)
-    
+
     assert "completion_percentage" in data
     assert data["completion_percentage"] == 0.0
     assert "stages" in data
@@ -116,7 +116,7 @@ def step_impl(context, stage, percentage):
     """Verify the stage completion was recorded correctly."""
     with open(context.batch_tracker_file, "r") as f:
         data = json.load(f)
-    
+
     assert "stages" in data
     assert stage in data["stages"]
     assert "completion_percentage" in data["stages"][stage]
@@ -128,7 +128,7 @@ def step_impl(context, percentage, stage):
     """Verify the batch completion gauge shows the correct percentage for a stage."""
     with open(context.batch_tracker_file, "r") as f:
         data = json.load(f)
-    
+
     assert "stages" in data
     assert stage in data["stages"]
     assert "completion_percentage" in data["stages"][stage]
@@ -156,7 +156,7 @@ def step_impl(context):
     """Verify the batch end timestamp was saved."""
     with open(context.batch_tracker_file, "r") as f:
         data = json.load(f)
-    
+
     assert "current_batch_end" in data
     # Verify timestamp is in ISO format and recent
     end_time = datetime.fromisoformat(data["current_batch_end"])
@@ -169,7 +169,7 @@ def step_impl(context):
     """Verify the batch completion gauge shows 100% for all stages."""
     with open(context.batch_tracker_file, "r") as f:
         data = json.load(f)
-    
+
     assert "completion_percentage" in data
     assert data["completion_percentage"] == 100.0
 
@@ -185,10 +185,10 @@ def step_impl(context):
     """Ensure the batch is not marked as completed."""
     with open(context.batch_tracker_file, "r") as f:
         data = json.load(f)
-    
+
     if "current_batch_end" in data:
         del data["current_batch_end"]
-    
+
     with open(context.batch_tracker_file, "w") as f:
         json.dump(data, f)
 
@@ -199,7 +199,7 @@ def step_impl(context):
     # Mock datetime.now to return a time after the deadline
     context.mock_now_patcher = patch("utils.batch_tracker.datetime")
     context.mock_now = context.mock_now_patcher.start()
-    
+
     # Set to 6 AM EST (after the 5 AM deadline)
     mock_now = datetime.utcnow().replace(hour=11, minute=0, second=0)  # 6 AM EST = 11 AM UTC
     context.mock_now.utcnow.return_value = mock_now
@@ -247,11 +247,11 @@ def step_impl(context):
     """Set up a scenario where a batch has not been completed on time."""
     # Start a batch but don't complete it
     record_batch_start()
-    
+
     # Set the time to after the deadline
     context.mock_now_patcher = patch("utils.batch_tracker.datetime")
     context.mock_now = context.mock_now_patcher.start()
-    
+
     # Set to 6 AM EST (after the 5 AM deadline)
     mock_now = datetime.utcnow().replace(hour=11, minute=0, second=0)  # 6 AM EST = 11 AM UTC
     context.mock_now.utcnow.return_value = mock_now
@@ -263,7 +263,7 @@ def step_impl(context):
     """Simulate the batch completion monitor running."""
     context.mock_send_alert = patch("bin.batch_completion_monitor.send_alert_email").start()
     context.mock_send_alert.return_value = True
-    
+
     check_and_alert()
 
 

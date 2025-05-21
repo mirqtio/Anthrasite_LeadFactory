@@ -6,10 +6,9 @@ Utilities for logging LLM interactions and managing retention.
 
 import os
 import sys
-import json
 import time
 import datetime
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Any, Union
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,28 +30,28 @@ RETENTION_DAYS = int(os.getenv("DATA_RETENTION_DAYS", "90"))
 
 class LLMLogger:
     """Logger for LLM interactions with retention management."""
-    
+
     def __init__(self, model_version: str = DEFAULT_MODEL_VERSION):
         """Initialize LLM logger.
-        
+
         Args:
             model_version: Version of the LLM model being used.
         """
         self.model_version = model_version
         self.start_time = None
         self.end_time = None
-    
+
     def __enter__(self):
         """Start timing the LLM interaction."""
         self.start_time = time.time()
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """End timing the LLM interaction."""
         self.end_time = time.time()
         if exc_type:
             logger.warning(f"LLM interaction failed: {exc_val}")
-    
+
     def log(
         self,
         operation: str,
@@ -65,7 +64,7 @@ class LLMLogger:
         metadata: Optional[Dict] = None,
     ) -> Optional[int]:
         """Log an LLM interaction.
-        
+
         Args:
             operation: Type of operation (e.g., 'deduplication', 'mockup_generation').
             prompt_text: Text of the prompt sent to the LLM.
@@ -75,7 +74,7 @@ class LLMLogger:
             tokens_completion: Number of tokens in the completion.
             status: Status of the interaction (success, error, etc.).
             metadata: Additional metadata for the interaction.
-            
+
         Returns:
             ID of the log entry, or None if logging failed.
         """
@@ -83,7 +82,7 @@ class LLMLogger:
         duration_ms = None
         if self.start_time and self.end_time:
             duration_ms = int((self.end_time - self.start_time) * 1000)
-        
+
         # Log the interaction
         log_id = log_llm_interaction(
             operation=operation,
@@ -97,7 +96,7 @@ class LLMLogger:
             status=status,
             metadata=metadata,
         )
-        
+
         return log_id
 
 
@@ -111,7 +110,7 @@ def log_deduplication(
     tokens_completion: Optional[int] = None,
 ) -> Optional[int]:
     """Log a deduplication LLM interaction.
-    
+
     Args:
         prompt_text: Text of the prompt sent to the LLM.
         response_json: JSON response from the LLM.
@@ -120,7 +119,7 @@ def log_deduplication(
         similarity_score: Similarity score between the businesses.
         tokens_prompt: Number of tokens in the prompt.
         tokens_completion: Number of tokens in the completion.
-        
+
     Returns:
         ID of the log entry, or None if logging failed.
     """
@@ -130,7 +129,7 @@ def log_deduplication(
         "business_id2": business_id2,
         "similarity_score": similarity_score,
     }
-    
+
     # Use the LLM logger
     with LLMLogger() as llm_logger:
         log_id = llm_logger.log(
@@ -142,7 +141,7 @@ def log_deduplication(
             tokens_completion=tokens_completion,
             metadata=metadata,
         )
-    
+
     return log_id
 
 
@@ -155,7 +154,7 @@ def log_mockup_generation(
     tokens_completion: Optional[int] = None,
 ) -> Optional[int]:
     """Log a mockup generation LLM interaction.
-    
+
     Args:
         prompt_text: Text of the prompt sent to the LLM.
         response_json: JSON response from the LLM.
@@ -163,7 +162,7 @@ def log_mockup_generation(
         mockup_id: Mockup ID if available.
         tokens_prompt: Number of tokens in the prompt.
         tokens_completion: Number of tokens in the completion.
-        
+
     Returns:
         ID of the log entry, or None if logging failed.
     """
@@ -171,7 +170,7 @@ def log_mockup_generation(
     metadata = {}
     if mockup_id:
         metadata["mockup_id"] = mockup_id
-    
+
     # Use the LLM logger
     with LLMLogger() as llm_logger:
         log_id = llm_logger.log(
@@ -183,7 +182,7 @@ def log_mockup_generation(
             tokens_completion=tokens_completion,
             metadata=metadata,
         )
-    
+
     return log_id
 
 
@@ -192,11 +191,11 @@ def get_recent_llm_logs(
     limit: int = 100,
 ) -> List[Dict]:
     """Get recent LLM logs from the database.
-    
+
     Args:
         operation: Filter by operation type.
         limit: Maximum number of logs to return.
-        
+
     Returns:
         List of log entries.
     """
@@ -209,12 +208,12 @@ def get_business_llm_logs(
     limit: int = 100,
 ) -> List[Dict]:
     """Get LLM logs for a specific business.
-    
+
     Args:
         business_id: Business ID to filter by.
         operation: Filter by operation type.
         limit: Maximum number of logs to return.
-        
+
     Returns:
         List of log entries.
     """
@@ -223,27 +222,27 @@ def get_business_llm_logs(
 
 def check_retention_status() -> Dict[str, Any]:
     """Check the status of data retention.
-    
+
     Returns:
         Dictionary with retention status information.
     """
     # Identify expired data
     expired_html_files, expired_llm_logs = identify_expired_data()
-    
+
     # Get counts of total data
     with DatabaseConnection() as cursor:
         # Count HTML files
         cursor.execute("SELECT COUNT(*) as count FROM raw_html_storage")
         html_count = cursor.fetchone()['count']
-        
+
         # Count LLM logs
         cursor.execute("SELECT COUNT(*) as count FROM llm_logs")
         llm_logs_count = cursor.fetchone()['count']
-    
+
     # Calculate retention percentages
     html_retention_percentage = 100 - (len(expired_html_files) / html_count * 100) if html_count > 0 else 100
     llm_retention_percentage = 100 - (len(expired_llm_logs) / llm_logs_count * 100) if llm_logs_count > 0 else 100
-    
+
     # Prepare status report
     status = {
         "retention_days": RETENTION_DAYS,
@@ -259,5 +258,5 @@ def check_retention_status() -> Dict[str, Any]:
         },
         "timestamp": datetime.datetime.now().isoformat(),
     }
-    
+
     return status

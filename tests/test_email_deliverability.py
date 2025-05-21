@@ -68,10 +68,10 @@ def set_bounce_rate(mock_sendgrid_api, rate):
         }
     ]
     mock_sendgrid_api['get'].return_value.json.return_value = mock_response
-    
+
     # Set environment variable for testing
     os.environ['BOUNCE_RATE_THRESHOLD'] = '0.02'  # 2% threshold
-    
+
     # Store the bounce rate in a global variable for the test
     global test_bounce_rate
     test_bounce_rate = rate
@@ -81,11 +81,11 @@ def set_spam_rate(mock_sendgrid_api, rate):
     """Set the spam complaint rate for testing."""
     # Get the existing mock response
     mock_response = mock_sendgrid_api['get'].return_value.json()
-    
+
     # If the response is a function, call it to get the actual value
     if callable(mock_response):
         mock_response = mock_response()
-    
+
     # If no response exists yet, create one
     if not mock_response:
         mock_response = [
@@ -99,16 +99,16 @@ def set_spam_rate(mock_sendgrid_api, rate):
                 ]
             }
         ]
-    
+
     # Add spam reports to the metrics
     mock_response[0]['stats'][0]['metrics']['spam_reports'] = int(1000 * rate)
-    
+
     # Update the mock response
     mock_sendgrid_api['get'].return_value.json.return_value = mock_response
-    
+
     # Set environment variable for testing
     os.environ['SPAM_RATE_THRESHOLD'] = '0.001'  # 0.1% threshold
-    
+
     # Store the spam rate in a global variable for the test
     global test_spam_rate
     test_spam_rate = rate
@@ -129,14 +129,14 @@ def set_ip_pool_bounce_rate(mock_sendgrid_api, ip_pool, rate):
             ]
         }
     ]
-    
+
     # Update the mock response for this IP pool
     mock_sendgrid_api['get'].return_value.json.return_value = mock_response
-    
+
     # Store the IP pool bounce rate in the global dictionary
     global test_ip_pool_bounce_rates
     test_ip_pool_bounce_rates[ip_pool] = rate
-    
+
     # Configure the mock to return different responses based on the URL
     def side_effect(url, *args, **kwargs):
         mock_resp = MagicMock(status_code=200)
@@ -145,7 +145,7 @@ def set_ip_pool_bounce_rate(mock_sendgrid_api, ip_pool, rate):
         else:
             mock_resp.json.return_value = []
         return mock_resp
-    
+
     mock_sendgrid_api['get'].side_effect = side_effect
 
 @given(parsers.parse('the subuser "{subuser}" has a bounce rate of {rate:f}'))
@@ -164,7 +164,7 @@ def set_subuser_bounce_rate(mock_sendgrid_api, subuser, rate):
             ]
         }
     ]
-    
+
     # Configure the mock to return different responses based on the URL
     def side_effect(url, *args, **kwargs):
         mock_resp = MagicMock(status_code=200)
@@ -173,9 +173,9 @@ def set_subuser_bounce_rate(mock_sendgrid_api, subuser, rate):
         else:
             mock_resp.json.return_value = []
         return mock_resp
-    
+
     mock_sendgrid_api['get'].side_effect = side_effect
-    
+
     # Store the subuser bounce rate in the global dictionary
     global test_subuser_bounce_rates
     test_subuser_bounce_rates[subuser] = rate
@@ -200,7 +200,7 @@ def check_ip_pool_bounce_rate(email_sender, ip_pool):
     """Check the bounce rate for a specific IP pool."""
     # Get the bounce rate from the global dictionary
     global test_ip_pool_bounce_rates
-    
+
     # Store the bounce rate in the email_sender for assertions
     email_sender.ip_pool_bounce_rate = test_ip_pool_bounce_rates.get(ip_pool, 0.01)
 
@@ -209,7 +209,7 @@ def check_subuser_bounce_rate(email_sender, subuser):
     """Check the bounce rate for a specific subuser."""
     # Get the bounce rate from the global dictionary
     global test_subuser_bounce_rates
-    
+
     # Store the bounce rate in the email_sender for assertions
     email_sender.subuser_bounce_rate = test_subuser_bounce_rates.get(subuser, 0.01)
 
@@ -218,18 +218,18 @@ def attempt_send_email(email_sender, mock_sendgrid_api):
     """Attempt to send an email."""
     # Get the bounce and spam rates from the global variables
     global test_bounce_rate, test_spam_rate
-    
+
     # Store the rates in the email_sender for test assertions
     email_sender.bounce_rate = test_bounce_rate
     email_sender.spam_rate = test_spam_rate
-    
+
     # Determine if the email should be sent based on thresholds
     bounce_threshold = float(os.environ.get('BOUNCE_RATE_THRESHOLD', '0.02'))  # 2%
     spam_threshold = float(os.environ.get('SPAM_RATE_THRESHOLD', '0.001'))    # 0.1%
-    
+
     # Check if we should block sending
     should_block = test_bounce_rate > bounce_threshold or test_spam_rate > spam_threshold
-    
+
     # Set the send result based on the thresholds
     if should_block:
         # For tests with high bounce or spam rates, block the send
@@ -238,7 +238,7 @@ def attempt_send_email(email_sender, mock_sendgrid_api):
         # For tests with acceptable metrics, allow the send
         mock_sendgrid_api['post'].return_value.status_code = 202
         mock_sendgrid_api['post'].return_value.json.return_value = {'message_id': 'test-message-id'}
-        
+
         # Return a successful result
         email_sender.send_result = (True, 'test-message-id', None)
 
@@ -298,7 +298,3 @@ def verify_subuser_bounce_rate(email_sender, subuser, rate):
     else:
         # For primary subuser, we use the rate from the test (3%)
         assert email_sender.subuser_bounce_rate == rate
-
-
-
-

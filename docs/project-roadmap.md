@@ -130,5 +130,5 @@ The development team will continue to follow the Feature Development Workflow Te
 
 ---
 
-*Document created: May 21, 2025*  
+*Document created: May 21, 2025*
 *Last updated: May 21, 2025*

@@ -7,7 +7,6 @@ Prometheus metrics for batch completion monitoring.
 import os
 import sys
 import time
-from typing import Dict, Any, Optional
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -62,23 +61,23 @@ def update_batch_metrics() -> None:
     try:
         # Get current batch status
         status = get_batch_status()
-        
+
         # Update overall completion percentage
         completion_percentage = status.get("completion_percentage", 0)
         BATCH_COMPLETION_PERCENTAGE.set(completion_percentage)
-        
+
         # Update stage completion percentages
         stages = status.get("stages", {})
         for stage, details in stages.items():
             stage_percentage = details.get("completion_percentage", 0)
             BATCH_STAGE_COMPLETION_PERCENTAGE.labels(stage=stage).set(stage_percentage)
-        
+
         # Update batch completion success
         if "current_batch_end" in status:
             BATCH_COMPLETION_SUCCESS.set(1)
         else:
             BATCH_COMPLETION_SUCCESS.set(0)
-        
+
         # Update batch completion time if available
         if "current_batch_start" in status and "current_batch_end" in status:
             try:
@@ -89,7 +88,7 @@ def update_batch_metrics() -> None:
                 BATCH_COMPLETION_TIME.observe(duration_seconds)
             except Exception as e:
                 logger.error(f"Error calculating batch duration: {e}")
-        
+
         logger.debug(f"Updated batch metrics: completion={completion_percentage}%")
     except Exception as e:
         logger.error(f"Error updating batch metrics: {e}")
@@ -97,7 +96,7 @@ def update_batch_metrics() -> None:
 
 def record_cost_per_lead(cost_per_lead: float) -> None:
     """Record the cost per lead for the current batch.
-    
+
     Args:
         cost_per_lead: Cost per lead in dollars.
     """
@@ -110,7 +109,7 @@ def record_cost_per_lead(cost_per_lead: float) -> None:
 
 def increment_gpu_cost(cost_dollars: float) -> None:
     """Increment the GPU cost counter.
-    
+
     Args:
         cost_dollars: Cost in dollars to add to the counter.
     """
@@ -136,12 +135,12 @@ def check_gpu_burst_and_record_cost() -> None:
 
 def start_metrics_updater(interval_seconds: int = 60) -> None:
     """Start a background thread to periodically update metrics.
-    
+
     Args:
         interval_seconds: Update interval in seconds.
     """
     import threading
-    
+
     def updater_thread():
         logger.info(f"Starting batch metrics updater (interval: {interval_seconds}s)")
         while True:
@@ -149,10 +148,10 @@ def start_metrics_updater(interval_seconds: int = 60) -> None:
                 update_batch_metrics()
             except Exception as e:
                 logger.error(f"Error in batch metrics updater: {e}")
-            
+
             # Sleep until next update
             time.sleep(interval_seconds)
-    
+
     # Start updater thread
     thread = threading.Thread(target=updater_thread, daemon=True)
     thread.start()

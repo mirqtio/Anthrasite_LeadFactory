@@ -60,4 +60,3 @@ Review all code changes related to CAN-SPAM compliance to ensure they adhere to 
 5. CI verification
 
 This task serves as a final verification step before considering the CAN-SPAM compliance implementation complete.
-

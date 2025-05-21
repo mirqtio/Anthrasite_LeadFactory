@@ -80,17 +80,17 @@ unset PGPASSWORD
 # Add to RSYNC backup set if RSYNC_TARGET_HOST is configured
 if [ -n "$RSYNC_TARGET_HOST" ] && [ -n "$RSYNC_TARGET_USER" ] && [ -n "$RSYNC_TARGET_PATH" ]; then
     log "Adding backup to RSYNC backup set"
-    
+
     # Check if SSH key is specified
     if [ -n "$RSYNC_SSH_KEY_PATH" ]; then
         RSYNC_SSH_OPTS="-e ssh -i $RSYNC_SSH_KEY_PATH"
     else
         RSYNC_SSH_OPTS=""
     fi
-    
+
     # Sync backup to remote server
     rsync -avz $RSYNC_SSH_OPTS "$BACKUP_FILE" "$RSYNC_TARGET_USER@$RSYNC_TARGET_HOST:$RSYNC_TARGET_PATH/"
-    
+
     if [ $? -eq 0 ]; then
         log "Backup successfully added to RSYNC backup set"
     else

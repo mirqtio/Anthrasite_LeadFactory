@@ -38,6 +38,22 @@ load_dotenv()
 logger = get_logger(__name__)
 # Global flag for dry run mode
 DRY_RUN = False
+
+
+def is_valid_email(email: str) -> bool:
+    """Validate email address format.
+
+    Args:
+        email: Email address to validate
+
+    Returns:
+        bool: True if email is valid, False otherwise
+    """
+    # Basic email validation pattern
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
+
+
 # Try to import cost tracker
 try:
     from utils.cost_tracker import get_daily_cost, get_monthly_cost, log_cost
@@ -130,7 +146,7 @@ class SendGridEmailSender:
         if is_dry_run:
             logger.info(f"[DRY RUN] Would send email to {to_name} <{to_email}>")
             return True, f"dry-run-{int(time.time())}", None
-            
+
         # Check bounce rate before sending
         if not is_dry_run:
             bounce_rate = self.get_bounce_rate(ip_pool=self.ip_pool, subuser=self.subuser)
@@ -138,7 +154,7 @@ class SendGridEmailSender:
                 error_message = f"Bounce rate ({bounce_rate:.2%}) exceeds threshold ({BOUNCE_RATE_THRESHOLD:.2%})"
                 logger.error(error_message)
                 return False, None, error_message
-                
+
             # Check spam rate before sending
             spam_rate = self.get_spam_rate(ip_pool=self.ip_pool, subuser=self.subuser)
             if spam_rate > SPAM_RATE_THRESHOLD:
@@ -158,11 +174,11 @@ class SendGridEmailSender:
                 "open_tracking": {"enable": True},
             },
         }
-        
+
         # Add IP pool if specified
         if self.ip_pool:
             payload["ip_pool_name"] = self.ip_pool
-            
+
         # Add subuser if specified (via mail_settings)
         if self.subuser:
             # Use on-behalf-of header for subuser
@@ -236,14 +252,14 @@ class SendGridEmailSender:
             # Format dates for API
             start_date_str = start_date.strftime("%Y-%m-%d")
             end_date_str = end_date.strftime("%Y-%m-%d")
-            
+
             # Build URL with optional filters
             url = f"{self.base_url}/stats?start_date={start_date_str}&end_date={end_date_str}&aggregated_by=day"
             if ip_pool:
                 url += f"&ip_pool_name={ip_pool}"
             if subuser:
                 url += f"&subuser_name={subuser}"
-                
+
             # Get stats
             response = requests.get(
                 url,
@@ -262,7 +278,7 @@ class SendGridEmailSender:
                 total_bounces += metrics.get("bounces", 0)
             # Calculate bounce rate
             bounce_rate = total_bounces / total_requests if total_requests > 0 else 0.0
-            
+
             # Log with appropriate context
             context = ""
             if ip_pool:
@@ -270,7 +286,7 @@ class SendGridEmailSender:
             if subuser:
                 context += f" for subuser '{subuser}'"
             logger.info(f"Bounce rate{context} for the last {days} days: {bounce_rate:.2%}")
-            
+
             # Export metric to Prometheus if available
             try:
                 from utils.metrics import BOUNCE_RATE_GAUGE
@@ -283,12 +299,12 @@ class SendGridEmailSender:
             except (ImportError, ModuleNotFoundError):
                 # Metrics module not available, skip exporting metrics
                 pass
-                
+
             return bounce_rate
         except Exception as e:
             logger.error(f"Error getting bounce rate: {e}")
             return 0.0
-            
+
     def get_spam_rate(self, days: int = 7, ip_pool: str = None, subuser: str = None) -> float:
         """Get spam complaint rate for the last N days.
         Args:
@@ -307,14 +323,14 @@ class SendGridEmailSender:
             # Format dates for API
             start_date_str = start_date.strftime("%Y-%m-%d")
             end_date_str = end_date.strftime("%Y-%m-%d")
-            
+
             # Build URL with optional filters
             url = f"{self.base_url}/stats?start_date={start_date_str}&end_date={end_date_str}&aggregated_by=day"
             if ip_pool:
                 url += f"&ip_pool_name={ip_pool}"
             if subuser:
                 url += f"&subuser_name={subuser}"
-                
+
             # Get stats
             response = requests.get(
                 url,
@@ -333,7 +349,7 @@ class SendGridEmailSender:
                 total_spam_reports += metrics.get("spam_reports", 0)
             # Calculate spam rate
             spam_rate = total_spam_reports / total_requests if total_requests > 0 else 0.0
-            
+
             # Log with appropriate context
             context = ""
             if ip_pool:
@@ -341,7 +357,7 @@ class SendGridEmailSender:
             if subuser:
                 context += f" for subuser '{subuser}'"
             logger.info(f"Spam complaint rate{context} for the last {days} days: {spam_rate:.4%}")
-            
+
             # Export metric to Prometheus if available
             try:
                 from utils.metrics import SPAM_RATE_GAUGE
@@ -354,7 +370,7 @@ class SendGridEmailSender:
             except (ImportError, ModuleNotFoundError):
                 # Metrics module not available, skip exporting metrics
                 pass
-                
+
             return spam_rate
         except Exception as e:
             logger.error(f"Error getting spam complaint rate: {e}")
@@ -675,7 +691,7 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
     )
     text_content += "Schedule a free consultation: https://calendly.com/anthrasite/website-consultation\n\n"
     text_content += f"Best regards,\n{SENDGRID_FROM_NAME}\nAnthrasite Web Services\n{SENDGRID_FROM_EMAIL}\n"
-    
+
     # Add CAN-SPAM compliant footer with physical address and unsubscribe instructions
     text_content += "\n---\n"
     text_content += f"This email was sent to {template_vars['to_email']}\n"
@@ -1027,33 +1043,33 @@ def main():
     # Get current IP pool and subuser
     current_ip_pool = SENDGRID_IP_POOL_NAMES[CURRENT_IP_POOL_INDEX] if SENDGRID_IP_POOL_NAMES else None
     current_subuser = SENDGRID_SUBUSER_NAMES[CURRENT_SUBUSER_INDEX] if SENDGRID_SUBUSER_NAMES else None
-    
+
     # Check bounce rate for current IP pool/subuser
     bounce_rate = email_sender.get_bounce_rate(ip_pool=current_ip_pool, subuser=current_subuser)
     spam_rate = email_sender.get_spam_rate(ip_pool=current_ip_pool, subuser=current_subuser)
-    
+
     # Log current configuration
     logger.info(f"Using IP pool: {current_ip_pool or 'default'}, Subuser: {current_subuser or 'default'}")
     logger.info(f"Current bounce rate: {bounce_rate:.2%}, threshold: {BOUNCE_RATE_THRESHOLD:.2%}")
     logger.info(f"Current spam rate: {spam_rate:.4%}, threshold: {SPAM_RATE_THRESHOLD:.4%}")
-    
+
     # Check if we need to switch IP pool or subuser due to high bounce rate
     if bounce_rate > BOUNCE_RATE_THRESHOLD and not args.dry_run:
         logger.warning(f"Bounce rate ({bounce_rate:.2%}) exceeds threshold ({BOUNCE_RATE_THRESHOLD:.2%})")
-        
+
         # Try to switch to next IP pool
         if len(SENDGRID_IP_POOL_NAMES) > 1:
             next_ip_index = (CURRENT_IP_POOL_INDEX + 1) % len(SENDGRID_IP_POOL_NAMES)
             next_ip_pool = SENDGRID_IP_POOL_NAMES[next_ip_index]
-            
+
             # Check bounce rate for next IP pool
             next_bounce_rate = email_sender.get_bounce_rate(ip_pool=next_ip_pool)
-            
+
             if next_bounce_rate < BOUNCE_RATE_THRESHOLD:
                 # Update IP pool index in environment
                 os.environ["CURRENT_IP_POOL_INDEX"] = str(next_ip_index)
                 logger.info(f"Switching to IP pool '{next_ip_pool}' with bounce rate {next_bounce_rate:.2%}")
-                
+
                 # Reinitialize email sender with new IP pool
                 email_sender = SendGridEmailSender(
                     api_key=SENDGRID_API_KEY,
@@ -1067,15 +1083,15 @@ def main():
                 if len(SENDGRID_SUBUSER_NAMES) > 1:
                     next_subuser_index = (CURRENT_SUBUSER_INDEX + 1) % len(SENDGRID_SUBUSER_NAMES)
                     next_subuser = SENDGRID_SUBUSER_NAMES[next_subuser_index]
-                    
+
                     # Check bounce rate for next subuser
                     next_bounce_rate = email_sender.get_bounce_rate(subuser=next_subuser)
-                    
+
                     if next_bounce_rate < BOUNCE_RATE_THRESHOLD:
                         # Update subuser index in environment
                         os.environ["CURRENT_SUBUSER_INDEX"] = str(next_subuser_index)
                         logger.info(f"Switching to subuser '{next_subuser}' with bounce rate {next_bounce_rate:.2%}")
-                        
+
                         # Reinitialize email sender with new subuser
                         email_sender = SendGridEmailSender(
                             api_key=SENDGRID_API_KEY,
@@ -1085,24 +1101,24 @@ def main():
                             subuser=next_subuser
                         )
                     else:
-                        logger.error(f"All IP pools and subusers have bounce rates above threshold. Cannot send emails.")
+                        logger.error("All IP pools and subusers have bounce rates above threshold. Cannot send emails.")
                         return 1
                 else:
-                    logger.error(f"No alternative subusers available and IP pool bounce rate is too high. Cannot send emails.")
+                    logger.error("No alternative subusers available and IP pool bounce rate is too high. Cannot send emails.")
                     return 1
         elif len(SENDGRID_SUBUSER_NAMES) > 1:
             # No IP pools available, try switching subuser
             next_subuser_index = (CURRENT_SUBUSER_INDEX + 1) % len(SENDGRID_SUBUSER_NAMES)
             next_subuser = SENDGRID_SUBUSER_NAMES[next_subuser_index]
-            
+
             # Check bounce rate for next subuser
             next_bounce_rate = email_sender.get_bounce_rate(subuser=next_subuser)
-            
+
             if next_bounce_rate < BOUNCE_RATE_THRESHOLD:
                 # Update subuser index in environment
                 os.environ["CURRENT_SUBUSER_INDEX"] = str(next_subuser_index)
                 logger.info(f"Switching to subuser '{next_subuser}' with bounce rate {next_bounce_rate:.2%}")
-                
+
                 # Reinitialize email sender with new subuser
                 email_sender = SendGridEmailSender(
                     api_key=SENDGRID_API_KEY,
@@ -1111,12 +1127,12 @@ def main():
                     subuser=next_subuser
                 )
             else:
-                logger.error(f"All subusers have bounce rates above threshold. Cannot send emails.")
+                logger.error("All subusers have bounce rates above threshold. Cannot send emails.")
                 return 1
         else:
-            logger.error(f"No alternative IP pools or subusers available. Cannot send emails due to high bounce rate.")
+            logger.error("No alternative IP pools or subusers available. Cannot send emails due to high bounce rate.")
             return 1
-    
+
     # Check if spam rate is too high
     if spam_rate > SPAM_RATE_THRESHOLD and not args.dry_run:
         logger.error(f"Spam complaint rate ({spam_rate:.4%}) exceeds threshold ({SPAM_RATE_THRESHOLD:.4%})")
