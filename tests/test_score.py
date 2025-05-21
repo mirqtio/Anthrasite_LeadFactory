@@ -3,13 +3,14 @@ BDD tests for the lead scoring (04_score.py)
 """
 
 import os
-import sys
-import pytest
-import tempfile
 import sqlite3
+import sys
+import tempfile
 from pathlib import Path
-from pytest_bdd import given, when, then
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
+from pytest_bdd import given, then, when
 
 # Add project root to path
 project_root = Path(__file__).parent.parent

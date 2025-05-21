@@ -2,15 +2,16 @@
 Unit tests for the scaling gate functionality in the Anthrasite Lead-Factory.
 """
 
-import os
-import sys
 import json
-import pytest
-import tempfile
+import os
 import shutil
 import sqlite3
+import sys
+import tempfile
 from datetime import datetime
 from unittest.mock import patch
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -29,13 +30,10 @@ def mock_datetime(request):
 # Check if all required functions are available
 try:
     import utils.cost_tracker
-    from utils.cost_tracker import (
-        is_scaling_gate_active,
-        set_scaling_gate,
-        should_allow_operation,
-        get_scaling_gate_history,
-        check_operation_permission,
-    )
+    from utils.cost_tracker import (check_operation_permission,
+                                    get_scaling_gate_history,
+                                    is_scaling_gate_active, set_scaling_gate,
+                                    should_allow_operation)
 except ImportError as e:
     # Skip tests if any required functions are missing
     pytest.skip(f"Required function not available: {e}", allow_module_level=True)

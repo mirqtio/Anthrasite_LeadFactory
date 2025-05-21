@@ -2,12 +2,8 @@
 Tests for budget audit functionality.
 """
 
-from utils.cost_tracker import (
-    get_daily_cost,
-    get_monthly_cost,
-    check_budget_thresholds,
-    is_scaling_gate_active,
-)
+from utils.cost_tracker import (check_budget_thresholds, get_daily_cost,
+                                get_monthly_cost, is_scaling_gate_active)
 
 
 def test_daily_cost_tracking():

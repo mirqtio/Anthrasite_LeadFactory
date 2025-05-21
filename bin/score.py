@@ -9,16 +9,18 @@ Options:
     --id BUSINESS_ID Process only the specified business ID
     --recalculate    Recalculate scores for businesses that already have scores
 """
-import os
-import sys
 import argparse
 import json
+import os
 import re
-import yaml
+import sys
 from typing import Dict, List, Optional, Tuple
+
+import yaml
 from dotenv import load_dotenv
-from utils.logging_config import get_logger
+
 from utils.io import DatabaseConnection
+from utils.logging_config import get_logger
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

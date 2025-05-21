@@ -2,13 +2,15 @@
 Tests for the metrics module.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 # Check if fastapi is available
 fastapi_available = False
 try:
     from fastapi.testclient import TestClient
+
     from utils.metrics import app, update_metrics
 
     # Create test client

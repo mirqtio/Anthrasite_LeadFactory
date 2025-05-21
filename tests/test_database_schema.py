@@ -3,9 +3,10 @@ Feature: Database Schema Validation
   Tests for database schema and seed helpers
 """
 
-import pytest
 import sqlite3
 from pathlib import Path
+
+import pytest
 
 # Paths
 DB_MIGRATIONS_PATH = Path(__file__).parent.parent / "db" / "migrations"

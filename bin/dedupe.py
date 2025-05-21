@@ -15,17 +15,17 @@ import os
 import re
 import sys
 from typing import Dict, List, Optional, Tuple
+
 import Levenshtein
 import requests
 from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# Import logging configuration first
-from utils.logging_config import get_logger
-
 # Import utility functions
 from utils.io import DatabaseConnection, track_api_cost
+# Import logging configuration first
+from utils.logging_config import get_logger
 
 # Load environment variables
 load_dotenv()

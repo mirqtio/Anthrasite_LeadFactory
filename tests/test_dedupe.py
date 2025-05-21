@@ -3,12 +3,13 @@ BDD tests for the lead deduplication (03_dedupe.py)
 """
 
 import os
-import sys
-import pytest
-from pytest_bdd import scenario, given, when, then
-from unittest.mock import patch, MagicMock
 import sqlite3
+import sys
 import tempfile
+from unittest.mock import MagicMock, patch
+
+import pytest
+from pytest_bdd import given, scenario, then, when
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

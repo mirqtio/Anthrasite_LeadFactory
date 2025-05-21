@@ -18,14 +18,15 @@ import re
 import sys
 import time
 from typing import Dict, List, Optional, Tuple
+
 import requests
 from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.io import DatabaseConnection, track_api_cost
 # Import all necessary modules before any local imports
 from utils.logging_config import get_logger
-from utils.io import DatabaseConnection, track_api_cost
 
 # Set up logging
 logger = get_logger(__name__)

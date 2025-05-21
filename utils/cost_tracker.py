@@ -5,8 +5,7 @@ Cost tracking utilities for API usage.
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Optional, Any
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # Import logger
 from utils.logging_config import logger

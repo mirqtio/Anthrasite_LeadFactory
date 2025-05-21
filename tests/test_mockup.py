@@ -4,24 +4,21 @@ BDD tests for the mockup generation (05_mockup.py)
 
 import json
 import os
-import sys
-import pytest
 import sqlite3
+import sys
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-# Import the mock from conftest
-from conftest import mock_track_api_cost
-
-# Now import the modules that use track_api_cost
-from bin.mockup import (
-    generate_business_mockup,
-)
-from utils.io import DatabaseConnection
-
+import pytest
 # Import test utilities after setting up mocks
 import pytest_bdd
-from pytest_bdd import scenario, given, when, then
+# Import the mock from conftest
+from conftest import mock_track_api_cost
+from pytest_bdd import given, scenario, then, when
+
+# Now import the modules that use track_api_cost
+from bin.mockup import generate_business_mockup
+from utils.io import DatabaseConnection
 
 # Register scenarios from the feature file
 pytest_bdd.scenarios("features/mockup.feature")

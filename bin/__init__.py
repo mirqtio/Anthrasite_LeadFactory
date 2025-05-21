@@ -4,7 +4,7 @@ This makes the bin directory a proper Python package, allowing for cleaner impor
 """
 
 # Import modules to make them available when importing from bin
-from . import scrape, enrich, dedupe, score, mockup, email_queue, budget_audit
+from . import budget_audit, dedupe, email_queue, enrich, mockup, score, scrape
 
 # Make the modules available at the package level
 __all__ = [

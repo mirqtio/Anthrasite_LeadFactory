@@ -2,12 +2,13 @@
 Pytest configuration and fixtures for testing.
 """
 
-import os
-import sys
-import sqlite3
 import atexit
+import os
+import sqlite3
+import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 # Add the project root to the Python path

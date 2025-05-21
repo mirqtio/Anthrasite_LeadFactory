@@ -5,8 +5,10 @@ Step definitions for the lead enrichment feature tests.
 import json
 import sqlite3
 from unittest.mock import patch
+
 import pytest
 from pytest_bdd import given, parsers, scenario, then, when
+
 from bin import enrich
 
 

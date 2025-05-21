@@ -16,19 +16,18 @@ import os
 import sys
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
+
 import requests
 from dotenv import load_dotenv
-
 # Import Wappalyzer (using the new API structure)
 from wappalyzer import Wappalyzer, WebPage
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# Import logging configuration first
-from utils.logging_config import get_logger
-
 # Import utility functions
 from utils.io import DatabaseConnection, make_api_request, track_api_cost
+# Import logging configuration first
+from utils.logging_config import get_logger
 
 # Load environment variables
 load_dotenv()

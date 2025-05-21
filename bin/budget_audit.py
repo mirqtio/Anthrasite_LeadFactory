@@ -7,20 +7,16 @@ and scaling gate status of the Anthrasite Lead-Factory system.
 import argparse
 import os
 import sys
+
 from dotenv import load_dotenv
+
+from utils.cost_tracker import (check_budget_thresholds, export_cost_report,
+                                export_prometheus_metrics,
+                                get_cost_breakdown_by_operation,
+                                get_cost_breakdown_by_service, get_daily_cost,
+                                get_monthly_cost, get_scaling_gate_history,
+                                is_scaling_gate_active, set_scaling_gate)
 from utils.logging_config import get_logger
-from utils.cost_tracker import (
-    get_daily_cost,
-    get_monthly_cost,
-    get_cost_breakdown_by_service,
-    get_cost_breakdown_by_operation,
-    check_budget_thresholds,
-    is_scaling_gate_active,
-    set_scaling_gate,
-    get_scaling_gate_history,
-    export_cost_report,
-    export_prometheus_metrics,
-)
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

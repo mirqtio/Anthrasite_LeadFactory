@@ -4,8 +4,9 @@ Unit tests for the process_business_email function in the email_queue module.
 
 import os
 import sys
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

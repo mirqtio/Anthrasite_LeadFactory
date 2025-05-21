@@ -1,10 +1,11 @@
 """Unit tests for the mockup generation functionality"""
 
 import os
-import sys
-import pytest
-from unittest.mock import patch, MagicMock
 import sqlite3
+import sys
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

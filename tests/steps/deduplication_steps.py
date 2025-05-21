@@ -4,8 +4,10 @@ Step definitions for the lead deduplication feature tests.
 
 import sqlite3
 from unittest.mock import patch
+
 import pytest
 from pytest_bdd import given, scenario, then, when
+
 from bin import dedupe
 
 

@@ -2,9 +2,10 @@
 Tests for Prometheus metrics endpoint and alert rules.
 """
 
+import unittest.mock as mock
+
 import pytest
 import requests
-import unittest.mock as mock
 from prometheus_client.parser import text_string_to_metric_families
 
 
@@ -72,8 +73,9 @@ def test_metrics_include_required_gauges(mock_metrics_response):
 
 def test_alert_rules_file_exists():
     """Test that the alert rules file exists and is valid YAML."""
-    import yaml
     from pathlib import Path
+
+    import yaml
 
     alert_rules_path = Path("etc/alert_rules.yml")
     assert alert_rules_path.exists(), "Alert rules file does not exist"

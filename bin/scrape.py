@@ -13,22 +13,16 @@ import argparse
 import os
 import sys
 from typing import Dict, List, Optional, Tuple
+
 from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Import utility functions
+from utils.io import (get_active_zip_codes, get_verticals, load_yaml_config,
+                      make_api_request, mark_zip_done, save_business)
 # Import logging configuration first
 from utils.logging_config import get_logger
-
-# Import utility functions
-from utils.io import (
-    make_api_request,
-    get_active_zip_codes,
-    get_verticals,
-    save_business,
-    mark_zip_done,
-    load_yaml_config,
-)
 
 # Set up logging
 logger = get_logger(__name__)

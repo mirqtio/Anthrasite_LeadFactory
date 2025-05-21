@@ -2,15 +2,16 @@
 BDD tests for the email queue (06_email_queue.py)
 """
 
-import os
-import sys
-import json
-import pytest
-from pytest_bdd import scenario, given, when, then
-from unittest.mock import patch, MagicMock
-import sqlite3
-import tempfile
 import base64
+import json
+import os
+import sqlite3
+import sys
+import tempfile
+from unittest.mock import MagicMock, patch
+
+import pytest
+from pytest_bdd import given, scenario, then, when
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

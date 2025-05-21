@@ -18,16 +18,17 @@ import os
 import re
 import sys
 import time
-import requests
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
+
+import requests
 from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.io import DatabaseConnection
 # Import logging configuration first
 from utils.logging_config import get_logger
-from utils.io import DatabaseConnection
 
 # Debug flag - set to True to enable debug logging
 DEBUG = True
@@ -39,7 +40,7 @@ logger = get_logger(__name__)
 DRY_RUN = False
 # Try to import cost tracker
 try:
-    from utils.cost_tracker import log_cost, get_daily_cost, get_monthly_cost
+    from utils.cost_tracker import get_daily_cost, get_monthly_cost, log_cost
 except ImportError:
     # Define dummy functions if cost_tracker is not available
     def log_cost(service, operation, cost_dollars):

@@ -2,16 +2,17 @@
 Tests for the lead enrichment (02_enrich.py)
 """
 
-import os
-import sys
 import json
-import pytest
+import os
 import sqlite3
+import sys
 import tempfile
-import responses
+from unittest.mock import MagicMock, patch
+
+import pytest
 import requests
-from unittest.mock import patch, MagicMock
-from pytest_bdd import scenario, given, when, then, parsers
+import responses
+from pytest_bdd import given, parsers, scenario, then, when
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

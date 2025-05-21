@@ -3,16 +3,17 @@ BDD tests for the lead scraper (01_scrape.py)
 """
 
 import argparse
-import os
-import sys
-import sqlite3
-import tempfile
 import importlib
+import os
+import sqlite3
+import sys
+import tempfile
 from contextlib import contextmanager
 from typing import Generator
 from unittest.mock import MagicMock, patch
+
 import pytest
-from pytest_bdd import given, when, then, scenario, parsers
+from pytest_bdd import given, parsers, scenario, then, when
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -22,7 +23,7 @@ os.environ["GOOGLE_KEY"] = "dummy_google_key_1234567890abcdefghijklmnopqrstuvwxy
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 # Now import the scraper module and specific components
 from bin import scrape
-from bin.scrape import YelpAPI, GooglePlacesAPI, main
+from bin.scrape import GooglePlacesAPI, YelpAPI, main
 
 # Reload the module to ensure it picks up the test environment variables
 importlib.reload(scrape)

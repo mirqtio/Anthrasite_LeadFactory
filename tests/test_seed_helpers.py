@@ -3,10 +3,11 @@ Feature: Seed helpers
   Tests for the seed helper files and database initialization
 """
 
-import os
-import pytest
-import sqlite3
 import csv
+import os
+import sqlite3
+
+import pytest
 import yaml
 
 # Path constants

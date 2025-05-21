@@ -6,9 +6,10 @@ Handles database connections, logging, and API requests.
 import os
 import sqlite3
 import time
-import yaml
 from typing import Dict, List, Optional, Tuple
+
 import requests
+import yaml
 from dotenv import load_dotenv
 
 # Import logging configuration
