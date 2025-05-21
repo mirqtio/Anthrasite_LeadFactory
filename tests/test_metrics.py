@@ -3,7 +3,6 @@ Tests for the metrics module.
 """
 
 import pytest
-import sys
 from unittest.mock import patch
 
 # Check if fastapi is available

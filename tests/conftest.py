@@ -7,7 +7,7 @@ import sys
 import sqlite3
 import atexit
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import pytest
 
 # Add the project root to the Python path
@@ -18,9 +18,6 @@ bin_dir = os.path.join(project_root, "bin")
 if bin_dir not in sys.path:
     sys.path.insert(0, bin_dir)
 
-
-# Mock the track_api_cost function to avoid actual API cost tracking during tests
-from unittest.mock import MagicMock
 
 # Create a MagicMock object instead of a regular function
 mock_track_api_cost = MagicMock(return_value=True)

@@ -225,8 +225,7 @@ def test_timestamps(scaling_gate_setup, mock_datetime):
         test_time = datetime(2023, 1, 1, 12, 0, 0)
         mock_datetime.now.return_value = test_time
         
-        # Format the expected timestamp string the same way as in the code
-        expected_timestamp = test_time.isoformat()
+        # We don't need to format the timestamp for this test
         
         # Perform an action that records a timestamp
         set_scaling_gate(True, "Test timestamp")

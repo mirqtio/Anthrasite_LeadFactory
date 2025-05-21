@@ -8,7 +8,7 @@ import pytest
 import tempfile
 import sqlite3
 from pathlib import Path
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, when, then
 from unittest.mock import patch, MagicMock
 
 # Add project root to path
@@ -77,8 +77,7 @@ def test_apply_rule_weights_correctly():
     """Test applying rule weights correctly."""
     pass
 
-# Comment out the scenarios loading to prevent BDD test discovery
-# scenarios(FEATURE_FILE)
+# BDD test discovery is disabled by using skip decorators instead of scenarios()
 
 
 # Fixtures
