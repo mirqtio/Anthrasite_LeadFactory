@@ -42,6 +42,10 @@ class MockWappalyzer:
 class MockWebPage:
     def __init__(self, *args, **kwargs):
         pass
+    
+    @classmethod
+    def new_from_url(cls, url, **kwargs):
+        return cls()
 
 # Patch the Wappalyzer module
 sys.modules['wappalyzer'] = type('wappalyzer', (), {
