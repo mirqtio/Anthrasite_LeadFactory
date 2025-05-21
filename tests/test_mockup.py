@@ -773,16 +773,20 @@ def test_fallback_model_custom():
             self.logger = MagicMock()
 
         def generate_mockup_for_business(self, business_id, conn, cursor):
+            # Initialize model_used variable
+            model_used = "unknown"
             try:
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
-                model_used = "primary"  # noqa: F841 - for future reference
+                model_used = "primary"
             except Exception as e:
                 print(f"Primary model failed: {e}")
                 # Fall back to the secondary model
                 mockup_data = self.fallback.generate_mockup(business_id)
                 # Track which model was used for the mockup
                 self.logger.info("Using fallback model for mockup generation")
+                # Set the model_used variable for the fallback model
+                model_used = "fallback"
             # Save the mockup data to the database
             cursor.execute(
                 """
