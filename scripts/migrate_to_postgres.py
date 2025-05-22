@@ -371,9 +371,10 @@ def migrate_database(sqlite_path: str, postgres_url: str):
     logger.info(f"Starting migration from SQLite ({sqlite_path}) to Postgres")
 
     # Connect to databases
-    with sqlite_connection(sqlite_path) as sqlite_conn, postgres_connection(
-        postgres_url
-    ) as pg_conn:
+    with (
+        sqlite_connection(sqlite_path) as sqlite_conn,
+        postgres_connection(postgres_url) as pg_conn,
+    ):
         # Get list of tables in SQLite
         sqlite_tables = get_sqlite_tables(sqlite_conn)
         logger.info(

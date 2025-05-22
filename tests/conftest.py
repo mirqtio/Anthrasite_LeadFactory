@@ -153,9 +153,10 @@ def run_mockup_generation(
         from bin.mockup import generate_business_mockup
 
         # Patch the DatabaseConnection to use our test connection
-        with patch("bin.mockup.DatabaseConnection") as mock_db_conn, patch(
-            "utils.io.DatabaseConnection"
-        ) as io_db_conn:
+        with (
+            patch("bin.mockup.DatabaseConnection") as mock_db_conn,
+            patch("utils.io.DatabaseConnection") as io_db_conn,
+        ):
             # Configure the mocks to use our in-memory cursor
             mock_db_conn.return_value.__enter__.return_value = cursor
             io_db_conn.return_value.__enter__.return_value = cursor

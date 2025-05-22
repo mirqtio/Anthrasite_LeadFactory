@@ -299,9 +299,10 @@ def scoring_process_runs(temp_db):
 def scoring_process_runs_with_weights(temp_db):
     """Run the scoring process with rule weights."""
     # Mock the scoring process with weights
-    with patch("bin.score.DatabaseConnection") as mock_db, patch(
-        "bin.score.load_rules"
-    ) as mock_load_rules:
+    with (
+        patch("bin.score.DatabaseConnection") as mock_db,
+        patch("bin.score.load_rules") as mock_load_rules,
+    ):
         # Configure the mocks
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
