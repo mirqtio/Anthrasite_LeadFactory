@@ -1,5 +1,9 @@
 [tool.black]
+# Black configuration matching CI pipeline
 line-length = 120
-target-version = ['py39']
+target-version = ['py310']
 include = '\.pyi?$'
 skip-string-normalization = true
+exclude = '''(
+    /(venv|\.venv|env|\.env|\.git|\.github|\.mypy_cache|\.pytest_cache|__pycache__|build|dist|node_modules|tasks|\.ruff_cache)/
+)'''

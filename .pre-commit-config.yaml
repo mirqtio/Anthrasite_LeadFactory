@@ -1,5 +1,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+# This configuration exactly matches the tests run in CI
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version
@@ -12,23 +14,31 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache)"
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2
     hooks:
       - id: black
-        # It is recommended to specify the latest version of Python
-        # supported by your project here, or alternatively use
-        # pre-commit's default_language_version, see
-        # https://pre-commit.com/#top_level-default_language_version
         language_version: python3.10
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
-        # Run in check mode (will fail if files need formatting)
-        args: [--check]
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py)"
+        # Match CI configuration
+        args: [--check, --config, .black.toml, --diff]
+
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+        # Match CI configuration
+        args: [--check, --diff]
+        # Only run on Python files
+        types: [python]
+        # Exclude virtual environment and other directories
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache)"
 
 -   repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
@@ -50,3 +60,22 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
       - id: check-ast
+
+-   repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        description: Check for Python syntax errors and warnings with flake8
+        entry: flake8
+        language: python
+        types: [python]
+        args: [--config=.flake8]
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache)"
+
+      - id: run-ci-format-script
+        name: Run CI Format Script
+        description: Run the CI formatting script to fix known formatting issues
+        entry: python scripts/ci_format.py --check
+        language: python
+        pass_filenames: false
+        always_run: true

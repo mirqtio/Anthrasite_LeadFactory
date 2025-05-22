@@ -1,0 +1,10 @@
+[flake8]
+# flake8 configuration matching CI pipeline
+max-line-length = 127
+max-complexity = 10
+exclude = venv/,.venv/,env/,.env/,.git/,.github/,.mypy_cache/,.pytest_cache/,__pycache__/,build/,dist/,node_modules/,tasks/,.ruff_cache/
+per-file-ignores =
+    # Allow unused imports in __init__.py files
+    __init__.py:F401
+    # Allow long lines in test files
+    test_*.py:E501
