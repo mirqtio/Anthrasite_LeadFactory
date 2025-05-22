@@ -2,20 +2,22 @@
 """
 Minimal Test Environment Setup
 
-This script sets up the minimal necessary environment for running tests in CI.
-It focuses on essential directories and configuration with robust error handling.
+This script sets up a minimal test environment with essential directories,
+environment variables, and database schema for testing. It focuses on the
+bare minimum required for tests to run and includes robust error handling.
 
 Usage:
-    python scripts/minimal_test_setup.py
+    python scripts/minimal_test_setup.py [--skip-db] [--verbose]
 """
 
-import json
-import os
-import sys
+import argparse
 import logging
+import os
+import subprocess
+import sys
 from pathlib import Path
 
-# Set up logging
+# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -24,74 +26,100 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def setup_directories():
-    """Create only essential directories for tests with error handling."""
-    logger.info("Setting up essential test directories...")
-
-    # Project root
-    project_root = Path(__file__).parent.parent
-
-    # Create only essential directories
-    essential_directories = [
-        project_root / "test_results",
-        project_root / "data",
-        project_root / "logs",
-    ]
-
-    for directory in essential_directories:
-        try:
-            directory.mkdir(parents=True, exist_ok=True)
+def setup_test_environment(skip_db=False, verbose=False):
+    """Set up the minimal test environment with essential directories and variables."""
+    try:
+        logger.info("Starting minimal test environment setup...")
+        
+        # Get project root directory
+        project_root = Path(__file__).parent.parent
+        
+        # Create essential directories
+        logger.info("Setting up essential test directories...")
+        directories = [
+            project_root / "test_results",
+            project_root / "data",
+            project_root / "logs",
+        ]
+        
+        for directory in directories:
+            directory.mkdir(exist_ok=True)
             logger.info(f"Created directory: {directory}")
-        except Exception as e:
-            logger.error(f"Error creating directory {directory}: {e}")
-            # Continue with other directories even if one fails
-
-    return project_root
-
-
-def setup_environment_variables():
-    """Set up essential environment variables for tests."""
-    logger.info("Setting up essential environment variables...")
-
-    # Set only essential environment variables
-    essential_env_vars = {
-        "TEST_MODE": "True",
-        "MOCK_EXTERNAL_APIS": "True",
-        "LOG_DIR": str(Path(__file__).parent.parent / "logs"),
-        "DATA_DIR": str(Path(__file__).parent.parent / "data"),
-    }
-
-    # Set environment variables
-    for key, value in essential_env_vars.items():
-        try:
-            os.environ[key] = value
-            logger.info(f"Set {key}={value}")
-        except Exception as e:
-            logger.error(f"Error setting environment variable {key}: {e}")
-
-    # Check if DATABASE_URL is already set (e.g., by CI)
-    if "DATABASE_URL" not in os.environ:
-        # Use SQLite as fallback
-        db_path = Path(__file__).parent.parent / "data" / "test.db"
-        os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
-        logger.info(f"Set DATABASE_URL=sqlite:///{db_path}")
+        
+        # Set up essential environment variables
+        logger.info("Setting up essential environment variables...")
+        os.environ["TEST_MODE"] = "True"
+        logger.info("Set TEST_MODE=True")
+        
+        os.environ["MOCK_EXTERNAL_APIS"] = "True"
+        logger.info("Set MOCK_EXTERNAL_APIS=True")
+        
+        os.environ["LOG_DIR"] = str(project_root / "logs")
+        logger.info(f"Set LOG_DIR={os.environ['LOG_DIR']}")
+        
+        os.environ["DATA_DIR"] = str(project_root / "data")
+        logger.info(f"Set DATA_DIR={os.environ['DATA_DIR']}")
+        
+        os.environ["DATABASE_URL"] = f"sqlite:///{project_root / 'data' / 'test.db'}"
+        logger.info(f"Set DATABASE_URL={os.environ['DATABASE_URL']}")
+        
+        # Set up test database schema and mock data
+        if not skip_db:
+            logger.info("Setting up test database schema and mock data...")
+            db_setup_script = project_root / "scripts" / "minimal_db_setup.py"
+            
+            if not db_setup_script.exists():
+                logger.error(f"Database setup script not found: {db_setup_script}")
+                return False
+            
+            cmd = [sys.executable, str(db_setup_script)]
+            if verbose:
+                cmd.append("--verbose")
+            
+            try:
+                logger.info(f"Running command: {' '.join(cmd)}")
+                result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+                if verbose and result.stdout:
+                    logger.info(f"Database setup output:\n{result.stdout}")
+                logger.info("Database setup completed successfully")
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Database setup failed: {e}")
+                if e.stdout:
+                    logger.error(f"STDOUT: {e.stdout}")
+                if e.stderr:
+                    logger.error(f"STDERR: {e.stderr}")
+                return False
+            except Exception as e:
+                logger.error(f"Error running database setup: {e}")
+                return False
+        else:
+            logger.info("Skipping database setup as requested")
+        
+        logger.info("Minimal test environment setup complete!")
+        return True
+    except Exception as e:
+        logger.error(f"Error setting up test environment: {e}")
+        return False
 
 
 def main():
     """Main function with error handling."""
     try:
-        logger.info("Starting minimal test environment setup...")
-
-        # Setup essential directories
-        project_root = setup_directories()
-
-        # Setup essential environment variables
-        setup_environment_variables()
-
-        logger.info("Minimal test environment setup complete!")
-        return 0
+        parser = argparse.ArgumentParser(description="Minimal Test Environment Setup")
+        parser.add_argument("--skip-db", action="store_true", help="Skip database setup")
+        parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+        
+        args = parser.parse_args()
+        
+        if args.verbose:
+            logger.setLevel(logging.DEBUG)
+            for handler in logger.handlers:
+                handler.setLevel(logging.DEBUG)
+        
+        success = setup_test_environment(skip_db=args.skip_db, verbose=args.verbose)
+        return 0 if success else 1
     except Exception as e:
-        logger.error(f"Error setting up test environment: {e}")
+        logger.error(f"Unexpected error: {e}")
         return 1
 
 
