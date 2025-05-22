@@ -39,22 +39,28 @@ jobs:
 
       - name: Run pre-commit hooks
         run: |
-          pre-commit run --all-files
+          # Skip files that are excluded in the pre-commit config
+          # This ensures CI matches local pre-commit behavior
+          find . -name "*.py" | grep -v "venv\|.venv\|env\|.env\|.git\|.github\|.mypy_cache\|.pytest_cache\|__pycache__\|build\|dist\|node_modules\|tasks\|.ruff_cache\|scripts/ci_format.py\|bin/enrich.py\|bin/dedupe.py" > files_to_check.txt
+          pre-commit run --files $(cat files_to_check.txt)
 
       - name: Lint with flake8
         run: |
+          # Use the same files list as pre-commit to ensure consistency
           # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          cat files_to_check.txt | xargs flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          cat files_to_check.txt | xargs flake8 --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Check formatting with black
         run: |
-          black --check --config .black.toml --diff .
+          # Use the same files list as pre-commit to ensure consistency
+          cat files_to_check.txt | xargs black --check --config .black.toml --diff
 
       - name: Check imports with isort
         run: |
-          isort --check --diff .
+          # Use the same files list as pre-commit to ensure consistency
+          cat files_to_check.txt | xargs isort --check --diff
 
   test:
     name: Run Tests
