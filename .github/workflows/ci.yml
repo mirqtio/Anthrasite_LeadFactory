@@ -39,28 +39,88 @@ jobs:
 
       - name: Run pre-commit hooks
         run: |
-          # Skip files that are excluded in the pre-commit config
+          # Create a temporary pre-commit config that matches our local setup
           # This ensures CI matches local pre-commit behavior
-          find . -name "*.py" | grep -v "venv\|.venv\|env\|.env\|.git\|.github\|.mypy_cache\|.pytest_cache\|__pycache__\|build\|dist\|node_modules\|tasks\|.ruff_cache\|scripts/ci_format.py\|bin/enrich.py\|bin/dedupe.py" > files_to_check.txt
-          pre-commit run --files $(cat files_to_check.txt)
+          cat > .pre-commit-config-ci.yaml << 'EOL'
+          repos:
+          -   repo: https://github.com/astral-sh/ruff-pre-commit
+              rev: v0.9.5
+              hooks:
+                - id: ruff
+                  args: [--fix, --exit-non-zero-on-fix]
+                  types: [python]
+                  exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache)"
+
+          -   repo: https://github.com/psf/black-pre-commit-mirror
+              rev: 24.4.2
+              hooks:
+                - id: black
+                  language_version: python3.10
+                  types: [python]
+                  exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
+                  args: [--check, --config, .black.toml, --diff]
+
+          -   repo: https://github.com/PyCQA/isort
+              rev: 5.12.0
+              hooks:
+                - id: isort
+                  name: isort (python)
+                  args: [--check, --diff]
+                  types: [python]
+                  exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
+
+          -   repo: https://github.com/PyCQA/bandit
+              rev: 1.7.5
+              hooks:
+                - id: bandit
+                  args: ['-ll', '-i']
+                  types: [python]
+                  exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
+
+          -   repo: https://github.com/pre-commit/pre-commit-hooks
+              rev: v4.4.0
+              hooks:
+                - id: trailing-whitespace
+                - id: end-of-file-fixer
+                - id: check-yaml
+                - id: check-added-large-files
+                - id: debug-statements
+                - id: check-ast
+          EOL
+
+          # Run pre-commit with our CI-specific config
+          SKIP=flake8,run-ci-format-script pre-commit run --all-files --config .pre-commit-config-ci.yaml
 
       - name: Lint with flake8
         run: |
-          # Use the same files list as pre-commit to ensure consistency
+          # Skip files that are excluded in the pre-commit config
+          find . -name "*.py" | grep -v "venv\|.venv\|env\|.env\|.git\|.github\|.mypy_cache\|.pytest_cache\|__pycache__\|build\|dist\|node_modules\|tasks\|.ruff_cache\|scripts/ci_format.py\|bin/enrich.py\|bin/dedupe.py" > files_to_check.txt
           # stop the build if there are Python syntax errors or undefined names
-          cat files_to_check.txt | xargs flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings
-          cat files_to_check.txt | xargs flake8 --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          if [ -s files_to_check.txt ]; then
+            cat files_to_check.txt | xargs flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+            # exit-zero treats all errors as warnings
+            cat files_to_check.txt | xargs flake8 --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          else
+            echo "No files to check with flake8"
+          fi
 
       - name: Check formatting with black
         run: |
-          # Use the same files list as pre-commit to ensure consistency
-          cat files_to_check.txt | xargs black --check --config .black.toml --diff
+          # Use the same files list from flake8 step
+          if [ -s files_to_check.txt ]; then
+            cat files_to_check.txt | xargs black --check --config .black.toml --diff
+          else
+            echo "No files to check with black"
+          fi
 
       - name: Check imports with isort
         run: |
-          # Use the same files list as pre-commit to ensure consistency
-          cat files_to_check.txt | xargs isort --check --diff
+          # Use the same files list from flake8 step
+          if [ -s files_to_check.txt ]; then
+            cat files_to_check.txt | xargs isort --check --diff
+          else
+            echo "No files to check with isort"
+          fi
 
   test:
     name: Run Tests
