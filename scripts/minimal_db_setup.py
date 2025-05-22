@@ -52,7 +52,8 @@ def setup_database_schema(db_path, verbose=False):
         cursor = conn.cursor()
 
         # Create businesses table (core table)
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS businesses (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
@@ -70,30 +71,36 @@ def setup_database_schema(db_path, verbose=False):
             status TEXT DEFAULT 'active',
             score REAL DEFAULT 0.0
         )
-        ''')
+        """
+        )
 
         # Create email_opt_outs table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS email_opt_outs (
             id INTEGER PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
             reason TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        ''')
+        """
+        )
 
         # Create metrics table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS metrics (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             value REAL NOT NULL,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        ''')
+        """
+        )
 
         # Create cost_tracking table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS cost_tracking (
             id INTEGER PRIMARY KEY,
             service TEXT NOT NULL,
@@ -103,10 +110,12 @@ def setup_database_schema(db_path, verbose=False):
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (business_id) REFERENCES businesses (id)
         )
-        ''')
+        """
+        )
 
         # Create api_keys table (for testing API key validation)
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS api_keys (
             id INTEGER PRIMARY KEY,
             key TEXT UNIQUE NOT NULL,
@@ -114,7 +123,8 @@ def setup_database_schema(db_path, verbose=False):
             active BOOLEAN DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        ''')
+        """
+        )
 
         # Commit changes
         conn.commit()
@@ -154,15 +164,54 @@ def create_mock_data(db_path, verbose=False):
 
         # Insert mock businesses
         mock_businesses = [
-            (1, "Test Business 1", "https://example1.com", "test1@example.com", "555-1234", "123 Main St", "New York", "NY", "10001", "USA", "Technology"),
-            (2, "Test Business 2", "https://example2.com", "test2@example.com", "555-5678", "456 Oak St", "San Francisco", "CA", "94107", "USA", "Healthcare"),
-            (3, "Test Business 3", "https://example3.com", "test3@example.com", "555-9012", "789 Pine St", "Chicago", "IL", "60601", "USA", "Finance"),
+            (
+                1,
+                "Test Business 1",
+                "https://example1.com",
+                "test1@example.com",
+                "555-1234",
+                "123 Main St",
+                "New York",
+                "NY",
+                "10001",
+                "USA",
+                "Technology",
+            ),
+            (
+                2,
+                "Test Business 2",
+                "https://example2.com",
+                "test2@example.com",
+                "555-5678",
+                "456 Oak St",
+                "San Francisco",
+                "CA",
+                "94107",
+                "USA",
+                "Healthcare",
+            ),
+            (
+                3,
+                "Test Business 3",
+                "https://example3.com",
+                "test3@example.com",
+                "555-9012",
+                "789 Pine St",
+                "Chicago",
+                "IL",
+                "60601",
+                "USA",
+                "Finance",
+            ),
         ]
 
-        cursor.executemany('''
+        cursor.executemany(
+            """
         INSERT OR REPLACE INTO businesses (id, name, website, email, phone, address, city, state, zip_code, country, industry)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', mock_businesses)
+        """,
+            mock_businesses,
+        )
 
         # Insert mock email opt-outs
         mock_opt_outs = [
@@ -171,10 +220,13 @@ def create_mock_data(db_path, verbose=False):
             ("optout3@example.com", "Spam complaint"),
         ]
 
-        cursor.executemany('''
+        cursor.executemany(
+            """
         INSERT OR REPLACE INTO email_opt_outs (email, reason)
         VALUES (?, ?)
-        ''', mock_opt_outs)
+        """,
+            mock_opt_outs,
+        )
 
         # Insert mock metrics
         mock_metrics = [
@@ -184,10 +236,13 @@ def create_mock_data(db_path, verbose=False):
             ("click_rate", 0.15),
         ]
 
-        cursor.executemany('''
+        cursor.executemany(
+            """
         INSERT OR REPLACE INTO metrics (name, value)
         VALUES (?, ?)
-        ''', mock_metrics)
+        """,
+            mock_metrics,
+        )
 
         # Insert mock cost tracking
         mock_costs = [
@@ -196,10 +251,13 @@ def create_mock_data(db_path, verbose=False):
             ("data_provider", "fetch", 0.10, 3),
         ]
 
-        cursor.executemany('''
+        cursor.executemany(
+            """
         INSERT OR REPLACE INTO cost_tracking (service, operation, cost_dollars, business_id)
         VALUES (?, ?, ?, ?)
-        ''', mock_costs)
+        """,
+            mock_costs,
+        )
 
         # Insert mock API keys
         mock_api_keys = [
@@ -207,10 +265,13 @@ def create_mock_data(db_path, verbose=False):
             ("test_api_key_2", "Test API Key 2"),
         ]
 
-        cursor.executemany('''
+        cursor.executemany(
+            """
         INSERT OR REPLACE INTO api_keys (key, name)
         VALUES (?, ?)
-        ''', mock_api_keys)
+        """,
+            mock_api_keys,
+        )
 
         # Commit changes
         conn.commit()
@@ -218,12 +279,27 @@ def create_mock_data(db_path, verbose=False):
         if verbose:
             # Count records in each table to verify data
             # Use a whitelist approach to prevent SQL injection
-            allowed_tables = {"businesses": "businesses", "email_opt_outs": "email_opt_outs", "metrics": "metrics", "cost_tracking": "cost_tracking", "api_keys": "api_keys"}
-            for table_name in allowed_tables.keys():
-                # Using the whitelist ensures only valid table names are used
-                cursor.execute(f"SELECT COUNT(*) FROM {allowed_tables[table_name]}")
+            allowed_tables = [
+                "businesses",
+                "email_opt_outs",
+                "metrics",
+                "cost_tracking",
+                "api_keys",
+            ]
+            for table_name in allowed_tables:
+                # Using a fixed string SQL query with no interpolation for table names
+                if table_name == "businesses":
+                    cursor.execute("SELECT COUNT(*) FROM businesses")
+                elif table_name == "email_opt_outs":
+                    cursor.execute("SELECT COUNT(*) FROM email_opt_outs")
+                elif table_name == "metrics":
+                    cursor.execute("SELECT COUNT(*) FROM metrics")
+                elif table_name == "cost_tracking":
+                    cursor.execute("SELECT COUNT(*) FROM cost_tracking")
+                elif table_name == "api_keys":
+                    cursor.execute("SELECT COUNT(*) FROM api_keys")
                 count = cursor.fetchone()[0]
-                logger.info(f"Table {table_name}: {count} records")  # nosec B608
+                logger.info(f"Table {table_name}: {count} records")
 
         conn.close()
         logger.info("Mock data creation complete")
