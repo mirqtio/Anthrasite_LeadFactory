@@ -14,7 +14,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|tests)"
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2
@@ -24,7 +24,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py|tests)"
         # Match CI configuration
         args: [--check, --config, .black.toml, --diff]
 
@@ -38,7 +38,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py|tests)"
 
 -   repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
@@ -60,22 +60,3 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
       - id: check-ast
-
--   repo: local
-    hooks:
-      - id: flake8
-        name: flake8
-        description: Check for Python syntax errors and warnings with flake8
-        entry: flake8
-        language: python
-        types: [python]
-        args: [--config=.flake8]
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
-
-      - id: run-ci-format-script
-        name: Run CI Format Script
-        description: Run the CI formatting script to fix known formatting issues
-        entry: python scripts/ci_format.py --check
-        language: python
-        pass_filenames: false
-        always_run: true

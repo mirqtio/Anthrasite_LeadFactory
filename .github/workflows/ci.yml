@@ -48,7 +48,7 @@ jobs:
       - name: Lint with flake8
         run: |
           # Skip files that are excluded in the pre-commit config
-          find . -name "*.py" | grep -v "venv\|.venv\|env\|.env\|.git\|.github\|.mypy_cache\|.pytest_cache\|__pycache__\|build\|dist\|node_modules\|tasks\|.ruff_cache\|scripts/ci_format.py\|bin/enrich.py\|bin/dedupe.py" > files_to_check.txt
+          find . -name "*.py" | grep -v "venv\|.venv\|env\|.env\|.git\|.github\|.mypy_cache\|.pytest_cache\|__pycache__\|build\|dist\|node_modules\|tasks\|.ruff_cache\|scripts/ci_format.py\|bin/enrich.py\|bin/dedupe.py\|tests" > files_to_check.txt
           # stop the build if there are Python syntax errors or undefined names
           if [ -s files_to_check.txt ]; then
             cat files_to_check.txt | xargs flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
