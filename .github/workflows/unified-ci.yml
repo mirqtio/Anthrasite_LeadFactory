@@ -48,11 +48,11 @@ jobs:
       - name: Run pre-commit on selected files
         run: |
           # Run pre-commit with specific hooks that are known to work reliably in CI
-          pre-commit run ruff --files $(cat files_to_check.txt) || true
-          pre-commit run black --files $(cat files_to_check.txt) || true
-          pre-commit run bandit --files $(cat files_to_check.txt) || true
-          # Success - we're not failing the build on pre-commit issues yet
-          echo "Pre-commit checks completed - issues will be fixed in subsequent PRs"
+          pre-commit run ruff --files $(cat files_to_check.txt)
+          pre-commit run black --files $(cat files_to_check.txt)
+          pre-commit run bandit --files $(cat files_to_check.txt)
+          # Run on all files, let config exclude
+          pre-commit run --all-files
 
   lint:
     name: Lint Code
@@ -71,7 +71,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 black isort ruff bandit
+          pip install flake8 black isort ruff bandit mypy
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
@@ -82,12 +82,19 @@ jobs:
           echo "Files to lint:"
           cat files_to_check.txt
 
-      - name: Lint with flake8
+      - name: Lint with ruff, black, bandit, flake8, and mypy
         run: |
-          # Only check for critical errors, not style
-          flake8 $(cat files_to_check.txt) --count --select=E9,F63,F7,F82 --show-source --statistics || true
-          # Success - we're not failing the build on lint issues yet
-          echo "Lint checks completed - issues will be fixed in subsequent PRs"
+          echo "Running Ruff..."
+          ruff check . --fix --show-source
+          echo "Running Black..."
+          black .
+          echo "Running Bandit..."
+          bandit -r . -x tests -ll
+          echo "Running Flake8..."
+          flake8 .
+          echo "Running Mypy..."
+          mypy . --ignore-missing-imports
+          echo "Linting checks finished. Any failures above should be addressed."
 
   test-core:
     name: Core Unit Tests
@@ -151,11 +158,11 @@ jobs:
           echo "MONTHLY_BUDGET=250" >> .env
 
       - name: Run core tests
+        if: always() # Always run, even if previous steps had soft failures
         run: |
-          # Run only core utility tests that don't depend on external services
-          python -m pytest tests/test_monitor_supabase_usage.py tests/test_run_nightly.py -v || true
-          # Success - we're not failing the build on test issues yet
-          echo "Core tests completed - issues will be fixed in subsequent PRs"
+          echo "Running core tests..."
+          pytest -n auto --dist loadscope --cov=core --cov-report term-missing --cov-report xml --cov-fail-under=80 tests/core/
+          echo "Core tests finished. Any failures above should be addressed."
 
   build-docker:
     name: Build Docker Image
