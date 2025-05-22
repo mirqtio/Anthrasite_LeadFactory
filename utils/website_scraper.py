@@ -5,8 +5,8 @@ Utilities for scraping websites and storing HTML content.
 """
 
 import os
-import sys
 import re
+import sys
 from typing import Optional, Tuple
 from urllib.parse import urlparse
 
@@ -16,11 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities
 from utils.io import DatabaseConnection
 
-# Import raw data retention utilities
-from utils.raw_data_retention import fetch_website_html, store_html
-
 # Import logging configuration
 from utils.logging_config import get_logger
+
+# Import raw data retention utilities
+from utils.raw_data_retention import fetch_website_html, store_html
 
 # Set up logging
 logger = get_logger(__name__)

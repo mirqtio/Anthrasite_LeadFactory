@@ -4,11 +4,11 @@ Anthrasite Lead-Factory: LLM Logger
 Utilities for logging LLM interactions and managing retention.
 """
 
+import datetime
 import os
 import sys
 import time
-import datetime
-from typing import Dict, List, Optional, Any, Union
+from typing import Any, Dict, List, Optional, Union
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,15 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities
 from utils.io import DatabaseConnection
 
-# Import raw data retention utilities
-from utils.raw_data_retention import (
-    log_llm_interaction,
-    get_llm_logs,
-    identify_expired_data,
-)
-
 # Import logging configuration
 from utils.logging_config import get_logger
+
+# Import raw data retention utilities
+from utils.raw_data_retention import get_llm_logs, identify_expired_data, log_llm_interaction
 
 # Set up logging
 logger = get_logger(__name__)
