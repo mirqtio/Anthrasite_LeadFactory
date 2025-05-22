@@ -35,27 +35,62 @@ This document tracks the progress of our systematic approach to fixing the CI pi
 - If failed, fix issues based on CI logs and repeat
 
 ### Step 2: Test Environment Setup
-**Status**: 🔄 Pending
+**Status**: ✅ Completed and Verified Locally
 
-**Planned Changes**:
-- Enhance minimal test environment setup with database schema creation
-- Add mock data setup for essential tables
-- Configure additional environment variables for testing
+**Changes Made**:
+- Created `scripts/minimal_db_setup.py` with essential database schema creation and mock data setup
+- Enhanced `scripts/minimal_test_setup.py` to include database setup
+- Added comprehensive error handling and logging
+- Added verbose mode for detailed debugging information
+
+**Verification Results**:
+- Database schema creation works correctly with all essential tables
+- Mock data is successfully inserted into the database
+- Test environment setup script correctly calls the database setup script
+- All components verified successfully locally
+
+**Next Steps**:
+- Wait for GitHub Actions to complete on the `fix-ci-pipeline` branch
+- Examine logs for success/failure
+- If successful, proceed to Step 3: Import Path Resolution
+- If failed, fix issues based on CI logs and repeat
 
 ### Step 3: Import Path Resolution
-**Status**: 🔄 Pending
+**Status**: ✅ Completed and Verified Locally
 
-**Planned Changes**:
-- Create minimal path fix script
-- Fix Python path and import issues
-- Verify import errors are resolved
+**Changes Made**:
+- Created `scripts/minimal_path_fix.py` to ensure correct Python path setup
+- Created minimal `conftest.py` for proper test configuration
+- Created `pytest.ini` for proper test configuration
+- Added `.pth` file creation to add project root to Python path
+- Enhanced `scripts/verify_minimal_ci.py` to verify import resolution
+- Updated minimal-ci.yml workflow to include Python path fix step
+
+**Verification Results**:
+- Python path fix script works correctly and adds project root to Python path
+- Import resolution test passes successfully, confirming `bin` and `utils` can be imported
+- All components verified successfully locally
+
+**Next Steps**:
+- Wait for GitHub Actions to complete on the `fix-ci-pipeline` branch
+- Examine logs for success/failure
+- If successful, proceed to Step 4: Enable Core Utility Tests
+- If failed, fix issues based on CI logs and repeat
 
 ### Step 4: Enable Core Utility Tests
-**Status**: 🔄 Pending
+**Status**: 🔄 In Progress
 
 **Planned Changes**:
-- Enable a small subset of critical utility tests
-- Verify core tests pass
+- Create `scripts/enable_core_tests.py` to enable a small subset of critical utility tests
+- Focus on utility tests that have minimal dependencies
+- Create test data for core utility tests
+- Update minimal CI workflow to run core utility tests
+
+**Implementation Approach**:
+- Start with the most basic utility tests (e.g., logging, config, helpers)
+- Ensure robust error handling and logging
+- Add detailed reporting of test results
+- Verify changes locally before pushing to GitHub
 
 ### Step 5: Test Status Tracking
 **Status**: 🔄 Pending
