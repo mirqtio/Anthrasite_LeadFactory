@@ -24,7 +24,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Any
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Try to import visualization libraries, but don't fail if they're not available
 try:
@@ -514,6 +514,178 @@ class TestStatusTracker:
         plt.tight_layout()
         plt.savefig(f"{VISUALIZATION_DIR}/history_line_chart.png")
         plt.close()
+    
+    def categorize_test_failures(self, test_results):
+        """Categorize test failures by type.
+        
+        Args:
+            test_results: Dictionary of test results from pytest JSON report
+            
+        Returns:
+            Dictionary of categorized failures
+        """
+        categories = {
+            'import_error': [],
+            'assertion_error': [],
+            'attribute_error': [],
+            'key_error': [],
+            'type_error': [],
+            'value_error': [],
+            'name_error': [],
+            'database_error': [],
+            'environment_error': [],
+            'api_error': [],
+            'file_not_found': [],
+            'permission_error': [],
+            'timeout_error': [],
+            'connection_error': [],
+            'schema_error': [],
+            'other': []
+        }
+        
+        for test_id, test_info in test_results.items():
+            if test_info.get("outcome") not in ["failed", "error"]:
+                continue
+                
+            error_message = test_info.get("call", {}).get("longrepr", "")
+            if not error_message:
+                categories['other'].append((test_id, "No error message"))
+                continue
+                
+            # Categorize based on error type
+            if "ImportError" in error_message or "ModuleNotFoundError" in error_message:
+                categories['import_error'].append((test_id, error_message))
+            elif "AssertionError" in error_message:
+                categories['assertion_error'].append((test_id, error_message))
+            elif "AttributeError" in error_message:
+                categories['attribute_error'].append((test_id, error_message))
+            elif "KeyError" in error_message:
+                categories['key_error'].append((test_id, error_message))
+            elif "TypeError" in error_message:
+                categories['type_error'].append((test_id, error_message))
+            elif "ValueError" in error_message:
+                categories['value_error'].append((test_id, error_message))
+            elif "NameError" in error_message:
+                categories['name_error'].append((test_id, error_message))
+            elif any(db_err in error_message for db_err in ["DatabaseError", "IntegrityError", "OperationalError", "sqlite3.Error", "psycopg2.Error", "no such table"]):
+                categories['database_error'].append((test_id, error_message))
+            elif any(env_err in error_message for env_err in ["EnvironmentError", "environment variable", "ENV", "config not found"]):
+                categories['environment_error'].append((test_id, error_message))
+            elif any(api_err in error_message for api_err in ["API", "HTTPError", "ConnectionError", "Timeout", "RequestException"]):
+                categories['api_error'].append((test_id, error_message))
+            elif "FileNotFoundError" in error_message or "No such file or directory" in error_message:
+                categories['file_not_found'].append((test_id, error_message))
+            elif "PermissionError" in error_message or "Permission denied" in error_message:
+                categories['permission_error'].append((test_id, error_message))
+            elif "TimeoutError" in error_message or "timed out" in error_message.lower():
+                categories['timeout_error'].append((test_id, error_message))
+            elif any(conn_err in error_message for conn_err in ["ConnectionError", "ConnectionRefusedError", "ConnectionResetError"]):
+                categories['connection_error'].append((test_id, error_message))
+            elif any(schema_err in error_message.lower() for schema_err in ["schema", "column", "table", "field", "constraint"]):
+                categories['schema_error'].append((test_id, error_message))
+            else:
+                categories['other'].append((test_id, error_message))
+                
+        return categories
+    
+    def analyze_failures(self, report_path=None):
+        """Analyze test failures and provide recommendations for fixing them.
+        
+        Args:
+            report_path: Optional path to the JSON report file
+            
+        Returns:
+            Analysis report as a string
+        """
+        if not report_path:
+            report_path = project_root / "test_results" / "report.json"
+            
+        if not report_path.exists():
+            return "No test report found. Run tests first."
+            
+        with open(report_path, "r") as f:
+            report = json.load(f)
+            
+        # Categorize failures
+        failure_categories = self.categorize_test_failures(report.get("tests", {}))
+        
+        # Generate analysis report
+        report_lines = ["\n===== TEST FAILURE ANALYSIS =====\n"]
+        
+        # Summary of failures by category
+        total_failures = sum(len(failures) for failures in failure_categories.values())
+        report_lines.append(f"Total failures: {total_failures}")
+        
+        for category, failures in failure_categories.items():
+            if not failures:
+                continue
+                
+            report_lines.append(f"\n{category.replace('_', ' ').title()} ({len(failures)})")
+            
+            # Group similar failures
+            failure_patterns = defaultdict(list)
+            for test_id, error_msg in failures:
+                # Extract first line of error message as pattern
+                pattern = error_msg.split('\n')[0] if error_msg else "Unknown error"
+                failure_patterns[pattern].append(test_id)
+                
+            # Report patterns
+            for pattern, test_ids in failure_patterns.items():
+                report_lines.append(f"  - {pattern[:100]}" + ("..." if len(pattern) > 100 else ""))
+                report_lines.append(f"    Affects {len(test_ids)} tests: {', '.join(test_ids[:3])}" + 
+                                  (f" and {len(test_ids) - 3} more" if len(test_ids) > 3 else ""))
+                
+        # Recommendations
+        report_lines.append("\n===== RECOMMENDATIONS =====\n")
+        
+        # Import errors
+        if failure_categories['import_error']:
+            report_lines.append("1. Fix import errors first:")
+            report_lines.append("   - Check Python path setup")
+            report_lines.append("   - Verify all dependencies are installed")
+            report_lines.append("   - Run scripts/fix_import_issues.py")
+            
+        # Environment errors
+        if failure_categories['environment_error']:
+            report_lines.append("2. Fix environment configuration:")
+            report_lines.append("   - Verify environment variables are set correctly")
+            report_lines.append("   - Run scripts/setup_test_environment.py")
+            
+        # Database errors
+        if failure_categories['database_error'] or failure_categories['schema_error']:
+            report_lines.append("3. Fix database issues:")
+            report_lines.append("   - Check database schema")
+            report_lines.append("   - Verify test database is properly initialized")
+            report_lines.append("   - Run scripts/setup_test_environment.py")
+            
+        # File not found errors
+        if failure_categories['file_not_found']:
+            report_lines.append("4. Fix missing files:")
+            report_lines.append("   - Create required directories and files")
+            report_lines.append("   - Check file paths in tests")
+            
+        # API errors
+        if failure_categories['api_error'] or failure_categories['connection_error']:
+            report_lines.append("5. Fix API and connection issues:")
+            report_lines.append("   - Verify mock APIs are properly configured")
+            report_lines.append("   - Check for timeouts and connection issues")
+            report_lines.append("   - Set MOCK_EXTERNAL_APIS=True for tests")
+            
+        # Assertion errors
+        if failure_categories['assertion_error']:
+            report_lines.append("6. Fix assertion errors:")
+            report_lines.append("   - Update expected test values")
+            report_lines.append("   - Check for logic changes that affect test outcomes")
+            
+        report_text = "\n".join(report_lines)
+        print(report_text)
+        
+        # Write to file
+        analysis_path = project_root / "test_results" / "failure_analysis.txt"
+        with open(analysis_path, "w") as f:
+            f.write(report_text)
+            
+        return report_text
 
 def main():
     parser = argparse.ArgumentParser(description="Test Status Tracker")
@@ -524,6 +696,10 @@ def main():
     parser.add_argument("--report", action="store_true", help="Generate a status report")
     parser.add_argument("--output", type=str, help="Output file for the report")
     parser.add_argument("--visualize", action="store_true", help="Generate visualizations of test status")
+    parser.add_argument("--analyze-failures", action="store_true", help="Analyze test failures and provide recommendations")
+    parser.add_argument("--report-file", type=str, help="Path to the JSON report file for failure analysis")
+    parser.add_argument("--enable-high-priority", action="store_true", help="Enable all high-priority tests in CI")
+    parser.add_argument("--enable-category", type=str, help="Enable all tests in a specific category (e.g., 'database')")
     
     args = parser.parse_args()
     
@@ -532,15 +708,44 @@ def main():
     if args.categorize:
         tracker.categorize_tests()
     
+    if args.enable_high_priority:
+        # Enable all high-priority tests
+        for test_id, test_info in tracker.tests.items():
+            if test_info.get("priority") == 1:
+                test_info["status"] = STATUS_PASSING if test_info["status"] == STATUS_DISABLED else test_info["status"]
+                print(f"Enabled high-priority test: {test_id}")
+        tracker.save_status()
+        print("All high-priority tests enabled")
+    
+    if args.enable_category:
+        # Enable all tests in the specified category
+        category = args.enable_category.lower()
+        for test_id, test_info in tracker.tests.items():
+            if test_info.get("category", "").lower() == category:
+                test_info["status"] = STATUS_PASSING if test_info["status"] == STATUS_DISABLED else test_info["status"]
+                print(f"Enabled test in category '{category}': {test_id}")
+        tracker.save_status()
+        print(f"All tests in category '{category}' enabled")
+    
     if args.run_tests:
-        tracker.run_tests(test_pattern=args.test_pattern, ci_mode=args.ci_mode)
+        exit_code = tracker.run_tests(test_pattern=args.test_pattern, ci_mode=args.ci_mode)
+        
+        # Automatically analyze failures if tests were run
+        if exit_code != 0 and not args.analyze_failures:
+            print("\nSome tests failed. Running failure analysis...")
+            tracker.analyze_failures()
+    
+    if args.analyze_failures:
+        tracker.analyze_failures(report_path=args.report_file)
     
     if args.visualize and HAS_VISUALIZATION:
         tracker.generate_visualizations()
     elif args.visualize:
         print("Visualization libraries not available. Install matplotlib and numpy.")
     
-    if args.report or (not args.run_tests and not args.categorize and not args.visualize):
+    if args.report or (not args.run_tests and not args.categorize and not args.visualize 
+                       and not args.analyze_failures and not args.enable_high_priority 
+                       and not args.enable_category):
         tracker.generate_report(output_file=args.output)
 
 if __name__ == "__main__":

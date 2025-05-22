@@ -137,20 +137,21 @@ jobs:
           # Install test status tracker dependencies
           python3 scripts/install_test_tools.py
           
-          # Create test status tracking directory
-          mkdir -p test_results
-          mkdir -p test_results/visualizations
+          # Enable high-priority tests first
+          python scripts/test_status_tracker.py --categorize --enable-high-priority
           
-          # Run core utility tests with the test status tracker
-          echo "Running core utility tests..."
-          python3 scripts/test_status_tracker.py --run-tests --test-pattern="tests/test_database_schema.py tests/test_dedupe_unit.py tests/test_mockup_unit.py tests/test_cron_wrapper.py tests/test_rule_engine.py tests/test_scaling_gate.py" --ci-mode --report --output=test_results/core_utilities_report.txt
+          # Run core utility tests first
+          python -m pytest tests/test_cron_wrapper.py tests/test_rule_engine.py tests/test_scaling_gate.py -v
           
-          # Generate visualizations
-          python3 scripts/test_status_tracker.py --visualize
+          # Run all tests with enhanced failure analysis
+          python scripts/test_status_tracker.py --run-tests --test-pattern="tests/test_*.py" --ci-mode --report --visualize --analyze-failures
           
           # Archive test results
-          echo "Archiving test results..."
-          tar -czf test_results/test_artifacts.tar.gz test_results/*.txt test_results/visualizations
+          mkdir -p test_results/visualizations
+          
+          # Generate comprehensive test reports
+          cat scripts/test_status.json | jq . > test_results/test_status.json
+          cat test_results/failure_analysis.txt > test_results/failure_analysis.txt
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -160,6 +161,14 @@ jobs:
 
       # Run critical BDD tests
       - name: Run critical BDD tests
+        run: |
+          # Run BDD tests with the enhanced test status tracker
+          echo "Running critical BDD tests..."
+          python3 scripts/test_status_tracker.py --run-tests --test-pattern="tests/steps/*.py" --ci-mode --report --output=test_results/bdd_tests_report.txt --analyze-failures
+          
+          # Archive test results
+          echo "Archiving test results..."
+          tar -czf test_results/test_artifacts.tar.gz test_results/*.txt test_results/visualizations
         env:
           # Database configuration
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/leadfactory_test"
@@ -169,19 +178,6 @@ jobs:
           OPENAI_API_KEY: "mock_openai_key"
           ANTHROPIC_API_KEY: "mock_anthropic_key"
           SENDGRID_API_KEY: "mock_sendgrid_key"
-        run: |
-          # Run BDD tests with the test status tracker
-          echo "Running critical BDD tests..."
-          python3 scripts/test_status_tracker.py --run-tests --test-pattern="tests/steps/deduplication_steps.py" --ci-mode --report --output=test_results/bdd_tests_report.txt
-          
-          # Update visualizations with latest results
-          python3 scripts/test_status_tracker.py --visualize
-          
-          # Update the test artifacts archive
-          tar -czf test_results/test_artifacts.tar.gz test_results/*.txt test_results/visualizations
-          
-          # Upload test artifacts for easy access
-          echo "Test artifacts available at test_results/test_artifacts.tar.gz"
 
   validate-db:
     name: Validate Database Schema
