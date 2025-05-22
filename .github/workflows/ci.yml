@@ -103,8 +103,10 @@ jobs:
 
       - name: Prepare test environment
         run: |
-          # Create necessary directories
-          mkdir -p data/html_storage
+          # Run comprehensive test environment setup script
+          python3 scripts/setup_test_environment.py
+          
+          # Create additional directories needed for tests
           mkdir -p tests/features
 
       # Run high-priority tests first (database schema and core utilities)
@@ -135,7 +137,7 @@ jobs:
           
           # Run core utility tests with the test status tracker
           echo "Running core utility tests..."
-          python3 scripts/test_status_tracker.py --run-tests --test-pattern="tests/test_database_schema.py tests/test_dedupe_unit.py tests/test_mockup_unit.py" --ci-mode --report --output=test_results/core_utilities_report.txt
+          python3 scripts/test_status_tracker.py --run-tests --test-pattern="tests/test_database_schema.py tests/test_dedupe_unit.py tests/test_mockup_unit.py tests/test_cron_wrapper.py tests/test_rule_engine.py tests/test_scaling_gate.py" --ci-mode --report --output=test_results/core_utilities_report.txt
           
           # Generate visualizations
           python3 scripts/test_status_tracker.py --visualize
