@@ -74,7 +74,7 @@ def verify_minimal_test_setup():
     logger.info("Verifying minimal test environment setup...")
     
     result = run_command(
-        [sys.executable, "scripts/minimal_test_setup.py"],
+        [sys.executable, "scripts/minimal_test_setup.py", "--verbose"],
         cwd=Path(__file__).parent.parent,
     )
     
@@ -91,7 +91,7 @@ def verify_minimal_test_tools():
     logger.info("Verifying minimal test tools installation...")
     
     result = run_command(
-        [sys.executable, "scripts/minimal_test_tools.py"],
+        [sys.executable, "scripts/minimal_test_tools.py", "--verbose"],
         cwd=Path(__file__).parent.parent,
     )
     
@@ -153,10 +153,86 @@ def test_verify_ci_simple():
         return False
 
 
+def verify_minimal_path_fix():
+    """Verify the minimal Python path fix script."""
+    logger.info("Verifying minimal Python path fix...")
+    
+    result = run_command(
+        [sys.executable, "scripts/minimal_path_fix.py", "--verbose"],
+        cwd=Path(__file__).parent.parent,
+    )
+    
+    if result and result.returncode == 0:
+        logger.info("✅ Minimal Python path fix verified successfully")
+        return True
+    else:
+        logger.error("❌ Minimal Python path fix failed")
+        return False
+
+
+def verify_import_test():
+    """Verify that imports work correctly after path fix."""
+    logger.info("Verifying import resolution with a simple test...")
+    
+    # Create a simple test file that imports from bin and utils
+    test_dir = Path(__file__).parent.parent / "tests" / "verify_imports"
+    test_dir.mkdir(exist_ok=True, parents=True)
+    
+    test_file = test_dir / "test_import_resolution.py"
+    test_content = """
+# Test import resolution
+import sys
+import os
+from pathlib import Path
+
+def test_bin_imports():
+    \"\"\"Test that bin modules can be imported.\"\"\"
+    try:
+        # Try to import a module from bin
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+        import bin
+        assert True
+    except ImportError as e:
+        print(f"Import error: {e}")
+        print(f"sys.path: {sys.path}")
+        assert False, f"Failed to import bin: {e}"
+
+def test_utils_imports():
+    \"\"\"Test that utils modules can be imported.\"\"\"
+    try:
+        # Try to import a module from utils
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+        import utils
+        assert True
+    except ImportError as e:
+        print(f"Import error: {e}")
+        print(f"sys.path: {sys.path}")
+        assert False, f"Failed to import utils: {e}"
+"""
+    
+    with open(test_file, "w") as f:
+        f.write(test_content)
+    
+    # Run the test
+    result = run_command(
+        [sys.executable, "-m", "pytest", str(test_file), "-v"],
+        cwd=Path(__file__).parent.parent,
+    )
+    
+    if result and result.returncode == 0:
+        logger.info("✅ Import resolution test passed successfully")
+        return True
+    else:
+        logger.error("❌ Import resolution test failed")
+        return False
+
+
 def main():
     """Main function with error handling."""
     parser = argparse.ArgumentParser(description="Verify Minimal CI Workflow")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument("--skip-path-fix", action="store_true", help="Skip Python path fix verification")
+    parser.add_argument("--skip-import-test", action="store_true", help="Skip import resolution test")
     
     args = parser.parse_args()
     
@@ -185,6 +261,26 @@ def main():
     if not tracker_success:
         logger.error("❌ Verification failed at test tracker stage")
         return 1
+    
+    # Verify Python path fix if not skipped
+    if not args.skip_path_fix:
+        path_fix_success = verify_minimal_path_fix()
+        
+        if not path_fix_success:
+            logger.error("❌ Verification failed at Python path fix stage")
+            return 1
+    else:
+        logger.info("Skipping Python path fix verification as requested")
+    
+    # Verify import resolution if not skipped
+    if not args.skip_import_test:
+        import_test_success = verify_import_test()
+        
+        if not import_test_success:
+            logger.error("❌ Verification failed at import resolution test stage")
+            return 1
+    else:
+        logger.info("Skipping import resolution test as requested")
     
     # All components verified successfully
     logger.info("✅ All minimal CI workflow components verified successfully")

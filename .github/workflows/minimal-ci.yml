@@ -28,9 +28,15 @@ jobs:
         id: install-tools
         continue-on-error: true
       
-      - name: Run minimal test tracker (report only)
+      - name: Fix Python path for imports
         if: steps.install-tools.outcome == 'success'
-        run: python scripts/minimal_test_tracker.py --verbose
+        run: python scripts/minimal_path_fix.py --verbose
+        id: path-fix
+        continue-on-error: true
+      
+      - name: Run minimal test tracker (report only)
+        if: steps.path-fix.outcome == 'success'
+        run: python scripts/minimal_test_tracker.py
         id: test-report
         continue-on-error: true
       
@@ -62,6 +68,7 @@ jobs:
         run: |
           echo "Environment setup status: ${{ steps.setup-env.outcome }}"
           echo "Tool installation status: ${{ steps.install-tools.outcome }}"
+          echo "Python path fix status: ${{ steps.path-fix.outcome }}"
           echo "Test report status: ${{ steps.test-report.outcome }}"
           echo "Test run status: ${{ steps.test-run.outcome }}"
           
@@ -72,6 +79,11 @@ jobs:
           
           if [[ "${{ steps.install-tools.outcome }}" != "success" ]]; then
             echo "::error::Tool installation failed"
+            exit 1
+          fi
+          
+          if [[ "${{ steps.path-fix.outcome }}" != "success" ]]; then
+            echo "::error::Python path fix failed"
             exit 1
           fi
           
