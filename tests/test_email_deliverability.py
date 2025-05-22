@@ -104,7 +104,7 @@ def set_ip_pool_bounce_rate(mock_sendgrid_api, ip_pool, rate):
     mock_sendgrid_api["get"].return_value.json.return_value = mock_response
 
     # Store the IP pool bounce rate in the global dictionary
-    global test_ip_pool_bounce_rates
+    # Access the global variable directly
     test_ip_pool_bounce_rates[ip_pool] = rate
 
     # Configure the mock to return different responses based on the URL
@@ -139,7 +139,7 @@ def set_subuser_bounce_rate(mock_sendgrid_api, subuser, rate):
     mock_sendgrid_api["get"].side_effect = side_effect
 
     # Store the subuser bounce rate in the global dictionary
-    global test_subuser_bounce_rates
+    # Access the global variable directly
     test_subuser_bounce_rates[subuser] = rate
 
 
@@ -163,30 +163,21 @@ def check_spam_rate(email_sender, mock_sendgrid_api):
 @when(parsers.parse('I check the bounce rate for IP pool "{ip_pool}"'))
 def check_ip_pool_bounce_rate(email_sender, ip_pool):
     """Check the bounce rate for a specific IP pool."""
-    # Get the bounce rate from the global dictionary
-    global test_ip_pool_bounce_rates
-
-    # Store the bounce rate in the email_sender for assertions
+    # Get the bounce rate from the global dictionary and store it in the email_sender for assertions
     email_sender.ip_pool_bounce_rate = test_ip_pool_bounce_rates.get(ip_pool, 0.01)
 
 
 @when(parsers.parse('I check the bounce rate for subuser "{subuser}"'))
 def check_subuser_bounce_rate(email_sender, subuser):
     """Check the bounce rate for a specific subuser."""
-    # Get the bounce rate from the global dictionary
-    global test_subuser_bounce_rates
-
-    # Store the bounce rate in the email_sender for assertions
+    # Get the bounce rate from the global dictionary and store it in the email_sender for assertions
     email_sender.subuser_bounce_rate = test_subuser_bounce_rates.get(subuser, 0.01)
 
 
 @when("I attempt to send an email")
 def attempt_send_email(email_sender, mock_sendgrid_api):
     """Attempt to send an email."""
-    # Get the bounce and spam rates from the global variables
-    global test_bounce_rate, test_spam_rate
-
-    # Store the rates in the email_sender for test assertions
+    # Get the bounce and spam rates from the global variables and store them in the email_sender for test assertions
     email_sender.bounce_rate = test_bounce_rate
     email_sender.spam_rate = test_spam_rate
 
