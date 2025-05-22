@@ -24,7 +24,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
         # Match CI configuration
         args: [--check, --config, .black.toml, --diff]
 
@@ -38,7 +38,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
 
 -   repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
@@ -70,7 +70,7 @@ repos:
         language: python
         types: [python]
         args: [--config=.flake8]
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py)"
 
       - id: run-ci-format-script
         name: Run CI Format Script
