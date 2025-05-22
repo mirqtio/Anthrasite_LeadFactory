@@ -35,6 +35,21 @@ EXCLUDE_DIRS = [
 ]
 
 
+def find_python_files(base_dir):
+    """Find all Python files in the given directory."""
+    python_files = []
+    for root, dirs, files in os.walk(base_dir):
+        # Skip excluded directories
+        dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+
+        # Add Python files
+        for file in files:
+            if file.endswith(".py"):
+                python_files.append(os.path.join(root, file))
+
+    return python_files
+
+
 def main():
     """Run Black on all Python files in the project."""
     # Get the project root directory
@@ -43,12 +58,24 @@ def main():
     # Change to the project root directory
     os.chdir(project_root)
 
+    # Find all Python files
+    python_files = []
+    for dir_to_format in DIRS_TO_FORMAT:
+        python_files.extend(find_python_files(dir_to_format))
+
+    # Remove duplicates
+    python_files = list(set(python_files))
+    python_files.sort()  # Sort for consistent output
+
+    # Print summary
+    print(f"Found {len(python_files)} Python files to format")
+
     # Build the command
     cmd = ["black"]
-    cmd.extend(DIRS_TO_FORMAT)
+    cmd.extend(python_files)
 
     # Run Black
-    print(f"Running: {' '.join(cmd)}")
+    print(f"Running Black on {len(python_files)} files...")
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     # Print the output
