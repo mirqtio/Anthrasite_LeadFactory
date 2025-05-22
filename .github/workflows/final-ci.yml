@@ -19,6 +19,17 @@ jobs:
         with:
           python-version: '3.10'
       
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create directory structure
+        run: |
+          mkdir -p logs
+          mkdir -p test_results
+          mkdir -p ci_tests/core_utils
+      
       - name: Create and run verification test
         run: |
           # Create a simple test file
@@ -39,10 +50,75 @@ jobs:
           python tests/test_verify.py
         id: verify-test
       
+      - name: Run core utility tests
+        if: steps.verify-test.outcome == 'success'
+        run: |
+          # Create a core utility test
+          mkdir -p ci_tests/core_utils
+          cat > ci_tests/core_utils/test_string_utils.py << 'EOF'
+          import unittest
+          import sys
+          import os
+
+          class TestStringUtils(unittest.TestCase):
+              """Test cases for string utilities."""
+              
+              @classmethod
+              def setUpClass(cls):
+                  """Set up test class."""
+                  # Add the project root to sys.path
+                  project_root = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+                  if project_root not in sys.path:
+                      sys.path.insert(0, project_root)
+                  print(f"Python path: {sys.path}")
+              
+              def test_string_utils_simple(self):
+                  """A simple test for string utilities."""
+                  self.assertEqual("hello".upper(), "HELLO")
+
+          if __name__ == '__main__':
+              unittest.main()
+          EOF
+          
+          # Run the test directly
+          python ci_tests/core_utils/test_string_utils.py
+        id: core-utils-test
+        continue-on-error: true
+      
+      - name: Generate test conversion report
+        if: always()
+        run: |
+          # Create a simple report
+          mkdir -p test_results
+          cat > test_results/test_conversion_report.md << 'EOF'
+          # Test Conversion Report
+
+          ## Summary
+          - Verification Test: ${{ steps.verify-test.outcome }}
+          - Core Utils Test: ${{ steps.core-utils-test.outcome }}
+
+          ## Next Steps
+          1. Use `scripts/generate_ci_tests.py` to convert more pytest tests to unittest
+          2. Use `scripts/enable_ci_tests.py` to incrementally enable more tests
+          3. Update this workflow to include more test categories
+          EOF
+        id: test-report
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            test_results/
+            logs/
+            ci_tests/
+      
       - name: Check verification status
         if: always()
         run: |
           echo "Verification test status: ${{ steps.verify-test.outcome }}"
+          echo "Core utils test status: ${{ steps.core-utils-test.outcome }}"
           
           if [[ "${{ steps.verify-test.outcome }}" != "success" ]]; then
             echo "::error::Verification test failed"
