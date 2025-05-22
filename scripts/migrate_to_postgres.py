@@ -246,7 +246,13 @@ def get_sqlite_table_schema(sqlite_conn, table_name: str) -> List[Tuple[str, str
         List of (column_name, column_type) tuples.
     """
     cursor = sqlite_conn.cursor()
-    cursor.execute(f"PRAGMA table_info({table_name})")
+
+    # Validate table name to prevent SQL injection
+    if not re.match(r"^[a-zA-Z0-9_]+$", table_name):
+        raise ValueError(f"Invalid table name: {table_name}")
+
+    # Use f-string with validated table name
+    cursor.execute(f"PRAGMA table_info({table_name})")  # nosec B608
     return [(row[1], row[2]) for row in cursor.fetchall()]
 
 
@@ -283,12 +289,14 @@ def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
     """
     cursor = sqlite_conn.cursor()
     # Use parameterized query to avoid SQL injection
-    # Table names cannot be parameterized directly, but this is a controlled internal script
-    # with validated table names from get_sqlite_tables()
+    # Table names cannot be parameterized directly in most database APIs
     # Adding a validation step to ensure table_name contains only alphanumeric characters and underscores
     if not re.match(r"^[a-zA-Z0-9_]+$", table_name):
         raise ValueError(f"Invalid table name: {table_name}")
-    cursor.execute("SELECT * FROM " + table_name)  # nosec B608
+
+    # Use string formatting with a validated table name instead of concatenation
+    # This is safe because we've validated the table_name above
+    cursor.execute(f"SELECT * FROM {table_name}")  # nosec B608
     columns = [column[0] for column in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
