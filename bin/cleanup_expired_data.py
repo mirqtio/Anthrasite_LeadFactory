@@ -1,83 +1,116 @@
 #!/usr/bin/env python3
 """
-Anthrasite Lead-Factory: Data Retention Cleanup
-Cleans up expired HTML files and LLM logs based on the retention policy.
-
-Usage:
-    python bin/cleanup_expired_data.py [--dry-run] [--verbose]
+Script to clean up expired HTML and LLM log data based on retention policy.
 """
 
+import argparse
+import logging
 import os
 import sys
-import argparse
-import json
-import datetime
-from typing import Dict, List, Tuple, Any
+from datetime import datetime, timedelta
+from typing import List, Optional, Tuple
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import utility functions
-from utils.raw_data_retention import (
-    identify_expired_data,
-    HTML_STORAGE_DIR,
-    RETENTION_DAYS,
+from utils.database import DatabaseConnection
+from utils.config import get_config
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
-from utils.io import DatabaseConnection
-from utils.logging_config import get_logger
-
-# Set up logging
-logger = get_logger(__name__)
+logger = logging.getLogger("cleanup_expired_data")
 
 
-def delete_html_files(expired_paths: List[str], dry_run: bool = False) -> int:
-    """Delete expired HTML files.
+def get_expired_data(
+    retention_days: int, dry_run: bool = False
+) -> Tuple[List[str], List[int]]:
+    """
+    Get a list of HTML files and LLM log IDs that are older than the retention period.
 
     Args:
-        expired_paths: List of paths to expired HTML files.
-        dry_run: If True, don't actually delete files.
+        retention_days: Number of days to keep data
+        dry_run: If True, only log what would be deleted without actually deleting
 
     Returns:
-        Number of files deleted.
+        Tuple containing (list of expired HTML paths, list of expired LLM log IDs)
     """
-    deleted_count = 0
+    try:
+        cutoff_date = datetime.now() - timedelta(days=retention_days)
+        logger.info(f"Identifying data older than {cutoff_date}")
 
-    for path in expired_paths:
-        full_path = os.path.join(HTML_STORAGE_DIR, path)
+        expired_html_paths = []
+        expired_log_ids = []
 
-        if os.path.exists(full_path):
+        with DatabaseConnection() as cursor:
+            # Find expired HTML records
+            cursor.execute(
+                "SELECT html_path FROM raw_html_storage WHERE created_at < %s",
+                (cutoff_date,),
+            )
+            expired_html_paths = [row[0] for row in cursor.fetchall()]
+            logger.info(f"Found {len(expired_html_paths)} expired HTML records")
+
+            # Find expired LLM log records
+            cursor.execute(
+                "SELECT id FROM llm_logs WHERE created_at < %s", (cutoff_date,)
+            )
+            expired_log_ids = [row[0] for row in cursor.fetchall()]
+            logger.info(f"Found {len(expired_log_ids)} expired LLM log records")
+
+        return expired_html_paths, expired_log_ids
+
+    except Exception as e:
+        logger.error(f"Error finding expired data: {e}")
+        return [], []
+
+
+def delete_expired_files(
+    expired_html_paths: List[str], dry_run: bool = False
+) -> int:
+    """
+    Delete expired HTML files from the filesystem.
+
+    Args:
+        expired_html_paths: List of paths to HTML files to delete
+        dry_run: If True, only log what would be deleted without actually deleting
+
+    Returns:
+        Number of files deleted
+    """
+    files_deleted = 0
+    for path in expired_html_paths:
+        if os.path.exists(path):
             if not dry_run:
                 try:
-                    os.remove(full_path)
-                    logger.info(f"Deleted HTML file: {path}")
-                    deleted_count += 1
+                    os.remove(path)
+                    files_deleted += 1
                 except Exception as e:
-                    logger.error(f"Error deleting HTML file {path}: {e}")
+                    logger.error(f"Error deleting file {path}: {e}")
             else:
-                logger.info(f"[DRY RUN] Would delete HTML file: {path}")
-                deleted_count += 1
-
-    return deleted_count
+                logger.info(f"[DRY RUN] Would delete file: {path}")
+                files_deleted += 1
+    return files_deleted
 
 
 def delete_database_records(
     expired_html_paths: List[str], expired_log_ids: List[int], dry_run: bool = False
 ) -> Tuple[int, int]:
-    """Delete expired database records.
+    """
+    Delete expired records from the database.
 
     Args:
-        expired_html_paths: List of paths to expired HTML files.
-        expired_log_ids: List of IDs of expired LLM logs.
-        dry_run: If True, don't actually delete records.
+        expired_html_paths: List of HTML file paths to delete from database
+        expired_log_ids: List of LLM log IDs to delete
+        dry_run: If True, only log what would be deleted without actually deleting
 
     Returns:
-        Tuple of (html_records_deleted, log_records_deleted).
+        Tuple containing (number of HTML records deleted, number of LLM log records deleted)
     """
     html_records_deleted = 0
     log_records_deleted = 0
-
-    if not expired_html_paths and not expired_log_ids:
-        return 0, 0
 
     try:
         with DatabaseConnection() as cursor:
@@ -92,17 +125,13 @@ def delete_database_records(
                     else:
                         # SQLite uses ? for parameters
                         placeholders = ", ".join(["?" for _ in expired_html_paths])
-
+                    
                     # Use a safer approach with a fixed query structure and validated placeholders
                     # The placeholders string is constructed from a list comprehension with fixed values
                     # This is safe because we're not using user input in the query structure
                     # Using string concatenation with placeholders is safe here because
                     # placeholders are generated from a fixed pattern, not from user input
-                    query = (
-                        "DELETE FROM raw_html_storage WHERE html_path IN ("
-                        + placeholders
-                        + ")"
-                    )  # nosec B608
+                    query = "DELETE FROM raw_html_storage WHERE html_path IN ({0})".format(placeholders)  # nosec
                     cursor.execute(query, expired_html_paths)
                     html_records_deleted = len(expired_html_paths)
                     logger.info(f"Deleted {html_records_deleted} HTML storage records")
@@ -123,18 +152,14 @@ def delete_database_records(
                         # Use a safer approach with a fixed query structure and validated placeholders
                         # The placeholders string is constructed from a list comprehension with fixed values
                         # This is safe because we're not using user input in the query structure
-                        query = (
-                            "DELETE FROM llm_logs WHERE id IN (" + placeholders + ")"
-                        )  # nosec B608
+                        query = "DELETE FROM llm_logs WHERE id IN ({0})".format(placeholders)  # nosec
                     else:
                         # SQLite uses ? for parameters
                         placeholders = ", ".join(["?" for _ in expired_log_ids])
                         # Use a safer approach with a fixed query structure and validated placeholders
                         # The placeholders string is constructed from a list comprehension with fixed values
                         # This is safe because we're not using user input in the query structure
-                        query = (
-                            "DELETE FROM llm_logs WHERE id IN (" + placeholders + ")"
-                        )  # nosec B608
+                        query = "DELETE FROM llm_logs WHERE id IN ({0})".format(placeholders)  # nosec
 
                     # Execute delete query with parameters
                     cursor.execute(query, expired_log_ids)
@@ -152,89 +177,52 @@ def delete_database_records(
     return html_records_deleted, log_records_deleted
 
 
-def cleanup_expired_data(
-    dry_run: bool = False, verbose: bool = False
-) -> Dict[str, Any]:
-    """Clean up expired data based on retention policy.
+def cleanup_expired_data(retention_days: Optional[int] = None, dry_run: bool = False) -> None:
+    """
+    Clean up expired HTML and LLM log data based on retention policy.
 
     Args:
-        dry_run: If True, don't actually delete anything.
-        verbose: If True, print verbose output.
-
-    Returns:
-        Dictionary with cleanup results.
+        retention_days: Number of days to keep data, defaults to DATA_RETENTION_DAYS from config
+        dry_run: If True, only log what would be deleted without actually deleting
     """
-    if verbose:
-        logger.info(
-            f"Identifying expired data (retention period: {RETENTION_DAYS} days)..."
-        )
+    if retention_days is None:
+        config = get_config()
+        retention_days = int(config.get("DATA_RETENTION_DAYS", 90))
 
-    # Identify expired data
-    expired_html_paths, expired_log_ids = identify_expired_data()
+    logger.info(f"Starting cleanup of data older than {retention_days} days")
+    if dry_run:
+        logger.info("DRY RUN MODE - No data will be deleted")
 
-    if verbose:
-        logger.info(
-            f"Found {len(expired_html_paths)} expired HTML files and {len(expired_log_ids)} expired LLM logs"
-        )
+    # Get expired data
+    expired_html_paths, expired_log_ids = get_expired_data(retention_days, dry_run)
 
-    # Delete HTML files
-    html_files_deleted = delete_html_files(expired_html_paths, dry_run)
+    # Delete expired files from filesystem
+    files_deleted = delete_expired_files(expired_html_paths, dry_run)
+    logger.info(f"Deleted {files_deleted} HTML files from filesystem")
 
-    # Delete database records
+    # Delete expired records from database
     html_records_deleted, log_records_deleted = delete_database_records(
         expired_html_paths, expired_log_ids, dry_run
     )
 
-    # Prepare results
-    results = {
-        "retention_days": RETENTION_DAYS,
-        "expired_html_files": len(expired_html_paths),
-        "expired_llm_logs": len(expired_log_ids),
-        "html_files_deleted": html_files_deleted,
-        "html_records_deleted": html_records_deleted,
-        "llm_logs_deleted": log_records_deleted,
-        "dry_run": dry_run,
-        "timestamp": datetime.datetime.now().isoformat(),
-    }
-
-    if verbose:
-        if dry_run:
-            logger.info("[DRY RUN] No actual deletions performed")
-        logger.info(
-            f"Cleanup complete: {html_files_deleted} HTML files and {log_records_deleted} LLM logs processed"
-        )
-
-    return results
-
-
-def main() -> int:
-    """Main function."""
-    parser = argparse.ArgumentParser(description="Data Retention Cleanup")
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Don't actually delete anything, just show what would be deleted",
+    logger.info(
+        f"Cleanup complete: {files_deleted} files, {html_records_deleted} HTML records, "
+        f"{log_records_deleted} LLM log records"
     )
-    parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="Print verbose output",
-    )
-    args = parser.parse_args()
-
-    try:
-        # Run cleanup
-        results = cleanup_expired_data(args.dry_run, args.verbose)
-
-        # Print results
-        print(json.dumps(results, indent=2))
-
-        return 0
-    except Exception as e:
-        logger.error(f"Error in cleanup script: {e}")
-        return 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    parser = argparse.ArgumentParser(description="Clean up expired data based on retention policy")
+    parser.add_argument(
+        "--retention-days",
+        type=int,
+        help="Number of days to keep data (default: DATA_RETENTION_DAYS from config)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Only log what would be deleted without actually deleting",
+    )
+    args = parser.parse_args()
+
+    cleanup_expired_data(args.retention_days, args.dry_run)
