@@ -27,8 +27,8 @@ from wappalyzer import Wappalyzer, WebPage
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import utility functions
-from utils.logging_config import get_logger
 from utils.io import DatabaseConnection, make_api_request, track_api_cost
+from utils.logging_config import get_logger
 
 # Load environment variables
 load_dotenv()

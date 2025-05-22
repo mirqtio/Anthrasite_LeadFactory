@@ -8,19 +8,19 @@ Usage:
     python bin/process_raw_data.py [--process-websites] [--check-retention] [--verbose]
 """
 
-import os
-import sys
 import argparse
 import json
-from typing import Dict, Tuple, Any
+import os
+import sys
+from typing import Any, Dict, Tuple
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import utility functions
-from utils.website_scraper import process_pending_websites
 from utils.llm_logger import check_retention_status
 from utils.logging_config import get_logger
+from utils.website_scraper import process_pending_websites
 
 # Set up logging
 logger = get_logger(__name__)

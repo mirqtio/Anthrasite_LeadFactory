@@ -9,9 +9,20 @@ import time
 from datetime import datetime
 
 from fastapi import FastAPI, Request, Response
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, Info, generate_latest
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    Info,
+    generate_latest,
+)
 
-from .cost_tracker import check_budget_thresholds, get_cost_breakdown_by_service, is_scaling_gate_active
+from .cost_tracker import (
+    check_budget_thresholds,
+    get_cost_breakdown_by_service,
+    is_scaling_gate_active,
+)
 
 # Import logging configuration
 from .logging_config import get_logger

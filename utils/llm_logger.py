@@ -20,7 +20,11 @@ from utils.io import DatabaseConnection
 from utils.logging_config import get_logger
 
 # Import raw data retention utilities
-from utils.raw_data_retention import get_llm_logs, identify_expired_data, log_llm_interaction
+from utils.raw_data_retention import (
+    get_llm_logs,
+    identify_expired_data,
+    log_llm_interaction,
+)
 
 # Set up logging
 logger = get_logger(__name__)

@@ -4,16 +4,16 @@ Anthrasite Lead-Factory: GPU Usage Tracker
 Monitors and tracks GPU usage when GPU_BURST flag is set.
 """
 
+import argparse
 import os
 import sys
 import time
-import argparse
 from datetime import datetime
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import cost metrics
-from utils.cost_metrics import track_gpu_usage, check_gpu_cost_threshold
+from utils.cost_metrics import check_gpu_cost_threshold, track_gpu_usage
 
 # Import logging configuration
 from utils.logging_config import get_logger

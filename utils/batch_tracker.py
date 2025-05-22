@@ -3,8 +3,8 @@ Anthrasite Lead-Factory: Batch Completion Tracker
 This module tracks batch completion status and provides alerts if batches don't complete on time.
 """
 
-import os
 import json
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Optional, Tuple

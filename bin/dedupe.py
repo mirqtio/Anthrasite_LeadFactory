@@ -24,8 +24,8 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import utility functions
-from utils.logging_config import get_logger
 from utils.io import DatabaseConnection, track_api_cost
+from utils.logging_config import get_logger
 
 # Load environment variables
 load_dotenv()

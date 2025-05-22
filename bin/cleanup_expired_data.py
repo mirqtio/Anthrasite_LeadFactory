@@ -13,8 +13,8 @@ from typing import List, Optional, Tuple
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.database import DatabaseConnection
 from utils.config import get_config
+from utils.database import DatabaseConnection
 
 # Configure logging
 logging.basicConfig(

@@ -4,21 +4,20 @@ Anthrasite Lead-Factory: Cost Metrics
 Utilities for tracking and reporting cost metrics.
 """
 
-import os
-import sys
 import json
+import os
 import sqlite3
-from typing import Dict, Any, Tuple
+import sys
 from datetime import datetime
+from typing import Any, Dict, Tuple
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import logging configuration
-from utils.logging_config import get_logger
-
 # Import batch metrics
-from utils.batch_metrics import record_cost_per_lead, increment_gpu_cost
+from utils.batch_metrics import increment_gpu_cost, record_cost_per_lead
+from utils.logging_config import get_logger
 
 # Set up logging
 logger = get_logger(__name__)

@@ -4,14 +4,14 @@ Anthrasite Lead-Factory: Batch Completion Monitor
 Monitors batch completion status and sends alerts if batches don't complete on time.
 """
 
+import argparse
 import os
+import smtplib
 import sys
 import time
-import smtplib
-import argparse
 from datetime import datetime
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

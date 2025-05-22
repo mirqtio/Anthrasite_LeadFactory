@@ -4,14 +4,14 @@ Anthrasite Lead-Factory: SQLite to Postgres Migration Script
 This script migrates data from a SQLite database to a Postgres database.
 """
 
-import os
-import sys
-import sqlite3
-import time
 import argparse
+import os
 import re
-from typing import Dict, List, Any, Tuple
+import sqlite3
+import sys
+import time
 from contextlib import contextmanager
+from typing import Any, Dict, List, Tuple
 
 import psycopg2
 import psycopg2.extras

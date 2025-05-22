@@ -12,11 +12,10 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import prometheus client
-from prometheus_client import Gauge, Histogram, Counter
+from prometheus_client import Counter, Gauge, Histogram
 
 # Import batch tracker functions at runtime to avoid circular imports
 # This prevents the circular import issue between batch_tracker.py and metrics.py
-
 # Import logging configuration
 from utils.logging_config import get_logger
 

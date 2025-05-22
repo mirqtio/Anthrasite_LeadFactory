@@ -10,11 +10,11 @@ repos:
       # Run the linter
       - id: ruff
         # Run the formatter (ruff format) as part of the linter hook
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix, --exit-non-zero-on-fix, --select=I]
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|tests)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|tests|bin|scripts)"
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2
@@ -28,17 +28,7 @@ repos:
         # Match CI configuration
         args: [--check, --config, .black.toml, --diff]
 
--   repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort (python)
-        # Match CI configuration
-        args: [--check, --diff]
-        # Only run on Python files
-        types: [python]
-        # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py|tests)"
+# isort has been replaced by ruff with --select=I for better performance and consistency
 
 -   repo: https://github.com/PyCQA/bandit
     rev: 1.7.5

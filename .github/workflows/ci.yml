@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 black isort pre-commit ruff bandit
+          pip install flake8 black pre-commit ruff bandit
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
@@ -67,13 +67,13 @@ jobs:
             echo "No files to check with black"
           fi
 
-      - name: Check imports with isort
+      - name: Check imports with ruff
         run: |
           # Use the same files list from flake8 step
           if [ -s files_to_check.txt ]; then
-            cat files_to_check.txt | xargs isort --check --diff
+            cat files_to_check.txt | xargs ruff check --select=I
           else
-            echo "No files to check with isort"
+            echo "No files to check with ruff"
           fi
 
   test:
