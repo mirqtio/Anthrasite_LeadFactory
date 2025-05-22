@@ -1,0 +1,122 @@
+name: Minimal CI Pipeline
+
+on:
+  push:
+    branches: [ fix-ci-pipeline ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint with flake8
+        run: |
+          # Only check for critical errors, not style
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude="venv,.venv,env,.env,.git,.github,.mypy_cache,.pytest_cache,__pycache__,build,dist,node_modules,tasks,.ruff_cache,tests,bin,scripts"
+
+  test:
+    name: Run Minimal Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: leadfactory_test
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-json-report pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          # Set mock API keys for testing
+          sed -i 's/your_yelp_api_key_here/mock_yelp_key/g' .env
+          sed -i 's/your_google_places_api_key_here/mock_google_key/g' .env
+          sed -i 's/your_openai_api_key_here/mock_openai_key/g' .env
+          sed -i 's/your_anthropic_api_key_here/mock_anthropic_key/g' .env
+          sed -i 's/your_sendgrid_api_key_here/mock_sendgrid_key/g' .env
+          # Set database URL for testing
+          sed -i 's|postgresql://postgres:postgres@localhost:5432/leadfactory|postgresql://postgres:postgres@localhost:5432/leadfactory_test|g' .env
+
+      - name: Prepare minimal test environment
+        run: |
+          # Make scripts executable
+          chmod +x scripts/minimal_test_setup.py
+          chmod +x scripts/minimal_test_tools.py
+          chmod +x scripts/minimal_test_tracker.py
+
+          # Run minimal test environment setup
+          python scripts/minimal_test_setup.py
+
+          # Install minimal test tools
+          python scripts/minimal_test_tools.py
+
+      - name: Run core utility tests
+        env:
+          # Database configuration
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/leadfactory_test"
+          # Mock API keys
+          YELP_API_KEY: "mock_yelp_key"
+          GOOGLE_PLACES_API_KEY: "mock_google_key"
+          OPENAI_API_KEY: "mock_openai_key"
+          ANTHROPIC_API_KEY: "mock_anthropic_key"
+          SENDGRID_API_KEY: "mock_sendgrid_key"
+          # Test mode
+          TEST_MODE: "True"
+          MOCK_EXTERNAL_APIS: "True"
+        run: |
+          # Run only core utility tests
+          python scripts/minimal_test_tracker.py --run-tests --test-pattern="tests/test_cron_wrapper.py" --ci-mode --report --output=test_results/core_tests_report.txt
+
+          # Archive test results
+          mkdir -p test_results
+          tar -czf test_results/test_artifacts.tar.gz test_results/*.txt || echo "No test artifacts to archive"
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test_results/
+          retention-days: 7
