@@ -125,7 +125,7 @@ def delete_database_records(
                     else:
                         # SQLite uses ? for parameters
                         placeholders = ", ".join(["?" for _ in expired_html_paths])
-                    
+
                     # Use a safer approach with a fixed query structure and validated placeholders
                     # The placeholders string is constructed from a list comprehension with fixed values
                     # This is safe because we're not using user input in the query structure
