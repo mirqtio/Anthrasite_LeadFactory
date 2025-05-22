@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unsubscribe from Anthrasite Web Services</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .form-group textarea {
+            height: 100px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #95a5a6;
+            text-align: center;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Unsubscribe from Anthrasite Web Services</h1>
+            <p>We're sorry to see you go. Please confirm your email address below to unsubscribe.</p>
+        </div>
+
+        {% if success %}
+        <div class="success-message">
+            <p>You have been successfully unsubscribed. You will no longer receive emails from Anthrasite Web Services.</p>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="error-message">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        {% if not success %}
+        <form method="post" action="/unsubscribe">
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" value="{{ email }}" required>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason for unsubscribing (optional):</label>
+                <select id="reason" name="reason">
+                    <option value="">-- Select a reason --</option>
+                    <option value="not_interested">Not interested in the content</option>
+                    <option value="too_many">Receiving too many emails</option>
+                    <option value="never_signed_up">I never signed up for these emails</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="comments">Additional comments (optional):</label>
+                <textarea id="comments" name="comments"></textarea>
+            </div>
+            <button type="submit" class="button">Unsubscribe</button>
+        </form>
+        {% endif %}
+
+        <div class="footer">
+            <p>Anthrasite Web Services<br>
+            PO Box 12345<br>
+            San Francisco, CA 94107</p>
+            <p>&copy; 2025 Anthrasite Web Services. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+        

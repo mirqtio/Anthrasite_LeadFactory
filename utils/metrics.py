@@ -23,7 +23,7 @@ from .cost_tracker import (
     get_cost_breakdown_by_service,
     is_scaling_gate_active,
 )
-from .batch_metrics import update_batch_metrics, start_metrics_updater
+# Import batch_metrics functions at runtime to avoid circular imports
 
 # Import logging configuration
 from .logging_config import get_logger
@@ -249,6 +249,9 @@ def start_metrics_server(host: str = "127.0.0.1", port: int = 8000):
 
     # Start batch metrics updater thread
     logger.info("Starting batch metrics updater thread")
+    # Import at runtime to avoid circular imports
+    from utils.batch_metrics import start_metrics_updater
+
     start_metrics_updater(
         interval_seconds=int(os.getenv("BATCH_METRICS_UPDATE_INTERVAL", "60"))
     )

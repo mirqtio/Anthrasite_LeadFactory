@@ -14,8 +14,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import prometheus client
 from prometheus_client import Gauge, Histogram, Counter
 
-# Import batch tracker
-from utils.batch_tracker import get_batch_status
+# Import batch tracker functions at runtime to avoid circular imports
+# This prevents the circular import issue between batch_tracker.py and metrics.py
 
 # Import logging configuration
 from utils.logging_config import get_logger
@@ -60,6 +60,9 @@ BATCH_GPU_COST = Counter(
 def update_batch_metrics() -> None:
     """Update all batch-related metrics based on current batch status."""
     try:
+        # Import at runtime to avoid circular imports
+        from utils.batch_tracker import get_batch_status
+
         # Get current batch status
         status = get_batch_status()
 
