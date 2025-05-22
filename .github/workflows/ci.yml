@@ -85,9 +85,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov pytest-bdd
+          pip install pytest pytest-cov pytest-bdd pytest-pythonpath ruff black
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          
+          # Ensure Python path is correctly set up
+          python3 scripts/ensure_python_path.py
 
       - name: Create .env file
         run: |
@@ -103,6 +106,9 @@ jobs:
 
       - name: Prepare test environment
         run: |
+          # Fix import issues first
+          python3 scripts/fix_import_issues.py
+          
           # Run comprehensive test environment setup script
           python3 scripts/setup_test_environment.py
           
