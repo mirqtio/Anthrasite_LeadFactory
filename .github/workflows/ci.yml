@@ -134,17 +134,15 @@ jobs:
           ANTHROPIC_API_KEY: "mock_anthropic_key"
           SENDGRID_API_KEY: "mock_sendgrid_key"
         run: |
-          # Install test status tracker dependencies
-          python3 scripts/install_test_tools.py
-          
-          # Enable high-priority tests first
-          python scripts/test_status_tracker.py --categorize --enable-high-priority
+          # Prioritize and enable tests systematically
+          python3 scripts/test_status_tracker.py --categorize
+          python3 scripts/prioritize_tests.py --recommend=10 --enable-recommended
           
           # Run core utility tests first
-          python -m pytest tests/test_cron_wrapper.py tests/test_rule_engine.py tests/test_scaling_gate.py -v
+          python3 -m pytest tests/test_cron_wrapper.py tests/test_rule_engine.py tests/test_scaling_gate.py -v
           
           # Run all tests with enhanced failure analysis
-          python scripts/test_status_tracker.py --run-tests --test-pattern="tests/test_*.py" --ci-mode --report --visualize --analyze-failures
+          python3 scripts/test_status_tracker.py --run-tests --test-pattern="tests/test_*.py" --ci-mode --report --visualize --analyze-failures
           
           # Archive test results
           mkdir -p test_results/visualizations
@@ -152,6 +150,7 @@ jobs:
           # Generate comprehensive test reports
           cat scripts/test_status.json | jq . > test_results/test_status.json
           cat test_results/failure_analysis.txt > test_results/failure_analysis.txt
+          cat test_results/prioritization_report.txt > test_results/prioritization_report.txt
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -166,9 +165,13 @@ jobs:
           echo "Running critical BDD tests..."
           python3 scripts/test_status_tracker.py --run-tests --test-pattern="tests/steps/*.py" --ci-mode --report --output=test_results/bdd_tests_report.txt --analyze-failures
           
+          # Generate comprehensive progress report
+          echo "Generating test progress report..."
+          python3 scripts/generate_test_progress_report.py --output=test_results/progress_report.md
+          
           # Archive test results
           echo "Archiving test results..."
-          tar -czf test_results/test_artifacts.tar.gz test_results/*.txt test_results/visualizations
+          tar -czf test_results/test_artifacts.tar.gz test_results/*.txt test_results/*.md test_results/visualizations
         env:
           # Database configuration
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/leadfactory_test"
