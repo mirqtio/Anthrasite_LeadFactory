@@ -67,9 +67,7 @@ def get_expired_data(
         return [], []
 
 
-def delete_expired_files(
-    expired_html_paths: List[str], dry_run: bool = False
-) -> int:
+def delete_expired_files(expired_html_paths: List[str], dry_run: bool = False) -> int:
     """
     Delete expired HTML files from the filesystem.
 
@@ -117,22 +115,13 @@ def delete_database_records(
             # Delete HTML storage records
             if expired_html_paths:
                 if not dry_run:
-                    # Prepare the query with proper parameterization
-                    # This avoids SQL injection by not using string formatting for the query
-                    if cursor.connection.is_postgres:
-                        # PostgreSQL uses %s for parameters
-                        placeholders = ", ".join(["%s" for _ in expired_html_paths])
-                    else:
-                        # SQLite uses ? for parameters
-                        placeholders = ", ".join(["?" for _ in expired_html_paths])
-
-                    # Use a safer approach with a fixed query structure and validated placeholders
-                    # The placeholders string is constructed from a list comprehension with fixed values
-                    # This is safe because we're not using user input in the query structure
-                    # Using string concatenation with placeholders is safe here because
-                    # placeholders are generated from a fixed pattern, not from user input
-                    query = "DELETE FROM raw_html_storage WHERE html_path IN ({0})".format(placeholders)  # nosec
-                    cursor.execute(query, expired_html_paths)
+                    # Use parameterized queries to avoid SQL injection
+                    # This is the safest approach as it lets the database handle parameter substitution
+                    for path in expired_html_paths:
+                        cursor.execute(
+                            "DELETE FROM raw_html_storage WHERE html_path = %s",
+                            (path,),
+                        )
                     html_records_deleted = len(expired_html_paths)
                     logger.info(f"Deleted {html_records_deleted} HTML storage records")
                 else:
@@ -144,25 +133,13 @@ def delete_database_records(
             # Delete LLM log records
             if expired_log_ids:
                 if not dry_run:
-                    # Prepare the query with proper parameterization
-                    # This avoids SQL injection by not using string formatting for the query
-                    if cursor.connection.is_postgres:
-                        # PostgreSQL uses %s for parameters
-                        placeholders = ", ".join(["%s" for _ in expired_log_ids])
-                        # Use a safer approach with a fixed query structure and validated placeholders
-                        # The placeholders string is constructed from a list comprehension with fixed values
-                        # This is safe because we're not using user input in the query structure
-                        query = "DELETE FROM llm_logs WHERE id IN ({0})".format(placeholders)  # nosec
-                    else:
-                        # SQLite uses ? for parameters
-                        placeholders = ", ".join(["?" for _ in expired_log_ids])
-                        # Use a safer approach with a fixed query structure and validated placeholders
-                        # The placeholders string is constructed from a list comprehension with fixed values
-                        # This is safe because we're not using user input in the query structure
-                        query = "DELETE FROM llm_logs WHERE id IN ({0})".format(placeholders)  # nosec
-
-                    # Execute delete query with parameters
-                    cursor.execute(query, expired_log_ids)
+                    # Use parameterized queries to avoid SQL injection
+                    # This is the safest approach as it lets the database handle parameter substitution
+                    for log_id in expired_log_ids:
+                        cursor.execute(
+                            "DELETE FROM llm_logs WHERE id = %s",
+                            (log_id,),
+                        )
                     log_records_deleted = len(expired_log_ids)
                     logger.info(f"Deleted {log_records_deleted} LLM log records")
                 else:
@@ -177,7 +154,9 @@ def delete_database_records(
     return html_records_deleted, log_records_deleted
 
 
-def cleanup_expired_data(retention_days: Optional[int] = None, dry_run: bool = False) -> None:
+def cleanup_expired_data(
+    retention_days: Optional[int] = None, dry_run: bool = False
+) -> None:
     """
     Clean up expired HTML and LLM log data based on retention policy.
 
@@ -212,7 +191,9 @@ def cleanup_expired_data(retention_days: Optional[int] = None, dry_run: bool = F
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Clean up expired data based on retention policy")
+    parser = argparse.ArgumentParser(
+        description="Clean up expired data based on retention policy"
+    )
     parser.add_argument(
         "--retention-days",
         type=int,

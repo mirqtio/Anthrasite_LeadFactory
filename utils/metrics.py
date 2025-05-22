@@ -23,6 +23,7 @@ from .cost_tracker import (
     get_cost_breakdown_by_service,
     is_scaling_gate_active,
 )
+
 # Import batch_metrics functions at runtime to avoid circular imports
 
 # Import logging configuration
@@ -98,6 +99,9 @@ def update_metrics():
     """Update all Prometheus metrics."""
     try:
         # Update batch completion metrics
+        # Import here to avoid circular imports
+        from utils.batch_metrics import update_batch_metrics
+
         update_batch_metrics()
 
         # Update cost metrics
