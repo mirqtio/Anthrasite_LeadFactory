@@ -1,0 +1,63 @@
+name: Unittest CI Workflow
+
+on:
+  push:
+    branches: [ fix-ci-pipeline ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unittest:
+    name: Unittest Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest  # Still needed for compatibility with some test files
+
+      - name: Create directory structure
+        run: |
+          mkdir -p logs
+          mkdir -p test_results
+          mkdir -p tests/verify_ci
+
+      - name: Run unittest runner
+        run: |
+          # Make the script executable
+          chmod +x scripts/unittest_runner.py
+
+          # Run the unittest runner
+          PYTHONPATH=. python scripts/unittest_runner.py --test-pattern tests/verify_ci --verbose
+        id: unittest-run
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: unittest-results
+          path: |
+            test_results/
+            logs/
+
+      - name: Check unittest status
+        if: always()
+        run: |
+          echo "Unittest run status: ${{ steps.unittest-run.outcome }}"
+
+          if [[ "${{ steps.unittest-run.outcome }}" != "success" ]]; then
+            echo "::error::Unittest execution failed"
+            exit 1
+          fi
+
+          echo "All unittest tests completed successfully!"
+          exit 0

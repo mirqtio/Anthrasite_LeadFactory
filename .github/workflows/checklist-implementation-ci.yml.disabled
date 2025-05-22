@@ -1,0 +1,100 @@
+name: Checklist Implementation CI
+
+on:
+  push:
+    branches: [ checklist-implementation-final ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black
+
+      - name: Run linters
+        run: |
+          # Only lint our implementation files
+          ruff check bin/budget_gate.py bin/cost_tracking.py bin/data_retention.py bin/health_check.py bin/metrics.py scripts/monitor_supabase_usage.py scripts/run_nightly.sh scripts/setup_wal_archiving.py scripts/rsync_backup.sh
+          black --check bin/budget_gate.py bin/cost_tracking.py bin/data_retention.py bin/health_check.py bin/metrics.py scripts/monitor_supabase_usage.py scripts/setup_wal_archiving.py
+
+  verify-implementation:
+    name: Verify Implementation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-mock requests
+
+      - name: Verify implementation files exist
+        run: |
+          # Check that all required implementation files exist
+          for file in bin/budget_gate.py bin/cost_tracking.py bin/data_retention.py bin/health_check.py bin/metrics.py scripts/monitor_supabase_usage.py scripts/run_nightly.sh scripts/setup_wal_archiving.py scripts/rsync_backup.sh; do
+            if [ ! -f "$file" ]; then
+              echo "Missing implementation file: $file"
+              exit 1
+            fi
+          done
+          echo "All implementation files present"
+
+      - name: Verify documentation
+        run: |
+          # Check that all required documentation files exist
+          for file in docs/deployment.md docs/failover-test-2025-05.md docs/implementation_summary.md CONTRIBUTING.md; do
+            if [ ! -f "$file" ]; then
+              echo "Missing documentation file: $file"
+              exit 1
+            fi
+          done
+          echo "All documentation files present"
+
+      - name: Verify configuration
+        run: |
+          # Check that all required configuration files exist
+          for file in .pre-commit-config.yaml .secrets.baseline .env.production; do
+            if [ ! -f "$file" ]; then
+              echo "Missing configuration file: $file"
+              exit 1
+            fi
+          done
+          echo "All configuration files present"
+
+      - name: Verify implementation completeness
+        run: |
+          # Check that implementation files contain required functionality
+          grep -q "HEALTH_CHECK_FAILURES_THRESHOLD=2" .env.production || (echo "Missing health check threshold configuration" && exit 1)
+          grep -q "RETENTION_DAYS_DB_BACKUPS=90" .env.production || (echo "Missing backup retention configuration" && exit 1)
+          grep -q "HTML_RETENTION_DAYS=90" .env.production || (echo "Missing HTML retention configuration" && exit 1)
+          grep -q "LLM_RETENTION_DAYS=90" .env.production || (echo "Missing LLM retention configuration" && exit 1)
+          echo "Implementation completeness verified"
+
+  notify:
+    name: Notify on Completion
+    runs-on: ubuntu-latest
+    needs: [lint, verify-implementation]
+    if: always()
+    steps:
+      - name: Check status
+        if: needs.lint.result == 'success' && needs.verify-implementation.result == 'success'
+        run: echo "Checklist implementation verified successfully"

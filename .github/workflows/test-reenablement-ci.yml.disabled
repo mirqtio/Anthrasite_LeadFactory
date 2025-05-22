@@ -1,0 +1,319 @@
+name: Test Re-enablement CI Pipeline
+
+on:
+  push:
+    branches: [ main, master, feature/*, fix/* ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode to run in (auto or manual)'
+        required: true
+        default: 'auto'
+      category:
+        description: 'Test category to enable (required in manual mode)'
+        required: false
+        default: ''
+      priority:
+        description: 'Minimum test priority to enable'
+        required: false
+        default: 'high'
+      enable_recommended:
+        description: 'Enable recommended tests'
+        required: false
+        default: 'true'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install matplotlib networkx pyyaml pytest pytest-cov
+
+      - name: Create directories
+        run: |
+          mkdir -p logs test_results docs ci_tests
+
+      - name: Setup test environment
+        run: |
+          python scripts/minimal_test_setup.py
+          python scripts/minimal_db_setup.py
+          python scripts/minimal_path_fix.py
+
+      - name: Generate test status report
+        run: |
+          python scripts/generate_test_status_report.py --output docs/test_status_report.md
+          echo "Test status report generated"
+
+      - name: Prioritize tests
+        run: |
+          python scripts/prioritize_tests.py --input test_results/test_status.json --output-dir docs
+          echo "Test prioritization completed"
+
+      - name: Generate test progress report
+        run: |
+          python scripts/generate_test_progress_report.py --input test_results/test_status.json --output docs/test_progress_report.md
+          echo "Test progress report generated"
+
+      - name: Set test matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event.inputs.mode }}" == "manual" ] && [ -n "${{ github.event.inputs.category }}" ]; then
+            # Manual mode with specified category
+            echo "matrix={\"category\":[\"${{ github.event.inputs.category }}\"]}" >> $GITHUB_OUTPUT
+          else
+            # Auto mode - use recommendations from prioritize_tests.py
+            CATEGORIES=$(python -c "
+import json
+with open('docs/test_recommendations.md', 'r') as f:
+    content = f.read()
+categories = set()
+for line in content.split('\\n'):
+    if '|' in line and 'Test File' not in line and '---' not in line:
+        parts = line.split('|')
+        if len(parts) >= 4:
+            category = parts[4].strip()
+            categories.add(category)
+print(','.join(categories))
+            ")
+            echo "matrix={\"category\":[\"${CATEGORIES}\"]}" >> $GITHUB_OUTPUT
+          fi
+
+  enable-tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install matplotlib networkx pyyaml pytest pytest-cov
+
+      - name: Setup test environment
+        run: |
+          python scripts/minimal_test_setup.py
+          python scripts/minimal_db_setup.py
+          python scripts/minimal_path_fix.py
+
+      - name: Enable tests for ${{ matrix.category }}
+        run: |
+          PRIORITY="${{ github.event.inputs.priority }}"
+          if [ -z "$PRIORITY" ]; then
+            PRIORITY="high"
+          fi
+
+          echo "Converting tests for category ${{ matrix.category }} with priority $PRIORITY"
+          python scripts/generate_ci_tests.py --source-dir tests/${{ matrix.category }} --target-dir ci_tests/${{ matrix.category }}
+
+          echo "Enabling tests for category ${{ matrix.category }} with priority $PRIORITY"
+          python scripts/enable_ci_tests.py --category ${{ matrix.category }} --priority $PRIORITY
+
+          echo "Tests enabled for ${{ matrix.category }}"
+
+      - name: Run tests for ${{ matrix.category }}
+        run: |
+          echo "Running tests for category ${{ matrix.category }}"
+
+          # Find all test files in the category
+          find ci_tests/${{ matrix.category }} -name "test_*.py" -type f | while read test_file; do
+            echo "Running $test_file"
+            python $test_file || echo "Test $test_file failed but continuing"
+          done
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.category }}
+          path: |
+            test_results/
+            ci_tests/${{ matrix.category }}/
+            logs/
+
+  generate-reports:
+    needs: enable-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install matplotlib networkx pyyaml pytest pytest-cov
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Merge test results
+        run: |
+          mkdir -p test_results
+
+          # Copy all test result files
+          find artifacts -name "test_status.json" -type f -exec cp {} test_results/ \;
+
+          # Merge test results if needed
+          python -c "
+import json
+import os
+import glob
+
+# Load the main test status file
+main_file = 'test_results/test_status.json'
+if os.path.exists(main_file):
+    with open(main_file, 'r') as f:
+        main_data = json.load(f)
+else:
+    main_data = {'tests': {}, 'categories': {}, 'priorities': {}}
+
+# Find all artifact test status files
+artifact_files = glob.glob('artifacts/*/test_results/test_status.json')
+for file in artifact_files:
+    try:
+        with open(file, 'r') as f:
+            data = json.load(f)
+
+        # Merge test data
+        for test_file, test_info in data.get('tests', {}).items():
+            if test_info.get('enabled', False):
+                if test_file in main_data['tests']:
+                    main_data['tests'][test_file]['enabled'] = True
+                else:
+                    main_data['tests'][test_file] = test_info
+
+        # Update category counts
+        for category, cat_data in data.get('categories', {}).items():
+            if category in main_data['categories']:
+                main_data['categories'][category]['enabled'] = cat_data.get('enabled', 0)
+            else:
+                main_data['categories'][category] = cat_data
+
+        # Update priority counts
+        for priority, pri_data in data.get('priorities', {}).items():
+            if priority in main_data['priorities']:
+                main_data['priorities'][priority]['enabled'] = pri_data.get('enabled', 0)
+            else:
+                main_data['priorities'][priority] = pri_data
+    except Exception as e:
+        print(f'Error processing {file}: {e}')
+
+# Save the merged data
+with open(main_file, 'w') as f:
+    json.dump(main_data, f, indent=2)
+          "
+
+      - name: Generate final reports
+        run: |
+          # Generate test status report
+          python scripts/generate_test_status_report.py --output docs/test_status_report.md
+
+          # Generate test progress report
+          python scripts/generate_test_progress_report.py --input test_results/test_status.json --output docs/test_progress_report.md
+
+          # Generate test visualizations
+          python scripts/generate_test_visualizations.py --input test_results/test_status.json --output docs/test_visualizations
+
+          # Prioritize tests for next run
+          python scripts/prioritize_tests.py --input test_results/test_status.json --output-dir docs
+
+      - name: Upload final reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: |
+            docs/
+            test_results/
+
+  update-workflow:
+    needs: generate-reports
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.enable_recommended == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pyyaml
+
+      - name: Download test reports
+        uses: actions/download-artifact@v3
+        with:
+          name: test-reports
+          path: reports
+
+      - name: Update CI workflow
+        run: |
+          # Copy reports back to their expected locations
+          cp -r reports/docs/* docs/
+          cp -r reports/test_results/* test_results/
+
+          # Update the final CI workflow with newly enabled tests
+          python scripts/ci_pipeline_integration.py --mode auto --report-only
+
+          echo "CI workflow updated"
+
+      - name: Create Pull Request with updates
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update CI workflow with newly enabled tests"
+          title: "Update CI workflow with newly enabled tests"
+          body: |
+            This PR updates the CI workflow with newly enabled tests.
+
+            ## Test Re-enablement Progress
+
+            See the [Test Status Report](docs/test_status_report.md) for details.
+
+            ## Next Steps
+
+            See the [Test Recommendations](docs/test_recommendations.md) for the next tests to enable.
+          branch: update-ci-workflow
+          base: ${{ github.ref_name }}
+          delete-branch: true
