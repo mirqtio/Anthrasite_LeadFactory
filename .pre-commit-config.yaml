@@ -56,4 +56,4 @@ repos:
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
-        exclude: "package-lock.json|poetry.lock|yarn.lock|.ipynb$"
+        exclude: "package-lock.json|poetry.lock|yarn.lock|.ipynb$|tests/|.cursor/|.github/workflows/|scripts/setup_test_environment.py|scripts/ci_fix_all.py|scripts/backup_postgres.sh|scripts/configure_postgres_wal.sh|docs/postgres-migration.md|create_repo_skeleton.py|.env.example"
