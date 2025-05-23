@@ -41,7 +41,7 @@ jobs:
         run: |
           # Create a list of files to check, excluding those specified in pre-commit config
           # This ensures CI checks match local pre-commit behavior
-          find . -type f -name "*.py" | grep -v "tests/" | grep -v ".cursor/" | grep -v ".github/workflows/" | grep -v "bin/enrich.py" | grep -v "bin/dedupe.py" > files_to_check.txt
+          find . \( -name ".venv" -o -name "venv" \) -prune -o -type f -name "*.py" -print | grep -v "tests/" | grep -v ".cursor/" | grep -v ".github/workflows/" | grep -v "bin/enrich.py" | grep -v "bin/dedupe.py" > files_to_check.txt
           echo "Files to check:"
           cat files_to_check.txt
 
@@ -78,7 +78,7 @@ jobs:
       - name: Generate file list for linting
         run: |
           # Create a list of files to check, excluding those specified in pre-commit config
-          find . -type f -name "*.py" | grep -v "tests/" | grep -v ".cursor/" | grep -v ".github/workflows/" | grep -v "bin/enrich.py" | grep -v "bin/dedupe.py" > files_to_check.txt
+          find . \( -name ".venv" -o -name "venv" \) -prune -o -type f -name "*.py" -print | grep -v "tests/" | grep -v ".cursor/" | grep -v ".github/workflows/" | grep -v "bin/enrich.py" | grep -v "bin/dedupe.py" > files_to_check.txt
           echo "Files to lint:"
           cat files_to_check.txt
 
