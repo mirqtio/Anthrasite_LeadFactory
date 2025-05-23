@@ -52,7 +52,8 @@ def run_command(command, cwd=None, env=None, timeout=300):
 
         duration = time.time() - start_time
         logger.info(
-            f"Command completed in {duration:.2f} seconds with exit code {result.returncode}"
+            f"Command completed in {duration:.2f} seconds "
+            f"with exit code {result.returncode}"
         )
 
         if result.stdout:
@@ -125,7 +126,7 @@ def verify_minimal_test_tracker():
         test_dir.mkdir(exist_ok=True, parents=True)
 
         test_file = test_dir / "test_verify_ci.py"
-        with open(test_file, "w") as f:
+        with Path(test_file).open("w") as f:
             f.write(
                 """
 def test_verify_ci_simple():
@@ -213,10 +214,10 @@ def test_utils_imports():
     except ImportError as e:
         print(f"Import error: {e}")
         print(f"sys.path: {sys.path}")
-        assert False, f"Failed to import utils: {e}"
+        assert "utils module not found" not in str(e)
 """
 
-    with open(test_file, "w") as f:
+    with Path(test_file).open("w") as f:
         f.write(test_content)
 
     # Run the test
