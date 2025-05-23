@@ -50,36 +50,6 @@ def find_python_files(base_dir):
     return python_files
 
 
-def format_specific_files():
-    """Format specific files that are known to have formatting issues."""
-    problem_files = [
-        "utils/raw_data_retention.py",
-        "utils/cost_tracker.py",
-        "utils/website_scraper.py",
-    ]
-
-    print(f"Formatting {len(problem_files)} specific files with known formatting issues...")
-
-    # Get the project root directory
-    project_root = Path(__file__).parent.parent.absolute()
-
-    # Change to the project root directory
-    os.chdir(project_root)
-
-    # Format each problem file individually
-    for file_path in problem_files:
-        full_path = os.path.join(project_root, file_path)
-        if os.path.exists(full_path):
-            print(f"Formatting {file_path}...")
-            cmd = ["black", full_path]
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            print(result.stdout)
-            if result.stderr:
-                print(result.stderr, file=sys.stderr)
-        else:
-            print(f"Warning: File {file_path} does not exist")
-
-
 def main():
     """Run Black on all Python files in the project."""
     # Get the project root directory
@@ -88,10 +58,7 @@ def main():
     # Change to the project root directory
     os.chdir(project_root)
 
-    # First, format specific problem files
-    format_specific_files()
-
-    # Then format all Python files
+    # Find all Python files
     python_files = []
     for dir_to_format in DIRS_TO_FORMAT:
         python_files.extend(find_python_files(dir_to_format))
