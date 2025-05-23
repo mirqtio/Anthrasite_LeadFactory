@@ -3,6 +3,8 @@ I/O utility functions for the Anthrasite Lead-Factory pipeline.
 Handles database connections, logging, and API requests.
 """
 
+from typing import Dict, List, Optional, Tuple, Union, Any
+
 import os
 import sqlite3
 import time
@@ -67,7 +69,7 @@ class DatabaseConnection:
     If DATABASE_URL is set, uses Postgres, otherwise falls back to SQLite.
     """
 
-    def __init__(self, db_path: str | None = None):
+    def __init__(self, db_path: Optional[str] = None):
         """Initialize database connection.
 
         Args:
@@ -183,19 +185,19 @@ def load_csv_data(file_path: str) -> list[dict]:
 def make_api_request(
     url: str,
     method: str = "GET",
-    headers: dict | None = None,
-    params: dict | None = None,
-    data: dict | None = None,
+    headers: Optional[Dict] = None,
+    params: Optional[Dict] = None,
+    data: Optional[Dict] = None,
     timeout: int = DEFAULT_TIMEOUT,
     max_retries: int = 3,
     retry_delay: int = 2,
     track_cost: bool = True,
-    service_name: str | None = None,
-    operation: str | None = None,
+    service_name: Optional[str] = None,
+    operation: Optional[str] = None,
     cost_cents: int = 0,
     tier: int = 1,
-    business_id: int | None = None,
-) -> tuple[dict | None, str | None]:
+    business_id: Optional[int] = None,
+) -> Tuple[Optional[Dict], Optional[str]]:
     """Make an API request with retry logic and cost tracking.
     Args:
         url: API endpoint URL.
@@ -258,7 +260,7 @@ def track_api_cost(
     operation: str,
     cost_cents: int,
     tier: int = 1,
-    business_id: int | None = None,
+    business_id: Optional[int] = None,
 ) -> None:
     """Track the cost of an API call.
     Args:
@@ -320,12 +322,12 @@ def save_business(
     address: str,
     zip_code: str,
     category: str,
-    website: str | None = None,
-    email: str | None = None,
-    phone: str | None = None,
+    website: Optional[str] = None,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
     source: str = "yelp",
-    source_id: str | None = None,
-) -> int | None:
+    source_id: Optional[str] = None,
+) -> Optional[int]:
     """Save business information to database.
     Args:
         name: Business name.
