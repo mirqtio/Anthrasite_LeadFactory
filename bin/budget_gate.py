@@ -164,7 +164,7 @@ budget_gate = BudgetGate()
 def budget_gated(
     operation: str,
     fallback_value: Any = None,
-    fallback_function: Callable | None = None,
+    fallback_function: Optional[Callable] = None,
 ):
     """Decorator to gate a function based on budget status.
 

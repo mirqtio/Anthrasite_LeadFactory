@@ -299,8 +299,8 @@ async def unsubscribe_page(request: Request, email: Optional[str] = None):
 async def process_unsubscribe(
     request: Request,
     email: str = Form(...),
-    reason: str | None = Form(None),
-    comments: str | None = Form(None),
+    reason: Optional[str] = Form(None),
+    comments: Optional[str] = Form(None),
 ):
     """Process unsubscribe request."""
     # Validate email

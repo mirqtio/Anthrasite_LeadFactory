@@ -154,7 +154,7 @@ def delete_database_records(
 
 
 def cleanup_expired_data(
-    retention_days: int | None = None, dry_run: bool = False
+    retention_days: Optional[int] = None, dry_run: bool = False
 ) -> None:
     """
     Clean up expired HTML and LLM log data based on retention policy.

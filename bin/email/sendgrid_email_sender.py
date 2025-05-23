@@ -56,9 +56,9 @@ class SendGridEmailSender:
 
     def __init__(
         self,
-        api_key: str | None = None,
-        from_email: str | None = None,
-        from_name: str | None = None,
+        api_key: Optional[str] = None,
+        from_email: Optional[str] = None,
+        from_name: Optional[str] = None,
         pool: str = "shared",
         subuser: str = "prod",
     ):
@@ -99,11 +99,11 @@ class SendGridEmailSender:
         to: str,
         subject: str,
         content: str,
-        attachments: list[dict[str, Any]] | None = None,
-        cc: list[str] | None = None,
-        bcc: list[str] | None = None,
-        categories: list[str] | None = None,
-        custom_args: dict[str, str] | None = None,
+        attachments: Optional[List[Dict[str, Any]]] = None,
+        cc: Optional[List[str]] = None,
+        bcc: Optional[List[str]] = None,
+        categories: Optional[List[str]] = None,
+        custom_args: Optional[Dict[str, str]] = None,
     ) -> dict[str, Any]:
         """Send an email using SendGrid.
 
@@ -205,8 +205,8 @@ class SendGridEmailSender:
 
     def get_stats(
         self,
-        start_date: datetime | None = None,
-        end_date: datetime | None = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
         aggregated_by: str = "day",
     ) -> dict[str, Any]:
         """Get email statistics from SendGrid.
