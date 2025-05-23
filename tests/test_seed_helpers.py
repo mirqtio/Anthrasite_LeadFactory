@@ -59,9 +59,7 @@ def test_verticals_contains_required_verticals():
         data = yaml.safe_load(f)
     vertical_names = [v["name"] for v in data["verticals"]]
     for vertical in required_verticals:
-        assert (
-            vertical in vertical_names
-        ), f"Required vertical {vertical} not found in verticals.yml"
+        assert vertical in vertical_names, f"Required vertical {vertical} not found in verticals.yml"
 
 
 def test_schema_creation(db_connection):

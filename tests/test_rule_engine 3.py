@@ -90,11 +90,7 @@ def test_tech_stack_rule(sample_rules_file):
     engine = RuleEngine(sample_rules_file)
     business_data = {
         "name": "WordPress Business",
-        "features": {
-            "tech_stack": (
-                '{"WordPress": {"version": "5.8"}, "PHP": {"version": "7.2.0"}}'
-            )
-        },
+        "features": {"tech_stack": ('{"WordPress": {"version": "5.8"}, "PHP": {"version": "7.2.0"}}')},
     }
     score, applied_rules = engine.calculate_score(business_data)
     # Base (50) + WordPress (10) + Outdated PHP (15) = 75
@@ -109,9 +105,7 @@ def test_multiple_rules(sample_rules_file):
     business_data = {
         "name": "Business with WordPress and PHP 7.0",
         "features": {
-            "tech_stack": (
-                '{"WordPress": {"version": "5.8"}, "PHP": {"version": "7.0.0"}}'
-            ),
+            "tech_stack": ('{"WordPress": {"version": "5.8"}, "PHP": {"version": "7.0.0"}}'),
             "page_speed": 85,
         },
         "state": "CA",
@@ -180,25 +174,10 @@ def test_condition_evaluators(sample_rules_file):
         is True
     )
     # Test performance_score_gt
-    assert (
-        engine._evaluate_condition(
-            {"performance_score_gt": 80}, {"features": {"page_speed": 85}}
-        )
-        is True
-    )
+    assert engine._evaluate_condition({"performance_score_gt": 80}, {"features": {"page_speed": 85}}) is True
     # Test state_equals
     assert engine._evaluate_condition({"state_equals": "CA"}, {"state": "CA"}) is True
     # Test vertical_in
-    assert (
-        engine._evaluate_condition(
-            {"vertical_in": ["healthcare", "legal"]}, {"vertical": "healthcare"}
-        )
-        is True
-    )
+    assert engine._evaluate_condition({"vertical_in": ["healthcare", "legal"]}, {"vertical": "healthcare"}) is True
     # Test has_multiple_locations
-    assert (
-        engine._evaluate_condition(
-            {"has_multiple_locations": True}, {"has_multiple_locations": True}
-        )
-        is True
-    )
+    assert engine._evaluate_condition({"has_multiple_locations": True}, {"has_multiple_locations": True}) is True

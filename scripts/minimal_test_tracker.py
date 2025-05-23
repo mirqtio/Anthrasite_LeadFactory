@@ -132,13 +132,9 @@ class MinimalTestTracker:
             try:
                 import pytest_json_report
 
-                pytest_cmd.extend(
-                    ["--json-report", "--json-report-file=test_results/report.json"]
-                )
+                pytest_cmd.extend(["--json-report", "--json-report-file=test_results/report.json"])
             except ImportError:
-                logger.warning(
-                    "pytest-json-report not available, will use exit code only"
-                )
+                logger.warning("pytest-json-report not available, will use exit code only")
 
             # Add coverage if available
             try:
@@ -160,9 +156,7 @@ class MinimalTestTracker:
             logger.info(f"Running command: {' '.join(pytest_cmd)}")
             start_time = time.time()
 
-            result = subprocess.run(
-                pytest_cmd, cwd=project_root, capture_output=True, text=True
-            )
+            result = subprocess.run(pytest_cmd, cwd=project_root, capture_output=True, text=True)
 
             duration = time.time() - start_time
 
@@ -182,9 +176,7 @@ class MinimalTestTracker:
                                 self.tests[test_id]["status"] = STATUS_SKIPPED
                             else:
                                 self.tests[test_id]["status"] = STATUS_FAILING
-                                self.tests[test_id]["error_message"] = test_info.get(
-                                    "call", {}
-                                ).get("longrepr", "")
+                                self.tests[test_id]["error_message"] = test_info.get("call", {}).get("longrepr", "")
 
                             self.tests[test_id]["last_run"] = datetime.now().isoformat()
                 except Exception as e:
@@ -282,9 +274,7 @@ def main():
     """Main function with error handling."""
     try:
         parser = argparse.ArgumentParser(description="Minimal Test Status Tracker")
-        parser.add_argument(
-            "--run-tests", action="store_true", help="Run tests and record their status"
-        )
+        parser.add_argument("--run-tests", action="store_true", help="Run tests and record their status")
         parser.add_argument(
             "--test-pattern",
             type=str,
@@ -295,9 +285,7 @@ def main():
             action="store_true",
             help="Run in CI mode with specific settings",
         )
-        parser.add_argument(
-            "--report", action="store_true", help="Generate a status report"
-        )
+        parser.add_argument("--report", action="store_true", help="Generate a status report")
         parser.add_argument("--output", type=str, help="Output file for the report")
 
         args = parser.parse_args()

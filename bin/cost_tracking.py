@@ -56,9 +56,7 @@ class CostTracker:
         """
         # Set default database path if not provided
         if not db_path:
-            db_dir = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
-            )
+            db_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
             os.makedirs(db_dir, exist_ok=True)
             db_path = os.path.join(db_dir, "cost_tracking.db")
 
@@ -85,9 +83,7 @@ class CostTracker:
         }
 
         # Load budget gate threshold
-        self.budget_gate_threshold = float(
-            os.environ.get("BUDGET_GATE_THRESHOLD", "1000.0")
-        )
+        self.budget_gate_threshold = float(os.environ.get("BUDGET_GATE_THRESHOLD", "1000.0"))
         self.budget_gate_active = False
 
         # Start budget gate check thread
@@ -208,9 +204,7 @@ class CostTracker:
             # Update monthly budget
             self._update_monthly_spent(amount)
 
-            logger.info(
-                f"Added cost: ${amount:.2f} for {service}{f'/{operation}' if operation else ''}"
-            )
+            logger.info(f"Added cost: ${amount:.2f} for {service}{f'/{operation}' if operation else ''}")
 
             return True
         except Exception as e:
@@ -455,9 +449,7 @@ class CostTracker:
                 },
             )
 
-            logger.info(
-                f"Stopped GPU tracking (hours_used={hours_used:.2f}, final_cost=${final_cost:.2f})"
-            )
+            logger.info(f"Stopped GPU tracking (hours_used={hours_used:.2f}, final_cost=${final_cost:.2f})")
         else:
             logger.warning("GPU tracking stopped but no start time recorded")
 
@@ -556,9 +548,7 @@ class CostTracker:
                 (str(year), str(month).zfill(2)),
             )
 
-            costs_by_service = {
-                row["service"]: row["total"] for row in cursor.fetchall()
-            }
+            costs_by_service = {row["service"]: row["total"] for row in cursor.fetchall()}
 
             # Get batch statistics
             cursor.execute(
@@ -585,18 +575,14 @@ class CostTracker:
                 "batch_statistics": batch_stats,
             }
 
-            logger.info(
-                f"Retrieved monthly costs for {year}-{month}: spent=${spent:.2f}, budget=${budget:.2f}"
-            )
+            logger.info(f"Retrieved monthly costs for {year}-{month}: spent=${spent:.2f}, budget=${budget:.2f}")
 
             return result
         except Exception as e:
             logger.exception(f"Error getting monthly costs: {e}")
             return None
 
-    def set_monthly_budget(
-        self, amount: float, year: int | None = None, month: int | None = None
-    ):
+    def set_monthly_budget(self, amount: float, year: int | None = None, month: int | None = None):
         """Set budget for a specific month.
 
         Args:
@@ -702,9 +688,7 @@ class CostTracker:
 
                 if spent >= budget:
                     self.budget_gate_active = True
-                    logger.warning(
-                        f"Budget gate activated: spent (${spent:.2f}) exceeds budget (${budget:.2f})"
-                    )
+                    logger.warning(f"Budget gate activated: spent (${spent:.2f}) exceeds budget (${budget:.2f})")
                     metrics.update_budget_gate_status(True)
 
             conn.close()

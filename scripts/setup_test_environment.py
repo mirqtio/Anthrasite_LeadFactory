@@ -57,7 +57,7 @@ def setup_mock_data(project_root):
     mock_data_dir.mkdir(parents=True, exist_ok=True)
 
     # Write mock tech stack data
-    with open(mock_data_dir / "tech_stack.json", "w") as f:
+    with (mock_data_dir / "tech_stack.json").open("w") as f:
         json.dump(mock_tech_stack, f)
 
     # Create mock rules file for rule engine tests
@@ -89,13 +89,13 @@ multipliers:
     multiplier: 1.5
 """
 
-    with open(mock_data_dir / "rules.yml", "w") as f:
+    with (mock_data_dir / "rules.yml").open("w") as f:
         f.write(mock_rules)
 
     # Create mock scaling gate history file
     scaling_gate_history = {"history": []}
 
-    with open(mock_data_dir / "scaling_gate_history.json", "w") as f:
+    with (mock_data_dir / "scaling_gate_history.json").open("w") as f:
         json.dump(scaling_gate_history, f)
 
 
@@ -262,15 +262,9 @@ def setup_test_database(project_root):
     )
 
     # Create indexes needed for tests
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_businesses_score ON businesses(score)"
-    )
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)"
-    )
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue(status)"
-    )
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_score ON businesses(score)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue(status)")
 
     # Create triggers needed for tests
     cursor.execute(
@@ -287,24 +281,40 @@ def setup_test_database(project_root):
     # Insert test data for businesses with features
     cursor.execute(
         """
-    INSERT INTO businesses (name, address, city, state, zip, vertical, has_multiple_locations, features, score, status)
+    INSERT INTO businesses (
+        name, address, city, state, zip, vertical,
+        has_multiple_locations, features, score, status
+    )
     VALUES
-        ('Test Business 1', '123 Main St', 'San Francisco', 'CA', '94105', 'healthcare', 1,
-         '{"tech_stack": {"WordPress": {"version": "5.8"}, "PHP": {"version": "7.2.0"}}, "page_speed": 85}', 75, 'pending'),
-        ('Test Business 2', '456 Market St', 'San Francisco', 'CA', '94105', 'legal', 0,
-         '{"tech_stack": {"Wix": {"version": "1.0"}, "JavaScript": {"version": "ES6"}}, "page_speed": 65}', 50, 'pending'),
-        ('Test Business 3', '789 Howard St', 'San Francisco', 'CA', '94105', 'financial', 1,
-         '{"tech_stack": {"React": {"version": "17.0"}, "Node.js": {"version": "14.0"}}, "page_speed": 90}', 85, 'pending')
+        ('Test Business 1', '123 Main St', 'San Francisco', 'CA', '94105',
+         'healthcare', 1,
+         '{"tech_stack": {"WordPress": {"version": "5.8"},'
+         ' "PHP": {"version": "7.2.0"}}},'
+         ' "page_speed": 85}',
+         75, 'pending'),
+        ('Test Business 2', '456 Market St', 'San Francisco', 'CA', '94105',
+         'legal', 0,
+         '{"tech_stack": {"Wix": {"version": "1.0"}, "JavaScript": {"version": "ES6"}},'
+         ' "page_speed": 65}',
+         50, 'pending'),
+        ('Test Business 3', '789 Howard St', 'San Francisco', 'CA', '94105',
+         'financial', 1,
+         '{"tech_stack": {"React": {"version": "17.0"},'
+         ' "Node.js": {"version": "14.0"}}},'
+         ' "page_speed": 90}',
+         85, 'pending')
     """
     )
 
     # Insert test data for candidate_duplicate_pairs
     cursor.execute(
         """
-    INSERT INTO candidate_duplicate_pairs (business_id_1, business_id_2, similarity_score, status)
+    INSERT INTO candidate_duplicate_pairs (
+        business_id_1, business_id_2, similarity_score, status
+    )
     VALUES
         (1, 2, 0.75, 'pending'),
-        (1, 3, 0.50, 'review')
+        (1, 3, 0.60, 'pending')
     """
     )
 
@@ -359,8 +369,11 @@ def setup_test_database(project_root):
         """
     INSERT INTO html_storage (business_id, html, url)
     VALUES
-        (1, '<html><body><h1>Test Business 1</h1><p>Healthcare provider</p></body></html>', 'https://example.com/business1'),
-        (2, '<html><body><h1>Test Business 2</h1><p>Legal services</p></body></html>', 'https://example.com/business2')
+        (1, '<html><body><h1>Test Business 1</h1>'
+            '<p>Healthcare provider</p></body></html>',
+         'https://example.com/business1'),
+        (2, '<html><body><h1>Test Business 2</h1><p>Legal services</p></body></html>',
+         'https://example.com/business2')
     """
     )
 
@@ -369,8 +382,10 @@ def setup_test_database(project_root):
         """
     INSERT INTO llm_logs (model, prompt, response, tokens, cost)
     VALUES
-        ('gpt-4', 'Generate a mockup for Test Business 1', 'Here is a mockup for Test Business 1...', 150, 0.03),
-        ('claude-3', 'Generate a mockup for Test Business 2', 'Here is a mockup for Test Business 2...', 200, 0.04)
+        ('gpt-4', 'Generate a mockup for Test Business 1',
+         'Here is a mockup for Test Business 1...', 150, 0.03),
+        ('claude-3', 'Generate a mockup for Test Business 2',
+         'Here is a mockup for Test Business 2...', 200, 0.04)
     """
     )
 
@@ -417,12 +432,8 @@ def setup_environment_variables():
         "HTML_STORAGE_DIR": str(project_root / "data" / "html_storage"),
         "LLM_LOGS_DIR": str(project_root / "data" / "llm_logs"),
         # Scaling gate configuration
-        "SCALING_GATE_LOCKFILE": str(
-            project_root / "data" / "mock" / "scaling_gate.lock"
-        ),
-        "SCALING_GATE_HISTORY_FILE": str(
-            project_root / "data" / "mock" / "scaling_gate_history.json"
-        ),
+        "SCALING_GATE_LOCKFILE": str(project_root / "data" / "mock" / "scaling_gate.lock"),
+        "SCALING_GATE_HISTORY_FILE": str(project_root / "data" / "mock" / "scaling_gate_history.json"),
         # Test configuration
         "TEST_MODE": "True",
         "MOCK_EXTERNAL_APIS": "True",

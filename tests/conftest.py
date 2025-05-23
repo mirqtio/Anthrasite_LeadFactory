@@ -51,9 +51,7 @@ class MockWebPage:
 
 
 # Patch the Wappalyzer module
-sys.modules["wappalyzer"] = type(
-    "wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage}
-)
+sys.modules["wappalyzer"] = type("wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage})
 
 # Patch the track_api_cost function before importing modules that use it
 patch("utils.io.track_api_cost", mock_track_api_cost).start()
@@ -143,9 +141,7 @@ def run_mockup_generation(
                 business["id"],
                 business.get("name", "Test Business"),
                 business.get("website", "https://example.com"),
-                business.get(
-                    "location_data", '{"state": "CA", "city": "San Francisco"}'
-                ),
+                business.get("location_data", '{"state": "CA", "city": "San Francisco"}'),
             ),
         )
         conn.commit()

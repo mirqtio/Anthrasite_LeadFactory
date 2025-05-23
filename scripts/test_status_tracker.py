@@ -17,6 +17,7 @@ Options:
 import argparse
 import json
 import logging
+import os
 import re
 import subprocess
 import sys
@@ -198,9 +199,7 @@ class TestStatusTracker:
         start_time = time.time()
 
         # Run pytest
-        result = subprocess.run(
-            pytest_cmd, cwd=project_root, capture_output=True, text=True
-        )
+        result = subprocess.run(pytest_cmd, cwd=project_root, capture_output=True, text=True)
 
         # Calculate duration
         duration = time.time() - start_time
@@ -236,9 +235,7 @@ class TestStatusTracker:
                         self.tests[test_id]["status"] = STATUS_SKIPPED
                     else:
                         self.tests[test_id]["status"] = STATUS_FAILING
-                        self.tests[test_id]["error_message"] = test_info.get(
-                            "call", {}
-                        ).get("longrepr", "")
+                        self.tests[test_id]["error_message"] = test_info.get("call", {}).get("longrepr", "")
 
                     # Record test duration
                     self.tests[test_id]["duration"] = test_info.get("duration", 0)
@@ -314,10 +311,7 @@ class TestStatusTracker:
         tests_to_report = sorted(priority_tests[1])
         for test_id in tests_to_report:
             test_info = self.tests[test_id]
-            report_lines.append(
-                f"  - {test_info['file']}::{test_info['function']} "
-                f"({test_info['category']})"
-            )
+            report_lines.append(f"  - {test_info['file']}::{test_info['function']} " f"({test_info['category']})")
 
         # Add next steps
         report_lines.append("\nRecommended next steps:")
@@ -330,19 +324,12 @@ class TestStatusTracker:
         ]
 
         if high_priority_disabled:
-            report_lines.append(
-                f"1. Enable these {len(high_priority_disabled)} "
-                f"high-priority tests first:"
-            )
+            report_lines.append(f"1. Enable these {len(high_priority_disabled)} " f"high-priority tests first:")
             for test_id in sorted(high_priority_disabled)[:5]:  # Show top 5
                 test_info = self.tests[test_id]
-                report_lines.append(
-                    f"   - {test_info['file']}::{test_info['function']}"
-                )
+                report_lines.append(f"   - {test_info['file']}::{test_info['function']}")
             if len(high_priority_disabled) > 5:
-                report_lines.append(
-                    f"   - ... and {len(high_priority_disabled) - 5} more"
-                )
+                report_lines.append(f"   - ... and {len(high_priority_disabled) - 5} more")
         else:
             # Find medium priority tests
             medium_priority_disabled = [
@@ -351,27 +338,18 @@ class TestStatusTracker:
                 if test_info["status"] == STATUS_DISABLED and test_info["priority"] == 2
             ]
             if medium_priority_disabled:
-                report_lines.append(
-                    f"1. Enable these {len(medium_priority_disabled)} "
-                    f"medium-priority tests:"
-                )
+                report_lines.append(f"1. Enable these {len(medium_priority_disabled)} " f"medium-priority tests:")
                 for test_id in sorted(medium_priority_disabled)[:5]:  # Show top 5
                     test_info = self.tests[test_id]
-                    report_lines.append(
-                        f"   - {test_info['file']}::{test_info['function']}"
-                    )
+                    report_lines.append(f"   - {test_info['file']}::{test_info['function']}")
                 if len(medium_priority_disabled) > 5:
-                    report_lines.append(
-                        f"   - ... and {len(medium_priority_disabled) - 5} more"
-                    )
+                    report_lines.append(f"   - ... and {len(medium_priority_disabled) - 5} more")
 
         # Add history summary if available
         if self.history["runs"]:
             report_lines.append("\nTest Run History:")
             for i, run in enumerate(reversed(self.history["runs"][-5:])):
-                run_time = datetime.fromisoformat(run["timestamp"]).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+                run_time = datetime.fromisoformat(run["timestamp"]).strftime("%Y-%m-%d %H:%M:%S")
                 if i < len(self.history["runs"]):
                     run_info = self.history["status_history"][run_time]
                     passing = run_info.get(STATUS_PASSING, 0)
@@ -400,13 +378,9 @@ class TestStatusTracker:
                     # Truncate and format error message
                     error_lines = error_msg.split("\n")[:3]  # First 3 lines
                     for line in error_lines:
-                        report_lines.append(
-                            f"    {line[:100]}" + ("..." if len(line) > 100 else "")
-                        )
+                        report_lines.append(f"    {line[:100]}" + ("..." if len(line) > 100 else ""))
             if len(failing_tests) > 5:
-                report_lines.append(
-                    f"    ... and {len(failing_tests) - 5} more failing tests"
-                )
+                report_lines.append(f"    ... and {len(failing_tests) - 5} more failing tests")
 
         # Print report
         report_text = "\n".join(report_lines)
@@ -423,8 +397,7 @@ class TestStatusTracker:
         """Generate visualizations of test status and history"""
         if not HAS_VISUALIZATION:
             logging.warning(
-                "Visualization libraries (matplotlib, numpy) not found. "
-                "Skipping visualization generation."
+                "Visualization libraries (matplotlib, numpy) not found. " "Skipping visualization generation."
             )
             return
 
@@ -452,9 +425,7 @@ class TestStatusTracker:
         labels = list(status_counts.keys())
         sizes = list(status_counts.values())
         colors = ["green", "red", "gray", "orange"]
-        explode = [
-            0.1 if s == STATUS_FAILING else 0 for s in labels
-        ]  # Explode failing slice
+        explode = [0.1 if s == STATUS_FAILING else 0 for s in labels]  # Explode failing slice
 
         plt.pie(
             sizes,
@@ -481,9 +452,7 @@ class TestStatusTracker:
             category_status[category][status] += 1
 
         # Filter out empty categories
-        category_status = {
-            k: v for k, v in category_status.items() if sum(v.values()) > 0
-        }
+        category_status = {k: v for k, v in category_status.items() if sum(v.values()) > 0}
 
         # Create stacked bar chart
         plt.figure(figsize=(12, 8))
@@ -547,15 +516,9 @@ class TestStatusTracker:
             run_dates.append(run_time)
 
             # Count statuses
-            passing = sum(
-                1 for r in run["results"].values() if r["status"] == STATUS_PASSING
-            )
-            failing = sum(
-                1 for r in run["results"].values() if r["status"] == STATUS_FAILING
-            )
-            skipped = sum(
-                1 for r in run["results"].values() if r["status"] == STATUS_SKIPPED
-            )
+            passing = sum(1 for r in run["results"].values() if r["status"] == STATUS_PASSING)
+            failing = sum(1 for r in run["results"].values() if r["status"] == STATUS_FAILING)
+            skipped = sum(1 for r in run["results"].values() if r["status"] == STATUS_SKIPPED)
 
             passing_counts.append(passing)
             failing_counts.append(failing)
@@ -661,19 +624,11 @@ class TestStatusTracker:
                 ]
             ):
                 categories["api_error"].append((test_id, error_message))
-            elif (
-                "FileNotFoundError" in error_message
-                or "No such file or directory" in error_message
-            ):
+            elif "FileNotFoundError" in error_message or "No such file or directory" in error_message:
                 categories["file_not_found"].append((test_id, error_message))
-            elif (
-                "PermissionError" in error_message
-                or "Permission denied" in error_message
-            ):
+            elif "PermissionError" in error_message or "Permission denied" in error_message:
                 categories["permission_error"].append((test_id, error_message))
-            elif (
-                "TimeoutError" in error_message or "timed out" in error_message.lower()
-            ):
+            elif "TimeoutError" in error_message or "timed out" in error_message.lower():
                 categories["timeout_error"].append((test_id, error_message))
             elif any(
                 conn_err in error_message
@@ -726,9 +681,7 @@ class TestStatusTracker:
             if not failures:
                 continue
 
-            report_lines.append(
-                f"\n{category.replace('_', ' ').title()} ({len(failures)})"
-            )
+            report_lines.append(f"\n{category.replace('_', ' ').title()} ({len(failures)})")
 
             # Group similar failures
             failure_patterns = defaultdict(list)
@@ -739,9 +692,7 @@ class TestStatusTracker:
 
             # Report patterns
             for pattern, test_ids in failure_patterns.items():
-                report_lines.append(
-                    f"  - {pattern[:100]}" + ("..." if len(pattern) > 100 else "")
-                )
+                report_lines.append(f"  - {pattern[:100]}" + ("..." if len(pattern) > 100 else ""))
                 report_lines.append(
                     f"    Affects {len(test_ids)} tests: {', '.join(test_ids[:3])}"
                     + (f" and {len(test_ids) - 3} more" if len(test_ids) > 3 else "")
@@ -787,9 +738,7 @@ class TestStatusTracker:
         if failure_categories["assertion_error"]:
             report_lines.append("6. Fix assertion errors:")
             report_lines.append("   - Update expected test values")
-            report_lines.append(
-                "   - Check for logic changes that affect test outcomes"
-            )
+            report_lines.append("   - Check for logic changes that affect test outcomes")
 
         report_text = "\n".join(report_lines)
 
@@ -803,23 +752,15 @@ class TestStatusTracker:
 
 def main():
     parser = argparse.ArgumentParser(description="Test Status Tracker")
-    parser.add_argument(
-        "--run-tests", action="store_true", help="Run all tests and record their status"
-    )
+    parser.add_argument("--run-tests", action="store_true", help="Run all tests and record their status")
     parser.add_argument(
         "--test-pattern",
         type=str,
         help="Pattern to filter tests (e.g., 'test_database*')",
     )
-    parser.add_argument(
-        "--ci-mode", action="store_true", help="Run in CI mode with specific settings"
-    )
-    parser.add_argument(
-        "--categorize", action="store_true", help="Analyze and categorize tests by type"
-    )
-    parser.add_argument(
-        "--report", action="store_true", help="Generate a status report"
-    )
+    parser.add_argument("--ci-mode", action="store_true", help="Run in CI mode with specific settings")
+    parser.add_argument("--categorize", action="store_true", help="Analyze and categorize tests by type")
+    parser.add_argument("--report", action="store_true", help="Generate a status report")
     parser.add_argument("--output", type=str, help="Output file for the report")
     parser.add_argument(
         "--visualize",
@@ -858,11 +799,7 @@ def main():
         # Enable all high-priority tests
         for _test_id, test_info in tracker.tests.items():
             if test_info.get("priority") == 1:
-                test_info["status"] = (
-                    STATUS_PASSING
-                    if test_info["status"] == STATUS_DISABLED
-                    else test_info["status"]
-                )
+                test_info["status"] = STATUS_PASSING if test_info["status"] == STATUS_DISABLED else test_info["status"]
         tracker.save_status()
 
     if args.enable_category:
@@ -870,17 +807,11 @@ def main():
         category = args.enable_category.lower()
         for _test_id, test_info in tracker.tests.items():
             if test_info.get("category", "").lower() == category:
-                test_info["status"] = (
-                    STATUS_PASSING
-                    if test_info["status"] == STATUS_DISABLED
-                    else test_info["status"]
-                )
+                test_info["status"] = STATUS_PASSING if test_info["status"] == STATUS_DISABLED else test_info["status"]
         tracker.save_status()
 
     if args.run_tests:
-        exit_code = tracker.run_tests(
-            test_pattern=args.test_pattern, ci_mode=args.ci_mode
-        )
+        exit_code = tracker.run_tests(test_pattern=args.test_pattern, ci_mode=args.ci_mode)
 
         # Automatically analyze failures if tests were run
         if exit_code != 0 and not args.analyze_failures:

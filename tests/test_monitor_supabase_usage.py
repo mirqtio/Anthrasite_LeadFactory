@@ -168,9 +168,7 @@ class TestSupabaseUsageMonitor(unittest.TestCase):
         mock_open.assert_called_once_with("test_report.json", "w")
         mock_exists.assert_called_once_with("data/supabase_usage/latest.json")
         mock_remove.assert_called_once_with("data/supabase_usage/latest.json")
-        mock_symlink.assert_called_once_with(
-            "/absolute/path/to/report.json", "data/supabase_usage/latest.json"
-        )
+        mock_symlink.assert_called_once_with("/absolute/path/to/report.json", "data/supabase_usage/latest.json")
 
     def test_extract_project_ref(self):
         """Test extracting project reference from Supabase URL."""

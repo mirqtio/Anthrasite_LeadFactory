@@ -21,21 +21,24 @@ import logging
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import requests
 
 # Add parent directory to path to allow importing metrics
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from bin.metrics import metrics
+project_root = Path(__file__).resolve().parent.parent
+sys.path.append(str(project_root))
+from bin.metrics import metrics  # noqa: E402
 
 # Setup logging
+Path("logs").mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "supabase_usage.log")),
+        logging.FileHandler(Path("logs") / "supabase_usage.log"),
     ],
 )
 logger = logging.getLogger("supabase_usage")
@@ -61,7 +64,8 @@ class SupabaseUsageMonitor:
         self.alert_threshold = int(os.environ.get("SUPABASE_ALERT_THRESHOLD", "80"))
 
         logger.info(
-            f"Supabase usage monitor initialized (project_ref={self.project_ref}, alert_threshold={self.alert_threshold}%)"
+            f"Supabase usage monitor initialized (project_ref={self.project_ref}, "
+            f"alert_threshold={self.alert_threshold}%)"
         )
 
     def _extract_project_ref(self) -> str:
@@ -106,14 +110,13 @@ class SupabaseUsageMonitor:
                 "Content-Type": "application/json",
             }
 
-            url = f"{self.supabase_url}/rest/v1/storage/buckets?select=name,id,created_at,updated_at,owner,public,file_size_limit,allowed_mime_types"
+            select_params = "name,id,created_at,updated_at,owner,public," "file_size_limit,allowed_mime_types"
+            url = f"{self.supabase_url}/rest/v1/storage/buckets?select={select_params}"
 
             response = requests.get(url, headers=headers, timeout=30)
 
             if response.status_code != 200:
-                logger.error(
-                    f"Error getting storage buckets: {response.status_code} {response.text}"
-                )
+                logger.error(f"Error getting storage buckets: {response.status_code} " f"{response.text}")
                 return {
                     "size_mb": 0,
                     "size_bytes": 0,
@@ -131,14 +134,15 @@ class SupabaseUsageMonitor:
                 bucket_name = bucket["name"]
 
                 # Get objects in bucket
-                objects_url = f"{self.supabase_url}/rest/v1/storage/objects?select=name,bucket_id,owner,created_at,updated_at,metadata,id,size&bucket_id=eq.{bucket['id']}"
-                objects_response = requests.get(
-                    objects_url, headers=headers, timeout=30
-                )
+                select_params_obj = "name,bucket_id,owner,created_at,updated_at,metadata,id,size"
+                bucket_id_param = f"bucket_id=eq.{bucket['id']}"
+                objects_url = f"{self.supabase_url}/rest/v1/storage/objects" f"?{select_params_obj}&{bucket_id_param}"
+                objects_response = requests.get(objects_url, headers=headers, timeout=30)
 
                 if objects_response.status_code != 200:
                     logger.error(
-                        f"Error getting objects for bucket {bucket_name}: {objects_response.status_code} {objects_response.text}"
+                        f"Error getting objects for bucket {bucket_name}: "
+                        f"{objects_response.status_code} {objects_response.text}"
                     )
                     continue
 
@@ -161,11 +165,7 @@ class SupabaseUsageMonitor:
             total_size_mb = total_size_bytes / (1024 * 1024)
 
             # Calculate percentage of limit used
-            percentage_used = (
-                (total_size_mb / self.storage_limit_mb) * 100
-                if self.storage_limit_mb > 0
-                else 0
-            )
+            percentage_used = (total_size_mb / self.storage_limit_mb) * 100 if self.storage_limit_mb > 0 else 0
 
             result = {
                 "size_mb": total_size_mb,
@@ -174,9 +174,7 @@ class SupabaseUsageMonitor:
                 "percentage_used": percentage_used,
             }
 
-            logger.info(
-                f"Storage usage: {total_size_mb:.2f} MB ({percentage_used:.2f}% of limit)"
-            )
+            logger.info(f"Storage usage: {total_size_mb:.2f} MB " f"({percentage_used:.2f}% of limit)")
 
             # Update metrics
             metrics.update_supabase_storage(total_size_mb)
@@ -184,7 +182,7 @@ class SupabaseUsageMonitor:
             # Check if approaching limit
             if percentage_used >= self.alert_threshold:
                 logger.warning(
-                    f"Storage usage ({percentage_used:.2f}%) is approaching the limit ({self.storage_limit_mb} MB)"
+                    f"Storage usage ({percentage_used:.2f}%) is approaching " f"the limit ({self.storage_limit_mb} MB)"
                 )
 
             return result
@@ -221,10 +219,22 @@ class SupabaseUsageMonitor:
             SELECT
                 table_schema,
                 table_name,
-                pg_total_relation_size(quote_ident(table_schema) || '.' || quote_ident(table_name)) as size_bytes,
-                pg_relation_size(quote_ident(table_schema) || '.' || quote_ident(table_name)) as table_size_bytes,
-                pg_indexes_size(quote_ident(table_schema) || '.' || quote_ident(table_name)) as index_size_bytes,
-                (SELECT reltuples FROM pg_class WHERE oid = (quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass) as row_estimate
+                pg_total_relation_size(
+                    quote_ident(table_schema) || '.' || quote_ident(table_name)
+                ) as size_bytes,
+                pg_relation_size(
+                    quote_ident(table_schema) || '.' || quote_ident(table_name)
+                ) as table_size_bytes,
+                pg_indexes_size(
+                    quote_ident(table_schema) || '.' || quote_ident(table_name)
+                ) as index_size_bytes,
+                (
+                    SELECT reltuples
+                    FROM pg_class
+                    WHERE oid = (
+                        quote_ident(table_schema) || '.' || quote_ident(table_name)
+                    )::regclass
+                ) as row_estimate
             FROM
                 information_schema.tables
             WHERE
@@ -238,14 +248,10 @@ class SupabaseUsageMonitor:
             sql_url = f"{self.supabase_url}/rest/v1/rpc/sql"
             sql_payload = {"query": tables_query}
 
-            response = requests.post(
-                sql_url, headers=headers, json=sql_payload, timeout=30
-            )
+            response = requests.post(sql_url, headers=headers, json=sql_payload, timeout=30)
 
             if response.status_code != 200:
-                logger.error(
-                    f"Error getting database usage: {response.status_code} {response.text}"
-                )
+                logger.error(f"Error getting database usage: {response.status_code} " f"{response.text}")
                 return {
                     "size_mb": 0,
                     "size_bytes": 0,
@@ -277,13 +283,9 @@ class SupabaseUsageMonitor:
 
             # Calculate percentage of limits used
             size_percentage_used = (
-                (total_size_mb / self.database_size_limit_mb) * 100
-                if self.database_size_limit_mb > 0
-                else 0
+                (total_size_mb / self.database_size_limit_mb) * 100 if self.database_size_limit_mb > 0 else 0
             )
-            row_percentage_used = (
-                (total_row_count / self.row_limit) * 100 if self.row_limit > 0 else 0
-            )
+            row_percentage_used = (total_row_count / self.row_limit) * 100 if self.row_limit > 0 else 0
 
             # Format table information
             table_info = []
@@ -304,9 +306,7 @@ class SupabaseUsageMonitor:
                 )
 
                 # Update row count metric for this table
-                metrics.update_supabase_row_count(
-                    f"{table_schema}.{table_name}", row_estimate
-                )
+                metrics.update_supabase_row_count(f"{table_schema}.{table_name}", row_estimate)
 
             result = {
                 "size_mb": total_size_mb,
@@ -318,18 +318,21 @@ class SupabaseUsageMonitor:
             }
 
             logger.info(
-                f"Database usage: {total_size_mb:.2f} MB ({size_percentage_used:.2f}% of size limit), {total_row_count} rows ({row_percentage_used:.2f}% of row limit)"
+                f"Database usage: {total_size_mb:.2f} MB "
+                f"({size_percentage_used:.2f}% of size limit), "
+                f"{total_row_count} rows ({row_percentage_used:.2f}% of row limit)"
             )
 
             # Check if approaching limits
             if size_percentage_used >= self.alert_threshold:
                 logger.warning(
-                    f"Database size ({size_percentage_used:.2f}%) is approaching the limit ({self.database_size_limit_mb} MB)"
+                    f"Database size ({size_percentage_used:.2f}%) is approaching "
+                    f"the limit ({self.database_size_limit_mb} MB)"
                 )
 
             if row_percentage_used >= self.alert_threshold:
                 logger.warning(
-                    f"Database row count ({row_percentage_used:.2f}%) is approaching the limit ({self.row_limit} rows)"
+                    f"DB row count ({row_percentage_used:.2f}%) is approaching " f"the limit ({self.row_limit} rows)"
                 )
 
             return result
@@ -364,21 +367,19 @@ class SupabaseUsageMonitor:
             },
         }
 
-    def save_usage_report(
-        self, usage_data: dict[str, Any], output_file: str | None = None
-    ) -> str:
+    def save_usage_report(self, usage_data: dict[str, Any], output_file: str | None = None) -> str:
         """Save usage report to a file.
 
         Args:
             usage_data: Usage data to save
-            output_file: Output file path (default: data/supabase_usage_{timestamp}.json)
+            output_file: Output path (default: data/supabase_usage_{timestamp}.json)
 
         Returns:
             Path to the saved file
         """
         try:
             # Create data directory if it doesn't exist
-            os.makedirs("data/supabase_usage", exist_ok=True)
+            Path("data/supabase_usage").mkdir(parents=True, exist_ok=True)
 
             # Generate filename if not provided
             if not output_file:
@@ -386,7 +387,7 @@ class SupabaseUsageMonitor:
                 output_file = f"data/supabase_usage/supabase_usage_{timestamp}.json"
 
             # Save to file
-            with open(output_file, "w") as f:
+            with Path(output_file).open("w") as f:
                 json.dump(usage_data, f, indent=2)
 
             logger.info(f"Usage report saved to {output_file}")
@@ -394,10 +395,10 @@ class SupabaseUsageMonitor:
             # Create symlink to latest report
             latest_link = "data/supabase_usage/latest.json"
 
-            if os.path.exists(latest_link):
-                os.remove(latest_link)
+            if Path(latest_link).exists():
+                Path(latest_link).unlink(missing_ok=True)
 
-            os.symlink(os.path.abspath(output_file), latest_link)
+            Path(latest_link).symlink_to(Path(output_file).resolve())
 
             return output_file
         except Exception as e:

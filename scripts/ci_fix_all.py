@@ -7,15 +7,12 @@ This script addresses both formatting issues and test failures.
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 
 def run_command(command, cwd=None, env=None):
     """Run a command and return its output."""
     try:
-        result = subprocess.run(
-            command, cwd=cwd, env=env, check=True, capture_output=True, text=True
-        )
+        result = subprocess.run(command, cwd=cwd, env=env, check=True, capture_output=True, text=True)
         return True, result.stdout
     except subprocess.CalledProcessError as e:
         return False, f"Error: {e.stderr}"
@@ -26,18 +23,14 @@ def fix_formatting(project_root):
     print("🔧 Fixing formatting issues...")
 
     # Fix import sorting with ruff
-    success, output = run_command(
-        ["ruff", "check", "--select=I", "--fix", "."], cwd=project_root
-    )
+    success, output = run_command(["ruff", "check", "--select=I", "--fix", "."], cwd=project_root)
     if not success:
         print(f"❌ Failed to fix imports: {output}")
     else:
         print("✅ Fixed imports with ruff")
 
     # Format code with black
-    success, output = run_command(
-        ["black", ".", "--config", ".black.toml"], cwd=project_root
-    )
+    success, output = run_command(["black", ".", "--config", ".black.toml"], cwd=project_root)
     if not success:
         print(f"❌ Failed to format code: {output}")
     else:
@@ -63,7 +56,7 @@ def fix_test_imports(project_root):
     # Fix conftest.py if it exists
     conftest_file = os.path.join(test_dir, "conftest.py")
     if os.path.exists(conftest_file):
-        with open(conftest_file, "r") as f:
+        with open(conftest_file) as f:
             content = f.read()
 
         # Add sys.path.insert if not present
@@ -71,9 +64,7 @@ def fix_test_imports(project_root):
             with open(conftest_file, "w") as f:
                 f.write("import os\nimport sys\n\n")
                 f.write("# Add project root to path\n")
-                f.write(
-                    "sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\n\n"
-                )
+                f.write("sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\n\n")
                 f.write(content)
             print(f"✅ Fixed {conftest_file}")
 
@@ -87,7 +78,7 @@ def create_env_file(project_root):
 
     if os.path.exists(env_example) and not os.path.exists(env_file):
         # Copy .env.example to .env
-        with open(env_example, "r") as src:
+        with open(env_example) as src:
             content = src.read()
 
         # Replace API keys with mock values

@@ -145,9 +145,7 @@ class PytestToUnittestConverter(ast.NodeVisitor):
         # Get the function docstring
         docstring = ast.get_docstring(func_node)
         if docstring:
-            docstring_lines = [
-                f'        """{line}"""' for line in docstring.split("\n")
-            ]
+            docstring_lines = [f'        """{line}"""' for line in docstring.split("\n")]
             docstring_str = "\n".join(docstring_lines)
         else:
             docstring_str = '        """Test case converted from pytest."""'
@@ -168,9 +166,7 @@ class PytestToUnittestConverter(ast.NodeVisitor):
         # Create the class header
         lines = [
             f"class {class_name}(unittest.TestCase):",
-            '    """Test cases converted from pytest file: '
-            + os.path.basename(self.source_file)
-            + '"""',
+            '    """Test cases converted from pytest file: ' + os.path.basename(self.source_file) + '"""',
             "",
             "    @classmethod",
             "    def setUpClass(cls):",
@@ -359,9 +355,7 @@ def main():
             if convert_file(source_file, target_file):
                 converted_files.append(target_file)
 
-        logger.info(
-            f"Successfully converted {len(converted_files)} of {len(test_files)} files"
-        )
+        logger.info(f"Successfully converted {len(converted_files)} of {len(test_files)} files")
 
         # Generate a CI workflow file
         if converted_files:

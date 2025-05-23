@@ -14,7 +14,7 @@ def fix_test_mockup_unit():
     # Now let's fix the file properly
     file_path = "tests/test_mockup_unit.py"
 
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     # Fix the undefined names by adding proper mock variables

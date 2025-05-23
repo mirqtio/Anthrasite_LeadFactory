@@ -626,12 +626,8 @@ def run_scraper(monkeypatch, setup_environment, temp_db):
     # Patch the API classes to return our mocks
     with (
         patch("bin.scrape.YelpAPI", return_value=mock_yelp) as mock_yelp_class,
-        patch(
-            "bin.scrape.GooglePlacesAPI", return_value=mock_google
-        ) as mock_google_class,
-        patch(
-            "bin.scrape.get_zip_coordinates", return_value="40.7128,-74.0060"
-        ) as mock_coords,
+        patch("bin.scrape.GooglePlacesAPI", return_value=mock_google) as mock_google_class,
+        patch("bin.scrape.get_zip_coordinates", return_value="40.7128,-74.0060") as mock_coords,
     ):
         # Set up mock return values for the API methods and ensure they're called
         mock_yelp.search_businesses.return_value = yelp_businesses, None
@@ -642,9 +638,7 @@ def run_scraper(monkeypatch, setup_environment, temp_db):
         mock_google.search_places()
         # Mock the save_business function to track calls
         mock_save_business = setup_environment["save_business"]
-        mock_save_business.side_effect = (
-            lambda *args, **kwargs: len(mock_save_business.mock_calls) + 1
-        )
+        mock_save_business.side_effect = lambda *args, **kwargs: len(mock_save_business.mock_calls) + 1
         # Store references to mocks if needed for debugging
         # (Currently not used in assertions)
         # Set up the existing businesses in the mock database
@@ -657,9 +651,7 @@ def run_scraper(monkeypatch, setup_environment, temp_db):
         ]
         # Mock command line arguments
         with patch("argparse.ArgumentParser.parse_args") as mock_args:
-            args = argparse.Namespace(
-                limit=5, zip="10002", vertical="restaurants", all_verticals=False
-            )
+            args = argparse.Namespace(limit=5, zip="10002", vertical="restaurants", all_verticals=False)
             mock_args.return_value = args
             # Run the scraper
             main()
@@ -835,9 +827,7 @@ def run_scraper_yelp(mock_yelp_api_for_test, target_zip_code, target_vertical, t
 
 
 @when("I run the scraper for Google Places API")
-def run_scraper_google(
-    mock_google_places_api_for_test, target_zip_code, target_vertical, temp_db
-):
+def run_scraper_google(mock_google_places_api_for_test, target_zip_code, target_vertical, temp_db):
     """Run the scraper for Google Places API."""
     with (
         patch("bin.scrape.GooglePlacesAPI") as mock_google_class,
@@ -975,9 +965,7 @@ def businesses_saved_to_db(run_scraper):
 def error_logged(caplog):
     """Verify that the error was logged."""
     # Check that an error was logged
-    assert any(
-        record.levelname == "ERROR" for record in caplog.records
-    ), "Expected error to be logged"
+    assert any(record.levelname == "ERROR" for record in caplog.records), "Expected error to be logged"
 
 
 @then("the process should continue without crashing")
@@ -1000,9 +988,7 @@ def only_new_businesses_added(temp_db, existing_businesses):
     cursor.execute("SELECT COUNT(*) FROM businesses")
     new_count = cursor.fetchone()[0]
     # The count should be the same since we're skipping existing businesses
-    assert (
-        new_count == initial_count
-    ), "New businesses were added when they should have been skipped"
+    assert new_count == initial_count, "New businesses were added when they should have been skipped"
 
 
 @then("duplicate businesses should be skipped")

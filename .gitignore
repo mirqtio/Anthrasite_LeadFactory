@@ -67,3 +67,6 @@ temp_*
 # Task files
 tasks.json  # Ignore root tasks.json if it exists
 # tasks/  # Keep tasks directory in version control
+
+# Archive directory
+archive/

@@ -316,9 +316,7 @@ async def process_unsubscribe(
 
     # Check if already unsubscribed
     if is_email_unsubscribed(email):
-        return templates.TemplateResponse(
-            "unsubscribe_success.html", {"request": request, "email": email}
-        )
+        return templates.TemplateResponse("unsubscribe_success.html", {"request": request, "email": email})
 
     # Combine reason and comments
     reason_text = reason or "No reason provided"
@@ -334,9 +332,7 @@ async def process_unsubscribe(
 
     if success:
         logger.info(f"User unsubscribed: {email}, Reason: {reason_text}")
-        return templates.TemplateResponse(
-            "unsubscribe_success.html", {"request": request, "email": email}
-        )
+        return templates.TemplateResponse("unsubscribe_success.html", {"request": request, "email": email})
     else:
         return templates.TemplateResponse(
             "unsubscribe.html",

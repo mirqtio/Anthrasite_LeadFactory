@@ -75,9 +75,7 @@ def load_test_status():
     # Initialize with default status
     return {
         "last_updated": datetime.now().isoformat(),
-        "categories": {
-            category: {"enabled": False, "tests": {}} for category in TEST_CATEGORIES
-        },
+        "categories": {category: {"enabled": False, "tests": {}} for category in TEST_CATEGORIES},
     }
 
 
@@ -133,9 +131,7 @@ def analyze_test_importance(test_file):
 
 def convert_tests(category, min_priority_index):
     """Convert tests in the category with priority >= min_priority."""
-    logger.info(
-        f"Converting tests in category {category} with priority >= {TEST_PRIORITIES[min_priority_index]}"
-    )
+    logger.info(f"Converting tests in category {category} with priority >= {TEST_PRIORITIES[min_priority_index]}")
 
     # Get the source directory for the category
     source_dir = TEST_CATEGORIES.get(category)
@@ -156,9 +152,7 @@ def convert_tests(category, min_priority_index):
         if priority_index <= min_priority_index:
             filtered_tests.append(test_file)
 
-    logger.info(
-        f"Selected {len(filtered_tests)} tests with priority >= {TEST_PRIORITIES[min_priority_index]}"
-    )
+    logger.info(f"Selected {len(filtered_tests)} tests with priority >= {TEST_PRIORITIES[min_priority_index]}")
 
     # Convert the tests
     converted_files = []
@@ -190,9 +184,7 @@ def convert_tests(category, min_priority_index):
         except Exception as e:
             logger.error(f"Error running generate_ci_tests.py for {source_file}: {e}")
 
-    logger.info(
-        f"Successfully converted {len(converted_files)} of {len(filtered_tests)} files"
-    )
+    logger.info(f"Successfully converted {len(converted_files)} of {len(filtered_tests)} files")
     return converted_files
 
 
@@ -298,14 +290,11 @@ def generate_progress_report(status):
 
         # Overall progress
         total_categories = len(status["categories"])
-        enabled_categories = sum(
-            1 for cat in status["categories"].values() if cat["enabled"]
-        )
+        enabled_categories = sum(1 for cat in status["categories"].values() if cat["enabled"])
 
         total_tests = sum(len(cat["tests"]) for cat in status["categories"].values())
         enabled_tests = sum(
-            sum(1 for test in cat["tests"].values() if test["enabled"])
-            for cat in status["categories"].values()
+            sum(1 for test in cat["tests"].values() if test["enabled"]) for cat in status["categories"].values()
         )
 
         f.write("## Overall Progress\n\n")
@@ -323,13 +312,9 @@ def generate_progress_report(status):
         for category, cat_status in status["categories"].items():
             cat_enabled = "✅ Enabled" if cat_status["enabled"] else "❌ Disabled"
             cat_tests = len(cat_status["tests"])
-            cat_enabled_tests = sum(
-                1 for test in cat_status["tests"].values() if test["enabled"]
-            )
+            cat_enabled_tests = sum(1 for test in cat_status["tests"].values() if test["enabled"])
 
-            f.write(
-                f"| {category} | {cat_enabled} | {cat_enabled_tests} | {cat_tests} |\n"
-            )
+            f.write(f"| {category} | {cat_enabled} | {cat_enabled_tests} | {cat_tests} |\n")
 
         f.write("\n")
 
@@ -343,9 +328,7 @@ def generate_progress_report(status):
                 f.write("|------|--------|-------------|\n")
 
                 for test_name, test_status in cat_status["tests"].items():
-                    test_enabled = (
-                        "✅ Enabled" if test_status["enabled"] else "❌ Disabled"
-                    )
+                    test_enabled = "✅ Enabled" if test_status["enabled"] else "❌ Disabled"
                     test_updated = test_status.get("last_updated", "N/A")
 
                     f.write(f"| {test_name} | {test_enabled} | {test_updated} |\n")

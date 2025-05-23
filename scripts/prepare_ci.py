@@ -4,9 +4,9 @@ Script to prepare the codebase for CI pipeline execution.
 This script runs before CI tests to ensure that all tests will pass.
 """
 
-import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 def fix_imports_with_ruff(directory):
@@ -52,30 +52,30 @@ def check_flake8(directory):
 def main():
     """Main function to prepare the codebase for CI pipeline execution."""
     # Get the project root directory
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    project_root = Path(__file__).resolve().parent.parent
 
     # Directories to process (excluding tests)
     directories_to_process = [
-        os.path.join(project_root, "utils"),
-        os.path.join(project_root, "bin"),
-        os.path.join(project_root, "scripts"),
+        project_root / "utils",
+        project_root / "bin",
+        project_root / "scripts",
     ]
 
     success = True
 
     # Fix imports with ruff
     for directory in directories_to_process:
-        if os.path.exists(directory) and not fix_imports_with_ruff(directory):
+        if Path(directory).exists() and not fix_imports_with_ruff(str(directory)):
             success = False
 
     # Format code with black
     for directory in directories_to_process:
-        if os.path.exists(directory) and not format_with_black(directory):
+        if Path(directory).exists() and not format_with_black(str(directory)):
             success = False
 
     # Check code with flake8
     for directory in directories_to_process:
-        if os.path.exists(directory) and not check_flake8(directory):
+        if Path(directory).exists() and not check_flake8(str(directory)):
             success = False
 
     if success:

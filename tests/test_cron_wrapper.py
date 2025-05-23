@@ -12,25 +12,19 @@ import pytest
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Path to the run_nightly.sh script
-SCRIPT_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "bin"
-)
+SCRIPT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "bin")
 RUN_NIGHTLY_SCRIPT = os.path.join(SCRIPT_DIR, "run_nightly.sh")
 
 
 def test_run_nightly_script_exists():
     """Test that the run_nightly.sh script exists."""
     assert os.path.exists(RUN_NIGHTLY_SCRIPT), f"Script not found: {RUN_NIGHTLY_SCRIPT}"
-    assert os.access(
-        RUN_NIGHTLY_SCRIPT, os.X_OK
-    ), f"Script is not executable: {RUN_NIGHTLY_SCRIPT}"
+    assert os.access(RUN_NIGHTLY_SCRIPT, os.X_OK), f"Script is not executable: {RUN_NIGHTLY_SCRIPT}"
 
 
 def test_run_nightly_help_option():
     """Test that the run_nightly.sh script responds to the --help option."""
-    result = subprocess.run(
-        [RUN_NIGHTLY_SCRIPT, "--help"], capture_output=True, text=True
-    )
+    result = subprocess.run([RUN_NIGHTLY_SCRIPT, "--help"], capture_output=True, text=True)
     assert result.returncode == 0, f"Script failed with return code {result.returncode}"
     assert "Usage:" in result.stdout, "Help message not found in output"
     assert "--debug" in result.stdout, "Debug option not found in help message"
@@ -71,9 +65,7 @@ def test_run_nightly_dry_run_mode():
             result.returncode == 0
         ), f"Script failed with return code {result.returncode}. Output: {result.stdout} Error: {result.stderr}"
         # Check that the dry run message is in the output
-        assert (
-            "DRY RUN mode enabled" in result.stdout
-        ), "Dry run mode message not found in output"
+        assert "DRY RUN mode enabled" in result.stdout, "Dry run mode message not found in output"
 
 
 def test_run_nightly_skip_stage():
@@ -84,9 +76,7 @@ def test_run_nightly_skip_stage():
     with open(RUN_NIGHTLY_SCRIPT) as f:
         script_content = f.read()
     # Check that the script has the functionality to skip stages
-    assert (
-        "--skip-stage=*" in script_content
-    ), "Script doesn't support skip-stage option"
+    assert "--skip-stage=*" in script_content, "Script doesn't support skip-stage option"
     assert "SKIP_STAGES+=" in script_content, "Script doesn't process skip-stage option"
     # Check that the run_stage function checks if a stage should be skipped
     assert (
@@ -98,9 +88,7 @@ def test_run_nightly_skip_stage():
     assert 'run_stage 2 "Enrichment"' in script_content, "Script is missing stage 2"
     assert 'run_stage 3 "Deduplication"' in script_content, "Script is missing stage 3"
     assert 'run_stage 4 "Scoring"' in script_content, "Script is missing stage 4"
-    assert (
-        'run_stage 5 "Mockup Generation"' in script_content
-    ), "Script is missing stage 5"
+    assert 'run_stage 5 "Mockup Generation"' in script_content, "Script is missing stage 5"
     assert 'run_stage 6 "Email Queue"' in script_content, "Script is missing stage 6"
     # Test passed if all assertions are true
 
@@ -109,17 +97,13 @@ def test_setup_cron_script_exists():
     """Test that the setup_cron.sh script exists."""
     setup_cron_script = os.path.join(SCRIPT_DIR, "setup_cron.sh")
     assert os.path.exists(setup_cron_script), f"Script not found: {setup_cron_script}"
-    assert os.access(
-        setup_cron_script, os.X_OK
-    ), f"Script is not executable: {setup_cron_script}"
+    assert os.access(setup_cron_script, os.X_OK), f"Script is not executable: {setup_cron_script}"
 
 
 def test_setup_cron_help_option():
     """Test that the setup_cron.sh script responds to the --help option."""
     setup_cron_script = os.path.join(SCRIPT_DIR, "setup_cron.sh")
-    result = subprocess.run(
-        [setup_cron_script, "--help"], capture_output=True, text=True
-    )
+    result = subprocess.run([setup_cron_script, "--help"], capture_output=True, text=True)
     assert result.returncode == 0, f"Script failed with return code {result.returncode}"
     assert "Usage:" in result.stdout, "Help message not found in output"
     assert "--time" in result.stdout, "Time option not found in help message"
@@ -151,9 +135,7 @@ def test_script_path_consistency():
             non_prefixed_name = base_name.split("_", 1)[1]
             non_prefixed_path = os.path.join(SCRIPT_DIR, non_prefixed_name)
             error_message = f"Neither {actual_path} nor {non_prefixed_path} exists"
-            assert os.path.exists(actual_path) or os.path.exists(
-                non_prefixed_path
-            ), error_message
+            assert os.path.exists(actual_path) or os.path.exists(non_prefixed_path), error_message
 
 
 if __name__ == "__main__":

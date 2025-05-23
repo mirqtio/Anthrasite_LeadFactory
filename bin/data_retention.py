@@ -60,9 +60,7 @@ class DataRetentionManager:
         """
         # Set default database path if not provided
         if not db_path:
-            db_dir = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
-            )
+            db_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
             os.makedirs(db_dir, exist_ok=True)
             db_path = os.path.join(db_dir, "data_retention.db")
 
@@ -240,34 +238,26 @@ class DataRetentionManager:
 
             # Download from Supabase Storage
             try:
-                response = supabase.storage.from_(self.storage_bucket).download(
-                    storage_path
-                )
+                response = supabase.storage.from_(self.storage_bucket).download(storage_path)
 
                 # Decompress content
                 with gzip.open(response, "rt", encoding="utf-8") as f:
                     html_content = f.read()
 
-                logger.info(
-                    f"Retrieved HTML for business {business_id} from {storage_path}"
-                )
+                logger.info(f"Retrieved HTML for business {business_id} from {storage_path}")
 
                 return html_content
             except Exception as e:
                 logger.error(f"Error downloading HTML from Supabase: {e}")
 
                 # Try local fallback
-                local_path = os.path.join(
-                    self.local_storage_dir, *storage_path.split("/")
-                )
+                local_path = os.path.join(self.local_storage_dir, *storage_path.split("/"))
 
                 if os.path.exists(local_path):
                     with gzip.open(local_path, "rt", encoding="utf-8") as f:
                         html_content = f.read()
 
-                    logger.info(
-                        f"Retrieved HTML for business {business_id} from local storage"
-                    )
+                    logger.info(f"Retrieved HTML for business {business_id} from local storage")
 
                     return html_content
 
@@ -380,9 +370,7 @@ class DataRetentionManager:
             logger.exception(f"Error getting LLM log for ID {log_id}: {e}")
             return None
 
-    def get_llm_logs_for_stage(
-        self, stage: str, limit: int = 100
-    ) -> list[dict[str, Any]]:
+    def get_llm_logs_for_stage(self, stage: str, limit: int = 100) -> list[dict[str, Any]]:
         """Get LLM interaction logs for a specific stage.
 
         Args:
@@ -479,9 +467,7 @@ class DataRetentionManager:
             conn.commit()
             conn.close()
 
-            logger.info(
-                f"Cleaned up expired data: {html_deleted} HTML records, {llm_deleted} LLM logs"
-            )
+            logger.info(f"Cleaned up expired data: {html_deleted} HTML records, {llm_deleted} LLM logs")
         except Exception as e:
             logger.exception(f"Error cleaning up expired data: {e}")
 

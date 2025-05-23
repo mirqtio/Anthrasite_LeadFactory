@@ -121,15 +121,11 @@ def temp_db() -> Generator[str, None, None]:
         cursor.execute("SELECT COUNT(*) as count FROM businesses")
         business_count = cursor.fetchone()["count"]
         if business_count < 4:
-            raise ValueError(
-                f"Failed to insert test businesses. Expected 4, got {business_count}"
-            )
+            raise ValueError(f"Failed to insert test businesses. Expected 4, got {business_count}")
         cursor.execute("SELECT COUNT(*) as count FROM candidate_duplicate_pairs")
         pair_count = cursor.fetchone()["count"]
         if pair_count < 2:
-            raise ValueError(
-                f"Failed to insert test candidate pairs. Expected 2, got {pair_count}"
-            )
+            raise ValueError(f"Failed to insert test candidate pairs. Expected 2, got {pair_count}")
         # Close the connection
         cursor.close()
         conn.close()

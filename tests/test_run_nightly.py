@@ -138,9 +138,7 @@ class TestRunNightly(unittest.TestCase):
 
         # Note: The actual calls might differ slightly due to environment variables and paths
         # This is a simplified check
-        self.assertTrue(
-            mock_run.called, "Python command to record metrics was not called"
-        )
+        self.assertTrue(mock_run.called, "Python command to record metrics was not called")
 
     @patch("subprocess.run")
     def test_supabase_usage_check(self, mock_run):

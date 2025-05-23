@@ -51,10 +51,7 @@ def run_command(command, cwd=None, env=None, timeout=300):
         )
 
         duration = time.time() - start_time
-        logger.info(
-            f"Command completed in {duration:.2f} seconds "
-            f"with exit code {result.returncode}"
-        )
+        logger.info(f"Command completed in {duration:.2f} seconds " f"with exit code {result.returncode}")
 
         if result.stdout:
             logger.debug(f"STDOUT:\n{result.stdout}")
@@ -148,9 +145,7 @@ def test_verify_ci_simple():
         )
 
         if result and result.returncode == 0:
-            logger.info(
-                "✅ Minimal test tracker (test execution) verified successfully"
-            )
+            logger.info("✅ Minimal test tracker (test execution) verified successfully")
             return True
         else:
             logger.error("❌ Minimal test tracker (test execution) failed")
@@ -238,12 +233,8 @@ def main():
     """Main function with error handling."""
     parser = argparse.ArgumentParser(description="Verify Minimal CI Workflow")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
-    parser.add_argument(
-        "--skip-path-fix", action="store_true", help="Skip Python path fix verification"
-    )
-    parser.add_argument(
-        "--skip-import-test", action="store_true", help="Skip import resolution test"
-    )
+    parser.add_argument("--skip-path-fix", action="store_true", help="Skip Python path fix verification")
+    parser.add_argument("--skip-import-test", action="store_true", help="Skip import resolution test")
 
     args = parser.parse_args()
 

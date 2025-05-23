@@ -8,7 +8,7 @@ def fix_dedupe_simple():
     """Fix PEP8 issues in test_dedupe_simple.py."""
     file_path = "tests/test_dedupe_simple.py"
 
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         lines = f.readlines()
 
     fixed_lines = []
@@ -17,28 +17,19 @@ def fix_dedupe_simple():
         line = line.rstrip() + "\n"
 
         # Fix long lines with comments about mocking
-        if (
-            "Since we're mocking process_duplicate_pair, manually update the database"
-            in line
-        ):
+        if "Since we're mocking process_duplicate_pair, manually update the database" in line:
             line = line.replace(
                 "Since we're mocking process_duplicate_pair, manually update the database",
                 "Since we're mocking process_duplicate_pair, manually update the DB",
             )
 
-        if (
-            "to reflect what would have happened if the function was actually called"
-            in line
-        ):
+        if "to reflect what would have happened if the function was actually called" in line:
             line = line.replace(
                 "to reflect what would have happened if the function was actually called",
                 "to reflect what would happen if function was actually called",
             )
 
-        if (
-            "Update the businesses table to show one business was merged into the other"
-            in line
-        ):
+        if "Update the businesses table to show one business was merged into the other" in line:
             line = line.replace(
                 "Update the businesses table to show one business was merged into the other",
                 "Update businesses table to show one business merged into other",
@@ -58,9 +49,7 @@ def fix_dedupe_simple():
         if "Expected flag_for_review not to be called for processed businesses" in line:
             line = line.replace(
                 "Expected flag_for_review not to be called for processed businesses",
-                "Expected flag_for_review not to be called for processed businesses"[
-                    :88
-                ],
+                "Expected flag_for_review not to be called for processed businesses"[:88],
             )
 
         if "Expected a 'Deduplication completed' message, got: {log_messages}" in line:

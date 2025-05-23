@@ -96,9 +96,7 @@ def compress_html(html_content: str) -> tuple[bytes, float]:
     # Calculate compression ratio
     original_size = len(html_bytes)
     compressed_size = len(compressed)
-    compression_ratio = (
-        (original_size - compressed_size) / original_size if original_size > 0 else 0
-    )
+    compression_ratio = (original_size - compressed_size) / original_size if original_size > 0 else 0
 
     return compressed, compression_ratio
 
@@ -436,15 +434,13 @@ def identify_expired_data() -> tuple[list[dict], list[dict]]:
 
             # Query for expired LLM logs
             cursor.execute(
-                "SELECT id, business_id, operation FROM llm_logs "
-                "WHERE retention_expires_at < ?",
+                "SELECT id, business_id, operation FROM llm_logs " "WHERE retention_expires_at < ?",
                 (now,),
             )
             expired_llm_logs = cursor.fetchall()
 
         logger.info(
-            f"Identified {len(expired_html_files)} expired HTML files and "
-            f"{len(expired_llm_logs)} expired LLM logs"
+            f"Identified {len(expired_html_files)} expired HTML files and " f"{len(expired_llm_logs)} expired LLM logs"
         )
         return expired_html_files, expired_llm_logs
 

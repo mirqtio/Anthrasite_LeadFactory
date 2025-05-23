@@ -66,9 +66,7 @@ def extract_email_from_html(html_content: str) -> str | None:
     return None
 
 
-def extract_email_from_website(
-    website: str, business_id: int | None = None
-) -> str | None:
+def extract_email_from_website(website: str, business_id: int | None = None) -> str | None:
     """Extract email from website and store HTML content.
 
     Args:
@@ -88,10 +86,7 @@ def extract_email_from_website(
         # Store HTML content if business_id is provided
         if html_content and business_id:
             html_path = store_html(html_content, website, business_id)
-            logger.info(
-                f"Stored HTML for business {business_id}, "
-                f"website: {website}, path: {html_path}"
-            )
+            logger.info(f"Stored HTML for business {business_id}, " f"website: {website}, path: {html_path}")
 
             # Update the business record with the HTML path
             with DatabaseConnection() as cursor:
@@ -186,9 +181,7 @@ def process_pending_websites() -> tuple[int, int]:
 
             businesses = cursor.fetchall()
 
-        logger.info(
-            f"Found {len(businesses)} businesses with websites but no HTML stored"
-        )
+        logger.info(f"Found {len(businesses)} businesses with websites but no HTML stored")
 
         # Process each business
         for business in businesses:
@@ -204,10 +197,7 @@ def process_pending_websites() -> tuple[int, int]:
             if processed_count % 10 == 0:
                 logger.info(f"Processed {processed_count}/{len(businesses)} businesses")
 
-        logger.info(
-            f"Finished processing {processed_count} businesses, "
-            f"{success_count} successful"
-        )
+        logger.info(f"Finished processing {processed_count} businesses, " f"{success_count} successful")
 
     except Exception as e:
         logger.error(f"Error processing pending websites: {e}")

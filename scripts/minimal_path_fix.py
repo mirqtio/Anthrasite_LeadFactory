@@ -286,9 +286,7 @@ def test_utils_imports():
                 logger.info("Import resolution test passed successfully")
                 return True
             else:
-                logger.error(
-                    f"Import resolution test failed with exit code {result.returncode}"
-                )
+                logger.error(f"Import resolution test failed with exit code {result.returncode}")
                 return False
         except Exception as e:
             logger.error(f"Error running import resolution test: {e}")
@@ -303,9 +301,7 @@ def main():
     """Main function with error handling."""
     try:
         parser = argparse.ArgumentParser(description="Minimal Python Path Fix Script")
-        parser.add_argument(
-            "--verbose", action="store_true", help="Enable verbose logging"
-        )
+        parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
         args = parser.parse_args()
 
@@ -323,9 +319,7 @@ def main():
         pth_success = create_pth_file(project_root, args.verbose)
 
         if not pth_success:
-            logger.warning(
-                "Failed to create .pth file, but continuing with other fixes"
-            )
+            logger.warning("Failed to create .pth file, but continuing with other fixes")
 
         # Create conftest.py
         conftest_success = create_conftest_py(project_root, args.verbose)

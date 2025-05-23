@@ -45,12 +45,8 @@ app = FastAPI(
 )
 # Prometheus metrics
 # Gauges
-DAILY_COST = Gauge(
-    "lead_factory_daily_cost", "Total cost for the current day in USD", ["service"]
-)
-MONTHLY_COST = Gauge(
-    "lead_factory_monthly_cost", "Total cost for the current month in USD", ["service"]
-)
+DAILY_COST = Gauge("lead_factory_daily_cost", "Total cost for the current day in USD", ["service"])
+MONTHLY_COST = Gauge("lead_factory_monthly_cost", "Total cost for the current month in USD", ["service"])
 BUDGET_UTILIZATION = Gauge(
     "lead_factory_budget_utilization",
     "Budget utilization as a percentage",
@@ -131,13 +127,9 @@ def update_metrics():
 
         # Update budget utilization gauge
         if daily_budget > 0:
-            BUDGET_UTILIZATION.labels(period="daily").set(
-                total_daily_cost / daily_budget * 100
-            )
+            BUDGET_UTILIZATION.labels(period="daily").set(total_daily_cost / daily_budget * 100)
         if monthly_budget > 0:
-            BUDGET_UTILIZATION.labels(period="monthly").set(
-                total_monthly_cost / monthly_budget * 100
-            )
+            BUDGET_UTILIZATION.labels(period="monthly").set(total_monthly_cost / monthly_budget * 100)
 
         # Update scaling gate status
         SCALING_GATE_STATUS.set(1 if is_scaling_gate_active() else 0)
@@ -165,9 +157,7 @@ def update_metrics():
             gpu_burst = os.getenv("GPU_BURST", "0") == "1"
             if gpu_burst:
                 # Track GPU cost for mockup generation
-                gpu_cost = (
-                    daily_costs.get("openai", 0) * 0.8
-                )  # Estimate 80% of OpenAI cost is GPU
+                gpu_cost = daily_costs.get("openai", 0) * 0.8  # Estimate 80% of OpenAI cost is GPU
                 GPU_COST_GAUGE.labels(operation="mockup_generation").set(gpu_cost)
                 logger.debug(f"GPU cost for mockup generation: ${gpu_cost:.2f}")
 
@@ -184,9 +174,7 @@ def update_metrics():
                 }
             )
     except Exception as e:
-        logger.error(
-            f"Error updating Prometheus metrics in update_metrics: {e}", exc_info=True
-        )
+        logger.error(f"Error updating Prometheus metrics in update_metrics: {e}", exc_info=True)
         # Optionally, re-raise or handle more specifically if needed
 
 
@@ -205,12 +193,8 @@ async def http_metrics_middleware(request: Request, call_next):
         raise e
     finally:
         # Record request metrics
-        REQUEST_COUNT.labels(
-            method=method, endpoint=endpoint, http_status=status_code
-        ).inc()
-        REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(
-            time.time() - start_time
-        )
+        REQUEST_COUNT.labels(method=method, endpoint=endpoint, http_status=status_code).inc()
+        REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(time.time() - start_time)
 
 
 @app.get("/metrics")
@@ -264,16 +248,12 @@ def start_metrics_server(host: str = "127.0.0.1", port: int = 8000):
     # Import at runtime to avoid circular imports
     from utils.batch_metrics import start_metrics_updater  # noqa: E402
 
-    start_metrics_updater(
-        interval_seconds=int(os.getenv("BATCH_METRICS_UPDATE_INTERVAL", "60"))
-    )
+    start_metrics_updater(interval_seconds=int(os.getenv("BATCH_METRICS_UPDATE_INTERVAL", "60")))
 
     # Use environment variable to allow override in container environments
     bind_host = os.getenv("METRICS_BIND_HOST", host)
     logger.info(f"Starting metrics server on http://{bind_host}:{port}")
-    uvicorn.run(
-        app, host=bind_host, port=port, log_level=os.getenv("LOG_LEVEL", "info").lower()
-    )
+    uvicorn.run(app, host=bind_host, port=port, log_level=os.getenv("LOG_LEVEL", "info").lower())
 
 
 if __name__ == "__main__":

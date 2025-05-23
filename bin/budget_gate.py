@@ -61,9 +61,7 @@ class BudgetGate:
         # Load configuration from environment variables
         self.enabled = os.environ.get("BUDGET_GATE_ENABLED", "true").lower() == "true"
         self.threshold = float(os.environ.get("BUDGET_GATE_THRESHOLD", "1000.0"))
-        self.override = (
-            os.environ.get("BUDGET_GATE_OVERRIDE", "false").lower() == "true"
-        )
+        self.override = os.environ.get("BUDGET_GATE_OVERRIDE", "false").lower() == "true"
 
         # Track skipped operations
         self.skipped_operations = {}
@@ -185,9 +183,7 @@ def budget_gated(
                 return func(*args, **kwargs)
             else:
                 # Budget gate is active, skip operation
-                logger.info(
-                    f"Skipped {func.__name__} due to budget gate (operation: {operation})"
-                )
+                logger.info(f"Skipped {func.__name__} due to budget gate (operation: {operation})")
 
                 # Log the skipped operation
                 logger.info(f"SKIPPED_DUE_TO_BUDGET: {operation}")

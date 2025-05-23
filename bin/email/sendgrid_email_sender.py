@@ -34,9 +34,7 @@ from sendgrid.helpers.mail import (
 )
 
 # Add parent directory to path to allow importing metrics
-sys.path.append(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from bin.metrics import metrics
 
 # Setup logging
@@ -72,12 +70,8 @@ class SendGridEmailSender:
             subuser: SendGrid subuser (prod or test)
         """
         self.api_key = api_key or os.environ.get("SENDGRID_API_KEY")
-        self.from_email = from_email or os.environ.get(
-            "SENDGRID_FROM_EMAIL", "noreply@anthrasite.com"
-        )
-        self.from_name = from_name or os.environ.get(
-            "SENDGRID_FROM_NAME", "Anthrasite Lead Factory"
-        )
+        self.from_email = from_email or os.environ.get("SENDGRID_FROM_EMAIL", "noreply@anthrasite.com")
+        self.from_name = from_name or os.environ.get("SENDGRID_FROM_NAME", "Anthrasite Lead Factory")
         self.pool = pool
         self.subuser = subuser
 
@@ -90,9 +84,7 @@ class SendGridEmailSender:
         # Start metrics collection thread
         self._start_metrics_collection()
 
-        logger.info(
-            f"SendGrid email sender initialized (pool={pool}, subuser={subuser})"
-        )
+        logger.info(f"SendGrid email sender initialized (pool={pool}, subuser={subuser})")
 
     def send_email(
         self,
@@ -168,21 +160,15 @@ class SendGridEmailSender:
                     attachment = Attachment()
                     attachment.file_content = FileContent(attachment_data["content"])
                     attachment.file_name = FileName(attachment_data["filename"])
-                    attachment.file_type = FileType(
-                        attachment_data.get("type", "application/pdf")
-                    )
-                    attachment.disposition = Disposition(
-                        attachment_data.get("disposition", "attachment")
-                    )
+                    attachment.file_type = FileType(attachment_data.get("type", "application/pdf"))
+                    attachment.disposition = Disposition(attachment_data.get("disposition", "attachment"))
                     message.add_attachment(attachment)
 
             # Send email
             response = self.client.send(message)
 
             # Log success
-            logger.info(
-                f"Email sent to {to} (subject: {subject}, status: {response.status_code})"
-            )
+            logger.info(f"Email sent to {to} (subject: {subject}, status: {response.status_code})")
 
             # Update metrics
             metrics.increment_email_sent(1, pool=self.pool, subuser=self.subuser)
@@ -268,19 +254,13 @@ class SendGridEmailSender:
 
             # Calculate rates
             bounce_rate = total_bounces / total_sent if total_sent > 0 else 0
-            spam_rate = (
-                total_spam_reports / total_delivered if total_delivered > 0 else 0
-            )
+            spam_rate = total_spam_reports / total_delivered if total_delivered > 0 else 0
 
             # Update metrics
-            metrics.update_bounce_rate(
-                bounce_rate, pool=self.pool, subuser=self.subuser
-            )
+            metrics.update_bounce_rate(bounce_rate, pool=self.pool, subuser=self.subuser)
             metrics.update_spam_rate(spam_rate, pool=self.pool, subuser=self.subuser)
 
-            logger.info(
-                f"Email stats retrieved: bounce_rate={bounce_rate:.4f}, spam_rate={spam_rate:.4f}"
-            )
+            logger.info(f"Email stats retrieved: bounce_rate={bounce_rate:.4f}, spam_rate={spam_rate:.4f}")
 
             return {
                 "status": "success",

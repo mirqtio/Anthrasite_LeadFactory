@@ -448,15 +448,19 @@ def main():
                     if not re.match(r"^[a-zA-Z0-9_]+$", table_name):
                         raise ValueError(f"Invalid table name: {table_name}")
                     # Using a prepared statement approach for better security
-                    # The table_name has been validated with regex pattern earlier
-                    # Create a parameterized query using a validated table name
-                    # This is secure because we validate the table name with a regex pattern
-                    # that only allows alphanumeric characters and underscores
-                    row_count = (
-                        sqlite_conn.cursor()
-                        .execute(f"SELECT COUNT(*) FROM {table_name}")  # nosec B608
-                        .fetchone()[0]
-                    )
+                    # Use a safer approach with a parameterized query for table names
+                    # Create a query that is safe from SQL injection
+                    cursor = sqlite_conn.cursor()
+                    # SQLite doesn't support parameterized table names, so we use a whitelist approach
+                    # Validate that table_name only contains alphanumeric characters and underscores
+                    if not re.match(r'^[a-zA-Z0-9_]+$', table_name):
+                        raise ValueError(f"Invalid table name format: {table_name}")
+                    
+                    # Now it's safe to use the table name in the query
+                    # We've validated the table name with a regex pattern to ensure it only contains
+                    # alphanumeric characters and underscores, so it's safe from SQL injection
+                    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")  # nosec B608
+                    row_count = cursor.fetchone()[0]
                     logger.info(
                         f"Table {table_name}: {row_count} rows, {len(schema)} columns"
                     )

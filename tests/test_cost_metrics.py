@@ -64,9 +64,7 @@ def mock_database():
     # Create test database
     conn = sqlite3.connect(temp_file.name)
     cursor = conn.cursor()
-    cursor.execute(
-        "CREATE TABLE businesses (id INTEGER PRIMARY KEY, name TEXT, email TEXT)"
-    )
+    cursor.execute("CREATE TABLE businesses (id INTEGER PRIMARY KEY, name TEXT, email TEXT)")
     conn.commit()
     conn.close()
 

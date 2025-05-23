@@ -338,9 +338,7 @@ def high_performance_score(temp_db):
     """Verify that the business received a high performance score."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT performance_score FROM businesses WHERE name = 'Fast Site Inc'"
-    )
+    cursor.execute("SELECT performance_score FROM businesses WHERE name = 'Fast Site Inc'")
     score = cursor.fetchone()[0]
     conn.close()
     assert score > 0.7, f"Performance score {score} is not high enough"
@@ -351,9 +349,7 @@ def high_location_score(temp_db):
     """Verify that the business received a high location score."""
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT location_score FROM businesses WHERE name = 'Target Location Biz'"
-    )
+    cursor.execute("SELECT location_score FROM businesses WHERE name = 'Target Location Biz'")
     score = cursor.fetchone()[0]
     conn.close()
     assert score > 0.7, f"Location score {score} is not high enough"
@@ -373,9 +369,7 @@ def default_scores_for_missing_data(temp_db):
     )
     tech_score, performance_score = cursor.fetchone()
     conn.close()
-    assert (
-        tech_score == 0 and performance_score == 0
-    ), "Default scores were not applied correctly"
+    assert tech_score == 0 and performance_score == 0, "Default scores were not applied correctly"
 
 
 @then("the final score should reflect the weighted rules")
@@ -395,6 +389,5 @@ def weighted_final_score(temp_db):
     # Calculate the expected weighted score
     expected_score = tech_score * 0.5 + performance_score * 0.3 + location_score * 0.2
     assert abs(final_score - expected_score) < 0.01, (
-        f"Final score {final_score} does not match expected "
-        f"weighted score {expected_score}"
+        f"Final score {final_score} does not match expected " f"weighted score {expected_score}"
     )

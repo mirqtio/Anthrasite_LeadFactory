@@ -248,14 +248,8 @@ def check_retention_status() -> dict[str, Any]:
         llm_logs_count = cursor.fetchone()["count"]
 
     # Calculate retention percentages
-    html_retention_percentage = (
-        100 - (len(expired_html_files) / html_count * 100) if html_count > 0 else 100
-    )
-    llm_retention_percentage = (
-        100 - (len(expired_llm_logs) / llm_logs_count * 100)
-        if llm_logs_count > 0
-        else 100
-    )
+    html_retention_percentage = 100 - (len(expired_html_files) / html_count * 100) if html_count > 0 else 100
+    llm_retention_percentage = 100 - (len(expired_llm_logs) / llm_logs_count * 100) if llm_logs_count > 0 else 100
 
     # Prepare status report
     status = {
