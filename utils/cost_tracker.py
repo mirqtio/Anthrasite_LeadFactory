@@ -381,7 +381,7 @@ def should_allow_operation(
     """
     Determine if an operation should be allowed based on the scaling gate status.
 
-    This is a simplified version of check_operation_permission that returns just a boolean.
+    Simplified version of check_operation_permission; returns a boolean.
 
     Args:
         service: The service name
