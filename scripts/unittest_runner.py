@@ -20,13 +20,13 @@ Features:
 import argparse
 import json
 import logging
-import os
 import sys
 import traceback
 import unittest
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 from datetime import datetime
+from pathlib import Path
 
 # Setup logging
 logging.basicConfig(
@@ -34,7 +34,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "unittest_runner.log")),
+        logging.FileHandler(Path("logs") / "unittest_runner.log"),
     ],
 )
 logger = logging.getLogger("unittest_runner")
@@ -44,19 +44,19 @@ def ensure_directories():
     """Ensure necessary directories exist."""
     directories = ["logs", "test_results", "tests/verify_ci"]
     for directory in directories:
-        os.makedirs(directory, exist_ok=True)
+        Path(directory).mkdir(parents=True, exist_ok=True)
         logger.info(f"Ensured directory exists: {directory}")
 
 
 def fix_python_path():
     """Fix Python path for imports."""
     # Get the project root directory
-    project_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    project_root = Path(__file__).resolve().parent.parent
     logger.info(f"Project root: {project_root}")
 
     # Add project root to sys.path if not already there
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
         logger.info(f"Added {project_root} to sys.path")
 
     return project_root
@@ -64,11 +64,11 @@ def fix_python_path():
 
 def create_verification_test():
     """Create a simple verification test if none exists."""
-    test_dir = os.path.join("tests", "verify_ci")
-    test_file = os.path.join(test_dir, "test_verify_ci.py")
+    test_dir = Path("tests") / "verify_ci"
+    test_file = test_dir / "test_verify_ci.py"
 
-    if not os.path.exists(test_file):
-        with open(test_file, "w") as f:
+    if not test_file.exists():
+        with test_file.open("w") as f:
             f.write(
                 """
 import unittest
@@ -130,14 +130,14 @@ class JUnitXMLTestRunner(unittest.TextTestRunner):
 
         # Write XML to file
         ET.ElementTree(test_suite)
-        os.makedirs(os.path.dirname(self.xml_file), exist_ok=True)
+        Path(self.xml_file).parent.mkdir(parents=True, exist_ok=True)
 
         # Format the XML nicely
         xml_str = ET.tostring(test_suite, encoding="utf-8")
         dom = xml.dom.minidom.parseString(xml_str)  # nosec B318
         pretty_xml = dom.toprettyxml(indent="  ")
 
-        with open(self.xml_file, "w") as f:
+        with Path(self.xml_file).open("w") as f:
             f.write(pretty_xml)
 
         logger.info(f"JUnit XML report written to {self.xml_file}")
@@ -185,18 +185,13 @@ def discover_and_run_tests(test_pattern, verbose=False):
     loader = unittest.TestLoader()
 
     # Convert pattern to directory and pattern
-    if os.path.isdir(test_pattern):
-        start_dir = test_pattern
+    path_pattern = Path(test_pattern)
+    if path_pattern.is_dir():
+        start_dir = str(path_pattern)
         pattern = "test_*.py"
     else:
-        # Handle patterns like "tests/verify_ci/*.py"
-        parts = test_pattern.split("/")
-        if "*" in parts[-1]:
-            start_dir = "/".join(parts[:-1])
-            pattern = parts[-1]
-        else:
-            start_dir = os.path.dirname(test_pattern)
-            pattern = os.path.basename(test_pattern)
+        start_dir = str(path_pattern.parent)
+        pattern = path_pattern.name
 
     logger.info(f"Start directory: {start_dir}, Pattern: {pattern}")
 
@@ -243,8 +238,8 @@ def save_test_results(results):
     """Save test results to JSON file."""
     report = {"timestamp": datetime.now().isoformat(), "results": results}
 
-    os.makedirs("test_results", exist_ok=True)
-    with open("test_results/unittest_results.json", "w") as f:
+    Path("test_results").mkdir(parents=True, exist_ok=True)
+    with (Path("test_results") / "unittest_results.json").open("w") as f:
         json.dump(report, f, indent=2)
 
     logger.info("Test results saved to test_results/unittest_results.json")
