@@ -10,13 +10,15 @@ import hashlib
 import json
 import os
 import sys
-from typing import Dict, List, Optional, Tuple, Union
+from pathlib import Path
 from urllib.parse import urlparse
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Import database utilities
+import contextlib
+
 from utils.io import DatabaseConnection
 
 # Import logging configuration
@@ -26,15 +28,13 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 # Constants
-HTML_STORAGE_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "data", "html_storage"
-)
+HTML_STORAGE_DIR = Path(__file__).resolve().parent.parent / "data" / "html_storage"
 RETENTION_DAYS = int(os.getenv("DATA_RETENTION_DAYS", "90"))
 
 
 def ensure_storage_directories() -> None:
     """Ensure storage directories exist."""
-    os.makedirs(HTML_STORAGE_DIR, exist_ok=True)
+    HTML_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
     logger.debug(f"Ensured HTML storage directory exists: {HTML_STORAGE_DIR}")
 
 
@@ -62,7 +62,7 @@ def generate_storage_path(url: str, business_id: int) -> str:
     domain = parsed_url.netloc
 
     # Generate a hash of the URL for uniqueness
-    # Using usedforsecurity=False as this is only for generating a filename, not for security purposes
+    # Not for security, just for filename generation.
     url_hash = hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()
 
     # Create directory structure: domain/business_id/hash.html.gz
@@ -71,11 +71,11 @@ def generate_storage_path(url: str, business_id: int) -> str:
     else:
         domain_dir = "unknown_domain"
 
-    relative_path = os.path.join(domain_dir, str(business_id), f"{url_hash}.html.gz")
-    return relative_path
+    # Changed to pathlib, returns str for DB compatibility
+    return str(Path(domain_dir) / str(business_id) / f"{url_hash}.html.gz")
 
 
-def compress_html(html_content: str) -> Tuple[bytes, float]:
+def compress_html(html_content: str) -> tuple[bytes, float]:
     """Compress HTML content using gzip.
 
     Args:
@@ -103,7 +103,7 @@ def compress_html(html_content: str) -> Tuple[bytes, float]:
     return compressed, compression_ratio
 
 
-def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
+def store_html(html_content: str, url: str, business_id: int) -> str | None:
     """Store HTML content for a URL.
 
     Args:
@@ -120,10 +120,10 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
 
         # Generate storage path
         relative_path = generate_storage_path(url, business_id)
-        full_path = os.path.join(HTML_STORAGE_DIR, relative_path)
+        full_path = HTML_STORAGE_DIR / relative_path
 
         # Create directory if it doesn't exist
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        full_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Compress HTML
         compressed_content, compression_ratio = compress_html(html_content)
@@ -132,11 +132,11 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
         content_hash = hashlib.sha256(html_content.encode()).hexdigest()
 
         # Write compressed content to file
-        with open(full_path, "wb") as f:
+        with full_path.open("wb") as f:
             f.write(compressed_content)
 
         # Calculate size in bytes
-        size_bytes = os.path.getsize(full_path)
+        size_bytes = full_path.stat().st_size
 
         # Calculate retention expiry date
         retention_expires_at = get_retention_expiry_date()
@@ -148,7 +148,8 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
                 cursor.execute(
                     """
                     INSERT INTO raw_html_storage
-                    (business_id, html_path, original_url, compression_ratio, content_hash, size_bytes, retention_expires_at)
+                    (business_id, html_path, original_url, compression_ratio,
+                     content_hash, size_bytes, retention_expires_at)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
@@ -169,7 +170,8 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
                 cursor.execute(
                     """
                     INSERT INTO raw_html_storage
-                    (business_id, html_path, original_url, compression_ratio, content_hash, size_bytes, retention_expires_at)
+                    (business_id, html_path, original_url, compression_ratio,
+                     content_hash, size_bytes, retention_expires_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
@@ -198,7 +200,8 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
                 )
 
         logger.info(
-            f"Stored HTML for business {business_id}, URL: {url}, path: {relative_path}, size: {size_bytes} bytes, compression ratio: {compression_ratio:.2f}"
+            f"Stored HTML for URL: {url}, path: {relative_path}, "
+            f"size: {size_bytes} bytes, compression ratio: {compression_ratio:.2f}"
         )
         return relative_path
 
@@ -207,7 +210,7 @@ def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
         return None
 
 
-def retrieve_html(html_path: str) -> Optional[str]:
+def retrieve_html(html_path: str) -> str | None:
     """Retrieve HTML content from storage.
 
     Args:
@@ -218,15 +221,15 @@ def retrieve_html(html_path: str) -> Optional[str]:
     """
     try:
         # Construct full path
-        full_path = os.path.join(HTML_STORAGE_DIR, html_path)
+        full_path = HTML_STORAGE_DIR / html_path
 
         # Check if file exists
-        if not os.path.exists(full_path):
+        if not full_path.exists():
             logger.error(f"HTML file not found: {full_path}")
             return None
 
         # Read and decompress file
-        with open(full_path, "rb") as f:
+        with full_path.open("rb") as f:
             compressed_content = f.read()
 
         # Decompress content
@@ -244,14 +247,14 @@ def log_llm_interaction(
     operation: str,
     model_version: str,
     prompt_text: str,
-    response_json: Union[Dict, str],
-    business_id: Optional[int] = None,
-    tokens_prompt: Optional[int] = None,
-    tokens_completion: Optional[int] = None,
-    duration_ms: Optional[int] = None,
+    response_json: dict | str,
+    business_id: int | None = None,
+    tokens_prompt: int | None = None,
+    tokens_completion: int | None = None,
+    duration_ms: int | None = None,
     status: str = "success",
-    metadata: Optional[Dict] = None,
-) -> Optional[int]:
+    metadata: dict | None = None,
+) -> int | None:
     """Log an LLM interaction.
 
     Args:
@@ -292,7 +295,8 @@ def log_llm_interaction(
                     """
                     INSERT INTO llm_logs
                     (business_id, operation, model_version, prompt_text, response_json,
-                     tokens_prompt, tokens_completion, duration_ms, status, retention_expires_at, metadata)
+                     tokens_prompt, tokens_completion, duration_ms, status,
+                     retention_expires_at, metadata)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
@@ -317,7 +321,8 @@ def log_llm_interaction(
                     """
                     INSERT INTO llm_logs
                     (business_id, operation, model_version, prompt_text, response_json,
-                     tokens_prompt, tokens_completion, duration_ms, status, retention_expires_at, metadata)
+                     tokens_prompt, tokens_completion, duration_ms, status,
+                     retention_expires_at, metadata)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
@@ -337,7 +342,8 @@ def log_llm_interaction(
                 log_id = cursor.lastrowid
 
         logger.info(
-            f"Logged LLM interaction: operation={operation}, model={model_version}, business_id={business_id}, status={status}"
+            f"Logged LLM interaction: operation={operation}, model={model_version}, "
+            f"business_id={business_id}, status={status}"
         )
         return log_id
 
@@ -347,11 +353,11 @@ def log_llm_interaction(
 
 
 def get_llm_logs(
-    business_id: Optional[int] = None,
-    operation: Optional[str] = None,
+    business_id: int | None = None,
+    operation: str | None = None,
     limit: int = 100,
     offset: int = 0,
-) -> List[Dict]:
+) -> list[dict]:
     """Get LLM logs from the database.
 
     Args:
@@ -391,16 +397,12 @@ def get_llm_logs(
         # Parse JSON fields
         for log in logs:
             if "response_json" in log and isinstance(log["response_json"], str):
-                try:
+                with contextlib.suppress(json.JSONDecodeError):
                     log["response_json"] = json.loads(log["response_json"])
-                except json.JSONDecodeError:
-                    pass
 
             if "metadata" in log and isinstance(log["metadata"], str):
-                try:
+                with contextlib.suppress(json.JSONDecodeError):
                     log["metadata"] = json.loads(log["metadata"])
-                except json.JSONDecodeError:
-                    pass
 
         return logs
 
@@ -409,7 +411,7 @@ def get_llm_logs(
         return []
 
 
-def identify_expired_data() -> Tuple[List[Dict], List[Dict]]:
+def identify_expired_data() -> tuple[list[dict], list[dict]]:
     """Identify data that has expired based on retention policy.
 
     Returns:
@@ -426,20 +428,23 @@ def identify_expired_data() -> Tuple[List[Dict], List[Dict]]:
         with DatabaseConnection() as cursor:
             # Query for expired HTML files
             cursor.execute(
-                "SELECT id, business_id, html_path, original_url FROM raw_html_storage WHERE retention_expires_at < ?",
+                "SELECT id, business_id, html_path, original_url "
+                "FROM raw_html_storage WHERE retention_expires_at < ?",
                 (now,),
             )
             expired_html_files = cursor.fetchall()
 
             # Query for expired LLM logs
             cursor.execute(
-                "SELECT id, business_id, operation FROM llm_logs WHERE retention_expires_at < ?",
+                "SELECT id, business_id, operation FROM llm_logs "
+                "WHERE retention_expires_at < ?",
                 (now,),
             )
             expired_llm_logs = cursor.fetchall()
 
         logger.info(
-            f"Identified {len(expired_html_files)} expired HTML files and {len(expired_llm_logs)} expired LLM logs"
+            f"Identified {len(expired_html_files)} expired HTML files and "
+            f"{len(expired_llm_logs)} expired LLM logs"
         )
         return expired_html_files, expired_llm_logs
 
@@ -448,7 +453,7 @@ def identify_expired_data() -> Tuple[List[Dict], List[Dict]]:
         return [], []
 
 
-def fetch_website_html(url: str) -> Optional[str]:
+def fetch_website_html(url: str) -> str | None:
     """Fetch HTML content from a website.
 
     Args:
@@ -460,13 +465,15 @@ def fetch_website_html(url: str) -> Optional[str]:
     try:
         import requests
 
-        # Set user agent to avoid being blocked
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/91.0.4472.124 Safari/537.36"
+            )
         }
 
-        # Fetch HTML
-        response = requests.get(url, headers=headers, timeout=30)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
 
         # Get HTML content

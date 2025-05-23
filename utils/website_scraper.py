@@ -4,14 +4,13 @@ Anthrasite Lead-Factory: Website Scraper
 Utilities for scraping websites and storing HTML content.
 """
 
-import os
 import re
 import sys
-from typing import Optional, Tuple
+from pathlib import Path
 from urllib.parse import urlparse
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Import database utilities
 from utils.io import DatabaseConnection
@@ -26,7 +25,7 @@ from utils.raw_data_retention import fetch_website_html, store_html
 logger = get_logger(__name__)
 
 
-def extract_email_from_html(html_content: str) -> Optional[str]:
+def extract_email_from_html(html_content: str) -> str | None:
     """Extract email address from HTML content using regex.
 
     Args:
@@ -49,7 +48,13 @@ def extract_email_from_html(html_content: str) -> Optional[str]:
             for email in emails
             if not any(
                 exclude in email.lower()
-                for exclude in ["example.com", "yourdomain", "@image", "@png", "@jpg"]
+                for exclude in [
+                    "example.com",
+                    "yourdomain",
+                    "@image",
+                    "@png",
+                    "@jpg",
+                ]
             )
         ]
 
@@ -62,8 +67,8 @@ def extract_email_from_html(html_content: str) -> Optional[str]:
 
 
 def extract_email_from_website(
-    website: str, business_id: Optional[int] = None
-) -> Optional[str]:
+    website: str, business_id: int | None = None
+) -> str | None:
     """Extract email from website and store HTML content.
 
     Args:
@@ -84,7 +89,8 @@ def extract_email_from_website(
         if html_content and business_id:
             html_path = store_html(html_content, website, business_id)
             logger.info(
-                f"Stored HTML for business {business_id}, website: {website}, path: {html_path}"
+                f"Stored HTML for business {business_id}, "
+                f"website: {website}, path: {html_path}"
             )
 
             # Update the business record with the HTML path
@@ -157,7 +163,7 @@ def update_business_with_website_data(business_id: int, website: str) -> bool:
         return False
 
 
-def process_pending_websites() -> Tuple[int, int]:
+def process_pending_websites() -> tuple[int, int]:
     """Process all businesses with websites but no HTML stored.
 
     Returns:
@@ -169,14 +175,14 @@ def process_pending_websites() -> Tuple[int, int]:
     try:
         # Get businesses with websites but no HTML stored
         with DatabaseConnection() as cursor:
+            query = (
+                "SELECT id, website FROM businesses "
+                "WHERE website IS NOT NULL AND website != '' AND html_path IS NULL"
+            )
             if cursor.connection.is_postgres:
-                cursor.execute(
-                    "SELECT id, website FROM businesses WHERE website IS NOT NULL AND website != '' AND html_path IS NULL"
-                )
+                cursor.execute(query)
             else:
-                cursor.execute(
-                    "SELECT id, website FROM businesses WHERE website IS NOT NULL AND website != '' AND html_path IS NULL"
-                )
+                cursor.execute(query)
 
             businesses = cursor.fetchall()
 
@@ -199,10 +205,12 @@ def process_pending_websites() -> Tuple[int, int]:
                 logger.info(f"Processed {processed_count}/{len(businesses)} businesses")
 
         logger.info(
-            f"Finished processing {processed_count} businesses, {success_count} successful"
+            f"Finished processing {processed_count} businesses, "
+            f"{success_count} successful"
         )
-        return processed_count, success_count
 
     except Exception as e:
         logger.error(f"Error processing pending websites: {e}")
         return processed_count, success_count
+
+    return processed_count, success_count
