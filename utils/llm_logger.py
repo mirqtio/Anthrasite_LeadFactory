@@ -22,11 +22,11 @@ from utils.io import DatabaseConnection  # noqa: E402
 from utils.logging_config import get_logger  # noqa: E402
 
 # Import raw data retention utilities
-from utils.raw_data_retention import (
+from utils.raw_data_retention import (  # noqa: E402
     get_llm_logs,
     identify_expired_data,
     log_llm_interaction,
-)  # noqa: E402
+)
 
 # Set up logging
 logger = get_logger(__name__)
