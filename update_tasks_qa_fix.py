@@ -4,7 +4,12 @@ Script to apply QA fixes to tasks.json based on review feedback.
 """
 
 import json
+import logging
 from pathlib import Path
+
+# Configure basic logging
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def update_tasks():
@@ -14,7 +19,7 @@ def update_tasks():
     )
 
     # Load the tasks
-    with open(tasks_path, "r") as f:
+    with tasks_path.open("r") as f:
         data = json.load(f)
 
     tasks = data.get("tasks", [])
@@ -46,9 +51,12 @@ def update_tasks():
             "CI" in task.get("title", "")
             and "workflow" in task.get("title", "").lower()
         ):
-            if "touches" in task and ".github/workflows/ci.yml" in task["touches"]:
-                if "requirements.txt" not in task["touches"]:
-                    task["touches"].append("requirements.txt")
+            if (
+                "touches" in task
+                and ".github/workflows/ci.yml" in task["touches"]
+                and "requirements.txt" not in task["touches"]
+            ):
+                task["touches"].append("requirements.txt")
 
         # 4. Update rsync_fallback task
         elif "RSYNC" in task.get("title", "") and "Fallback" in task.get("title", ""):
@@ -91,10 +99,10 @@ def update_tasks():
     data["tasks"] = tasks
 
     # Write the updated data back to the file
-    with open(tasks_path, "w") as f:
+    with tasks_path.open("w") as f:
         json.dump(data, f, indent=2)
 
-    print("Successfully updated tasks.json with QA fixes.")
+    logger.info("Successfully updated tasks.json with QA fixes.")
 
 
 if __name__ == "__main__":
