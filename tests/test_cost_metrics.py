@@ -3,30 +3,31 @@
 BDD tests for cost metrics tracking and alerting.
 """
 
-import os
 import json
-import tempfile
+import os
 import sqlite3
-from unittest.mock import patch, MagicMock
-from behave import given, when, then, step
-import pytest
 
 # Add project root to path
 import sys
+import tempfile
+from unittest.mock import MagicMock, patch
+
+import pytest
+from behave import given, step, then, when
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import modules to test
 from utils.cost_metrics import (
+    calculate_cost_per_lead,
+    check_cost_per_lead_threshold,
+    check_gpu_cost_threshold,
     ensure_cost_tracker_file,
     get_cost_data,
-    save_cost_data,
     get_lead_count,
     get_total_monthly_cost,
-    calculate_cost_per_lead,
+    save_cost_data,
     track_gpu_usage,
-    check_gpu_cost_threshold,
-    check_cost_per_lead_threshold,
     update_cost_metrics_at_batch_end,
 )
 

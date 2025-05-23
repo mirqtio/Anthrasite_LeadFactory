@@ -33,7 +33,9 @@ def disable_old_workflows():
         print(f"Disabled workflow: {workflow_file.name} -> {disabled_path.name}")
         disabled_count += 1
 
-    print(f"\nDisabled {disabled_count} old workflow files. Only {active_workflow} remains active.")
+    print(
+        f"\nDisabled {disabled_count} old workflow files. Only {active_workflow} remains active."
+    )
     print("This ensures there are no conflicting CI workflows running in parallel.")
 
 

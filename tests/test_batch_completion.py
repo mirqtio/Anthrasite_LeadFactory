@@ -3,31 +3,32 @@
 BDD tests for batch completion tracking and alerting.
 """
 
-import os
 import json
-import time
-import pytest
-import tempfile
-from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
-from behave import given, when, then, step
+import os
 
 # Add project root to path
 import sys
+import tempfile
+import time
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
+import pytest
+from behave import given, step, then, when
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import modules to test
+from bin.batch_completion_monitor import (
+    check_and_alert,
+    send_alert_email,
+)
 from utils.batch_tracker import (
-    record_batch_start,
-    record_batch_stage_completion,
-    record_batch_end,
     check_batch_completion,
     get_batch_status,
-)
-from bin.batch_completion_monitor import (
-    send_alert_email,
-    check_and_alert,
+    record_batch_end,
+    record_batch_stage_completion,
+    record_batch_start,
 )
 
 

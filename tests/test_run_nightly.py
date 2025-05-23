@@ -25,7 +25,9 @@ class TestRunNightly(unittest.TestCase):
 
         # Path to the script
         self.script_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts", "run_nightly.sh"
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "scripts",
+            "run_nightly.sh",
         )
 
         # Create a mock .env file
@@ -50,13 +52,20 @@ class TestRunNightly(unittest.TestCase):
         result = subprocess.run(
             ["bash", self.script_path, "--dry-run"],
             cwd=self.test_dir,
-            env={"PATH": os.environ["PATH"], "PYTHONPATH": os.environ.get("PYTHONPATH", "")},
+            env={
+                "PATH": os.environ["PATH"],
+                "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
+            },
             capture_output=True,
             text=True,
         )
 
         # Check that the script executed successfully
-        self.assertEqual(result.returncode, 0, f"Script failed with output: {result.stdout} {result.stderr}")
+        self.assertEqual(
+            result.returncode,
+            0,
+            f"Script failed with output: {result.stdout} {result.stderr}",
+        )
 
         # Check that the script output contains the expected steps
         expected_steps = [
@@ -99,11 +108,19 @@ class TestRunNightly(unittest.TestCase):
             mock_popen.return_value.returncode = 0
 
             result = subprocess.run(
-                ["bash", self.script_path, "--test-metrics"], cwd=self.test_dir, env=env, capture_output=True, text=True
+                ["bash", self.script_path, "--test-metrics"],
+                cwd=self.test_dir,
+                env=env,
+                capture_output=True,
+                text=True,
             )
 
         # Check that the script executed successfully
-        self.assertEqual(result.returncode, 0, f"Script failed with output: {result.stdout} {result.stderr}")
+        self.assertEqual(
+            result.returncode,
+            0,
+            f"Script failed with output: {result.stdout} {result.stderr}",
+        )
 
         # Verify that the Python code to record metrics was called
         expected_calls = [
@@ -122,7 +139,9 @@ class TestRunNightly(unittest.TestCase):
 
         # Note: The actual calls might differ slightly due to environment variables and paths
         # This is a simplified check
-        self.assertTrue(mock_run.called, "Python command to record metrics was not called")
+        self.assertTrue(
+            mock_run.called, "Python command to record metrics was not called"
+        )
 
     @patch("subprocess.run")
     def test_supabase_usage_check(self, mock_run):
@@ -134,17 +153,26 @@ class TestRunNightly(unittest.TestCase):
         result = subprocess.run(
             ["bash", self.script_path, "--check-supabase"],
             cwd=self.test_dir,
-            env={"PATH": os.environ["PATH"], "PYTHONPATH": os.environ.get("PYTHONPATH", "")},
+            env={
+                "PATH": os.environ["PATH"],
+                "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
+            },
             capture_output=True,
             text=True,
         )
 
         # Check that the script executed successfully
-        self.assertEqual(result.returncode, 0, f"Script failed with output: {result.stdout} {result.stderr}")
+        self.assertEqual(
+            result.returncode,
+            0,
+            f"Script failed with output: {result.stdout} {result.stderr}",
+        )
 
         # Verify that the Supabase usage check was called
         expected_call = call(
-            ["python", "scripts/monitor_supabase_usage.py", "--alert-threshold", "80"], cwd=self.test_dir, check=True
+            ["python", "scripts/monitor_supabase_usage.py", "--alert-threshold", "80"],
+            cwd=self.test_dir,
+            check=True,
         )
 
         # Note: The actual calls might differ slightly due to environment variables and paths

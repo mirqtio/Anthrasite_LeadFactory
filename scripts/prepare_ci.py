@@ -15,9 +15,9 @@ def fix_imports_with_ruff(directory):
     print(f"Fixing imports in {directory}...")
     try:
         subprocess.run(
-            ["ruff", "check", "--select=I", "--fix", directory], 
-            check=True, 
-            capture_output=True
+            ["ruff", "check", "--select=I", "--fix", directory],
+            check=True,
+            capture_output=True,
         )
         return True
     except subprocess.CalledProcessError as e:
@@ -31,9 +31,9 @@ def format_with_black(directory):
     print(f"Formatting code in {directory} with black...")
     try:
         subprocess.run(
-            ["black", directory, "--config", ".black.toml"], 
-            check=True, 
-            capture_output=True
+            ["black", directory, "--config", ".black.toml"],
+            check=True,
+            capture_output=True,
         )
         return True
     except subprocess.CalledProcessError as e:
@@ -48,9 +48,9 @@ def check_flake8(directory):
     try:
         # Only check for serious errors
         subprocess.run(
-            ["flake8", directory, "--count", "--select=E9,F63,F7,F82", "--show-source"], 
-            check=True, 
-            capture_output=True
+            ["flake8", directory, "--count", "--select=E9,F63,F7,F82", "--show-source"],
+            check=True,
+            capture_output=True,
         )
         return True
     except subprocess.CalledProcessError as e:
@@ -63,39 +63,43 @@ def main():
     """Main function to prepare the codebase for CI pipeline execution."""
     # Get the project root directory
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
+
     # Directories to process (excluding tests)
     directories_to_process = [
         os.path.join(project_root, "utils"),
         os.path.join(project_root, "bin"),
         os.path.join(project_root, "scripts"),
     ]
-    
+
     success = True
-    
+
     # Fix imports with ruff
     for directory in directories_to_process:
         if os.path.exists(directory):
             if not fix_imports_with_ruff(directory):
                 success = False
-    
+
     # Format code with black
     for directory in directories_to_process:
         if os.path.exists(directory):
             if not format_with_black(directory):
                 success = False
-    
+
     # Check code with flake8
     for directory in directories_to_process:
         if os.path.exists(directory):
             if not check_flake8(directory):
                 success = False
-    
+
     if success:
-        print("\n✅ All checks passed! The codebase is ready for CI pipeline execution.")
+        print(
+            "\n✅ All checks passed! The codebase is ready for CI pipeline execution."
+        )
         return 0
     else:
-        print("\n❌ Some checks failed. Please fix the issues before running the CI pipeline.")
+        print(
+            "\n❌ Some checks failed. Please fix the issues before running the CI pipeline."
+        )
         return 1
 
 

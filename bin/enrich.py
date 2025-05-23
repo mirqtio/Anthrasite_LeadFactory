@@ -167,16 +167,32 @@ class PageSpeedAnalyzer:
             audits = lighthouse_result.get("audits", {})
             categories = lighthouse_result.get("categories", {})
             performance_data = {
-                "performance_score": int(categories.get("performance", {}).get("score", 0) * 100),
-                "accessibility_score": int(categories.get("accessibility", {}).get("score", 0) * 100),
-                "best_practices_score": int(categories.get("best-practices", {}).get("score", 0) * 100),
+                "performance_score": int(
+                    categories.get("performance", {}).get("score", 0) * 100
+                ),
+                "accessibility_score": int(
+                    categories.get("accessibility", {}).get("score", 0) * 100
+                ),
+                "best_practices_score": int(
+                    categories.get("best-practices", {}).get("score", 0) * 100
+                ),
                 "seo_score": int(categories.get("seo", {}).get("score", 0) * 100),
-                "first_contentful_paint": audits.get("first-contentful-paint", {}).get("numericValue"),
-                "largest_contentful_paint": audits.get("largest-contentful-paint", {}).get("numericValue"),
-                "cumulative_layout_shift": audits.get("cumulative-layout-shift", {}).get("numericValue"),
-                "total_blocking_time": audits.get("total-blocking-time", {}).get("numericValue"),
+                "first_contentful_paint": audits.get("first-contentful-paint", {}).get(
+                    "numericValue"
+                ),
+                "largest_contentful_paint": audits.get(
+                    "largest-contentful-paint", {}
+                ).get("numericValue"),
+                "cumulative_layout_shift": audits.get(
+                    "cumulative-layout-shift", {}
+                ).get("numericValue"),
+                "total_blocking_time": audits.get("total-blocking-time", {}).get(
+                    "numericValue"
+                ),
                 "speed_index": audits.get("speed-index", {}).get("numericValue"),
-                "time_to_interactive": audits.get("interactive", {}).get("numericValue"),
+                "time_to_interactive": audits.get("interactive", {}).get(
+                    "numericValue"
+                ),
             }
             return performance_data, None
         except Exception as e:
@@ -232,7 +248,9 @@ class ScreenshotGenerator:
             )
             # For a real implementation, we would upload this to Supabase Storage
             # For the prototype, we'll return a dummy URL
-            screenshot_url = f"https://storage.supabase.co/mockups/{urlparse(url).netloc}.png"
+            screenshot_url = (
+                f"https://storage.supabase.co/mockups/{urlparse(url).netloc}.png"
+            )
             return screenshot_url, None
         except requests.exceptions.RequestException as e:
             logger.warning(f"Error capturing screenshot for {url}: {e}")
@@ -303,7 +321,9 @@ class SEMrushAnalyzer:
             return {}, f"Error parsing SEMrush results: {str(e)}"
 
 
-def get_businesses_to_enrich(limit: Optional[int] = None, business_id: Optional[int] = None) -> List[Dict]:
+def get_businesses_to_enrich(
+    limit: Optional[int] = None, business_id: Optional[int] = None
+) -> List[Dict]:
     """Get list of businesses to enrich.
     Args:
         limit: Maximum number of businesses to return.
@@ -396,7 +416,9 @@ def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
     if not website:
         logger.warning(f"No website for business ID {business_id}")
         return False
-    logger.info(f"Enriching business ID {business_id} with website {website} (Tier {tier})")
+    logger.info(
+        f"Enriching business ID {business_id} with website {website} (Tier {tier})"
+    )
     # Initialize analyzers
     tech_analyzer = TechStackAnalyzer()
     pagespeed_analyzer = PageSpeedAnalyzer(PAGESPEED_API_KEY)
@@ -414,15 +436,21 @@ def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
     # Tier 2+: Capture screenshot
     if tier >= 2 and SCREENSHOT_ONE_KEY:
         screenshot_generator = ScreenshotGenerator(SCREENSHOT_ONE_KEY)
-        screenshot_url, screenshot_error = screenshot_generator.capture_screenshot(website)
+        screenshot_url, screenshot_error = screenshot_generator.capture_screenshot(
+            website
+        )
         if screenshot_error:
-            logger.warning(f"Error capturing screenshot for {website}: {screenshot_error}")
+            logger.warning(
+                f"Error capturing screenshot for {website}: {screenshot_error}"
+            )
     # Tier 3: SEMrush Site Audit
     if tier >= 3 and SEMRUSH_KEY:
         semrush_analyzer = SEMrushAnalyzer(SEMRUSH_KEY)
         semrush_data, semrush_error = semrush_analyzer.analyze_website(website)
         if semrush_error:
-            logger.warning(f"Error analyzing with SEMrush for {website}: {semrush_error}")
+            logger.warning(
+                f"Error analyzing with SEMrush for {website}: {semrush_error}"
+            )
     # Save features to database
     success = save_features(
         business_id=business_id,
@@ -436,10 +464,16 @@ def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Enrich business data with tech stack and performance metrics")
-    parser.add_argument("--limit", type=int, help="Limit the number of businesses to process")
+    parser = argparse.ArgumentParser(
+        description="Enrich business data with tech stack and performance metrics"
+    )
+    parser.add_argument(
+        "--limit", type=int, help="Limit the number of businesses to process"
+    )
     parser.add_argument("--id", type=int, help="Process only the specified business ID")
-    parser.add_argument("--tier", type=int, choices=[1, 2, 3], help="Override the tier level")
+    parser.add_argument(
+        "--tier", type=int, choices=[1, 2, 3], help="Override the tier level"
+    )
     args = parser.parse_args()
     # Get tier level
     tier = args.tier if args.tier is not None else CURRENT_TIER
@@ -454,9 +488,14 @@ def main():
     success_count = 0
     error_count = 0
     # Use ThreadPoolExecutor for parallel processing
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=MAX_CONCURRENT_REQUESTS
+    ) as executor:
         # Submit tasks
-        future_to_business = {executor.submit(enrich_business, business, tier): business for business in businesses}
+        future_to_business = {
+            executor.submit(enrich_business, business, tier): business
+            for business in businesses
+        }
         # Process results as they complete
         for future in concurrent.futures.as_completed(future_to_business):
             business = future_to_business[future]
@@ -469,7 +508,9 @@ def main():
             except Exception as e:
                 logger.error(f"Error enriching business ID {business['id']}: {e}")
                 error_count += 1
-    logger.info(f"Enrichment completed. Success: {success_count}, Errors: {error_count}")
+    logger.info(
+        f"Enrichment completed. Success: {success_count}, Errors: {error_count}"
+    )
     return 0
 
 

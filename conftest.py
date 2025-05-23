@@ -1,4 +1,3 @@
-
 # Minimal conftest.py for proper test configuration
 import os
 import sys

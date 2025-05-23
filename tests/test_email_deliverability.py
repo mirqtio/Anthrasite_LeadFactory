@@ -4,11 +4,12 @@ Anthrasite Lead-Factory: Email Deliverability Tests
 BDD tests for email deliverability hardening features.
 """
 
-import os
-import pytest
 import json
-from unittest.mock import patch, MagicMock
-from pytest_bdd import scenarios, given, when, then, parsers
+import os
+from unittest.mock import MagicMock, patch
+
+import pytest
+from pytest_bdd import given, parsers, scenarios, then, when
 
 # Import the email queue module
 from bin.email_queue import SendGridEmailSender
@@ -30,8 +31,8 @@ def mock_sendgrid_api():
     with patch("requests.get") as mock_get, patch("requests.post") as mock_post:
         # Setup default responses
         mock_get.return_value = MagicMock(
-            status_code=200, json=lambda: []  # Empty stats by default
-        )
+            status_code=200, json=lambda: []
+        )  # Empty stats by default
         mock_post.return_value = MagicMock(
             status_code=202, headers={"X-Message-Id": "test-message-id"}
         )

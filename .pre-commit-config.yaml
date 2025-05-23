@@ -26,7 +26,7 @@ repos:
         # Exclude virtual environment and other directories
         exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py|tests)"
         # Match CI configuration
-        args: [--check, --config, .black.toml, --diff]
+        args: [--config, pyproject.toml]
 
 # isort has been replaced by ruff with --select=I for better performance and consistency
 

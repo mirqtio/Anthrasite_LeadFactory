@@ -13,13 +13,13 @@ import pytest
 
 # Import test utilities after setting up mocks
 import pytest_bdd
-
-# Import the mock from conftest
-from conftest import mock_track_api_cost
 from pytest_bdd import given, scenario, then, when
 
 # Now import the modules that use track_api_cost
 from bin.mockup import generate_business_mockup
+
+# Import the mock from conftest
+from conftest import mock_track_api_cost
 from utils.io import DatabaseConnection
 
 # Register scenarios from the feature file

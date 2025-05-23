@@ -4,25 +4,25 @@ Anthrasite Lead-Factory: Unsubscribe Functionality Tests
 Tests for CAN-SPAM compliance and unsubscribe functionality.
 """
 
-import os
-import sys
 import json
+import os
 import sqlite3
-from unittest.mock import patch, MagicMock
+import sys
+from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
 from fastapi.testclient import TestClient
+from pytest_bdd import given, parsers, scenarios, then, when
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import email queue functions
 from bin.email_queue import (
-    is_email_unsubscribed,
     add_unsubscribe,
-    send_business_email,
-    load_email_template,
     generate_email_content,
+    is_email_unsubscribed,
+    load_email_template,
+    send_business_email,
 )
 
 # Import unsubscribe handler

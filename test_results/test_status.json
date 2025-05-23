@@ -1,0 +1,842 @@
+{
+  "tests/test_dedupe_new.py::test_flag_for_review": {
+    "file": "tests/test_dedupe_new.py",
+    "function": "test_flag_for_review",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_new.py::test_skip_processed_businesses": {
+    "file": "tests/test_dedupe_new.py",
+    "function": "test_skip_processed_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_high_score_mockup": {
+    "file": "tests/test_mockup.py",
+    "function": "test_high_score_mockup",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_medium_score_mockup": {
+    "file": "tests/test_mockup.py",
+    "function": "test_medium_score_mockup",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_low_score_mockup": {
+    "file": "tests/test_mockup.py",
+    "function": "test_low_score_mockup",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_handle_api_errors": {
+    "file": "tests/test_mockup.py",
+    "function": "test_handle_api_errors",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_handle_api_errors_gracefully": {
+    "file": "tests/test_mockup.py",
+    "function": "test_handle_api_errors_gracefully",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_skip_businesses_without_website_data": {
+    "file": "tests/test_mockup.py",
+    "function": "test_skip_businesses_without_website_data",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_skip_no_website_custom": {
+    "file": "tests/test_mockup.py",
+    "function": "test_skip_no_website_custom",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_mockup_generator": {
+    "file": "tests/test_mockup.py",
+    "function": "test_mockup_generator",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_use_fallback_model_when_primary_model_fails": {
+    "file": "tests/test_mockup.py",
+    "function": "test_use_fallback_model_when_primary_model_fails",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup.py::test_fallback_model_custom": {
+    "file": "tests/test_mockup.py",
+    "function": "test_fallback_model_custom",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_process_business_email.py::test_process_business_email_dry_run": {
+    "file": "tests/test_process_business_email.py",
+    "function": "test_process_business_email_dry_run",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_process_business_email.py::test_process_business_email_normal_mode": {
+    "file": "tests/test_process_business_email.py",
+    "function": "test_process_business_email_normal_mode",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_process_business_email.py::test_process_business_email_handles_errors_in_dry_run": {
+    "file": "tests/test_process_business_email.py",
+    "function": "test_process_business_email_handles_errors_in_dry_run",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup_unit.py::test_db": {
+    "file": "tests/test_mockup_unit.py",
+    "function": "test_db",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup_unit.py::test_generate_mockup_success": {
+    "file": "tests/test_mockup_unit.py",
+    "function": "test_generate_mockup_success",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup_unit.py::test_generate_mockup_medium_scoring": {
+    "file": "tests/test_mockup_unit.py",
+    "function": "test_generate_mockup_medium_scoring",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup_unit.py::test_generate_mockup_low_scoring": {
+    "file": "tests/test_mockup_unit.py",
+    "function": "test_generate_mockup_low_scoring",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup_unit.py::test_fallback_to_claude": {
+    "file": "tests/test_mockup_unit.py",
+    "function": "test_fallback_to_claude",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup_unit.py::test_both_models_failing": {
+    "file": "tests/test_mockup_unit.py",
+    "function": "test_both_models_failing",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_mockup_unit.py::test_partial_success_html_only": {
+    "file": "tests/test_mockup_unit.py",
+    "function": "test_partial_success_html_only",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scraper_clean.py::test_scrape_businesses": {
+    "file": "tests/test_scraper_clean.py",
+    "function": "test_scrape_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scraper_clean.py::test_main": {
+    "file": "tests/test_scraper_clean.py",
+    "function": "test_main",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_rule_engine.py::test_rule_engine_initialization": {
+    "file": "tests/test_rule_engine.py",
+    "function": "test_rule_engine_initialization",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_rule_engine.py::test_calculate_score_basic": {
+    "file": "tests/test_rule_engine.py",
+    "function": "test_calculate_score_basic",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_rule_engine.py::test_tech_stack_rule": {
+    "file": "tests/test_rule_engine.py",
+    "function": "test_tech_stack_rule",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_rule_engine.py::test_multiple_rules": {
+    "file": "tests/test_rule_engine.py",
+    "function": "test_multiple_rules",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_rule_engine.py::test_multiplier": {
+    "file": "tests/test_rule_engine.py",
+    "function": "test_multiplier",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_rule_engine.py::test_score_bounds": {
+    "file": "tests/test_rule_engine.py",
+    "function": "test_score_bounds",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_rule_engine.py::test_condition_evaluators": {
+    "file": "tests/test_rule_engine.py",
+    "function": "test_condition_evaluators",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_email.py::test_send_personalized_email": {
+    "file": "tests/test_email.py",
+    "function": "test_send_personalized_email",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_email.py::test_skip_no_mockup": {
+    "file": "tests/test_email.py",
+    "function": "test_skip_no_mockup",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_email.py::test_handle_api_errors": {
+    "file": "tests/test_email.py",
+    "function": "test_handle_api_errors",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_email.py::test_respect_daily_limit": {
+    "file": "tests/test_email.py",
+    "function": "test_respect_daily_limit",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_email.py::test_track_bounce_rates": {
+    "file": "tests/test_email.py",
+    "function": "test_track_bounce_rates",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_email.py::test_dry_run_mode": {
+    "file": "tests/test_email.py",
+    "function": "test_dry_run_mode",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scraper.py::test_scrape_from_yelp": {
+    "file": "tests/test_scraper.py",
+    "function": "test_scrape_from_yelp",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scraper.py::test_scrape_from_google": {
+    "file": "tests/test_scraper.py",
+    "function": "test_scrape_from_google",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scraper.py::test_handle_api_errors": {
+    "file": "tests/test_scraper.py",
+    "function": "test_handle_api_errors",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scraper.py::test_skip_existing_businesses": {
+    "file": "tests/test_scraper.py",
+    "function": "test_skip_existing_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_metrics.py::test_metrics_endpoint": {
+    "file": "tests/test_metrics.py",
+    "function": "test_metrics_endpoint",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_metrics.py::test_health_endpoint": {
+    "file": "tests/test_metrics.py",
+    "function": "test_health_endpoint",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_metrics.py::test_scaling_gate_status": {
+    "file": "tests/test_metrics.py",
+    "function": "test_scaling_gate_status",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_metrics.py::test_daily_costs_endpoint": {
+    "file": "tests/test_metrics.py",
+    "function": "test_daily_costs_endpoint",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_metrics.py::test_monthly_costs_endpoint": {
+    "file": "tests/test_metrics.py",
+    "function": "test_monthly_costs_endpoint",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_metrics.py::test_http_metrics": {
+    "file": "tests/test_metrics.py",
+    "function": "test_http_metrics",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_metrics.py::test_update_metrics": {
+    "file": "tests/test_metrics.py",
+    "function": "test_update_metrics",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_fixed.py::test_exact_duplicates": {
+    "file": "tests/test_dedupe_fixed.py",
+    "function": "test_exact_duplicates",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_fixed.py::test_fuzzy_matching": {
+    "file": "tests/test_dedupe_fixed.py",
+    "function": "test_fuzzy_matching",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_database_schema.py::test_db": {
+    "file": "tests/test_database_schema.py",
+    "function": "test_db",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_database_schema.py::test_all_expected_tables_exist": {
+    "file": "tests/test_database_schema.py",
+    "function": "test_all_expected_tables_exist",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_database_schema.py::test_all_expected_views_exist": {
+    "file": "tests/test_database_schema.py",
+    "function": "test_all_expected_views_exist",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_database_schema.py::test_all_expected_indexes_exist": {
+    "file": "tests/test_database_schema.py",
+    "function": "test_all_expected_indexes_exist",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_database_schema.py::test_table_columns": {
+    "file": "tests/test_database_schema.py",
+    "function": "test_table_columns",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_database_schema.py::test_triggers_exist": {
+    "file": "tests/test_database_schema.py",
+    "function": "test_triggers_exist",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_database_schema.py::test_foreign_key_constraints": {
+    "file": "tests/test_database_schema.py",
+    "function": "test_foreign_key_constraints",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_cron_wrapper.py::test_run_nightly_script_exists": {
+    "file": "tests/test_cron_wrapper.py",
+    "function": "test_run_nightly_script_exists",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_cron_wrapper.py::test_run_nightly_help_option": {
+    "file": "tests/test_cron_wrapper.py",
+    "function": "test_run_nightly_help_option",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_cron_wrapper.py::test_run_nightly_dry_run_mode": {
+    "file": "tests/test_cron_wrapper.py",
+    "function": "test_run_nightly_dry_run_mode",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_cron_wrapper.py::test_run_nightly_skip_stage": {
+    "file": "tests/test_cron_wrapper.py",
+    "function": "test_run_nightly_skip_stage",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_cron_wrapper.py::test_setup_cron_script_exists": {
+    "file": "tests/test_cron_wrapper.py",
+    "function": "test_setup_cron_script_exists",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_cron_wrapper.py::test_setup_cron_help_option": {
+    "file": "tests/test_cron_wrapper.py",
+    "function": "test_setup_cron_help_option",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_cron_wrapper.py::test_script_path_consistency": {
+    "file": "tests/test_cron_wrapper.py",
+    "function": "test_script_path_consistency",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_unit.py::test_get_potential_duplicates": {
+    "file": "tests/test_dedupe_unit.py",
+    "function": "test_get_potential_duplicates",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_unit.py::test_process_duplicate_pair": {
+    "file": "tests/test_dedupe_unit.py",
+    "function": "test_process_duplicate_pair",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_unit.py::test_process_duplicate_pair_dry_run": {
+    "file": "tests/test_dedupe_unit.py",
+    "function": "test_process_duplicate_pair_dry_run",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_unit.py::test_main_function": {
+    "file": "tests/test_dedupe_unit.py",
+    "function": "test_main_function",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_unit.py::test_skip_processed_businesses": {
+    "file": "tests/test_dedupe_unit.py",
+    "function": "test_skip_processed_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_score.py::test_score_leads_based_on_tech_stack": {
+    "file": "tests/test_score.py",
+    "function": "test_score_leads_based_on_tech_stack",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_score.py::test_score_leads_based_on_performance_metrics": {
+    "file": "tests/test_score.py",
+    "function": "test_score_leads_based_on_performance_metrics",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_score.py::test_score_leads_based_on_location": {
+    "file": "tests/test_score.py",
+    "function": "test_score_leads_based_on_location",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_score.py::test_handle_missing_data_gracefully": {
+    "file": "tests/test_score.py",
+    "function": "test_handle_missing_data_gracefully",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_score.py::test_apply_rule_weights_correctly": {
+    "file": "tests/test_score.py",
+    "function": "test_apply_rule_weights_correctly",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_prometheus_metrics.py::test_metrics_endpoint_available": {
+    "file": "tests/test_prometheus_metrics.py",
+    "function": "test_metrics_endpoint_available",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_prometheus_metrics.py::test_metrics_include_required_gauges": {
+    "file": "tests/test_prometheus_metrics.py",
+    "function": "test_metrics_include_required_gauges",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_prometheus_metrics.py::test_alert_rules_file_exists": {
+    "file": "tests/test_prometheus_metrics.py",
+    "function": "test_alert_rules_file_exists",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_simple.py::test_exact_duplicates": {
+    "file": "tests/test_dedupe_simple.py",
+    "function": "test_exact_duplicates",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_simple.py::test_similar_businesses": {
+    "file": "tests/test_dedupe_simple.py",
+    "function": "test_similar_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe_simple.py::test_skip_processed_businesses": {
+    "file": "tests/test_dedupe_simple.py",
+    "function": "test_skip_processed_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_analyze_website_success": {
+    "file": "tests/test_enrich.py",
+    "function": "test_analyze_website_success",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_analyze_website_invalid_url": {
+    "file": "tests/test_enrich.py",
+    "function": "test_analyze_website_invalid_url",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_analyze_website_invalid_domain": {
+    "file": "tests/test_enrich.py",
+    "function": "test_analyze_website_invalid_domain",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_analyze_website_request_error": {
+    "file": "tests/test_enrich.py",
+    "function": "test_analyze_website_request_error",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_analyze_website_timeout": {
+    "file": "tests/test_enrich.py",
+    "function": "test_analyze_website_timeout",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_enrich_with_website": {
+    "file": "tests/test_enrich.py",
+    "function": "test_enrich_with_website",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_enrich_without_website": {
+    "file": "tests/test_enrich.py",
+    "function": "test_enrich_without_website",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_handle_api_errors": {
+    "file": "tests/test_enrich.py",
+    "function": "test_handle_api_errors",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_skip_enriched_businesses": {
+    "file": "tests/test_enrich.py",
+    "function": "test_skip_enriched_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_enrich.py::test_prioritize_by_score": {
+    "file": "tests/test_enrich.py",
+    "function": "test_prioritize_by_score",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_budget.py::test_daily_cost_tracking": {
+    "file": "tests/test_budget.py",
+    "function": "test_daily_cost_tracking",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_budget.py::test_monthly_cost_tracking": {
+    "file": "tests/test_budget.py",
+    "function": "test_monthly_cost_tracking",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_budget.py::test_budget_thresholds": {
+    "file": "tests/test_budget.py",
+    "function": "test_budget_thresholds",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_budget.py::test_scaling_gate": {
+    "file": "tests/test_budget.py",
+    "function": "test_scaling_gate",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_seed_helpers.py::test_migration_file_exists": {
+    "file": "tests/test_seed_helpers.py",
+    "function": "test_migration_file_exists",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_seed_helpers.py::test_zips_file_exists": {
+    "file": "tests/test_seed_helpers.py",
+    "function": "test_zips_file_exists",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_seed_helpers.py::test_verticals_file_exists": {
+    "file": "tests/test_seed_helpers.py",
+    "function": "test_verticals_file_exists",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_seed_helpers.py::test_zips_contains_required_zips": {
+    "file": "tests/test_seed_helpers.py",
+    "function": "test_zips_contains_required_zips",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_seed_helpers.py::test_verticals_contains_required_verticals": {
+    "file": "tests/test_seed_helpers.py",
+    "function": "test_verticals_contains_required_verticals",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_seed_helpers.py::test_schema_creation": {
+    "file": "tests/test_seed_helpers.py",
+    "function": "test_schema_creation",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_seed_helpers.py::test_seed_zip_queue": {
+    "file": "tests/test_seed_helpers.py",
+    "function": "test_seed_zip_queue",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe.py::test_exact_duplicates": {
+    "file": "tests/test_dedupe.py",
+    "function": "test_exact_duplicates",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe.py::test_fuzzy_matching": {
+    "file": "tests/test_dedupe.py",
+    "function": "test_fuzzy_matching",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe.py::test_same_name_different_address": {
+    "file": "tests/test_dedupe.py",
+    "function": "test_same_name_different_address",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe.py::test_handle_api_errors": {
+    "file": "tests/test_dedupe.py",
+    "function": "test_handle_api_errors",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_dedupe.py::test_skip_processed_businesses": {
+    "file": "tests/test_dedupe.py",
+    "function": "test_skip_processed_businesses",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_email_simple.py::test_process_business_email_dry_run_mode": {
+    "file": "tests/test_email_simple.py",
+    "function": "test_process_business_email_dry_run_mode",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_initial_state": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_initial_state",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_set_scaling_gate": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_set_scaling_gate",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_activate_gate": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_activate_gate",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_deactivate_gate": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_deactivate_gate",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_operation_permission": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_operation_permission",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_history_limit": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_history_limit",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_timestamps": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_timestamps",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_critical_operations_whitelist": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_critical_operations_whitelist",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_file_permissions_handling": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_file_permissions_handling",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_concurrent_updates": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_concurrent_updates",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_custom_critical_operations": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_custom_critical_operations",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_malformed_history_file": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_malformed_history_file",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  },
+  "tests/test_scaling_gate.py::test_large_history_file": {
+    "file": "tests/test_scaling_gate.py",
+    "function": "test_large_history_file",
+    "status": "disabled",
+    "last_run": null,
+    "error_message": null
+  }
+}

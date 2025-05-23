@@ -46,4 +46,3 @@ All code changes must follow the standard Feature Development Workflow Template 
 3. Confirm that CI verification has been completed successfully
 4. Ensure proper documentation of the changes in accordance with the workflow
 5. Get final approval from the relevant stakeholders before closing the task
-

@@ -18,6 +18,7 @@ def fix_imports_in_file(file_path):
         print(f"❌ Failed to fix imports in {file_path}: {e}")
         return False
 
+
 def main():
     """Main function to fix imports in all Python files."""
     # Files with import issues from the logs
@@ -43,6 +44,7 @@ def main():
             success = False
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

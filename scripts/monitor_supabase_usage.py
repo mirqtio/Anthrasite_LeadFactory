@@ -15,15 +15,16 @@ Features:
 - Provides detailed logging for troubleshooting
 """
 
-import os
-import sys
-import logging
 import argparse
 import json
+import logging
+import os
+import sys
 import time
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
 import requests
-from typing import Dict, Any, Optional, List, Tuple
 
 # Add parent directory to path to allow importing metrics
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

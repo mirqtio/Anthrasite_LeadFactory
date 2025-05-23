@@ -314,7 +314,9 @@ def main():
     """Main function with error handling."""
     try:
         parser = argparse.ArgumentParser(description="Minimal Database Setup Script")
-        parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+        parser.add_argument(
+            "--verbose", action="store_true", help="Enable verbose logging"
+        )
         parser.add_argument("--db-path", type=str, help="Path to the database file")
 
         args = parser.parse_args()

@@ -183,7 +183,7 @@ CURRENT_HOUR=$(TZ="America/New_York" date +"%H")
 CURRENT_MINUTE=$(TZ="America/New_York" date +"%M")
 if [ "$CURRENT_HOUR" -gt 5 ] || [ "$CURRENT_HOUR" -eq 5 -a "$CURRENT_MINUTE" -gt 0 ]; then
   log "WARNING: Pipeline completed after 05:00 EST"
-  
+
   # Send alert
   if [ -n "$NOTIFICATION_EMAIL" ] && [ "$DRY_RUN" = "false" ]; then
     echo "Pipeline completed at $(TZ="America/New_York" date +"%H:%M") EST, which is after the 05:00 EST deadline" | mail -s "ALERT: LeadFactory Pipeline Late" "$NOTIFICATION_EMAIL"
