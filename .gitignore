@@ -50,6 +50,7 @@ data/
 
 # Temporary files
 temp_*
+.tmp/
 
 # Editor directories and files
 .idea
