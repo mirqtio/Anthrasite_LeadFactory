@@ -219,7 +219,7 @@ def postgres_connection(db_url: str):
         conn.close()
 
 
-def get_sqlite_tables(sqlite_conn) -> list[str]:
+def get_sqlite_tables(sqlite_conn) -> List[str]:
     """Get list of tables in SQLite database.
 
     Args:
@@ -235,7 +235,7 @@ def get_sqlite_tables(sqlite_conn) -> list[str]:
     return [row[0] for row in cursor.fetchall()]
 
 
-def get_sqlite_table_schema(sqlite_conn, table_name: str) -> list[tuple[str, str]]:
+def get_sqlite_table_schema(sqlite_conn, table_name: str) -> List[Tuple[str, str]]:
     """Get schema of a table in SQLite database.
 
     Args:
@@ -277,7 +277,7 @@ def create_postgres_tables(pg_conn):
     pg_conn.commit()
 
 
-def get_sqlite_data(sqlite_conn, table_name: str) -> list[dict[str, Any]]:
+def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
     """Get data from a table in SQLite database.
 
     Args:
@@ -301,7 +301,7 @@ def get_sqlite_data(sqlite_conn, table_name: str) -> list[dict[str, Any]]:
     return [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
 
 
-def insert_postgres_data(pg_conn, table_name: str, data: list[dict[str, Any]]):
+def insert_postgres_data(pg_conn, table_name: str, data: List[Dict[str, Any]]):
     """Insert data into a table in Postgres database.
 
     Args:

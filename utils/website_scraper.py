@@ -164,7 +164,7 @@ def update_business_with_website_data(business_id: int, website: str) -> bool:
         return False
 
 
-def process_pending_websites() -> tuple[int, int]:
+def process_pending_websites() -> Tuple[int, int]:
     """Process all businesses with websites but no HTML stored.
 
     Returns:

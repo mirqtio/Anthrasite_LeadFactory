@@ -76,7 +76,7 @@ def generate_storage_path(url: str, business_id: int) -> str:
     return str(Path(domain_dir) / str(business_id) / f"{url_hash}.html.gz")
 
 
-def compress_html(html_content: str) -> tuple[bytes, float]:
+def compress_html(html_content: str) -> Tuple[bytes, float]:
     """Compress HTML content using gzip.
 
     Args:
@@ -412,7 +412,7 @@ def get_llm_logs(
         return []
 
 
-def identify_expired_data() -> tuple[list[dict], list[dict]]:
+def identify_expired_data() -> Tuple[List[Dict], List[Dict]]:
     """Identify data that has expired based on retention policy.
 
     Returns:

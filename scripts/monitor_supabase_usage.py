@@ -88,7 +88,7 @@ class SupabaseUsageMonitor:
 
         return ""
 
-    def get_storage_usage(self) -> dict[str, Any]:
+    def get_storage_usage(self) -> Dict[str, Any]:
         """Get storage usage from Supabase.
 
         Returns:
@@ -211,7 +211,7 @@ class SupabaseUsageMonitor:
             logger.exception(f"Error getting storage usage: {e}")
             return {"size_mb": 0, "size_bytes": 0, "buckets": [], "percentage_used": 0}
 
-    def get_database_usage(self) -> dict[str, Any]:
+    def get_database_usage(self) -> Dict[str, Any]:
         """Get database usage from Supabase.
 
         Returns:
@@ -380,7 +380,7 @@ class SupabaseUsageMonitor:
                 "row_percentage_used": 0,
             }
 
-    def get_all_usage(self) -> dict[str, Any]:
+    def get_all_usage(self) -> Dict[str, Any]:
         """Get all usage information from Supabase.
 
         Returns:
