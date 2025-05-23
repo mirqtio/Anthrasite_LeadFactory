@@ -453,9 +453,9 @@ def main():
                     cursor = sqlite_conn.cursor()
                     # SQLite doesn't support parameterized table names, so we use a whitelist approach
                     # Validate that table_name only contains alphanumeric characters and underscores
-                    if not re.match(r'^[a-zA-Z0-9_]+$', table_name):
+                    if not re.match(r"^[a-zA-Z0-9_]+$", table_name):
                         raise ValueError(f"Invalid table name format: {table_name}")
-                    
+
                     # Now it's safe to use the table name in the query
                     # We've validated the table name with a regex pattern to ensure it only contains
                     # alphanumeric characters and underscores, so it's safe from SQL injection

@@ -11,6 +11,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 # Add project root to path
@@ -96,12 +97,14 @@ def compress_html(html_content: str) -> tuple[bytes, float]:
     # Calculate compression ratio
     original_size = len(html_bytes)
     compressed_size = len(compressed)
-    compression_ratio = (original_size - compressed_size) / original_size if original_size > 0 else 0
+    compression_ratio = (
+        (original_size - compressed_size) / original_size if original_size > 0 else 0
+    )
 
     return compressed, compression_ratio
 
 
-def store_html(html_content: str, url: str, business_id: int) -> str | None:
+def store_html(html_content: str, url: str, business_id: int) -> Optional[str]:
     """Store HTML content for a URL.
 
     Args:
@@ -208,7 +211,7 @@ def store_html(html_content: str, url: str, business_id: int) -> str | None:
         return None
 
 
-def retrieve_html(html_path: str) -> str | None:
+def retrieve_html(html_path: str) -> Optional[str]:
     """Retrieve HTML content from storage.
 
     Args:
@@ -245,14 +248,14 @@ def log_llm_interaction(
     operation: str,
     model_version: str,
     prompt_text: str,
-    response_json: dict | str,
-    business_id: int | None = None,
-    tokens_prompt: int | None = None,
-    tokens_completion: int | None = None,
-    duration_ms: int | None = None,
+    response_json: Union[Dict, str],
+    business_id: Optional[int] = None,
+    tokens_prompt: Optional[int] = None,
+    tokens_completion: Optional[int] = None,
+    duration_ms: Optional[int] = None,
     status: str = "success",
-    metadata: dict | None = None,
-) -> int | None:
+    metadata: Optional[Dict] = None,
+) -> Optional[int]:
     """Log an LLM interaction.
 
     Args:
@@ -351,11 +354,11 @@ def log_llm_interaction(
 
 
 def get_llm_logs(
-    business_id: int | None = None,
-    operation: str | None = None,
+    business_id: Optional[int] = None,
+    operation: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
-) -> list[dict]:
+) -> List[Dict]:
     """Get LLM logs from the database.
 
     Args:
@@ -434,13 +437,15 @@ def identify_expired_data() -> tuple[list[dict], list[dict]]:
 
             # Query for expired LLM logs
             cursor.execute(
-                "SELECT id, business_id, operation FROM llm_logs " "WHERE retention_expires_at < ?",
+                "SELECT id, business_id, operation FROM llm_logs "
+                "WHERE retention_expires_at < ?",
                 (now,),
             )
             expired_llm_logs = cursor.fetchall()
 
         logger.info(
-            f"Identified {len(expired_html_files)} expired HTML files and " f"{len(expired_llm_logs)} expired LLM logs"
+            f"Identified {len(expired_html_files)} expired HTML files and "
+            f"{len(expired_llm_logs)} expired LLM logs"
         )
         return expired_html_files, expired_llm_logs
 
@@ -449,7 +454,7 @@ def identify_expired_data() -> tuple[list[dict], list[dict]]:
         return [], []
 
 
-def fetch_website_html(url: str) -> str | None:
+def fetch_website_html(url: str) -> Optional[str]:
     """Fetch HTML content from a website.
 
     Args:

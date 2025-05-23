@@ -9,7 +9,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -64,13 +64,13 @@ class LLMLogger:
         self,
         operation: str,
         prompt_text: str,
-        response_json: dict | str,
-        business_id: int | None = None,
-        tokens_prompt: int | None = None,
-        tokens_completion: int | None = None,
+        response_json: Union[Dict, str],
+        business_id: Optional[int] = None,
+        tokens_prompt: Optional[int] = None,
+        tokens_completion: Optional[int] = None,
         status: str = "success",
-        metadata: dict | None = None,
-    ) -> int | None:
+        metadata: Optional[Dict] = None,
+    ) -> Optional[int]:
         """Log an LLM interaction.
 
         Args:
@@ -114,9 +114,9 @@ def log_deduplication(
     business_id1: int,
     business_id2: int,
     similarity_score: float,
-    tokens_prompt: int | None = None,
-    tokens_completion: int | None = None,
-) -> int | None:
+    tokens_prompt: Optional[int] = None,
+    tokens_completion: Optional[int] = None,
+) -> Optional[int]:
     """Log a deduplication LLM interaction.
 
     Args:
@@ -157,10 +157,10 @@ def log_mockup_generation(
     prompt_text: str,
     response_json: dict,
     business_id: int,
-    mockup_id: int | None = None,
-    tokens_prompt: int | None = None,
-    tokens_completion: int | None = None,
-) -> int | None:
+    mockup_id: Optional[int] = None,
+    tokens_prompt: Optional[int] = None,
+    tokens_completion: Optional[int] = None,
+) -> Optional[int]:
     """Log a mockup generation LLM interaction.
 
     Args:
@@ -195,9 +195,9 @@ def log_mockup_generation(
 
 
 def get_recent_llm_logs(
-    operation: str | None = None,
+    operation: Optional[str] = None,
     limit: int = 100,
-) -> list[dict]:
+) -> List[Dict]:
     """Get recent LLM logs from the database.
 
     Args:
@@ -212,9 +212,9 @@ def get_recent_llm_logs(
 
 def get_business_llm_logs(
     business_id: int,
-    operation: str | None = None,
+    operation: Optional[str] = None,
     limit: int = 100,
-) -> list[dict]:
+) -> List[Dict]:
     """Get LLM logs for a specific business.
 
     Args:
@@ -228,7 +228,7 @@ def get_business_llm_logs(
     return get_llm_logs(business_id=business_id, operation=operation, limit=limit)
 
 
-def check_retention_status() -> dict[str, Any]:
+def check_retention_status() -> Dict[str, Any]:
     """Check the status of data retention.
 
     Returns:
@@ -248,8 +248,14 @@ def check_retention_status() -> dict[str, Any]:
         llm_logs_count = cursor.fetchone()["count"]
 
     # Calculate retention percentages
-    html_retention_percentage = 100 - (len(expired_html_files) / html_count * 100) if html_count > 0 else 100
-    llm_retention_percentage = 100 - (len(expired_llm_logs) / llm_logs_count * 100) if llm_logs_count > 0 else 100
+    html_retention_percentage = (
+        100 - (len(expired_html_files) / html_count * 100) if html_count > 0 else 100
+    )
+    llm_retention_percentage = (
+        100 - (len(expired_llm_logs) / llm_logs_count * 100)
+        if llm_logs_count > 0
+        else 100
+    )
 
     # Prepare status report
     status = {

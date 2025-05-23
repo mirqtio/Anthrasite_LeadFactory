@@ -7,6 +7,7 @@ Utilities for scraping websites and storing HTML content.
 import re
 import sys
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 # Add project root to path
@@ -25,7 +26,7 @@ from utils.raw_data_retention import fetch_website_html, store_html
 logger = get_logger(__name__)
 
 
-def extract_email_from_html(html_content: str) -> str | None:
+def extract_email_from_html(html_content: str) -> Optional[str]:
     """Extract email address from HTML content using regex.
 
     Args:
@@ -66,7 +67,9 @@ def extract_email_from_html(html_content: str) -> str | None:
     return None
 
 
-def extract_email_from_website(website: str, business_id: int | None = None) -> str | None:
+def extract_email_from_website(
+    website: str, business_id: Optional[int] = None
+) -> Optional[str]:
     """Extract email from website and store HTML content.
 
     Args:
@@ -86,7 +89,10 @@ def extract_email_from_website(website: str, business_id: int | None = None) -> 
         # Store HTML content if business_id is provided
         if html_content and business_id:
             html_path = store_html(html_content, website, business_id)
-            logger.info(f"Stored HTML for business {business_id}, " f"website: {website}, path: {html_path}")
+            logger.info(
+                f"Stored HTML for business {business_id}, "
+                f"website: {website}, path: {html_path}"
+            )
 
             # Update the business record with the HTML path
             with DatabaseConnection() as cursor:
@@ -181,7 +187,9 @@ def process_pending_websites() -> tuple[int, int]:
 
             businesses = cursor.fetchall()
 
-        logger.info(f"Found {len(businesses)} businesses with websites but no HTML stored")
+        logger.info(
+            f"Found {len(businesses)} businesses with websites but no HTML stored"
+        )
 
         # Process each business
         for business in businesses:
@@ -197,7 +205,10 @@ def process_pending_websites() -> tuple[int, int]:
             if processed_count % 10 == 0:
                 logger.info(f"Processed {processed_count}/{len(businesses)} businesses")
 
-        logger.info(f"Finished processing {processed_count} businesses, " f"{success_count} successful")
+        logger.info(
+            f"Finished processing {processed_count} businesses, "
+            f"{success_count} successful"
+        )
 
     except Exception as e:
         logger.error(f"Error processing pending websites: {e}")

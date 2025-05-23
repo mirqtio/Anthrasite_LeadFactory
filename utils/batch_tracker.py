@@ -23,9 +23,15 @@ logger = get_logger(__name__)
 # Constants
 DEFAULT_TRACKER_PATH = Path("data") / "batch_tracker.json"
 BATCH_TRACKER_FILE = Path(os.getenv("BATCH_TRACKER_FILE", str(DEFAULT_TRACKER_PATH)))
-BATCH_COMPLETION_DEADLINE_HOUR = int(os.getenv("BATCH_COMPLETION_DEADLINE_HOUR", "5"))  # 5:00 AM EST
-BATCH_COMPLETION_DEADLINE_MINUTE = int(os.getenv("BATCH_COMPLETION_DEADLINE_MINUTE", "0"))  # 5:00 AM EST
-BATCH_COMPLETION_TIMEZONE = os.getenv("BATCH_COMPLETION_TIMEZONE", "America/New_York")  # EST
+BATCH_COMPLETION_DEADLINE_HOUR = int(
+    os.getenv("BATCH_COMPLETION_DEADLINE_HOUR", "5")
+)  # 5:00 AM EST
+BATCH_COMPLETION_DEADLINE_MINUTE = int(
+    os.getenv("BATCH_COMPLETION_DEADLINE_MINUTE", "0")
+)  # 5:00 AM EST
+BATCH_COMPLETION_TIMEZONE = os.getenv(
+    "BATCH_COMPLETION_TIMEZONE", "America/New_York"
+)  # EST
 
 # Import metrics for updating batch completion gauge
 from utils.metrics import BATCH_COMPLETION_GAUGE  # noqa: E402
@@ -150,7 +156,10 @@ def record_batch_stage_completion(stage: str, completion_percentage: float) -> b
         # Save updated data
         success = save_tracker_data(data)
         if success:
-            logger.info(f"Recorded {stage} stage completion: " f"{completion_percentage}% at {current_time}")
+            logger.info(
+                f"Recorded {stage} stage completion: "
+                f"{completion_percentage}% at {current_time}"
+            )
 
         return success
     except Exception as e:
@@ -205,7 +214,7 @@ def record_batch_end() -> bool:
         return False
 
 
-def check_batch_completion() -> tuple[bool, str | None]:
+def check_batch_completion() -> Tuple[bool, Optional[str]]:
     """Check if the current batch completed on time.
 
     Returns:
@@ -234,7 +243,9 @@ def check_batch_completion() -> tuple[bool, str | None]:
             # Check if batch has an end timestamp
             if data["last_batch_end"]:
                 # Check if the end timestamp is from today
-                last_end = datetime.fromisoformat(data["last_batch_end"].replace("Z", "+00:00"))
+                last_end = datetime.fromisoformat(
+                    data["last_batch_end"].replace("Z", "+00:00")
+                )
                 last_end_est = last_end.astimezone(est_tz)
 
                 if last_end_est.date() == current_time.date():
@@ -242,7 +253,10 @@ def check_batch_completion() -> tuple[bool, str | None]:
                     return True, "Batch completed today"
                 else:
                     # Batch didn't complete today
-                    reason = f"Last batch completed on {last_end_est.date()}, " f"not today ({current_time.date()})"
+                    reason = (
+                        f"Last batch completed on {last_end_est.date()}, "
+                        f"not today ({current_time.date()})"
+                    )
                     logger.warning(reason)
 
                     # Record alert
@@ -291,7 +305,8 @@ def get_batch_status() -> dict:
         completion_percentage = 0.0
         if data["current_batch_stages"]:
             stage_percentages = [
-                stage_data["completion_percentage"] for stage_data in data["current_batch_stages"].values()
+                stage_data["completion_percentage"]
+                for stage_data in data["current_batch_stages"].values()
             ]
             completion_percentage = sum(stage_percentages) / len(stage_percentages)
 
@@ -325,7 +340,9 @@ def get_batch_status() -> dict:
             "deadline": deadline_str,
             "completed_on_time": completed_on_time,
             "reason": reason,
-            "alerts": (data["alerts"][-5:] if data["alerts"] else []),  # Return last 5 alerts
+            "alerts": (
+                data["alerts"][-5:] if data["alerts"] else []
+            ),  # Return last 5 alerts
         }
     except Exception as e:
         logger.error(f"Error getting batch status: {e}")

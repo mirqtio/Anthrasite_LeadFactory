@@ -6,6 +6,7 @@ Handles unsubscribe requests for CAN-SPAM compliance.
 
 import os
 import sys
+from typing import Dict, List, Optional, Tuple, Any, Union
 
 import uvicorn
 from dotenv import load_dotenv
@@ -286,7 +287,7 @@ async def root():
 
 
 @app.get("/unsubscribe", response_class=HTMLResponse)
-async def unsubscribe_page(request: Request, email: str | None = None):
+async def unsubscribe_page(request: Request, email: Optional[str] = None):
     """Render unsubscribe page."""
     return templates.TemplateResponse(
         "unsubscribe.html",
@@ -316,7 +317,9 @@ async def process_unsubscribe(
 
     # Check if already unsubscribed
     if is_email_unsubscribed(email):
-        return templates.TemplateResponse("unsubscribe_success.html", {"request": request, "email": email})
+        return templates.TemplateResponse(
+            "unsubscribe_success.html", {"request": request, "email": email}
+        )
 
     # Combine reason and comments
     reason_text = reason or "No reason provided"
@@ -332,7 +335,9 @@ async def process_unsubscribe(
 
     if success:
         logger.info(f"User unsubscribed: {email}, Reason: {reason_text}")
-        return templates.TemplateResponse("unsubscribe_success.html", {"request": request, "email": email})
+        return templates.TemplateResponse(
+            "unsubscribe_success.html", {"request": request, "email": email}
+        )
     else:
         return templates.TemplateResponse(
             "unsubscribe.html",
