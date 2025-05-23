@@ -12,7 +12,6 @@ Options:
 import argparse
 import os
 import sys
-from typing import Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
 
@@ -70,7 +69,7 @@ class YelpAPI:
         radius: int = 40000,  # 25 miles in meters
         limit: int = 50,
         sort_by: str = "best_match",
-    ) -> Tuple[List[Dict], Optional[str]]:
+    ) -> tuple[list[dict], str | None]:
         """Search for businesses on Yelp.
         Args:
             term: Search term (e.g., "hvac").
@@ -105,9 +104,7 @@ class YelpAPI:
             return [], error
         return response_data.get("businesses", []), None
 
-    def get_business_details(
-        self, business_id: str
-    ) -> Tuple[Optional[Dict], Optional[str]]:
+    def get_business_details(self, business_id: str) -> tuple[dict | None, str | None]:
         """Get detailed information about a business.
         Args:
             business_id: Yelp business ID.
@@ -147,7 +144,7 @@ class GooglePlacesAPI:
         location: str,
         radius: int = 40000,  # 25 miles in meters
         type_filter: str = "business",
-    ) -> Tuple[List[Dict], Optional[str]]:
+    ) -> tuple[list[dict], str | None]:
         """Search for places on Google Maps.
         Args:
             query: Search query.
@@ -180,7 +177,7 @@ class GooglePlacesAPI:
             return [], error
         return response_data.get("results", []), None
 
-    def get_place_details(self, place_id: str) -> Tuple[Optional[Dict], Optional[str]]:
+    def get_place_details(self, place_id: str) -> tuple[dict | None, str | None]:
         """Get detailed information about a place.
         Args:
             place_id: Google Place ID.
@@ -209,7 +206,7 @@ class GooglePlacesAPI:
         return response_data.get("result", {}), None
 
 
-def get_zip_coordinates(zip_code: str) -> Optional[str]:
+def get_zip_coordinates(zip_code: str) -> str | None:
     """Get coordinates for a ZIP code.
     This is a simplified implementation that would normally use a geocoding API.
     For the prototype, we'll use a hardcoded mapping for the required ZIP codes.
@@ -228,8 +225,8 @@ def get_zip_coordinates(zip_code: str) -> Optional[str]:
 
 
 def extract_email_from_website(
-    website: str, business_id: Optional[int] = None
-) -> Optional[str]:
+    website: str, business_id: int | None = None
+) -> str | None:
     """Extract email from website.
     This function fetches the website HTML, stores it for retention purposes,
     and extracts email addresses from the content.
@@ -269,7 +266,7 @@ def extract_email_from_website(
     return None
 
 
-def process_yelp_business(business: Dict, category: str) -> Optional[int]:
+def process_yelp_business(business: dict, category: str) -> int | None:
     """Process and save a business from Yelp.
     Args:
         business: Business data from Yelp API.
@@ -319,8 +316,8 @@ def process_yelp_business(business: Dict, category: str) -> Optional[int]:
 
 
 def process_google_place(
-    place: Dict, category: str, google_api: GooglePlacesAPI
-) -> Optional[int]:
+    place: dict, category: str, google_api: GooglePlacesAPI
+) -> int | None:
     """Process and save a place from Google.
     Args:
         place: Place data from Google Places API.
@@ -376,8 +373,8 @@ def process_google_place(
 
 
 def scrape_businesses(
-    zip_code: str, vertical: Dict, limit: int = 50
-) -> Tuple[int, int]:
+    zip_code: str, vertical: dict, limit: int = 50
+) -> tuple[int, int]:
     """Scrape businesses for a specific ZIP code and vertical.
     Args:
         zip_code: ZIP code to scrape.

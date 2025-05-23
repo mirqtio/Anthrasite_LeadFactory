@@ -14,13 +14,11 @@ Options:
 """
 
 import argparse
-import json
 import os
 import sys
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 # Try to import visualization libraries, but don't fail if they're not available
 try:
@@ -39,7 +37,6 @@ sys.path.insert(0, str(project_root))
 # Import test status tracker constants
 from scripts.test_status_tracker import (
     CATEGORIES,
-    HISTORY_FILE,
     STATUS_DISABLED,
     STATUS_FAILING,
     STATUS_PASSING,
@@ -57,7 +54,7 @@ class TestProgressReporter:
         self.output_dir = project_root / "test_results"
         os.makedirs(self.output_dir, exist_ok=True)
 
-    def calculate_progress_metrics(self) -> Dict:
+    def calculate_progress_metrics(self) -> dict:
         """Calculate metrics for test re-enablement progress."""
         metrics = {}
 
@@ -145,7 +142,7 @@ class TestProgressReporter:
 
         return metrics
 
-    def generate_visualizations(self, metrics: Dict):
+    def generate_visualizations(self, metrics: dict):
         """Generate visualizations for the progress report."""
         if not HAS_VISUALIZATION:
             return
@@ -165,7 +162,7 @@ class TestProgressReporter:
         if "category_status" in metrics:
             self._create_category_progress_chart(metrics["category_status"])
 
-    def _create_progress_line_chart(self, progress_data: List[Dict]):
+    def _create_progress_line_chart(self, progress_data: list[dict]):
         """Create a line chart showing progress over time."""
         dates = [entry["timestamp"] for entry in progress_data]
         progress = [entry["progress_percentage"] for entry in progress_data]
@@ -189,7 +186,7 @@ class TestProgressReporter:
         plt.savefig(f"{self.output_dir}/visualizations/progress_line_chart.png")
         plt.close()
 
-    def _create_status_pie_chart(self, status_counts: Dict[str, int]):
+    def _create_status_pie_chart(self, status_counts: dict[str, int]):
         """Create a pie chart of test status distribution."""
         plt.figure(figsize=(10, 6))
         labels = list(status_counts.keys())
@@ -203,7 +200,7 @@ class TestProgressReporter:
         plt.close()
 
     def _create_category_progress_chart(
-        self, category_status: Dict[str, Dict[str, int]]
+        self, category_status: dict[str, dict[str, int]]
     ):
         """Create a stacked bar chart showing progress by category."""
         categories = []
@@ -224,8 +221,8 @@ class TestProgressReporter:
         bar_width = 0.6
         indices = np.arange(len(categories))
 
-        p1 = plt.bar(indices, passing, bar_width, color="green", label=STATUS_PASSING)
-        p2 = plt.bar(
+        plt.bar(indices, passing, bar_width, color="green", label=STATUS_PASSING)
+        plt.bar(
             indices,
             failing,
             bar_width,
@@ -233,7 +230,7 @@ class TestProgressReporter:
             color="red",
             label=STATUS_FAILING,
         )
-        p3 = plt.bar(
+        plt.bar(
             indices,
             disabled,
             bar_width,
@@ -241,7 +238,7 @@ class TestProgressReporter:
             color="gray",
             label=STATUS_DISABLED,
         )
-        p4 = plt.bar(
+        plt.bar(
             indices,
             skipped,
             bar_width,
@@ -259,7 +256,7 @@ class TestProgressReporter:
         plt.savefig(f"{self.output_dir}/visualizations/category_progress_chart.png")
         plt.close()
 
-    def generate_markdown_report(self, metrics: Dict, output_file: str = None) -> str:
+    def generate_markdown_report(self, metrics: dict, output_file: str = None) -> str:
         """Generate a markdown report of test re-enablement progress."""
         if not output_file:
             output_file = f"{self.output_dir}/progress_report.md"
@@ -399,8 +396,6 @@ class TestProgressReporter:
         # Write to file
         with open(output_file, "w") as f:
             f.write(report_text)
-
-        print(f"Progress report generated: {output_file}")
 
         return report_text
 

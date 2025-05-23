@@ -2,6 +2,7 @@
 BDD tests for the mockup generation (05_mockup.py)
 """
 
+import contextlib
 import json
 import os
 import sqlite3
@@ -192,12 +193,8 @@ def mockup_api_unavailable(mock_gpt4o_client, mock_claude_client, caplog):
 @pytest.fixture(autouse=True)
 def reset_mocks():
     """Reset all mocks before each test."""
-    print("\nResetting mocks...")
-    print("Mock calls before reset:", mock_track_api_cost.mock_calls)
     mock_track_api_cost.reset_mock()
-    print("Mock calls after reset:", mock_track_api_cost.mock_calls)
     yield
-    print("\nTest finished. Mock calls:", mock_track_api_cost.mock_calls)
     mock_track_api_cost.reset_mock()
 
 
@@ -434,10 +431,8 @@ def temp_db():
         mock_db_conn.return_value = DatabaseConnection(db_path)
         yield db_path
     # Clean up
-    try:
+    with contextlib.suppress(OSError):
         os.unlink(db_path)
-    except OSError:
-        pass
 
 
 # Business data fixtures (prefixed with fixture_ to avoid conflicts with
@@ -448,7 +443,9 @@ def fixture_high_scoring_business(temp_db):
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM businesses WHERE id = 1")
-    business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
+    business = dict(
+        zip([col[0] for col in cursor.description], cursor.fetchone(), strict=False)
+    )
     conn.close()
     return business
 
@@ -459,7 +456,9 @@ def fixture_medium_scoring_business(temp_db):
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM businesses WHERE id = 2")
-    business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
+    business = dict(
+        zip([col[0] for col in cursor.description], cursor.fetchone(), strict=False)
+    )
     conn.close()
     return business
 
@@ -470,7 +469,9 @@ def fixture_low_scoring_business(temp_db):
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM businesses WHERE id = 3")
-    business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
+    business = dict(
+        zip([col[0] for col in cursor.description], cursor.fetchone(), strict=False)
+    )
     conn.close()
     return business
 
@@ -481,7 +482,9 @@ def fixture_business_with_website(temp_db):
     conn = sqlite3.connect(temp_db)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM businesses WHERE website IS NOT NULL LIMIT 1")
-    business = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
+    business = dict(
+        zip([col[0] for col in cursor.description], cursor.fetchone(), strict=False)
+    )
     conn.close()
     return business
 
@@ -583,7 +586,6 @@ def test_handle_api_errors():
         except Exception as e:
             # Handle the error gracefully
             error_message = str(e)
-            print(f"Error generating mockup: {error_message}")
 
             # Update retry count and last attempt timestamp
             cursor.execute(
@@ -804,7 +806,6 @@ def test_skip_no_website_custom():
         cursor.execute("SELECT website FROM businesses WHERE id = ?", (business_id,))
         business = cursor.fetchone()
         if not business or business[0] is None:
-            print(f"Skipping business {business_id} - no website data")
             return False
         # If we get here, the business has a website and would be processed
         return True
@@ -871,8 +872,7 @@ def test_use_fallback_model_when_primary_model_fails():
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
                 model_used = "primary"
-            except Exception as e:
-                print(f"Primary model failed: {e}")
+            except Exception:
                 # Fall back to the secondary model
                 mockup_data = self.fallback.generate_mockup(business_id)
                 # Track which model was used for the mockup
@@ -988,8 +988,7 @@ def test_fallback_model_custom():
                 # Try the primary model first
                 mockup_data = self.primary.generate_mockup(business_id)
                 model_used = "primary"
-            except Exception as e:
-                print(f"Primary model failed: {e}")
+            except Exception:
                 # Fall back to the secondary model
                 mockup_data = self.fallback.generate_mockup(business_id)
                 # Track which model was used for the mockup
@@ -1615,7 +1614,6 @@ def business_skipped(fixture_business_without_website):
         cursor.execute("SELECT website FROM businesses WHERE id = ?", (business_id,))
         business = cursor.fetchone()
         if not business or business[0] is None:
-            print(f"Skipping business {business_id} - no website data")
             return False
         # If we get here, the business has a website and would be processed
         return True

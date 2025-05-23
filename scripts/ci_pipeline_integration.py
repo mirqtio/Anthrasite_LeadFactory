@@ -20,10 +20,8 @@ import argparse
 import json
 import logging
 import os
-import shutil
 import subprocess
 import sys
-from datetime import datetime
 
 import yaml
 
@@ -211,7 +209,7 @@ def update_ci_workflow(category):
     workflow_file = ".github/workflows/final-ci.yml"
 
     try:
-        with open(workflow_file, "r") as f:
+        with open(workflow_file) as f:
             workflow = yaml.safe_load(f)
     except Exception as e:
         logger.error(f"Error loading workflow file: {e}")
@@ -257,7 +255,7 @@ def get_recommendations():
         generate_test_status_report()
 
     try:
-        with open(status_file, "r") as f:
+        with open(status_file) as f:
             test_data = json.load(f)
 
         # Find high-priority tests that aren't enabled yet

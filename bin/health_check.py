@@ -19,8 +19,8 @@ import subprocess
 import sys
 import threading
 import time
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any
 
 import requests
 
@@ -222,8 +222,8 @@ class HealthCheckSystem:
             total, used, free = shutil.disk_usage("/")
 
             # Convert to GB
-            total_gb = total / (1024**3)
-            used_gb = used / (1024**3)
+            total / (1024**3)
+            used / (1024**3)
             free_gb = free / (1024**3)
 
             # Calculate percentage used
@@ -256,8 +256,8 @@ class HealthCheckSystem:
             memory = psutil.virtual_memory()
 
             # Convert to GB
-            total_gb = memory.total / (1024**3)
-            used_gb = memory.used / (1024**3)
+            memory.total / (1024**3)
+            memory.used / (1024**3)
             free_gb = memory.available / (1024**3)
 
             # Calculate percentage used
@@ -277,7 +277,7 @@ class HealthCheckSystem:
         except ImportError:
             # Psutil not installed, try reading from /proc/meminfo
             try:
-                with open("/proc/meminfo", "r") as f:
+                with open("/proc/meminfo") as f:
                     meminfo = {}
                     for line in f:
                         key, value = line.split(":", 1)
@@ -292,7 +292,7 @@ class HealthCheckSystem:
                 available_kb = free_kb + buffers_kb + cached_kb
 
                 # Convert to GB
-                total_gb = total_kb / (1024**2)
+                total_kb / (1024**2)
                 available_gb = available_kb / (1024**2)
 
                 # Calculate percentage used
@@ -459,7 +459,7 @@ class HealthCheckSystem:
         except Exception as e:
             logger.error(f"Error sending notification: {str(e)}")
 
-    def _save_results(self, results: Dict[str, Any]):
+    def _save_results(self, results: dict[str, Any]):
         """Save health check results to file.
 
         Args:
@@ -550,24 +550,20 @@ def main():
             passed = health_check.check_all()
 
             if passed:
-                print("All health checks passed")
                 return 0
             else:
-                print(
-                    f"Health checks failed (failure count: {health_check.failure_count}/{health_check.failure_threshold})"
-                )
                 return 1
 
         elif args.monitor:
             # Start continuous monitoring
-            thread = health_check.start_monitoring()
+            health_check.start_monitoring()
 
             # Keep main thread alive
             try:
                 while True:
                     time.sleep(1)
             except KeyboardInterrupt:
-                print("Monitoring stopped")
+                pass
 
         elif args.trigger_failover:
             # Trigger failover

@@ -20,9 +20,8 @@ import json
 import logging
 import os
 import sys
-import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import requests
 
@@ -85,7 +84,7 @@ class SupabaseUsageMonitor:
 
         return ""
 
-    def get_storage_usage(self) -> Dict[str, Any]:
+    def get_storage_usage(self) -> dict[str, Any]:
         """Get storage usage from Supabase.
 
         Returns:
@@ -193,7 +192,7 @@ class SupabaseUsageMonitor:
             logger.exception(f"Error getting storage usage: {e}")
             return {"size_mb": 0, "size_bytes": 0, "buckets": [], "percentage_used": 0}
 
-    def get_database_usage(self) -> Dict[str, Any]:
+    def get_database_usage(self) -> dict[str, Any]:
         """Get database usage from Supabase.
 
         Returns:
@@ -345,7 +344,7 @@ class SupabaseUsageMonitor:
                 "row_percentage_used": 0,
             }
 
-    def get_all_usage(self) -> Dict[str, Any]:
+    def get_all_usage(self) -> dict[str, Any]:
         """Get all usage information from Supabase.
 
         Returns:
@@ -366,7 +365,7 @@ class SupabaseUsageMonitor:
         }
 
     def save_usage_report(
-        self, usage_data: Dict[str, Any], output_file: Optional[str] = None
+        self, usage_data: dict[str, Any], output_file: str | None = None
     ) -> str:
         """Save usage report to a file.
 
@@ -436,26 +435,12 @@ def main():
         database_percentage = usage_data["database"]["percentage_used"]
         row_percentage = usage_data["database"]["row_percentage_used"]
 
-        print(f"Supabase Usage Summary:")
-        print(
-            f"- Storage: {usage_data['storage']['size_mb']:.2f} MB ({storage_percentage:.2f}% of {monitor.storage_limit_mb} MB limit)"
-        )
-        print(
-            f"- Database Size: {usage_data['database']['size_mb']:.2f} MB ({database_percentage:.2f}% of {monitor.database_size_limit_mb} MB limit)"
-        )
-        print(
-            f"- Row Count: {usage_data['database']['row_count']} rows ({row_percentage:.2f}% of {monitor.row_limit} row limit)"
-        )
-
         # Return non-zero exit code if any usage is above threshold
         if (
             storage_percentage >= monitor.alert_threshold
             or database_percentage >= monitor.alert_threshold
             or row_percentage >= monitor.alert_threshold
         ):
-            print(
-                f"\nWARNING: Usage is approaching limits (threshold: {monitor.alert_threshold}%)"
-            )
             return 1
 
         return 0

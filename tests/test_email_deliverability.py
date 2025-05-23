@@ -4,7 +4,6 @@ Anthrasite Lead-Factory: Email Deliverability Tests
 BDD tests for email deliverability hardening features.
 """
 
-import json
 import os
 from unittest.mock import MagicMock, patch
 

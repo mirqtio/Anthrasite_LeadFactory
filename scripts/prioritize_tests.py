@@ -18,12 +18,10 @@ import argparse
 import json
 import os
 import re
-import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -34,7 +32,6 @@ from scripts.test_status_tracker import (
     STATUS_DISABLED,
     STATUS_FAILING,
     STATUS_PASSING,
-    STATUS_SKIPPED,
     TestStatusTracker,
 )
 
@@ -54,7 +51,7 @@ class TestDependencyGraph:
     def load_dependencies(self):
         """Load existing test dependencies from file."""
         if TEST_DEPENDENCY_FILE.exists():
-            with open(TEST_DEPENDENCY_FILE, "r") as f:
+            with open(TEST_DEPENDENCY_FILE) as f:
                 dependencies = json.load(f)
 
             # Convert to sets
@@ -78,7 +75,6 @@ class TestDependencyGraph:
 
     def discover_dependencies(self):
         """Discover test dependencies by analyzing test files."""
-        print("Discovering test dependencies...")
 
         # Get all test files
         test_files = list(project_root.glob("tests/test_*.py"))
@@ -91,7 +87,7 @@ class TestDependencyGraph:
         for test_file in test_files:
             rel_path = test_file.relative_to(project_root)
 
-            with open(test_file, "r") as f:
+            with open(test_file) as f:
                 content = f.read()
 
             # Find test functions
@@ -105,7 +101,7 @@ class TestDependencyGraph:
 
                 # Look for imports and fixtures
                 imports = re.findall(r"from\s+(\w+(?:\.\w+)*)\s+import", content)
-                fixtures = re.findall(r"@pytest\.fixture", content)
+                re.findall(r"@pytest\.fixture", content)
 
                 # Add dependencies based on imports
                 for imp in imports:
@@ -138,9 +134,8 @@ class TestDependencyGraph:
                 self.dependents[dep].add(test_id)
 
         self.save_dependencies()
-        print(f"Discovered dependencies for {len(self.dependencies)} tests")
 
-    def find_fixture_definition(self, fixture_name: str) -> List[str]:
+    def find_fixture_definition(self, fixture_name: str) -> list[str]:
         """Find the file(s) where a fixture is defined."""
         fixture_files = []
 
@@ -148,7 +143,7 @@ class TestDependencyGraph:
         conftest_files = list(project_root.glob("**/conftest.py"))
         for conftest in conftest_files:
             rel_path = conftest.relative_to(project_root)
-            with open(conftest, "r") as f:
+            with open(conftest) as f:
                 content = f.read()
 
             if re.search(rf"def\s+{fixture_name}\s*\(", content):
@@ -156,7 +151,7 @@ class TestDependencyGraph:
 
         return fixture_files
 
-    def get_dependencies(self, test_id: str) -> Set[str]:
+    def get_dependencies(self, test_id: str) -> set[str]:
         """Get all dependencies for a test (direct and indirect)."""
         if test_id not in self.dependencies:
             return set()
@@ -170,7 +165,7 @@ class TestDependencyGraph:
 
         return all_deps
 
-    def get_dependents(self, test_id: str) -> Set[str]:
+    def get_dependents(self, test_id: str) -> set[str]:
         """Get all tests that depend on this test (direct and indirect)."""
         if test_id not in self.dependents:
             return set()
@@ -193,10 +188,10 @@ class TestPrioritizer:
         self.dependency_graph = TestDependencyGraph()
         self.priorities = self.load_priorities()
 
-    def load_priorities(self) -> Dict[str, int]:
+    def load_priorities(self) -> dict[str, int]:
         """Load test priorities from file or initialize from tracker."""
         if TEST_PRIORITY_FILE.exists():
-            with open(TEST_PRIORITY_FILE, "r") as f:
+            with open(TEST_PRIORITY_FILE) as f:
                 return json.load(f)
         else:
             # Initialize from tracker priorities
@@ -209,12 +204,12 @@ class TestPrioritizer:
             self.save_priorities(priorities)
             return priorities
 
-    def save_priorities(self, priorities: Dict[str, int]):
+    def save_priorities(self, priorities: dict[str, int]):
         """Save test priorities to file."""
         with open(TEST_PRIORITY_FILE, "w") as f:
             json.dump(priorities, f, indent=2)
 
-    def calculate_test_scores(self) -> Dict[str, float]:
+    def calculate_test_scores(self) -> dict[str, float]:
         """Calculate a score for each test based on priority, dependencies, and status."""
         scores = {}
 
@@ -262,7 +257,7 @@ class TestPrioritizer:
 
         return scores
 
-    def recommend_tests(self, num_tests: int = 5) -> List[Tuple[str, float]]:
+    def recommend_tests(self, num_tests: int = 5) -> list[tuple[str, float]]:
         """Recommend tests to enable next based on their scores."""
         scores = self.calculate_test_scores()
 
@@ -271,17 +266,15 @@ class TestPrioritizer:
 
         return sorted_tests[:num_tests]
 
-    def enable_tests(self, test_ids: List[str]):
+    def enable_tests(self, test_ids: list[str]):
         """Enable the specified tests in the test status tracker."""
         for test_id in test_ids:
             if test_id in self.tracker.tests:
                 self.tracker.tests[test_id]["status"] = STATUS_PASSING
-                print(f"Enabled test: {test_id}")
 
         self.tracker.save_status()
-        print(f"Enabled {len(test_ids)} tests")
 
-    def generate_report(self, recommended_tests: List[Tuple[str, float]]):
+    def generate_report(self, recommended_tests: list[tuple[str, float]]):
         """Generate a report of recommended tests with their details."""
         report_lines = ["\n===== TEST PRIORITIZATION REPORT =====\n"]
 
@@ -340,7 +333,6 @@ class TestPrioritizer:
         )
 
         report_text = "\n".join(report_lines)
-        print(report_text)
 
         # Write to file
         report_path = project_root / "test_results" / "prioritization_report.txt"

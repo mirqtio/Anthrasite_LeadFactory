@@ -19,7 +19,6 @@ class TestStringUtils(unittest.TestCase):
         )
         if project_root not in sys.path:
             sys.path.insert(0, project_root)
-        print(f"Python path: {sys.path}")
 
     def setUp(self):
         """Set up test case."""

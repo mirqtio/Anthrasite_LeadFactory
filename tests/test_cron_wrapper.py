@@ -46,7 +46,7 @@ def test_run_nightly_dry_run_mode():
         # Create a modified version of the script for testing
         test_script_path = os.path.join(temp_dir, "test_run_nightly.sh")
         # Read the original script
-        with open(RUN_NIGHTLY_SCRIPT, "r") as f:
+        with open(RUN_NIGHTLY_SCRIPT) as f:
             script_content = f.read()
         # Modify the script to exit before running any actual Python commands
         # This prevents the "python: command not found" error
@@ -81,7 +81,7 @@ def test_run_nightly_skip_stage():
     # This test verifies that the skip-stage option is recognized and processed correctly
     # Instead of running the script, we'll analyze it to verify it has the skip stage functionality
     # Read the script content
-    with open(RUN_NIGHTLY_SCRIPT, "r") as f:
+    with open(RUN_NIGHTLY_SCRIPT) as f:
         script_content = f.read()
     # Check that the script has the functionality to skip stages
     assert (
@@ -129,7 +129,7 @@ def test_setup_cron_help_option():
 def test_script_path_consistency():
     """Test that the script paths referenced in run_nightly.sh exist."""
     # Read the run_nightly.sh script
-    with open(RUN_NIGHTLY_SCRIPT, "r") as f:
+    with open(RUN_NIGHTLY_SCRIPT) as f:
         script_content = f.read()
     # Extract the script paths
     script_paths = []

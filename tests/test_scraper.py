@@ -8,8 +8,8 @@ import os
 import sqlite3
 import sys
 import tempfile
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest

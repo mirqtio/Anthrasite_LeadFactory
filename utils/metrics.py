@@ -5,8 +5,10 @@ It exposes a /metrics endpoint that can be scraped by Prometheus.
 """
 
 import os
+import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
 from prometheus_client import (
@@ -18,24 +20,27 @@ from prometheus_client import (
     generate_latest,
 )
 
-from .cost_tracker import (
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from utils.cost_tracker import (  # noqa: E402
     check_budget_thresholds,
     get_cost_breakdown_by_service,
     is_scaling_gate_active,
 )
 
 # Import logging configuration
-from .logging_config import get_logger
+from utils.logging_config import get_logger  # noqa: E402
 
 # Import batch_metrics functions at runtime to avoid circular imports
-
 
 # Set up logging
 logger = get_logger(__name__)
 # Create FastAPI app
 app = FastAPI(
     title="Anthrasite Lead-Factory Metrics",
-    description="Prometheus metrics exporter for Anthrasite Lead-Factory",
+    description=("Prometheus metrics exporter for Anthrasite Lead-Factory"),
     version="1.0.0",
 )
 # Prometheus metrics
@@ -101,7 +106,7 @@ def update_metrics():
     try:
         # Update batch completion metrics
         # Import here to avoid circular imports
-        from utils.batch_metrics import update_batch_metrics
+        from utils.batch_metrics import update_batch_metrics  # noqa: E402
 
         update_batch_metrics()
 
@@ -247,7 +252,8 @@ def start_metrics_server(host: str = "127.0.0.1", port: int = 8000):
     """Start the FastAPI metrics server.
     Args:
         host: Host to bind to. Default is localhost (127.0.0.1) for security.
-              Set to 0.0.0.0 only in containerized environments with proper network security.
+              Set to 0.0.0.0 only in containerized environments with proper
+              network security.
         port: Port to listen on.
     """
     import uvicorn
@@ -255,7 +261,7 @@ def start_metrics_server(host: str = "127.0.0.1", port: int = 8000):
     # Start batch metrics updater thread
     logger.info("Starting batch metrics updater thread")
     # Import at runtime to avoid circular imports
-    from utils.batch_metrics import start_metrics_updater
+    from utils.batch_metrics import start_metrics_updater  # noqa: E402
 
     start_metrics_updater(
         interval_seconds=int(os.getenv("BATCH_METRICS_UPDATE_INTERVAL", "60"))
@@ -277,7 +283,7 @@ if __name__ == "__main__":
         "--host",
         type=str,
         default="127.0.0.1",
-        help="Host to bind to (use 127.0.0.1 for security, 0.0.0.0 only in secure environments)",
+        help="Host to bind to. Default is localhost (127.0.0.1) for security.",
     )
     parser.add_argument("--port", type=int, default=8000, help="Port to listen on")
     args = parser.parse_args()

@@ -80,7 +80,7 @@ def test_alert_rules_file_exists():
     alert_rules_path = Path("etc/alert_rules.yml")
     assert alert_rules_path.exists(), "Alert rules file does not exist"
     # Try to load the YAML to validate syntax
-    with open(alert_rules_path, "r") as f:
+    with open(alert_rules_path) as f:
         rules = yaml.safe_load(f)
     # Basic validation of alert rules structure
     assert "groups" in rules, "Alert rules should have 'groups' key"

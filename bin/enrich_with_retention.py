@@ -16,15 +16,13 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 # Add parent directory to path to allow importing other modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from bin.budget_gate import budget_gate, budget_gated
+from bin.budget_gate import budget_gated
 from bin.cost_tracking import cost_tracker
 from bin.data_retention import data_retention
-from bin.metrics import metrics
 
 # Setup logging
 logging.basicConfig(
@@ -62,7 +60,7 @@ except ImportError:
         }
 
 
-def fetch_business_data_with_retention(business_id: str, **kwargs) -> Dict[str, Any]:
+def fetch_business_data_with_retention(business_id: str, **kwargs) -> dict[str, Any]:
     """Fetch business data with retention for raw HTML.
 
     Args:
@@ -96,7 +94,7 @@ def fetch_business_data_with_retention(business_id: str, **kwargs) -> Dict[str, 
     operation="gpt-4-enrichment",
     fallback_value={"status": "skipped", "reason": "budget_gate"},
 )
-def enrich_business_with_llm(business_data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> dict[str, Any]:
     """Enrich business data using LLM with cost tracking and logging.
 
     Args:
@@ -186,7 +184,7 @@ def enrich_business_with_llm(business_data: Dict[str, Any], **kwargs) -> Dict[st
         return business_data
 
 
-def enrich_business_with_retention(business_id: str, **kwargs) -> Dict[str, Any]:
+def enrich_business_with_retention(business_id: str, **kwargs) -> dict[str, Any]:
     """Enrich a business with data retention.
 
     Args:
@@ -245,12 +243,11 @@ def main():
 
     try:
         # Enrich business
-        enriched_data = enrich_business_with_retention(
+        enrich_business_with_retention(
             args.business_id, batch_id=args.batch_id, tier=args.tier
         )
 
         # Print result
-        print(json.dumps(enriched_data, indent=2))
 
         return 0
     except Exception as e:

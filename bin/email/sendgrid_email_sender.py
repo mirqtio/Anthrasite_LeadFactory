@@ -14,7 +14,6 @@ Usage:
                      content="<p>Your report is ready.</p>")
 """
 
-import base64
 import json
 import logging
 import os
@@ -22,9 +21,8 @@ import sys
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
-import requests
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (
     Attachment,
@@ -58,9 +56,9 @@ class SendGridEmailSender:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
+        api_key: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
         pool: str = "shared",
         subuser: str = "prod",
     ):
@@ -101,12 +99,12 @@ class SendGridEmailSender:
         to: str,
         subject: str,
         content: str,
-        attachments: Optional[List[Dict[str, Any]]] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        categories: Optional[List[str]] = None,
-        custom_args: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        attachments: list[dict[str, Any]] | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        categories: list[str] | None = None,
+        custom_args: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         """Send an email using SendGrid.
 
         Args:
@@ -207,10 +205,10 @@ class SendGridEmailSender:
 
     def get_stats(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         aggregated_by: str = "day",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get email statistics from SendGrid.
 
         Args:
@@ -351,8 +349,5 @@ if __name__ == "__main__":
         content="<p>This is a test email from the SendGrid Email Sender.</p>",
     )
 
-    print(json.dumps(result, indent=2))
-
     # Get stats
     stats = sender.get_stats()
-    print(json.dumps(stats, indent=2))

@@ -2,8 +2,6 @@
 Test string utility functions.
 """
 
-import pytest
-
 from bin.utils.string_utils import clean_html, extract_domain, normalize_text
 
 

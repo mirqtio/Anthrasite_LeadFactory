@@ -8,7 +8,6 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
 
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,7 +25,7 @@ logger = logging.getLogger("cleanup_expired_data")
 
 def get_expired_data(
     retention_days: int, dry_run: bool = False
-) -> Tuple[List[str], List[int]]:
+) -> tuple[list[str], list[int]]:
     """
     Get a list of HTML files and LLM log IDs that are older than the retention period.
 
@@ -67,7 +66,7 @@ def get_expired_data(
         return [], []
 
 
-def delete_expired_files(expired_html_paths: List[str], dry_run: bool = False) -> int:
+def delete_expired_files(expired_html_paths: list[str], dry_run: bool = False) -> int:
     """
     Delete expired HTML files from the filesystem.
 
@@ -94,8 +93,8 @@ def delete_expired_files(expired_html_paths: List[str], dry_run: bool = False) -
 
 
 def delete_database_records(
-    expired_html_paths: List[str], expired_log_ids: List[int], dry_run: bool = False
-) -> Tuple[int, int]:
+    expired_html_paths: list[str], expired_log_ids: list[int], dry_run: bool = False
+) -> tuple[int, int]:
     """
     Delete expired records from the database.
 
@@ -155,7 +154,7 @@ def delete_database_records(
 
 
 def cleanup_expired_data(
-    retention_days: Optional[int] = None, dry_run: bool = False
+    retention_days: int | None = None, dry_run: bool = False
 ) -> None:
     """
     Clean up expired HTML and LLM log data based on retention policy.

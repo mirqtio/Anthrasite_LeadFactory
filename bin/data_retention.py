@@ -22,20 +22,16 @@ Usage:
     )
 """
 
-import base64
 import gzip
-import json
 import logging
 import os
-import shutil
 import sqlite3
 import sys
 import threading
 import time
 import uuid
 from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 # Add parent directory to path to allow importing supabase client
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -56,7 +52,7 @@ logger = logging.getLogger("data_retention")
 class DataRetentionManager:
     """Data retention manager for LeadFactory."""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         """Initialize data retention manager.
 
         Args:
@@ -209,7 +205,7 @@ class DataRetentionManager:
             logger.exception(f"Error storing HTML for business {business_id}: {e}")
             return ""
 
-    def get_html(self, business_id: str) -> Optional[str]:
+    def get_html(self, business_id: str) -> str | None:
         """Get the most recent HTML content for a business.
 
         Args:
@@ -344,7 +340,7 @@ class DataRetentionManager:
             logger.exception(f"Error logging LLM interaction: {e}")
             return ""
 
-    def get_llm_log(self, log_id: str) -> Optional[Dict[str, Any]]:
+    def get_llm_log(self, log_id: str) -> dict[str, Any] | None:
         """Get an LLM interaction log by ID.
 
         Args:
@@ -386,7 +382,7 @@ class DataRetentionManager:
 
     def get_llm_logs_for_stage(
         self, stage: str, limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get LLM interaction logs for a specific stage.
 
         Args:
@@ -536,7 +532,6 @@ if __name__ == "__main__":
     # Store HTML
     html_content = "<html><body><h1>Test Business</h1></body></html>"
     storage_path = data_retention.store_html("test_business_123", html_content)
-    print(f"Stored HTML at: {storage_path}")
 
     # Log LLM interaction
     log_id = data_retention.log_llm_interaction(
@@ -547,11 +542,9 @@ if __name__ == "__main__":
         model="gpt-4",
         tokens=150,
     )
-    print(f"Logged LLM interaction with ID: {log_id}")
 
     # Get LLM log
     log_data = data_retention.get_llm_log(log_id)
-    print(f"Retrieved LLM log: {log_data}")
 
     # Clean up expired data
     data_retention.cleanup_expired_data()

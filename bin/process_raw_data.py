@@ -9,10 +9,9 @@ Usage:
 """
 
 import argparse
-import json
 import os
 import sys
-from typing import Any, Dict, Tuple
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,7 +25,7 @@ from utils.website_scraper import process_pending_websites
 logger = get_logger(__name__)
 
 
-def process_websites(verbose: bool = False) -> Tuple[int, int]:
+def process_websites(verbose: bool = False) -> tuple[int, int]:
     """Process pending websites and store their HTML content.
 
     Args:
@@ -46,7 +45,7 @@ def process_websites(verbose: bool = False) -> Tuple[int, int]:
     return processed_count, success_count
 
 
-def check_retention(verbose: bool = False) -> Dict[str, Any]:
+def check_retention(verbose: bool = False) -> dict[str, Any]:
     """Check data retention status.
 
     Args:
@@ -107,12 +106,10 @@ def main() -> int:
         # Process websites if requested
         if args.process_websites:
             processed_count, success_count = process_websites(args.verbose)
-            print(f"Processed {processed_count} websites, {success_count} successful")
 
         # Check retention if requested
         if args.check_retention:
-            status = check_retention(args.verbose)
-            print(json.dumps(status, indent=2))
+            check_retention(args.verbose)
 
         return 0
     except Exception as e:

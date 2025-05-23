@@ -13,8 +13,6 @@ Usage:
 """
 
 import argparse
-import os
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -45,16 +43,12 @@ def run_command(cmd, cwd=None):
             cmd, cwd=cwd or project_root, check=True, capture_output=True, text=True
         )
         return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        print(f"Error running command {cmd}: {e}")
-        print(f"STDOUT: {e.stdout}")
-        print(f"STDERR: {e.stderr}")
+    except subprocess.CalledProcessError:
         return None
 
 
 def fix_imports_with_ruff(files=None):
     """Fix imports using ruff."""
-    print("Fixing imports with ruff...")
 
     cmd = ["ruff", "check", "--select", "I", "--fix"]
     if files:
@@ -64,25 +58,21 @@ def fix_imports_with_ruff(files=None):
 
     result = run_command(cmd)
     if result is not None:
-        print("Ruff import sorting complete.")
+        pass
     else:
-        print("Ruff import sorting failed.")
+        pass
 
 
 def fix_special_files():
     """Fix special files that need custom import handling."""
-    print("Fixing special files with custom import handling...")
 
     for file_path in SPECIAL_FILES:
         abs_path = project_root / file_path
         if not abs_path.exists():
-            print(f"Skipping {file_path} - file not found")
             continue
 
-        print(f"Processing {file_path}...")
-
         # Read file content
-        with open(abs_path, "r") as f:
+        with open(abs_path) as f:
             content = f.read()
 
         # Fix sys.path modifications
@@ -138,22 +128,18 @@ def fix_special_files():
         with open(abs_path, "w") as f:
             f.write(content)
 
-        print(f"Fixed {file_path}")
-
 
 def fix_test_files():
     """Fix test files that need special handling."""
-    print("Fixing test files...")
 
     test_files = list((project_root / "tests").glob("test_*.py"))
     test_files.extend((project_root / "tests").glob("**/test_*.py"))
 
     for file_path in test_files:
-        rel_path = file_path.relative_to(project_root)
-        print(f"Processing {rel_path}...")
+        file_path.relative_to(project_root)
 
         # Read file content
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Fix sys.path modifications
@@ -191,8 +177,6 @@ def fix_test_files():
         with open(file_path, "w") as f:
             f.write(content)
 
-        print(f"Fixed {rel_path}")
-
 
 def main():
     """Main function."""
@@ -216,8 +200,6 @@ def main():
 
     # Fix test files
     fix_test_files()
-
-    print("\nImport issues fixed successfully!")
 
     return 0
 

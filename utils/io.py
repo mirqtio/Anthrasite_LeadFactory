@@ -6,7 +6,7 @@ Handles database connections, logging, and API requests.
 import os
 import sqlite3
 import time
-from typing import Dict, List, Optional, Tuple
+from pathlib import Path
 
 import psycopg2
 import psycopg2.extras
@@ -23,9 +23,7 @@ logger = get_logger(__name__)
 # Load environment variables
 load_dotenv()
 # Constants
-DEFAULT_DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db"
-)
+DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "leadfactory.db"
 DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 
 # Database connection constants
@@ -52,7 +50,8 @@ def get_postgres_pool():
                 DATABASE_URL,
             )
             logger.info(
-                f"Created Postgres connection pool with {DATABASE_POOL_MIN_CONN}-{DATABASE_POOL_MAX_CONN} connections"
+                f"Created Postgres connection pool with "
+                f"{DATABASE_POOL_MIN_CONN}-{DATABASE_POOL_MAX_CONN} connections"
             )
         except Exception as e:
             logger.error(f"Error creating Postgres connection pool: {e}")
@@ -68,7 +67,7 @@ class DatabaseConnection:
     If DATABASE_URL is set, uses Postgres, otherwise falls back to SQLite.
     """
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         """Initialize database connection.
 
         Args:
@@ -111,7 +110,7 @@ class DatabaseConnection:
     def _connect_sqlite(self):
         """Establish SQLite database connection and return cursor."""
         # Ensure data directory exists
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(self.db_path)
         # Enable foreign keys
         self.conn.execute("PRAGMA foreign_keys = ON")
@@ -148,7 +147,7 @@ class DatabaseConnection:
             self.conn.close()
 
 
-def load_yaml_config(file_path: str) -> Dict:
+def load_yaml_config(file_path: str) -> dict:
     """Load YAML configuration file.
     Args:
         file_path: Path to YAML file.
@@ -156,7 +155,7 @@ def load_yaml_config(file_path: str) -> Dict:
         Dictionary containing configuration.
     """
     try:
-        with open(file_path, "r") as f:
+        with Path(file_path).open() as f:
             config = yaml.safe_load(f)
         logger.debug(f"Loaded configuration from {file_path}")
         return config
@@ -165,7 +164,7 @@ def load_yaml_config(file_path: str) -> Dict:
         raise
 
 
-def load_csv_data(file_path: str) -> List[Dict]:
+def load_csv_data(file_path: str) -> list[dict]:
     """Load data from CSV file.
     Args:
         file_path: Path to CSV file.
@@ -175,7 +174,7 @@ def load_csv_data(file_path: str) -> List[Dict]:
     import csv
 
     try:
-        with open(file_path, "r") as f:
+        with Path(file_path).open() as f:
             reader = csv.DictReader(f)
             data = list(reader)
         logger.debug(f"Loaded {len(data)} rows from {file_path}")
@@ -188,19 +187,19 @@ def load_csv_data(file_path: str) -> List[Dict]:
 def make_api_request(
     url: str,
     method: str = "GET",
-    headers: Optional[Dict] = None,
-    params: Optional[Dict] = None,
-    data: Optional[Dict] = None,
+    headers: dict | None = None,
+    params: dict | None = None,
+    data: dict | None = None,
     timeout: int = DEFAULT_TIMEOUT,
     max_retries: int = 3,
     retry_delay: int = 2,
     track_cost: bool = True,
-    service_name: Optional[str] = None,
-    operation: Optional[str] = None,
+    service_name: str | None = None,
+    operation: str | None = None,
     cost_cents: int = 0,
     tier: int = 1,
-    business_id: Optional[int] = None,
-) -> Tuple[Optional[Dict], Optional[str]]:
+    business_id: int | None = None,
+) -> tuple[dict | None, str | None]:
     """Make an API request with retry logic and cost tracking.
     Args:
         url: API endpoint URL.
@@ -266,7 +265,7 @@ def track_api_cost(
     operation: str,
     cost_cents: int,
     tier: int = 1,
-    business_id: Optional[int] = None,
+    business_id: int | None = None,
 ) -> None:
     """Track the cost of an API call.
     Args:
@@ -293,7 +292,7 @@ def track_api_cost(
         logger.error(f"Error tracking API cost: {e}")
 
 
-def get_active_zip_codes() -> List[Dict]:
+def get_active_zip_codes() -> list[dict]:
     """Get list of active zip codes to process.
     Returns:
         List of dictionaries containing zip code information.
@@ -309,7 +308,7 @@ def get_active_zip_codes() -> List[Dict]:
         return []
 
 
-def get_verticals() -> List[Dict]:
+def get_verticals() -> list[dict]:
     """Get list of verticals to process.
     Returns:
         List of dictionaries containing vertical information.
@@ -330,12 +329,12 @@ def save_business(
     address: str,
     zip_code: str,
     category: str,
-    website: Optional[str] = None,
-    email: Optional[str] = None,
-    phone: Optional[str] = None,
+    website: str | None = None,
+    email: str | None = None,
+    phone: str | None = None,
     source: str = "yelp",
-    source_id: Optional[str] = None,
-) -> Optional[int]:
+    source_id: str | None = None,
+) -> int | None:
     """Save business information to database.
     Args:
         name: Business name.

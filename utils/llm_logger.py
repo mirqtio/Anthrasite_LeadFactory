@@ -8,23 +8,25 @@ import datetime
 import os
 import sys
 import time
-from typing import Any, Dict, List, Optional, Union
+from pathlib import Path
+from typing import Any
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import database utilities
-from utils.io import DatabaseConnection
+from utils.io import DatabaseConnection  # noqa: E402
 
 # Import logging configuration
-from utils.logging_config import get_logger
+from utils.logging_config import get_logger  # noqa: E402
 
 # Import raw data retention utilities
 from utils.raw_data_retention import (
     get_llm_logs,
     identify_expired_data,
     log_llm_interaction,
-)
+)  # noqa: E402
 
 # Set up logging
 logger = get_logger(__name__)
@@ -62,13 +64,13 @@ class LLMLogger:
         self,
         operation: str,
         prompt_text: str,
-        response_json: Union[Dict, str],
-        business_id: Optional[int] = None,
-        tokens_prompt: Optional[int] = None,
-        tokens_completion: Optional[int] = None,
+        response_json: dict | str,
+        business_id: int | None = None,
+        tokens_prompt: int | None = None,
+        tokens_completion: int | None = None,
         status: str = "success",
-        metadata: Optional[Dict] = None,
-    ) -> Optional[int]:
+        metadata: dict | None = None,
+    ) -> int | None:
         """Log an LLM interaction.
 
         Args:
@@ -108,13 +110,13 @@ class LLMLogger:
 
 def log_deduplication(
     prompt_text: str,
-    response_json: Dict,
+    response_json: dict,
     business_id1: int,
     business_id2: int,
     similarity_score: float,
-    tokens_prompt: Optional[int] = None,
-    tokens_completion: Optional[int] = None,
-) -> Optional[int]:
+    tokens_prompt: int | None = None,
+    tokens_completion: int | None = None,
+) -> int | None:
     """Log a deduplication LLM interaction.
 
     Args:
@@ -153,12 +155,12 @@ def log_deduplication(
 
 def log_mockup_generation(
     prompt_text: str,
-    response_json: Dict,
+    response_json: dict,
     business_id: int,
-    mockup_id: Optional[int] = None,
-    tokens_prompt: Optional[int] = None,
-    tokens_completion: Optional[int] = None,
-) -> Optional[int]:
+    mockup_id: int | None = None,
+    tokens_prompt: int | None = None,
+    tokens_completion: int | None = None,
+) -> int | None:
     """Log a mockup generation LLM interaction.
 
     Args:
@@ -193,9 +195,9 @@ def log_mockup_generation(
 
 
 def get_recent_llm_logs(
-    operation: Optional[str] = None,
+    operation: str | None = None,
     limit: int = 100,
-) -> List[Dict]:
+) -> list[dict]:
     """Get recent LLM logs from the database.
 
     Args:
@@ -210,9 +212,9 @@ def get_recent_llm_logs(
 
 def get_business_llm_logs(
     business_id: int,
-    operation: Optional[str] = None,
+    operation: str | None = None,
     limit: int = 100,
-) -> List[Dict]:
+) -> list[dict]:
     """Get LLM logs for a specific business.
 
     Args:
@@ -226,7 +228,7 @@ def get_business_llm_logs(
     return get_llm_logs(business_id=business_id, operation=operation, limit=limit)
 
 
-def check_retention_status() -> Dict[str, Any]:
+def check_retention_status() -> dict[str, Any]:
     """Check the status of data retention.
 
     Returns:

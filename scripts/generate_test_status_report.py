@@ -22,10 +22,8 @@ import json
 import logging
 import os
 import re
-import shutil
 import sys
 from datetime import datetime
-from pathlib import Path
 
 # Setup logging
 logging.basicConfig(
@@ -94,7 +92,7 @@ def categorize_test_file(test_file):
 def analyze_test_importance(test_file):
     """Analyze the importance of a test file based on its content."""
     try:
-        with open(test_file, "r") as f:
+        with open(test_file) as f:
             content = f.read()
 
         # Check for priority markers in the file
@@ -135,7 +133,7 @@ def is_test_enabled_in_ci(test_file):
     # Check if it's included in any CI workflow
     for workflow_file in glob.glob(".github/workflows/*.yml"):
         try:
-            with open(workflow_file, "r") as f:
+            with open(workflow_file) as f:
                 content = f.read()
 
                 # Extract the test file name without path
@@ -153,7 +151,7 @@ def is_test_enabled_in_ci(test_file):
 def count_test_cases(test_file):
     """Count the number of test cases in a file."""
     try:
-        with open(test_file, "r") as f:
+        with open(test_file) as f:
             content = f.read()
 
         # Count pytest test functions

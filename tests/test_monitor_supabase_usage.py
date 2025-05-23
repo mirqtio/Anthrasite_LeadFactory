@@ -2,9 +2,6 @@
 Tests for the Supabase usage monitoring script.
 """
 
-import json
-import os
-import sys
 import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch

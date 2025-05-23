@@ -20,7 +20,6 @@ import json
 import logging
 import math
 import os
-import shutil
 import sys
 from datetime import datetime
 
@@ -487,7 +486,7 @@ def main():
         ensure_directories()
 
         # Load test data
-        with open(args.input, "r") as f:
+        with open(args.input) as f:
             test_data = json.load(f)
 
         # Generate visualizations

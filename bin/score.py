@@ -14,7 +14,6 @@ import json
 import os
 import re
 import sys
-from typing import Dict, List, Optional, Tuple
 
 import yaml
 from dotenv import load_dotenv
@@ -82,7 +81,7 @@ class RuleEngine:
     def load_rules(self):
         """Load scoring rules from YAML file."""
         try:
-            with open(self.rules_file, "r") as f:
+            with open(self.rules_file) as f:
                 data = yaml.safe_load(f)
             self.settings = data.get("settings", {})
             self.rules = data.get("rules", [])
@@ -102,7 +101,7 @@ class RuleEngine:
             self.rules = []
             self.multipliers = []
 
-    def calculate_score(self, business_data: Dict) -> Tuple[int, List[Dict]]:
+    def calculate_score(self, business_data: dict) -> tuple[int, list[dict]]:
         """Calculate score for a business based on the defined rules.
         Args:
             business_data: Business data including tech stack, performance metrics, etc.
@@ -161,7 +160,7 @@ class RuleEngine:
         score = max(min_score, min(score, max_score))
         return score, applied_rules
 
-    def _evaluate_condition(self, condition: Dict, business_data: Dict) -> bool:
+    def _evaluate_condition(self, condition: dict, business_data: dict) -> bool:
         """Evaluate a rule condition against business data.
         Args:
             condition: Rule condition definition.
@@ -185,19 +184,19 @@ class RuleEngine:
         return True
 
     # Condition evaluator methods
-    def _eval_tech_stack_contains(self, technology: str, business_data: Dict) -> bool:
+    def _eval_tech_stack_contains(self, technology: str, business_data: dict) -> bool:
         """Check if business tech stack contains a specific technology."""
         tech_stack = self._get_tech_stack(business_data)
         return technology in tech_stack
 
     def _eval_tech_stack_contains_any(
-        self, technologies: List[str], business_data: Dict
+        self, technologies: list[str], business_data: dict
     ) -> bool:
         """Check if business tech stack contains any of the specified technologies."""
         tech_stack = self._get_tech_stack(business_data)
         return any(tech in tech_stack for tech in technologies)
 
-    def _eval_tech_stack_version_lt(self, condition: Dict, business_data: Dict) -> bool:
+    def _eval_tech_stack_version_lt(self, condition: dict, business_data: dict) -> bool:
         """Check if business tech stack contains a technology with version less than specified."""
         tech_stack = self._get_tech_stack(business_data)
         technology = condition.get("technology", "")
@@ -209,7 +208,7 @@ class RuleEngine:
             return False
         return self._compare_versions(tech_version, version) < 0
 
-    def _eval_tech_stack_version_gt(self, condition: Dict, business_data: Dict) -> bool:
+    def _eval_tech_stack_version_gt(self, condition: dict, business_data: dict) -> bool:
         """Check if business tech stack contains a technology with version greater than specified."""
         tech_stack = self._get_tech_stack(business_data)
         technology = condition.get("technology", "")
@@ -221,18 +220,18 @@ class RuleEngine:
             return False
         return self._compare_versions(tech_version, version) > 0
 
-    def _eval_performance_score_lt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_performance_score_lt(self, threshold: int, business_data: dict) -> bool:
         """Check if business performance score is less than threshold."""
         performance_score = self._get_performance_score(business_data)
         return performance_score < threshold
 
-    def _eval_performance_score_gt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_performance_score_gt(self, threshold: int, business_data: dict) -> bool:
         """Check if business performance score is greater than threshold."""
         performance_score = self._get_performance_score(business_data)
         return performance_score > threshold
 
     def _eval_performance_score_between(
-        self, condition: Dict, business_data: Dict
+        self, condition: dict, business_data: dict
     ) -> bool:
         """Check if business performance score is between min and max values."""
         performance_score = self._get_performance_score(business_data)
@@ -240,30 +239,30 @@ class RuleEngine:
         max_value = condition.get("max", 100)
         return min_value <= performance_score <= max_value
 
-    def _eval_lcp_gt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_lcp_gt(self, threshold: int, business_data: dict) -> bool:
         """Check if business LCP is greater than threshold."""
         lcp = self._get_lcp(business_data)
         return lcp > threshold
 
-    def _eval_cls_gt(self, threshold: float, business_data: Dict) -> bool:
+    def _eval_cls_gt(self, threshold: float, business_data: dict) -> bool:
         """Check if business CLS is greater than threshold."""
         cls = self._get_cls(business_data)
         return cls > threshold
 
     def _eval_category_contains_any(
-        self, categories: List[str], business_data: Dict
+        self, categories: list[str], business_data: dict
     ) -> bool:
         """Check if business category contains any of the specified categories."""
         business_category = business_data.get("category", "").lower()
         return any(category.lower() in business_category for category in categories)
 
-    def _eval_website_missing(self, value: bool, business_data: Dict) -> bool:
+    def _eval_website_missing(self, value: bool, business_data: dict) -> bool:
         """Check if business website is missing."""
         has_website = bool(business_data.get("website"))
         return not has_website if value else has_website
 
     def _eval_website_contains_any(
-        self, patterns: List[str], business_data: Dict
+        self, patterns: list[str], business_data: dict
     ) -> bool:
         """Check if business website contains any of the specified patterns."""
         website = business_data.get("website", "")
@@ -272,63 +271,63 @@ class RuleEngine:
         website_content = self._get_website_content(business_data)
         return any(pattern in website_content for pattern in patterns)
 
-    def _eval_state_equals(self, state: str, business_data: Dict) -> bool:
+    def _eval_state_equals(self, state: str, business_data: dict) -> bool:
         """Check if business state equals the specified state."""
         business_state = business_data.get("state", "")
         return business_state.upper() == state.upper()
 
-    def _eval_has_multiple_locations(self, value: bool, business_data: Dict) -> bool:
+    def _eval_has_multiple_locations(self, value: bool, business_data: dict) -> bool:
         """Check if business has multiple locations."""
         has_multiple = business_data.get("has_multiple_locations", False)
         return has_multiple if value else not has_multiple
 
-    def _eval_review_count_gt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_review_count_gt(self, threshold: int, business_data: dict) -> bool:
         """Check if business review count is greater than threshold."""
         review_count = business_data.get("review_count", 0)
         return review_count > threshold
 
-    def _eval_review_count_lt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_review_count_lt(self, threshold: int, business_data: dict) -> bool:
         """Check if business review count is less than threshold."""
         review_count = business_data.get("review_count", 0)
         return review_count < threshold
 
-    def _eval_seo_score_lt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_seo_score_lt(self, threshold: int, business_data: dict) -> bool:
         """Check if business SEO score is less than threshold."""
         seo_score = self._get_seo_score(business_data)
         return seo_score < threshold
 
-    def _eval_accessibility_score_lt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_accessibility_score_lt(self, threshold: int, business_data: dict) -> bool:
         """Check if business accessibility score is less than threshold."""
         accessibility_score = self._get_accessibility_score(business_data)
         return accessibility_score < threshold
 
-    def _eval_semrush_errors_gt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_semrush_errors_gt(self, threshold: int, business_data: dict) -> bool:
         """Check if business SEMrush errors count is greater than threshold."""
         semrush_errors = self._get_semrush_errors(business_data)
         return semrush_errors > threshold
 
-    def _eval_semrush_score_lt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_semrush_score_lt(self, threshold: int, business_data: dict) -> bool:
         """Check if business SEMrush score is less than threshold."""
         semrush_score = self._get_semrush_score(business_data)
         return semrush_score < threshold
 
-    def _eval_tier_gt(self, threshold: int, business_data: Dict) -> bool:
+    def _eval_tier_gt(self, threshold: int, business_data: dict) -> bool:
         """Check if business tier is greater than threshold."""
         tier = business_data.get("tier", CURRENT_TIER)
         return tier > threshold
 
-    def _eval_tier_equals(self, value: int, business_data: Dict) -> bool:
+    def _eval_tier_equals(self, value: int, business_data: dict) -> bool:
         """Check if business tier equals the specified value."""
         tier = business_data.get("tier", CURRENT_TIER)
         return tier == value
 
-    def _eval_vertical_in(self, verticals: List[str], business_data: Dict) -> bool:
+    def _eval_vertical_in(self, verticals: list[str], business_data: dict) -> bool:
         """Check if business vertical is in the specified list."""
         vertical = business_data.get("vertical", "")
         return vertical in verticals
 
     # Helper methods
-    def _get_tech_stack(self, business_data: Dict) -> Dict:
+    def _get_tech_stack(self, business_data: dict) -> dict:
         """Get tech stack from business data."""
         features = business_data.get("features", {})
         tech_stack_json = features.get("tech_stack", "{}")
@@ -341,7 +340,7 @@ class RuleEngine:
             tech_stack = tech_stack_json
         return tech_stack
 
-    def _get_tech_version(self, business_data: Dict, technology: str) -> Optional[str]:
+    def _get_tech_version(self, business_data: dict, technology: str) -> str | None:
         """Get version of a specific technology from business data."""
         tech_stack = self._get_tech_stack(business_data)
         tech_info = tech_stack.get(technology, {})
@@ -349,12 +348,12 @@ class RuleEngine:
             return tech_info.get("version")
         return None
 
-    def _get_performance_score(self, business_data: Dict) -> int:
+    def _get_performance_score(self, business_data: dict) -> int:
         """Get performance score from business data."""
         features = business_data.get("features", {})
         return features.get("page_speed", 0)
 
-    def _get_lcp(self, business_data: Dict) -> float:
+    def _get_lcp(self, business_data: dict) -> float:
         """Get Largest Contentful Paint from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
@@ -367,7 +366,7 @@ class RuleEngine:
             page_speed = page_speed_json
         return page_speed.get("largest_contentful_paint", 0)
 
-    def _get_cls(self, business_data: Dict) -> float:
+    def _get_cls(self, business_data: dict) -> float:
         """Get Cumulative Layout Shift from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
@@ -380,7 +379,7 @@ class RuleEngine:
             page_speed = page_speed_json
         return page_speed.get("cumulative_layout_shift", 0)
 
-    def _get_seo_score(self, business_data: Dict) -> int:
+    def _get_seo_score(self, business_data: dict) -> int:
         """Get SEO score from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
@@ -393,7 +392,7 @@ class RuleEngine:
             page_speed = page_speed_json
         return page_speed.get("seo_score", 0)
 
-    def _get_accessibility_score(self, business_data: Dict) -> int:
+    def _get_accessibility_score(self, business_data: dict) -> int:
         """Get accessibility score from business data."""
         features = business_data.get("features", {})
         page_speed_json = features.get("page_speed_json", "{}")
@@ -406,7 +405,7 @@ class RuleEngine:
             page_speed = page_speed_json
         return page_speed.get("accessibility_score", 0)
 
-    def _get_semrush_errors(self, business_data: Dict) -> int:
+    def _get_semrush_errors(self, business_data: dict) -> int:
         """Get SEMrush errors count from business data."""
         features = business_data.get("features", {})
         semrush_json = features.get("semrush_json", "{}")
@@ -419,7 +418,7 @@ class RuleEngine:
             semrush = semrush_json
         return semrush.get("errors", 0)
 
-    def _get_semrush_score(self, business_data: Dict) -> int:
+    def _get_semrush_score(self, business_data: dict) -> int:
         """Get SEMrush score from business data."""
         features = business_data.get("features", {})
         semrush_json = features.get("semrush_json", "{}")
@@ -432,7 +431,7 @@ class RuleEngine:
             semrush = semrush_json
         return semrush.get("total_score", 0)
 
-    def _get_website_content(self, business_data: Dict) -> str:
+    def _get_website_content(self, business_data: dict) -> str:
         """Get website content from business data."""
         # In a real implementation, this would fetch the content from a cache
         # For the prototype, we'll just use the website URL
@@ -475,10 +474,10 @@ class RuleEngine:
 
 
 def get_businesses_to_score(
-    limit: Optional[int] = None,
-    business_id: Optional[int] = None,
+    limit: int | None = None,
+    business_id: int | None = None,
     recalculate: bool = False,
-) -> List[Dict]:
+) -> list[dict]:
     """Get list of businesses to score.
     Args:
         limit: Maximum number of businesses to return.
@@ -523,7 +522,7 @@ def get_businesses_to_score(
 
 
 def save_business_score(
-    business_id: int, score: int, applied_rules: List[Dict]
+    business_id: int, score: int, applied_rules: list[dict]
 ) -> bool:
     """Save business score to database.
     Args:
@@ -551,7 +550,7 @@ def save_business_score(
         return False
 
 
-def score_business(business: Dict, rule_engine: RuleEngine) -> bool:
+def score_business(business: dict, rule_engine: RuleEngine) -> bool:
     """Score a business using the rule engine.
     Args:
         business: Business data.

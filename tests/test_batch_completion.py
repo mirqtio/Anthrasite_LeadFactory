@@ -9,23 +9,20 @@ import os
 # Add project root to path
 import sys
 import tempfile
-import time
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
+from datetime import datetime
+from unittest.mock import patch
 
 import pytest
-from behave import given, step, then, when
+from behave import given, then, when
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import modules to test
 from bin.batch_completion_monitor import (
     check_and_alert,
-    send_alert_email,
 )
 from utils.batch_tracker import (
     check_batch_completion,
-    get_batch_status,
     record_batch_end,
     record_batch_stage_completion,
     record_batch_start,
@@ -75,7 +72,7 @@ def step_impl(context):
 @then("the batch start timestamp should be saved")
 def step_impl(context):
     """Verify the batch start timestamp was saved."""
-    with open(context.batch_tracker_file, "r") as f:
+    with open(context.batch_tracker_file) as f:
         data = json.load(f)
 
     assert "current_batch_start" in data
@@ -88,7 +85,7 @@ def step_impl(context):
 @then("the batch completion gauge should be reset to 0% for all stages")
 def step_impl(context):
     """Verify the batch completion gauge was reset."""
-    with open(context.batch_tracker_file, "r") as f:
+    with open(context.batch_tracker_file) as f:
         data = json.load(f)
 
     assert "completion_percentage" in data
@@ -116,7 +113,7 @@ def step_impl(context, stage, percentage):
 @then('the "{stage}" stage completion should be recorded as {percentage:f}%')
 def step_impl(context, stage, percentage):
     """Verify the stage completion was recorded correctly."""
-    with open(context.batch_tracker_file, "r") as f:
+    with open(context.batch_tracker_file) as f:
         data = json.load(f)
 
     assert "stages" in data
@@ -128,7 +125,7 @@ def step_impl(context, stage, percentage):
 @then('the batch completion gauge should show {percentage:f}% for the "{stage}" stage')
 def step_impl(context, percentage, stage):
     """Verify the batch completion gauge shows the correct percentage for a stage."""
-    with open(context.batch_tracker_file, "r") as f:
+    with open(context.batch_tracker_file) as f:
         data = json.load(f)
 
     assert "stages" in data
@@ -156,7 +153,7 @@ def step_impl(context):
 @then("the batch end timestamp should be saved")
 def step_impl(context):
     """Verify the batch end timestamp was saved."""
-    with open(context.batch_tracker_file, "r") as f:
+    with open(context.batch_tracker_file) as f:
         data = json.load(f)
 
     assert "current_batch_end" in data
@@ -169,7 +166,7 @@ def step_impl(context):
 @then("the batch completion gauge should show 100% for all stages")
 def step_impl(context):
     """Verify the batch completion gauge shows 100% for all stages."""
-    with open(context.batch_tracker_file, "r") as f:
+    with open(context.batch_tracker_file) as f:
         data = json.load(f)
 
     assert "completion_percentage" in data
@@ -185,7 +182,7 @@ def step_impl(context):
 @given("the batch has not been completed")
 def step_impl(context):
     """Ensure the batch is not marked as completed."""
-    with open(context.batch_tracker_file, "r") as f:
+    with open(context.batch_tracker_file) as f:
         data = json.load(f)
 
     if "current_batch_end" in data:

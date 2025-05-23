@@ -49,7 +49,7 @@ def test_db():
     # Enable foreign key constraints for this connection
     conn.execute("PRAGMA foreign_keys = ON")
     # Execute the schema migration
-    with open(MIGRATION_FILE, "r") as f:
+    with open(MIGRATION_FILE) as f:
         conn.executescript(f.read())
     conn.commit()
     # Verify foreign keys are enabled

@@ -14,7 +14,6 @@ Usage:
 
 import json
 import os
-import shutil
 import sqlite3
 import sys
 from pathlib import Path
@@ -22,7 +21,6 @@ from pathlib import Path
 
 def setup_directories():
     """Create necessary directories for tests."""
-    print("Setting up test directories...")
 
     # Project root
     project_root = Path(__file__).parent.parent
@@ -39,14 +37,12 @@ def setup_directories():
 
     for directory in directories:
         directory.mkdir(parents=True, exist_ok=True)
-        print(f"Created directory: {directory}")
 
     return project_root
 
 
 def setup_mock_data(project_root):
     """Set up mock data for tests."""
-    print("Setting up mock data...")
 
     # Create mock tech stack data for rule engine tests
     mock_tech_stack = {
@@ -102,12 +98,9 @@ multipliers:
     with open(mock_data_dir / "scaling_gate_history.json", "w") as f:
         json.dump(scaling_gate_history, f)
 
-    print(f"Created mock data in {mock_data_dir}")
-
 
 def setup_test_database(project_root):
     """Set up test database for tests."""
-    print("Setting up test database...")
 
     # Create test database directory
     db_dir = project_root / "data" / "db"
@@ -393,16 +386,12 @@ def setup_test_database(project_root):
     conn.commit()
     conn.close()
 
-    print(f"Created test database at {db_path}")
-
     # Create database URL environment variable
     os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
-    print(f"Set DATABASE_URL environment variable to sqlite:///{db_path}")
 
 
 def setup_environment_variables():
     """Set up environment variables for tests."""
-    print("Setting up environment variables...")
 
     # Project root
     project_root = Path(__file__).parent.parent
@@ -452,12 +441,10 @@ def setup_environment_variables():
 
     for key, value in env_vars.items():
         os.environ[key] = value
-        print(f"Set {key}={value}")
 
 
 def main():
     """Main function."""
-    print("Setting up test environment...")
 
     # Setup directories
     project_root = setup_directories()
@@ -470,12 +457,6 @@ def main():
 
     # Setup environment variables
     setup_environment_variables()
-
-    print("\nTest environment setup complete!")
-    print("You can now run tests with:")
-    print(
-        '  python scripts/test_status_tracker.py --run-tests --test-pattern="tests/test_*.py" --report'
-    )
 
     return 0
 

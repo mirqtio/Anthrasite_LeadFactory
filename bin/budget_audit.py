@@ -47,23 +47,18 @@ class Colors:
 
 def print_header(text: str) -> None:
     """Print a formatted header."""
-    print(f"\n{Colors.HEADER}{Colors.BOLD}{text}{Colors.ENDC}")
-    print("-" * len(text))
 
 
 def print_success(text: str) -> None:
     """Print a success message."""
-    print(f"{Colors.OKGREEN}✓ {text}{Colors.ENDC}")
 
 
 def print_warning(text: str) -> None:
     """Print a warning message."""
-    print(f"{Colors.WARNING}⚠ {text}{Colors.ENDC}")
 
 
 def print_error(text: str) -> None:
     """Print an error message."""
-    print(f"{Colors.FAIL}✗ {text}{Colors.ENDC}", file=sys.stderr)
 
 
 def format_currency(amount: float) -> str:
@@ -86,20 +81,10 @@ def show_summary() -> None:
     budget_info = check_budget_thresholds()
     # Print daily budget
     daily_budget = budget_info.get("daily_budget", 0)
-    daily_utilization = (daily_cost / daily_budget) * 100 if daily_budget > 0 else 0
-    print(f"Daily Budget: {format_currency(daily_budget)}")
-    print(
-        f"Daily Spend:  {format_currency(daily_cost)} ({format_percentage(daily_utilization)} of budget)"
-    )
+    (daily_cost / daily_budget) * 100 if daily_budget > 0 else 0
     # Print monthly budget
     monthly_budget = budget_info.get("monthly_budget", 0)
-    monthly_utilization = (
-        (monthly_cost / monthly_budget) * 100 if monthly_budget > 0 else 0
-    )
-    print(f"\nMonthly Budget: {format_currency(monthly_budget)}")
-    print(
-        f"Monthly Spend:  {format_currency(monthly_cost)} ({format_percentage(monthly_utilization)} of budget)"
-    )
+    ((monthly_cost / monthly_budget) * 100 if monthly_budget > 0 else 0)
     # Print alerts if any
     if budget_info.get("daily_alert", False):
         print_warning("Daily budget alert threshold reached!")
@@ -114,49 +99,34 @@ def show_cost_breakdown(period: str = "day") -> None:
     # Get cost breakdown by service
     costs_by_service = get_cost_breakdown_by_service(period=period)
     if not costs_by_service:
-        print("No cost data available.")
         return
     # Print table header
-    print(f"{'Service':<20} {'Amount':>15}")
-    print("-" * 35)
     # Print each service's cost
     total = 0
     for service, cost in costs_by_service.items():
-        print(f"{service:<20} {format_currency(cost):>15}")
         total += cost
     # Print total
-    print("-" * 35)
-    print(f"{'Total':<20} {format_currency(total):>15}")
     # Show top operations for each service
     print_header(f"\n{period_display} Top Operations by Cost")
-    for service in costs_by_service.keys():
+    for service in costs_by_service:
         operations = get_cost_breakdown_by_operation(service, period=period)
         if operations:
-            print(f"\n{service}:")
-            for op, cost in operations.items():
-                print(f"  {op}: {format_currency(cost)}")
+            for _op, cost in operations.items():
+                pass
 
 
 def show_scaling_gate_status() -> None:
     """Show the current scaling gate status."""
     print_header("Scaling Gate Status")
     active, reason = is_scaling_gate_active()
-    status = (
-        f"{Colors.FAIL}ACTIVE{Colors.ENDC}"
-        if active
-        else f"{Colors.OKGREEN}INACTIVE{Colors.ENDC}"
-    )
-    print(f"Status: {status}")
-    print(f"Reason: {reason}")
     # Show scaling gate history
     history = get_scaling_gate_history(limit=5)
     if history:
         print_header("\nRecent History")
         for entry in history:
-            timestamp = entry.get("timestamp", "")
-            action = "Activated" if entry.get("activated", False) else "Deactivated"
-            reason = entry.get("reason", "")
-            print(f"{timestamp}: {action} - {reason}")
+            entry.get("timestamp", "")
+            "Activated" if entry.get("activated", False) else "Deactivated"
+            entry.get("reason", "")
 
 
 def manage_scaling_gate(activate: bool, reason: str = "") -> None:
@@ -267,7 +237,6 @@ def main() -> int:
         args.func()
         return 0
     except KeyboardInterrupt:
-        print("\nOperation cancelled by user.")
         return 1
     except Exception as e:
         print_error(f"An error occurred: {str(e)}")

@@ -1,5 +1,4 @@
 # Test import resolution
-import os
 import sys
 from pathlib import Path
 
@@ -13,9 +12,7 @@ def test_bin_imports():
 
         assert True
     except ImportError as e:
-        print(f"Import error: {e}")
-        print(f"sys.path: {sys.path}")
-        assert False, f"Failed to import bin: {e}"
+        raise AssertionError(f"Failed to import bin: {e}")
 
 
 def test_utils_imports():
@@ -27,6 +24,4 @@ def test_utils_imports():
 
         assert True
     except ImportError as e:
-        print(f"Import error: {e}")
-        print(f"sys.path: {sys.path}")
-        assert False, f"Failed to import utils: {e}"
+        raise AssertionError(f"Failed to import utils: {e}")

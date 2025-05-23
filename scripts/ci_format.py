@@ -9,7 +9,6 @@ This script precisely matches the formatting requirements of the CI pipeline.
 import argparse
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 # Files with known formatting issues
@@ -48,13 +47,9 @@ def main():
     os.chdir(project_root)
 
     # First, fix the specific problem files
-    print(
-        f"Formatting {len(PROBLEM_FILES)} specific files with known formatting issues..."
-    )
     format_problem_files(project_root, check_only=args.check)
 
     # Then run a comprehensive check on all Python files
-    print("\nRunning comprehensive formatting check on all Python files...")
     check_all_files(project_root, check_only=args.check)
 
 
@@ -63,7 +58,6 @@ def format_problem_files(project_root, check_only=False):
     for file_path in PROBLEM_FILES:
         full_path = os.path.join(project_root, file_path)
         if os.path.exists(full_path):
-            print(f"Formatting {file_path}...")
 
             # Apply specific fixes based on the file
             if not check_only:
@@ -84,11 +78,10 @@ def format_problem_files(project_root, check_only=False):
                 cmd.append("--check")
             cmd.append(full_path)
             result = subprocess.run(cmd, capture_output=True, text=True)
-            print(result.stdout.strip() or "No changes made by Black")
             if result.stderr:
-                print(result.stderr, file=sys.stderr)
+                pass
         else:
-            print(f"Warning: File {file_path} does not exist")
+            pass
 
 
 def check_all_files(project_root, check_only=False):
@@ -105,7 +98,6 @@ def check_all_files(project_root, check_only=False):
     for directory in ADDITIONAL_DIRS:
         dir_path = os.path.join(project_root, directory)
         if os.path.exists(dir_path) and os.path.isdir(dir_path):
-            print(f"\nChecking files in {directory}/...")
 
             # Get all Python files in the directory
             python_files = []
@@ -117,7 +109,6 @@ def check_all_files(project_root, check_only=False):
                             python_files.append(file_path)
 
             if not python_files:
-                print(f"No Python files to check in {directory}/")
                 continue
 
             # Run Black on the files
@@ -126,25 +117,22 @@ def check_all_files(project_root, check_only=False):
                 cmd.append("--check")
             cmd.extend(python_files)
             result = subprocess.run(cmd, capture_output=True, text=True)
-            print(result.stdout.strip() or "No changes made by Black")
             if result.stderr:
-                print(result.stderr, file=sys.stderr)
+                pass
 
             # Run isort on the files
-            print(f"Running isort on {directory}/...")
             cmd = ["isort"]
             if check_only:
                 cmd.extend(["--check", "--diff"])
             cmd.extend(python_files)
             result = subprocess.run(cmd, capture_output=True, text=True)
-            print(result.stdout.strip() or "No changes made by isort")
             if result.stderr:
-                print(result.stderr, file=sys.stderr)
+                pass
 
 
 def fix_raw_data_retention(file_path):
     """Fix specific formatting issues in raw_data_retention.py."""
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     # Fix the HTML_STORAGE_DIR constant
@@ -162,12 +150,10 @@ def fix_raw_data_retention(file_path):
     with open(file_path, "w") as f:
         f.write(content)
 
-    print(f"Fixed specific formatting issues in {file_path}")
-
 
 def fix_cost_tracker(file_path):
     """Fix specific formatting issues in cost_tracker.py."""
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     # Fix the percent_used calculations
@@ -199,12 +185,10 @@ def fix_cost_tracker(file_path):
     with open(file_path, "w") as f:
         f.write(content)
 
-    print(f"Fixed specific formatting issues in {file_path}")
-
 
 def fix_website_scraper(file_path):
     """Fix specific formatting issues in website_scraper.py."""
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     # Fix the logger.info statements
@@ -231,7 +215,7 @@ def fix_website_scraper(file_path):
 
 def fix_enrich(file_path):
     """Fix specific formatting issues in enrich.py."""
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     # Fix import order issues
@@ -262,12 +246,10 @@ def fix_enrich(file_path):
     with open(file_path, "w") as f:
         f.write(content)
 
-    print(f"Fixed specific formatting issues in {file_path}")
-
 
 def fix_dedupe(file_path):
     """Fix specific formatting issues in dedupe.py."""
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
 
     # Fix import order issues
@@ -295,8 +277,6 @@ def fix_dedupe(file_path):
 
     with open(file_path, "w") as f:
         f.write(content)
-
-    print(f"Fixed specific formatting issues in {file_path}")
 
 
 if __name__ == "__main__":

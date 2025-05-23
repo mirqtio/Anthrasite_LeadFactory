@@ -14,18 +14,16 @@ import argparse
 import base64
 import html
 import json
-import os
-import re
 import sys
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, Path(__file__).resolve().parent.parent)
 from utils.io import DatabaseConnection
 
 # Import logging configuration first
@@ -96,10 +94,8 @@ SENDGRID_SUBUSER_NAMES = os.getenv(
 ).split(",")
 CURRENT_IP_POOL_INDEX = int(os.getenv("CURRENT_IP_POOL_INDEX", "0"))
 CURRENT_SUBUSER_INDEX = int(os.getenv("CURRENT_SUBUSER_INDEX", "0"))
-EMAIL_TEMPLATE_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "etc",
-    "email_template.html",
+EMAIL_TEMPLATE_PATH = (
+    Path(__file__).resolve().parent.parent.joinpath("etc", "email_template.html")
 )
 
 
@@ -140,10 +136,10 @@ class SendGridEmailSender:
         subject: str,
         html_content: str,
         text_content: str,
-        mockup_image_url: Optional[str] = None,
-        mockup_html: Optional[str] = None,
+        mockup_image_url: str | None = None,
+        mockup_html: str | None = None,
         is_dry_run: bool = False,
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    ) -> tuple[bool, str | None, str | None]:
         """Send an email via SendGrid.
         Args:
             to_email: Recipient email address.
@@ -447,8 +443,8 @@ def load_email_template() -> str:
         Email template as string.
     """
     try:
-        if os.path.exists(EMAIL_TEMPLATE_PATH):
-            with open(EMAIL_TEMPLATE_PATH, "r") as f:
+        if EMAIL_TEMPLATE_PATH.exists():
+            with EMAIL_TEMPLATE_PATH.open() as f:
                 return f.read()
         # Return default template if file not found
         return """
@@ -501,8 +497,8 @@ def load_email_template() -> str:
 
 
 def get_businesses_for_email(
-    limit: Optional[int] = None, business_id: Optional[int] = None, force: bool = False
-) -> List[Dict]:
+    limit: int | None = None, business_id: int | None = None, force: bool = False
+) -> list[dict]:
     """Get list of businesses for email sending.
     Args:
         limit: Maximum number of businesses to return.
@@ -572,9 +568,9 @@ def is_email_unsubscribed(email: str) -> bool:
 
 def add_unsubscribe(
     email: str,
-    reason: Optional[str] = None,
-    ip_address: Optional[str] = None,
-    user_agent: Optional[str] = None,
+    reason: str | None = None,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
 ) -> bool:
     """Add an email address to the unsubscribe list.
     Args:
@@ -602,9 +598,9 @@ def save_email_record(
     to_email: str,
     to_name: str,
     subject: str,
-    message_id: Optional[str],
+    message_id: str | None,
     status: str,
-    error_message: Optional[str] = None,
+    error_message: str | None = None,
 ) -> bool:
     """Save email record to database.
     Args:
@@ -644,7 +640,7 @@ def save_email_record(
         return False
 
 
-def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str]:
+def generate_email_content(business: dict, template: str) -> tuple[str, str, str]:
     """Generate email content for a business.
     Args:
         business: Business data.
@@ -675,9 +671,8 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
             isinstance(rule, dict)
             and "description" in rule
             and "score_adjustment" in rule
-        ):
-            if rule["score_adjustment"] > 0:
-                improvements.append(rule["description"])
+        ) and rule["score_adjustment"] > 0:
+            improvements.append(rule["description"])
     # Limit to top 5 improvements
     improvements = improvements[:5]
     # Add default improvements if none found
@@ -745,16 +740,16 @@ def generate_email_content(business: Dict, template: str) -> Tuple[str, str, str
     text_content += "Anthrasite Web Services\n"
     text_content += "PO Box 12345\n"
     text_content += "San Francisco, CA 94107\n\n"
-    text_content += "© 2025 Anthrasite Web Services. All rights reserved.\n"
+    text_content += " 2025 Anthrasite Web Services. All rights reserved.\n"
     return subject, html_content, text_content
 
 
 def send_business_email(
-    business: Dict,
+    business: dict,
     email_sender: SendGridEmailSender,
     template: str,
     is_dry_run: bool = False,
-) -> Tuple[bool, Optional[str], Optional[str]]:
+) -> tuple[bool, str | None, str | None]:
     """Send email for a business.
     Args:
         business: Business data.

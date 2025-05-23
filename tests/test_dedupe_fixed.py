@@ -6,7 +6,7 @@ import os
 import sqlite3
 import sys
 import tempfile
-from typing import Generator
+from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
@@ -140,11 +140,8 @@ def temp_db() -> Generator[str, None, None]:
         try:
             if os.path.exists(path):
                 os.unlink(path)
-        except Exception as e:
-            print(
-                f"Warning: Failed to remove temporary database file: {e}",
-                file=sys.stderr,
-            )
+        except Exception:
+            pass
 
 
 def test_exact_duplicates(temp_db, mock_llm_verifier):

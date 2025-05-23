@@ -79,7 +79,7 @@ def mock_apis():
         patch("utils.io.track_api_cost") as mock_track_cost,
     ):
         # Configure mocks
-        mock_tech_stack.return_value = (set(["React", "Node.js", "Express"]), None)
+        mock_tech_stack.return_value = ({"React", "Node.js", "Express"}, None)
         mock_pagespeed.return_value = (
             {"performance": 0.85, "accessibility": 0.92},
             None,

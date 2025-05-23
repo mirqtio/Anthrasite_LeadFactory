@@ -18,14 +18,9 @@ Features:
 
 import argparse
 import ast
-import json
 import logging
 import os
-import re
-import shutil
 import sys
-from datetime import datetime
-from pathlib import Path
 
 # Setup logging
 logging.basicConfig(
@@ -227,7 +222,7 @@ def convert_file(source_file, target_file):
 
     try:
         # Read the source file
-        with open(source_file, "r") as f:
+        with open(source_file) as f:
             source_code = f.read()
 
         # Parse the source code
@@ -276,7 +271,7 @@ def generate_ci_workflow(test_files):
     # Create the workflow file
     with open(workflow_path, "w") as f:
         f.write(
-            f"""name: CI Tests Workflow
+            """name: CI Tests Workflow
 
 on:
   push:
@@ -315,7 +310,7 @@ jobs:
             f.write(f'          python {test_file} || echo "Test {test_file} failed"\n')
 
         f.write(
-            f"""
+            """
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3

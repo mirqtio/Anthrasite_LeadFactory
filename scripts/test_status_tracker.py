@@ -22,9 +22,8 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Try to import visualization libraries, but don't fail if they're not available
 try:
@@ -72,7 +71,7 @@ class TestStatusTracker:
     def load_status(self):
         """Load existing test status from file"""
         if STATUS_FILE.exists():
-            with open(STATUS_FILE, "r") as f:
+            with open(STATUS_FILE) as f:
                 self.tests = json.load(f)
         else:
             self.discover_tests()
@@ -80,7 +79,7 @@ class TestStatusTracker:
     def load_history(self):
         """Load test history from file"""
         if HISTORY_FILE.exists():
-            with open(HISTORY_FILE, "r") as f:
+            with open(HISTORY_FILE) as f:
                 return json.load(f)
         else:
             return {"runs": [], "status_history": {}, "last_update": None}
@@ -97,7 +96,6 @@ class TestStatusTracker:
 
     def discover_tests(self):
         """Discover all tests in the test directory"""
-        print("Discovering tests...")
 
         # Find all test files
         test_files = list(TEST_DIR.glob("test_*.py"))
@@ -106,7 +104,7 @@ class TestStatusTracker:
         # Extract test functions from files
         for test_file in test_files:
             rel_path = test_file.relative_to(project_root)
-            with open(test_file, "r") as f:
+            with open(test_file) as f:
                 content = f.read()
 
             # Find test functions (def test_*)
@@ -127,13 +125,10 @@ class TestStatusTracker:
                         "priority": 3,  # Default medium priority
                     }
 
-        print(f"Discovered {len(self.tests)} tests")
-
     def categorize_tests(self):
         """Categorize tests based on their file name and content"""
-        print("Categorizing tests...")
 
-        for test_id, test_info in self.tests.items():
+        for _test_id, test_info in self.tests.items():
             file_path = project_root / test_info["file"]
 
             # Categorize based on filename
@@ -159,7 +154,7 @@ class TestStatusTracker:
                 test_info["priority"] = 3  # Medium-low priority
             else:
                 # Read file content to better categorize
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     content = f.read()
 
                 if "requests" in content or "api" in content.lower():
@@ -173,7 +168,6 @@ class TestStatusTracker:
                     test_info["priority"] = 4  # Low priority
 
         self.save_status()
-        print("Categorization complete")
 
     def run_tests(self, test_pattern=None, ci_mode=False):
         """Run tests and update their status
@@ -182,7 +176,6 @@ class TestStatusTracker:
             test_pattern: Optional pattern to filter tests (e.g., 'test_database*')
             ci_mode: If True, use CI-specific settings
         """
-        print("Running tests...")
 
         # Create a temporary directory for test results
         os.makedirs(project_root / "test_results", exist_ok=True)
@@ -216,7 +209,7 @@ class TestStatusTracker:
         # Parse the JSON report
         report_path = project_root / "test_results" / "report.json"
         if report_path.exists():
-            with open(report_path, "r") as f:
+            with open(report_path) as f:
                 report = json.load(f)
 
             # Create a new history entry
@@ -279,8 +272,6 @@ class TestStatusTracker:
             self.save_history()
 
         self.save_status()
-        print(f"Test run complete. Exit code: {result.returncode}")
-        print(f"Duration: {duration:.2f} seconds")
 
         return result.returncode
 
@@ -419,7 +410,6 @@ class TestStatusTracker:
 
         # Print report
         report_text = "\n".join(report_lines)
-        print(report_text)
 
         # Write to file if requested
         if output_file:
@@ -431,9 +421,6 @@ class TestStatusTracker:
     def generate_visualizations(self):
         """Generate visualizations of test status and history"""
         if not HAS_VISUALIZATION:
-            print(
-                "Visualization libraries not available. Install matplotlib and numpy."
-            )
             return
 
         # Create visualization directory
@@ -448,8 +435,6 @@ class TestStatusTracker:
         # 3. Test status history line chart (if history available)
         if self.history["runs"]:
             self._create_history_line_chart()
-
-        print(f"Visualizations saved to {VISUALIZATION_DIR}")
 
     def _create_status_pie_chart(self):
         """Create a pie chart of test status distribution"""
@@ -506,8 +491,8 @@ class TestStatusTracker:
         bar_width = 0.6
         indices = np.arange(len(categories))
 
-        p1 = plt.bar(indices, passing, bar_width, color="green", label=STATUS_PASSING)
-        p2 = plt.bar(
+        plt.bar(indices, passing, bar_width, color="green", label=STATUS_PASSING)
+        plt.bar(
             indices,
             failing,
             bar_width,
@@ -515,7 +500,7 @@ class TestStatusTracker:
             color="red",
             label=STATUS_FAILING,
         )
-        p3 = plt.bar(
+        plt.bar(
             indices,
             disabled,
             bar_width,
@@ -523,7 +508,7 @@ class TestStatusTracker:
             color="gray",
             label=STATUS_DISABLED,
         )
-        p4 = plt.bar(
+        plt.bar(
             indices,
             skipped,
             bar_width,
@@ -719,7 +704,7 @@ class TestStatusTracker:
         if not report_path.exists():
             return "No test report found. Run tests first."
 
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             report = json.load(f)
 
         # Categorize failures
@@ -802,7 +787,6 @@ class TestStatusTracker:
             )
 
         report_text = "\n".join(report_lines)
-        print(report_text)
 
         # Write to file
         analysis_path = project_root / "test_results" / "failure_analysis.txt"
@@ -867,30 +851,26 @@ def main():
 
     if args.enable_high_priority:
         # Enable all high-priority tests
-        for test_id, test_info in tracker.tests.items():
+        for _test_id, test_info in tracker.tests.items():
             if test_info.get("priority") == 1:
                 test_info["status"] = (
                     STATUS_PASSING
                     if test_info["status"] == STATUS_DISABLED
                     else test_info["status"]
                 )
-                print(f"Enabled high-priority test: {test_id}")
         tracker.save_status()
-        print("All high-priority tests enabled")
 
     if args.enable_category:
         # Enable all tests in the specified category
         category = args.enable_category.lower()
-        for test_id, test_info in tracker.tests.items():
+        for _test_id, test_info in tracker.tests.items():
             if test_info.get("category", "").lower() == category:
                 test_info["status"] = (
                     STATUS_PASSING
                     if test_info["status"] == STATUS_DISABLED
                     else test_info["status"]
                 )
-                print(f"Enabled test in category '{category}': {test_id}")
         tracker.save_status()
-        print(f"All tests in category '{category}' enabled")
 
     if args.run_tests:
         exit_code = tracker.run_tests(
@@ -899,7 +879,6 @@ def main():
 
         # Automatically analyze failures if tests were run
         if exit_code != 0 and not args.analyze_failures:
-            print("\nSome tests failed. Running failure analysis...")
             tracker.analyze_failures()
 
     if args.analyze_failures:
@@ -908,7 +887,7 @@ def main():
     if args.visualize and HAS_VISUALIZATION:
         tracker.generate_visualizations()
     elif args.visualize:
-        print("Visualization libraries not available. Install matplotlib and numpy.")
+        pass
 
     if args.report or (
         not args.run_tests

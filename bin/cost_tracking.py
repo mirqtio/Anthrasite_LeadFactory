@@ -26,9 +26,8 @@ import sqlite3
 import sys
 import threading
 import time
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any
 
 # Add parent directory to path to allow importing metrics
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -49,7 +48,7 @@ logger = logging.getLogger("cost_tracking")
 class CostTracker:
     """Cost tracking and metrics for LeadFactory."""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         """Initialize cost tracker.
 
         Args:
@@ -157,9 +156,9 @@ class CostTracker:
         self,
         amount: float,
         service: str,
-        operation: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-        batch_id: Optional[str] = None,
+        operation: str | None = None,
+        details: dict[str, Any] | None = None,
+        batch_id: str | None = None,
     ):
         """Add a cost entry.
 
@@ -218,7 +217,7 @@ class CostTracker:
             logger.exception(f"Error adding cost: {e}")
             return False
 
-    def start_batch(self, batch_id: Optional[str] = None, tier: str = "1"):
+    def start_batch(self, batch_id: str | None = None, tier: str = "1"):
         """Start a new batch for cost tracking.
 
         Args:
@@ -401,7 +400,7 @@ class CostTracker:
             logger.exception(f"Error calculating cost per lead: {e}")
             return 0
 
-    def start_gpu_tracking(self, hourly_rate: Optional[float] = None):
+    def start_gpu_tracking(self, hourly_rate: float | None = None):
         """Start tracking GPU usage costs.
 
         Args:
@@ -511,9 +510,7 @@ class CostTracker:
             except Exception as e:
                 logger.error(f"Error in GPU tracking thread: {e}")
 
-    def get_monthly_costs(
-        self, year: Optional[int] = None, month: Optional[int] = None
-    ):
+    def get_monthly_costs(self, year: int | None = None, month: int | None = None):
         """Get costs for a specific month.
 
         Args:
@@ -598,7 +595,7 @@ class CostTracker:
             return None
 
     def set_monthly_budget(
-        self, amount: float, year: Optional[int] = None, month: Optional[int] = None
+        self, amount: float, year: int | None = None, month: int | None = None
     ):
         """Set budget for a specific month.
 
@@ -809,10 +806,8 @@ if __name__ == "__main__":
     batch_summary = cost_tracker.end_batch(leads_processed=10)
 
     # Print batch summary
-    print(json.dumps(batch_summary, indent=2))
 
     # Get monthly costs
     monthly_costs = cost_tracker.get_monthly_costs()
 
     # Print monthly costs
-    print(json.dumps(monthly_costs, indent=2))

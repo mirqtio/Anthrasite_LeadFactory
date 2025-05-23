@@ -399,9 +399,7 @@ def temp_db():
                         }
                     ]
                 ),
-                base64.b64encode(f"limit_test_image_{i}".encode("utf-8")).decode(
-                    "utf-8"
-                ),
+                base64.b64encode(f"limit_test_image_{i}".encode()).decode("utf-8"),
                 f"<div>Limit Test Mockup {i}</div>",
                 "gpt-4",
             ),

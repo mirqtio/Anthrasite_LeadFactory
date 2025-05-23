@@ -240,8 +240,8 @@ def temp_db():
                 conn.close()
             if os.path.exists(path):
                 os.unlink(path)
-        except Exception as e:
-            print(f"Error cleaning up temporary database: {e}", file=sys.stderr)
+        except Exception:
+            pass
 
 
 # Scenarios

@@ -9,21 +9,24 @@ import os
 import sqlite3
 import sys
 from datetime import datetime
-from typing import Any, Dict, Tuple
+from pathlib import Path
+from typing import Any
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import logging configuration
 # Import batch metrics
-from utils.batch_metrics import increment_gpu_cost, record_cost_per_lead
-from utils.logging_config import get_logger
+from utils.batch_metrics import increment_gpu_cost, record_cost_per_lead  # noqa: E402
+from utils.logging_config import get_logger  # noqa: E402
 
 # Set up logging
 logger = get_logger(__name__)
 
 # Constants
-COST_TRACKER_FILE = os.getenv("COST_TRACKER_FILE", "data/cost_tracker.json")
+DEFAULT_COST_TRACKER_PATH = Path("data") / "cost_tracker.json"
+COST_TRACKER_FILE = Path(os.getenv("COST_TRACKER_FILE", str(DEFAULT_COST_TRACKER_PATH)))
 DATABASE_URL = os.getenv("DATABASE_URL", "leadfactory.db")
 MONTHLY_BUDGET = float(
     os.getenv("MONTHLY_BUDGET", "250")
@@ -32,9 +35,9 @@ MONTHLY_BUDGET = float(
 
 def ensure_cost_tracker_file() -> None:
     """Ensure the cost tracker file exists and has the correct structure."""
-    os.makedirs(os.path.dirname(COST_TRACKER_FILE), exist_ok=True)
+    COST_TRACKER_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-    if not os.path.exists(COST_TRACKER_FILE):
+    if not COST_TRACKER_FILE.exists():
         # Create initial structure
         data = {
             "daily_costs": {},
@@ -49,18 +52,18 @@ def ensure_cost_tracker_file() -> None:
         }
 
         # Write to file
-        with open(COST_TRACKER_FILE, "w") as f:
+        with COST_TRACKER_FILE.open("w") as f:
             json.dump(data, f, indent=2)
 
         logger.info(f"Created new cost tracker file: {COST_TRACKER_FILE}")
 
 
-def get_cost_data() -> Dict[str, Any]:
+def get_cost_data() -> dict[str, Any]:
     """Get cost data from the cost tracker file."""
     ensure_cost_tracker_file()
 
     try:
-        with open(COST_TRACKER_FILE, "r") as f:
+        with COST_TRACKER_FILE.open() as f:
             data = json.load(f)
 
         return data
@@ -79,7 +82,7 @@ def get_cost_data() -> Dict[str, Any]:
         }
 
 
-def save_cost_data(data: Dict[str, Any]) -> bool:
+def save_cost_data(data: dict[str, Any]) -> bool:
     """Save cost data to the cost tracker file.
 
     Args:
@@ -93,7 +96,7 @@ def save_cost_data(data: Dict[str, Any]) -> bool:
         data["last_updated"] = datetime.utcnow().isoformat()
 
         # Write to file
-        with open(COST_TRACKER_FILE, "w") as f:
+        with COST_TRACKER_FILE.open("w") as f:
             json.dump(data, f, indent=2)
 
         return True
@@ -160,10 +163,7 @@ def calculate_cost_per_lead() -> float:
         total_leads = get_lead_count()
 
         # Calculate cost per lead
-        if total_leads > 0:
-            cost_per_lead = total_cost / total_leads
-        else:
-            cost_per_lead = 0.0
+        cost_per_lead = total_cost / total_leads if total_leads > 0 else 0.0
 
         # Update cost data
         data = get_cost_data()
@@ -269,7 +269,7 @@ def reset_monthly_gpu_cost() -> bool:
 
 def check_gpu_cost_threshold(
     daily_threshold: float = 25.0, monthly_threshold: float = 100.0
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """Check if GPU cost exceeds thresholds.
 
     Args:
@@ -288,7 +288,8 @@ def check_gpu_cost_threshold(
         if daily_cost > daily_threshold:
             return (
                 True,
-                f"Daily GPU cost (${daily_cost:.2f}) exceeds threshold (${daily_threshold:.2f})",
+                f"Daily GPU cost (${daily_cost:.2f}) exceeds threshold "
+                f"(${daily_threshold:.2f})",
             )
 
         # Check monthly threshold
@@ -296,7 +297,8 @@ def check_gpu_cost_threshold(
         if monthly_cost > monthly_threshold:
             return (
                 True,
-                f"Monthly GPU cost (${monthly_cost:.2f}) exceeds threshold (${monthly_threshold:.2f})",
+                f"Monthly GPU cost (${monthly_cost:.2f}) exceeds threshold "
+                f"(${monthly_threshold:.2f})",
             )
 
         return False, "GPU cost is within thresholds"
@@ -305,7 +307,7 @@ def check_gpu_cost_threshold(
         return False, f"Error checking GPU cost threshold: {e}"
 
 
-def check_cost_per_lead_threshold(threshold: float = 3.0) -> Tuple[bool, str]:
+def check_cost_per_lead_threshold(threshold: float = 3.0) -> tuple[bool, str]:
     """Check if cost per lead exceeds threshold.
 
     Args:
@@ -323,7 +325,8 @@ def check_cost_per_lead_threshold(threshold: float = 3.0) -> Tuple[bool, str]:
         if cost_per_lead > threshold:
             return (
                 True,
-                f"Cost per lead (${cost_per_lead:.2f}) exceeds threshold (${threshold:.2f})",
+                f"Cost per lead (${cost_per_lead:.2f}) exceeds threshold "
+                f"(${threshold:.2f})",
             )
 
         return False, "Cost per lead is within threshold"
@@ -332,7 +335,7 @@ def check_cost_per_lead_threshold(threshold: float = 3.0) -> Tuple[bool, str]:
         return False, f"Error checking cost per lead threshold: {e}"
 
 
-def update_cost_metrics_at_batch_end() -> Dict[str, Any]:
+def update_cost_metrics_at_batch_end() -> dict[str, Any]:
     """Update all cost metrics at the end of a batch run.
 
     Returns:

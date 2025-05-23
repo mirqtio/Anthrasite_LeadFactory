@@ -33,7 +33,8 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Callable, Dict, List, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 # Add parent directory to path to allow importing metrics and cost_tracking
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -115,7 +116,7 @@ class BudgetGate:
             # Operation can proceed
             return True
 
-    def get_skipped_operations(self) -> Dict[str, int]:
+    def get_skipped_operations(self) -> dict[str, int]:
         """Get a dictionary of skipped operations and their counts.
 
         Returns:
@@ -163,7 +164,7 @@ budget_gate = BudgetGate()
 def budget_gated(
     operation: str,
     fallback_value: Any = None,
-    fallback_function: Optional[Callable] = None,
+    fallback_function: Callable | None = None,
 ):
     """Decorator to gate a function based on budget status.
 
@@ -212,20 +213,16 @@ if __name__ == "__main__":
     )
     def call_gpt4(prompt):
         # Simulate an expensive API call
-        print(f"Calling GPT-4 with prompt: {prompt}")
         time.sleep(1)
         return {"text": "This is a simulated GPT-4 response"}
 
     # Test with budget gate inactive
     budget_gate.set_override(True)
     result = call_gpt4("Tell me a joke")
-    print(f"Result with gate inactive: {result}")
 
     # Test with budget gate active
     budget_gate.set_override(False)
     cost_tracker.budget_gate_active = True  # Simulate active budget gate
     result = call_gpt4("Tell me another joke")
-    print(f"Result with gate active: {result}")
 
     # Print skipped operations
-    print(f"Skipped operations: {budget_gate.get_skipped_operations()}")

@@ -13,6 +13,8 @@ import pytest
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the deduplication module
+import contextlib
+
 from bin import dedupe
 
 # Constants for test data
@@ -189,10 +191,8 @@ def temp_db():
     yield path, conn
     # Clean up
     conn.close()
-    try:
+    with contextlib.suppress(Exception):
         os.unlink(path)
-    except Exception as e:
-        print(f"Error cleaning up temporary database: {e}", file=sys.stderr)
 
 
 def insert_business(conn, business):

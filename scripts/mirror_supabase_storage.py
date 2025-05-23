@@ -25,9 +25,7 @@ import logging
 import os
 import shutil
 import sys
-import time
 from datetime import datetime
-from pathlib import Path
 
 import requests
 
@@ -61,7 +59,7 @@ def load_environment():
         env_file = ".env.production"
 
     if os.path.exists(env_file):
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#"):

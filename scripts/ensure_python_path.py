@@ -18,15 +18,12 @@ from pathlib import Path
 
 def main():
     """Main function."""
-    print("Ensuring Python path is correctly set up...")
 
     # Get project root
     project_root = Path(__file__).parent.parent.absolute()
-    print(f"Project root: {project_root}")
 
     # Get site-packages directory
     site_packages_dir = site.getsitepackages()[0]
-    print(f"Site-packages directory: {site_packages_dir}")
 
     # Create .pth file
     pth_file = os.path.join(site_packages_dir, "anthrasite_leadfactory.pth")
@@ -35,13 +32,9 @@ def main():
     try:
         with open(pth_file, "w") as f:
             f.write(str(project_root))
-        print(f"Created {pth_file}")
     except PermissionError:
         # Try user site-packages instead
         user_site = site.getusersitepackages()
-        print(
-            f"No permission to write to {site_packages_dir}, trying user site-packages: {user_site}"
-        )
 
         # Create user site-packages directory if it doesn't exist
         os.makedirs(user_site, exist_ok=True)
@@ -50,7 +43,6 @@ def main():
         user_pth_file = os.path.join(user_site, "anthrasite_leadfactory.pth")
         with open(user_pth_file, "w") as f:
             f.write(str(project_root))
-        print(f"Created {user_pth_file}")
 
     # Create a conftest.py file in the project root if it doesn't exist
     conftest_path = project_root / "conftest.py"
@@ -71,7 +63,6 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 """
             )
-        print(f"Created {conftest_path}")
 
     # Create a pytest.ini file in the project root if it doesn't exist
     pytest_ini_path = project_root / "pytest.ini"
@@ -90,9 +81,6 @@ markers =
     bdd: marks tests as BDD tests
 """
             )
-        print(f"Created {pytest_ini_path}")
-
-    print("\nPython path setup complete!")
 
     return 0
 

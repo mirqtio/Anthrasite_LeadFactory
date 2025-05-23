@@ -80,19 +80,19 @@ jobs:
             echo "matrix={\"category\":[\"${{ github.event.inputs.category }}\"]}" >> $GITHUB_OUTPUT
           else
             # Auto mode - use recommendations from prioritize_tests.py
-            CATEGORIES=$(python -c "
+            CATEGORIES=$(python -c '
 import json
-with open('docs/test_recommendations.md', 'r') as f:
+with open("docs/test_recommendations.md", "r") as f:
     content = f.read()
 categories = set()
-for line in content.split('\\n'):
-    if '|' in line and 'Test File' not in line and '---' not in line:
-        parts = line.split('|')
+for line in content.split("\n"):
+    if "|" in line and "Test File" not in line and "---" not in line:
+        parts = line.split("|")
         if len(parts) >= 4:
             category = parts[4].strip()
             categories.add(category)
-print(','.join(categories))
-            ")
+print(",".join(categories))
+            ')
             echo "matrix={\"category\":[\"${CATEGORIES}\"]}" >> $GITHUB_OUTPUT
           fi
 
@@ -190,54 +190,62 @@ print(','.join(categories))
           find artifacts -name "test_status.json" -type f -exec cp {} test_results/ \;
 
           # Merge test results if needed
-          python -c "
+          python -c '
 import json
 import os
 import glob
 
 # Load the main test status file
-main_file = 'test_results/test_status.json'
+main_file = "test_results/test_status.json"
 if os.path.exists(main_file):
-    with open(main_file, 'r') as f:
+    with open(main_file, "r") as f:
         main_data = json.load(f)
 else:
-    main_data = {'tests': {}, 'categories': {}, 'priorities': {}}
+    main_data = {"tests": {}, "categories": {}, "priorities": {}}
 
 # Find all artifact test status files
-artifact_files = glob.glob('artifacts/*/test_results/test_status.json')
+artifact_files = glob.glob("artifacts/*/test_results/test_status.json")
 for file in artifact_files:
     try:
-        with open(file, 'r') as f:
+        with open(file, "r") as f:
             data = json.load(f)
 
         # Merge test data
-        for test_file, test_info in data.get('tests', {}).items():
-            if test_info.get('enabled', False):
-                if test_file in main_data['tests']:
-                    main_data['tests'][test_file]['enabled'] = True
+        for test_file, test_info in data.get("tests", {}).items():
+            if test_info.get("enabled", False):
+                if test_file in main_data["tests"]:
+                    main_data["tests"][test_file]["enabled"] = True
                 else:
-                    main_data['tests'][test_file] = test_info
+                    main_data["tests"][test_file] = test_info
 
         # Update category counts
-        for category, cat_data in data.get('categories', {}).items():
-            if category in main_data['categories']:
-                main_data['categories'][category]['enabled'] = cat_data.get('enabled', 0)
-            else:
-                main_data['categories'][category] = cat_data
+        for category, cat_data in data.get("categories", {}).items():
+            if category not in main_data["categories"]:
+                main_data["categories"][category] = {"total": 0, "enabled": 0, "passed": 0, "failed": 0, "skipped": 0}
+
+            main_data["categories"][category]["total"] += cat_data.get("total", 0)
+            main_data["categories"][category]["enabled"] += cat_data.get("enabled", 0)
+            main_data["categories"][category]["passed"] += cat_data.get("passed", 0)
+            main_data["categories"][category]["failed"] += cat_data.get("failed", 0)
+            main_data["categories"][category]["skipped"] += cat_data.get("skipped", 0)
 
         # Update priority counts
-        for priority, pri_data in data.get('priorities', {}).items():
-            if priority in main_data['priorities']:
-                main_data['priorities'][priority]['enabled'] = pri_data.get('enabled', 0)
-            else:
-                main_data['priorities'][priority] = pri_data
-    except Exception as e:
-        print(f'Error processing {file}: {e}')
+        for priority, pri_data in data.get("priorities", {}).items():
+            if priority not in main_data["priorities"]:
+                main_data["priorities"][priority] = {"total": 0, "enabled": 0, "passed": 0, "failed": 0, "skipped": 0}
 
-# Save the merged data
-with open(main_file, 'w') as f:
+            main_data["priorities"][priority]["total"] += pri_data.get("total", 0)
+            main_data["priorities"][priority]["enabled"] += pri_data.get("enabled", 0)
+            main_data["priorities"][priority]["passed"] += pri_data.get("passed", 0)
+            main_data["priorities"][priority]["failed"] += pri_data.get("failed", 0)
+            main_data["priorities"][priority]["skipped"] += pri_data.get("skipped", 0)
+
+    except Exception as e:
+        print(f"Error processing {file}: {e}")
+
+with open(main_file, "w") as f:
     json.dump(main_data, f, indent=2)
-          "
+          '
 
       - name: Generate final reports
         run: |

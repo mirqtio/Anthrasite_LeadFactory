@@ -18,7 +18,6 @@ Features:
 """
 
 import argparse
-import importlib.util
 import json
 import logging
 import os
@@ -28,7 +27,6 @@ import unittest
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from pathlib import Path
 
 # Setup logging
 logging.basicConfig(
@@ -131,7 +129,7 @@ class JUnitXMLTestRunner(unittest.TextTestRunner):
             self._add_test_case(test_suite, test, "success", None)
 
         # Write XML to file
-        tree = ET.ElementTree(test_suite)
+        ET.ElementTree(test_suite)
         os.makedirs(os.path.dirname(self.xml_file), exist_ok=True)
 
         # Format the XML nicely

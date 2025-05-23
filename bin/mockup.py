@@ -17,7 +17,6 @@ import os
 import re
 import sys
 import time
-from typing import Dict, List, Optional, Tuple
 
 import requests
 from dotenv import load_dotenv
@@ -74,11 +73,11 @@ class GPT4oMockupGenerator:
 
     def generate_mockup(
         self,
-        business_data: Dict,
-        screenshot_url: Optional[str] = None,
+        business_data: dict,
+        screenshot_url: str | None = None,
         style: str = MOCKUP_STYLE,
         resolution: str = MOCKUP_RESOLUTION,
-    ) -> Tuple[Optional[str], Optional[str], Optional[Dict], Optional[str]]:
+    ) -> tuple[str | None, str | None, dict | None, str | None]:
         """Generate a website mockup using GPT-4o.
         Args:
             business_data: Business data including tech stack, performance metrics, etc.
@@ -88,9 +87,7 @@ class GPT4oMockupGenerator:
         Returns:
             Tuple of (mockup_image_base64, mockup_html, usage_data, error_message).
         """
-        print("DEBUG: Entering GPT4oMockupGenerator.generate_mockup")
         if not self.api_key:
-            print("DEBUG: No API key provided, returning None")
             return None, None, None, "OpenAI API key not provided"
         # Prepare prompt
         prompt = self._prepare_prompt(business_data, screenshot_url, style)
@@ -160,8 +157,8 @@ class GPT4oMockupGenerator:
 
     def _prepare_prompt(
         self,
-        business_data: Dict,
-        screenshot_url: Optional[str] = None,
+        business_data: dict,
+        screenshot_url: str | None = None,
         style: str = MOCKUP_STYLE,
     ) -> str:
         """Prepare prompt for GPT-4o.
@@ -245,11 +242,11 @@ class ClaudeMockupGenerator:
 
     def generate_mockup(
         self,
-        business_data: Dict,
-        screenshot_url: Optional[str] = None,
+        business_data: dict,
+        screenshot_url: str | None = None,
         style: str = MOCKUP_STYLE,
         resolution: str = MOCKUP_RESOLUTION,
-    ) -> Tuple[Optional[str], Optional[str], Optional[Dict], Optional[str]]:
+    ) -> tuple[str | None, str | None, dict | None, str | None]:
         """Generate a website mockup using Claude.
         Args:
             business_data: Business data including tech stack, performance metrics, etc.
@@ -339,8 +336,8 @@ class ClaudeMockupGenerator:
 
     def _prepare_prompt(
         self,
-        business_data: Dict,
-        screenshot_url: Optional[str] = None,
+        business_data: dict,
+        screenshot_url: str | None = None,
         style: str = MOCKUP_STYLE,
     ) -> str:
         """Prepare prompt for Claude.
@@ -411,11 +408,11 @@ Format your response as a JSON object with these two fields, enclosed in a code 
 
 
 def get_businesses_for_mockup(
-    limit: Optional[int] = None,
-    business_id: Optional[int] = None,
+    limit: int | None = None,
+    business_id: int | None = None,
     tier: int = CURRENT_TIER,
     force: bool = False,
-) -> List[Dict]:
+) -> list[dict]:
     """Get list of businesses for mockup generation.
     Args:
         limit: Maximum number of businesses to return.
@@ -470,9 +467,9 @@ def get_businesses_for_mockup(
 
 def save_mockup(
     business_id: int,
-    mockup_image_base64: Optional[str],
+    mockup_image_base64: str | None,
     mockup_html: str,
-    usage_data: Dict,
+    usage_data: dict,
     tier: int = 3,
 ) -> bool:
     """Save mockup to database.
@@ -553,7 +550,7 @@ def save_mockup(
         return False
 
 
-def save_mockup_image(image_base64: str, filename: str) -> Optional[str]:
+def save_mockup_image(image_base64: str, filename: str) -> str | None:
     """Save mockup image to Supabase Storage.
     Args:
         image_base64: Base64-encoded image data.
@@ -592,7 +589,7 @@ def save_mockup_image(image_base64: str, filename: str) -> Optional[str]:
 
 
 def generate_business_mockup(
-    business: Dict,
+    business: dict,
     tier: int = CURRENT_TIER,
     style: str = MOCKUP_STYLE,
     resolution: str = MOCKUP_RESOLUTION,

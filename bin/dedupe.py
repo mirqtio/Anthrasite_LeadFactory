@@ -107,7 +107,7 @@ class LevenshteinMatcher:
         # Convert to similarity score (0.0 to 1.0)
         return 1.0 - (distance / max_len)
 
-    def are_potential_duplicates(self, business1: Dict, business2: Dict) -> bool:
+    def are_potential_duplicates(self, business1: dict, business2: dict) -> bool:
         """Check if two businesses are potential duplicates.
         Args:
             business1: First business record.
@@ -158,8 +158,8 @@ class OllamaVerifier:
         self.api_url = api_url
 
     def verify_duplicates(
-        self, business1: Dict, business2: Dict
-    ) -> Tuple[bool, float, str]:
+        self, business1: dict, business2: dict
+    ) -> tuple[bool, float, str]:
         """Verify if two businesses are duplicates using Ollama LLM.
         Args:
             business1: First business record.
@@ -208,7 +208,7 @@ class OllamaVerifier:
             logger.error(f"Error calling Ollama API: {e}")
             return False, 0.0, f"Error: {str(e)}"
 
-    def _prepare_prompt(self, business1: Dict, business2: Dict) -> str:
+    def _prepare_prompt(self, business1: dict, business2: dict) -> str:
         """Prepare prompt for Ollama LLM.
         Args:
             business1: First business record.
@@ -249,7 +249,7 @@ Consider the following:
 Provide your analysis:
 """
 
-    def _parse_response(self, response_text: str) -> Tuple[bool, float, str]:
+    def _parse_response(self, response_text: str) -> tuple[bool, float, str]:
         """Parse Ollama response to extract decision.
         Args:
             response_text: Response text from Ollama.
@@ -272,7 +272,7 @@ Provide your analysis:
         return is_duplicate, confidence, reasoning
 
 
-def get_potential_duplicates(limit: Optional[int] = None) -> List[Dict]:
+def get_potential_duplicates(limit: int | None = None) -> list[dict]:
     """Get list of potential duplicate pairs from the database.
     Args:
         limit: Maximum number of potential duplicate pairs to return.
@@ -299,7 +299,7 @@ def get_potential_duplicates(limit: Optional[int] = None) -> List[Dict]:
         return []
 
 
-def get_business_by_id(business_id: int) -> Optional[Dict]:
+def get_business_by_id(business_id: int) -> dict | None:
     """Get business record by ID.
     Args:
         business_id: Business ID.
@@ -322,8 +322,8 @@ def get_business_by_id(business_id: int) -> Optional[Dict]:
 
 
 def merge_businesses(
-    business1: Dict, business2: Dict, is_dry_run: bool = False
-) -> Optional[int]:
+    business1: dict, business2: dict, is_dry_run: bool = False
+) -> int | None:
     """Merge two business records.
     Args:
         business1: First business record.
@@ -387,7 +387,7 @@ def merge_businesses(
         return None
 
 
-def select_primary_business(business1: Dict, business2: Dict) -> Tuple[int, int]:
+def select_primary_business(business1: dict, business2: dict) -> tuple[int, int]:
     """Select which business should be the primary (kept) and which should be secondary (merged).
     Args:
         business1: First business record.
@@ -405,7 +405,7 @@ def select_primary_business(business1: Dict, business2: Dict) -> Tuple[int, int]
         return business2["id"], business1["id"]
 
 
-def calculate_completeness_score(business: Dict) -> float:
+def calculate_completeness_score(business: dict) -> float:
     """Calculate completeness score for a business record.
     Args:
         business: Business record.
@@ -469,11 +469,11 @@ def flag_for_review(
 
 
 def process_duplicate_pair(
-    duplicate_pair: Dict,
+    duplicate_pair: dict,
     matcher: LevenshteinMatcher,
     verifier: OllamaVerifier,
     is_dry_run: bool = False,
-) -> Tuple[bool, Optional[int]]:
+) -> tuple[bool, int | None]:
     """Process a potential duplicate pair.
     Args:
         duplicate_pair: Potential duplicate pair record.

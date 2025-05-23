@@ -3,17 +3,16 @@
 BDD tests for cost metrics tracking and alerting.
 """
 
-import json
 import os
 import sqlite3
 
 # Add project root to path
 import sys
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from behave import given, step, then, when
+from behave import given, then, when
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

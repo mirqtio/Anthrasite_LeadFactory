@@ -7,17 +7,19 @@ Prometheus metrics for batch completion monitoring.
 import os
 import sys
 import time
-
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from pathlib import Path
 
 # Import prometheus client
 from prometheus_client import Counter, Gauge, Histogram
 
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
 # Import batch tracker functions at runtime to avoid circular imports
 # This prevents the circular import issue between batch_tracker.py and metrics.py
 # Import logging configuration
-from utils.logging_config import get_logger
+from utils.logging_config import get_logger  # noqa: E402
 
 # Set up logging
 logger = get_logger(__name__)

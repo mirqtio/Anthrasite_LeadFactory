@@ -116,7 +116,7 @@ def test_generate_mockup_success(mock_generators, test_db):
         business = cursor.fetchone()
         # Convert row to dict
         columns = [description[0] for description in cursor.description]
-        business_data = dict(zip(columns, business))
+        business_data = dict(zip(columns, business, strict=False))
         # Call the function under test
         result = generate_business_mockup(
             business_data,
@@ -158,7 +158,7 @@ def test_generate_mockup_medium_scoring(mock_generators, test_db):
         business = cursor.fetchone()
         # Convert row to dict
         columns = [description[0] for description in cursor.description]
-        business_data = dict(zip(columns, business))
+        business_data = dict(zip(columns, business, strict=False))
         # Call the function under test
         result = generate_business_mockup(
             business_data,
@@ -200,7 +200,7 @@ def test_generate_mockup_low_scoring(mock_generators, test_db):
         business = cursor.fetchone()
         # Convert row to dict
         columns = [description[0] for description in cursor.description]
-        business_data = dict(zip(columns, business))
+        business_data = dict(zip(columns, business, strict=False))
         # Call the function under test
         result = generate_business_mockup(
             business_data, tier=1, style="modern", resolution="1024x1024"
@@ -241,7 +241,7 @@ def test_fallback_to_claude(mock_generators, test_db):
         business = cursor.fetchone()
         # Convert row to dict
         columns = [description[0] for description in cursor.description]
-        business_data = dict(zip(columns, business))
+        business_data = dict(zip(columns, business, strict=False))
         # Call the function under test
         result = generate_business_mockup(
             business_data, tier=3, style="modern", resolution="1024x1024"
@@ -279,7 +279,7 @@ def test_both_models_failing(mock_generators, test_db):
         business = cursor.fetchone()
         # Convert row to dict
         columns = [description[0] for description in cursor.description]
-        business_data = dict(zip(columns, business))
+        business_data = dict(zip(columns, business, strict=False))
         # Call the function under test
         result = generate_business_mockup(
             business_data, tier=3, style="modern", resolution="1024x1024"
@@ -323,7 +323,7 @@ def test_partial_success_html_only(mock_generators, test_db):
         business = cursor.fetchone()
         # Convert row to dict
         columns = [description[0] for description in cursor.description]
-        business_data = dict(zip(columns, business))
+        business_data = dict(zip(columns, business, strict=False))
         # Call the function under test
         result = generate_business_mockup(
             business_data, tier=3, style="modern", resolution="1024x1024"

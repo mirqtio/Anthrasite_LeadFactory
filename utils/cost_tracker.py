@@ -5,7 +5,8 @@ Cost tracking utilities for API usage.
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import Any
 
 # Import logger
 from utils.logging_config import logger
@@ -18,25 +19,31 @@ DAILY_THRESHOLD = float(os.getenv("DAILY_THRESHOLD", "0.8"))  # 80% of daily bud
 MONTHLY_THRESHOLD = float(os.getenv("MONTHLY_THRESHOLD", "0.8"))
 SCALING_GATE_ENABLED = os.getenv("SCALING_GATE_ENABLED", "true").lower() == "true"
 # Path to scaling gate file
-SCALING_GATE_FILE = os.getenv(
-    "SCALING_GATE_FILE",
-    os.path.join(os.path.dirname(__file__), "../data/scaling_gate.json"),
+SCALING_GATE_FILE = Path(
+    os.getenv(
+        "SCALING_GATE_FILE",
+        Path(__file__).parent.parent / "data" / "scaling_gate.json",
+    )
 )
 
 # Path to scaling gate lock file
-SCALING_GATE_LOCKFILE = os.getenv(
-    "SCALING_GATE_LOCKFILE",
-    os.path.join(os.path.dirname(__file__), "../data/scaling_gate.lock"),
+SCALING_GATE_LOCKFILE = Path(
+    os.getenv(
+        "SCALING_GATE_LOCKFILE",
+        Path(__file__).parent.parent / "data" / "scaling_gate.lock",
+    )
 )
 
 # Path to scaling gate history file
-SCALING_GATE_HISTORY_FILE = os.getenv(
-    "SCALING_GATE_HISTORY_FILE",
-    os.path.join(os.path.dirname(__file__), "../data/scaling_gate_history.json"),
+SCALING_GATE_HISTORY_FILE = Path(
+    os.getenv(
+        "SCALING_GATE_HISTORY_FILE",
+        Path(__file__).parent.parent / "data" / "scaling_gate_history.json",
+    )
 )
 
 # Ensure the scaling gate file directory exists
-os.makedirs(os.path.dirname(SCALING_GATE_FILE), exist_ok=True)
+SCALING_GATE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 # Critical operations that bypass the scaling gate
 DEFAULT_CRITICAL_OPERATIONS = {
@@ -51,7 +58,7 @@ def track_api_cost(
     operation: str,
     cost_dollars: float,
     tier: str = "default",
-    business_id: Optional[int] = None,
+    business_id: int | None = None,
 ) -> bool:
     """
     Track API cost for a service and operation.
@@ -75,7 +82,7 @@ def track_api_cost(
     return True
 
 
-def get_daily_cost(service: Optional[str] = None) -> float:
+def get_daily_cost(service: str | None = None) -> float:
     """
     Get the total API cost for today.
 
@@ -100,7 +107,7 @@ def get_daily_cost(service: Optional[str] = None) -> float:
         return 7.0
 
 
-def get_monthly_cost(service: Optional[str] = None) -> float:
+def get_monthly_cost(service: str | None = None) -> float:
     """
     Get the total API cost for the current month.
 
@@ -125,7 +132,7 @@ def get_monthly_cost(service: Optional[str] = None) -> float:
         return 210.75
 
 
-def get_cost_by_service() -> Dict[str, float]:
+def get_cost_by_service() -> dict[str, float]:
     """
     Get the total API cost for each service for the current month.
 
@@ -142,7 +149,7 @@ def get_cost_by_service() -> Dict[str, float]:
     }
 
 
-def get_cost_by_operation(service: str) -> Dict[str, float]:
+def get_cost_by_operation(service: str) -> dict[str, float]:
     """
     Get the total API cost for each operation for a service for the current month.
 
@@ -171,7 +178,7 @@ def get_cost_by_operation(service: str) -> Dict[str, float]:
         }
 
 
-def get_daily_costs(days: int = 30) -> Dict[str, float]:
+def get_daily_costs(days: int = 30) -> dict[str, float]:
     """
     Get the total API cost for each day for the last N days.
 
@@ -194,7 +201,7 @@ def get_daily_costs(days: int = 30) -> Dict[str, float]:
     return result
 
 
-def check_budget_thresholds() -> Dict[str, Any]:
+def check_budget_thresholds() -> dict[str, Any]:
     """
     Check if the daily or monthly budget thresholds have been exceeded.
 
@@ -236,7 +243,7 @@ def check_budget_thresholds() -> Dict[str, Any]:
     }
 
 
-def is_scaling_gate_active() -> Tuple[bool, str]:
+def is_scaling_gate_active() -> tuple[bool, str]:
     """
     Check if the scaling gate is currently active.
 
@@ -253,9 +260,9 @@ def is_scaling_gate_active() -> Tuple[bool, str]:
         return True, "Budget exceeded"
 
     # Check if the scaling gate file exists and is active
-    if os.path.exists(SCALING_GATE_FILE):
+    if SCALING_GATE_FILE.exists():
         try:
-            with open(SCALING_GATE_FILE, "r") as f:
+            with SCALING_GATE_FILE.open() as f:
                 data = json.load(f)
                 if data.get("active", False):
                     return True, data.get("reason", "Unknown reason")
@@ -282,7 +289,7 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
         return False
 
     # Create the scaling gate file if it doesn't exist
-    if not os.path.exists(SCALING_GATE_FILE):
+    if not SCALING_GATE_FILE.exists():
         data = {
             "active": active,
             "reason": reason,
@@ -291,7 +298,7 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
         }
     else:
         try:
-            with open(SCALING_GATE_FILE, "r") as f:
+            with SCALING_GATE_FILE.open() as f:
                 data = json.load(f)
                 # Only add to history if the status changed
                 if data.get("active", False) != active:
@@ -315,7 +322,7 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
             }
 
     try:
-        with open(SCALING_GATE_FILE, "w") as f:
+        with SCALING_GATE_FILE.open("w") as f:
             json.dump(data, f, indent=2)
         return True
     except Exception as e:
@@ -326,8 +333,8 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
 def check_operation_permission(
     service: str,
     operation: str,
-    critical_operations: Optional[Dict[str, List[str]]] = None,
-) -> Tuple[bool, str]:
+    critical_operations: dict[str, list[str]] | None = None,
+) -> tuple[bool, str]:
     """
     Check if an operation is permitted based on the scaling gate status.
 
@@ -369,7 +376,7 @@ def check_operation_permission(
 def should_allow_operation(
     service: str,
     operation: str,
-    critical_operations: Optional[Dict[str, List[str]]] = None,
+    critical_operations: dict[str, list[str]] | None = None,
 ) -> bool:
     """
     Determine if an operation should be allowed based on the scaling gate status.
@@ -388,7 +395,7 @@ def should_allow_operation(
     return permitted
 
 
-def get_cost_metrics() -> List[str]:
+def get_cost_metrics() -> list[str]:
     """
     Get Prometheus metrics for API costs.
 
@@ -418,31 +425,38 @@ def get_cost_metrics() -> List[str]:
         f'api_cost_daily_budget_dollars{{}} {budget_status["daily"]["budget"]}'
     )
     metrics.append(
-        f'api_cost_daily_threshold_dollars{{}} {budget_status["daily"]["threshold"]}'
+        f"api_cost_daily_threshold_dollars{{}} "
+        f'{budget_status["daily"]["threshold"]}'
     )
     metrics.append(
         f'api_cost_monthly_budget_dollars{{}} {budget_status["monthly"]["budget"]}'
     )
     metrics.append(
-        f'api_cost_monthly_threshold_dollars{{}} {budget_status["monthly"]["threshold"]}'
+        f"api_cost_monthly_threshold_dollars{{}} "
+        f'{budget_status["monthly"]["threshold"]}'
     )
     metrics.append(
-        f'api_cost_daily_threshold_exceeded{{}} {int(budget_status["daily"]["threshold_exceeded"])}'
+        f"api_cost_daily_threshold_exceeded{{}} "
+        f'{int(budget_status["daily"]["threshold_exceeded"])}'
     )
     metrics.append(
-        f'api_cost_monthly_threshold_exceeded{{}} {int(budget_status["monthly"]["threshold_exceeded"])}'
+        f"api_cost_monthly_threshold_exceeded{{}} "
+        f'{int(budget_status["monthly"]["threshold_exceeded"])}'
     )
     metrics.append(
-        f'api_cost_daily_budget_exceeded{{}} {int(budget_status["daily"]["budget_exceeded"])}'
+        f"api_cost_daily_budget_exceeded{{}} "
+        f'{int(budget_status["daily"]["budget_exceeded"])}'
     )
     metrics.append(
-        f'api_cost_monthly_budget_exceeded{{}} {int(budget_status["monthly"]["budget_exceeded"])}'
+        f"api_cost_monthly_budget_exceeded{{}} "
+        f'{int(budget_status["monthly"]["budget_exceeded"])}'
     )
     metrics.append(
-        f'api_cost_daily_percent_used{{}} {budget_status["daily"]["percent_used"]}'
+        f"api_cost_daily_percent_used{{}} " f'{budget_status["daily"]["percent_used"]}'
     )
     metrics.append(
-        f'api_cost_monthly_percent_used{{}} {budget_status["monthly"]["percent_used"]}'
+        f"api_cost_monthly_percent_used{{}} "
+        f'{budget_status["monthly"]["percent_used"]}'
     )
 
     # Add scaling gate metrics
@@ -453,7 +467,7 @@ def get_cost_metrics() -> List[str]:
     return metrics
 
 
-def get_daily_costs_endpoint() -> Dict[str, float]:
+def get_daily_costs_endpoint() -> dict[str, float]:
     """
     Get the total API cost for each day for the last 30 days.
 
@@ -463,7 +477,7 @@ def get_daily_costs_endpoint() -> Dict[str, float]:
     return get_daily_costs(30)
 
 
-def get_monthly_costs_endpoint() -> Dict[str, float]:
+def get_monthly_costs_endpoint() -> dict[str, float]:
     """
     Get the total API cost for each month for the last 12 months.
 
@@ -491,7 +505,7 @@ def get_monthly_costs_endpoint() -> Dict[str, float]:
         return {}
 
 
-def get_cost_breakdown_endpoint() -> Dict[str, Any]:
+def get_cost_breakdown_endpoint() -> dict[str, Any]:
     """
     Get a breakdown of API costs by service and operation.
 
@@ -501,7 +515,7 @@ def get_cost_breakdown_endpoint() -> Dict[str, Any]:
     try:
         cost_by_service = get_cost_by_service()
         cost_by_operation = {}
-        for service in cost_by_service.keys():
+        for service in cost_by_service:
             cost_by_operation[service] = get_cost_by_operation(service)
 
         return {
@@ -517,7 +531,7 @@ def get_cost_breakdown_endpoint() -> Dict[str, Any]:
         }
 
 
-def get_budget_status_endpoint() -> Dict[str, Any]:
+def get_budget_status_endpoint() -> dict[str, Any]:
     """
     Get the current budget status.
 
@@ -527,7 +541,7 @@ def get_budget_status_endpoint() -> Dict[str, Any]:
     return check_budget_thresholds()
 
 
-def get_scaling_gate_status_endpoint() -> Dict[str, Any]:
+def get_scaling_gate_status_endpoint() -> dict[str, Any]:
     """
     Get the current scaling gate status.
 
@@ -539,8 +553,8 @@ def get_scaling_gate_status_endpoint() -> Dict[str, Any]:
         active, reason = is_scaling_gate_active()
 
         # Read the scaling gate file for history
-        if os.path.exists(SCALING_GATE_FILE):
-            with open(SCALING_GATE_FILE, "r") as f:
+        if SCALING_GATE_FILE.exists():
+            with SCALING_GATE_FILE.open() as f:
                 data = json.load(f)
                 history = data.get("history", [])
         else:
@@ -592,11 +606,11 @@ def get_scaling_gate_history():
         List[Dict[str, Any]]: A list of scaling gate status changes
     """
     # Check if the scaling gate file exists
-    if not os.path.exists(SCALING_GATE_FILE):
+    if not SCALING_GATE_FILE.exists():
         return []
 
     try:
-        with open(SCALING_GATE_FILE, "r") as f:
+        with SCALING_GATE_FILE.open() as f:
             data = json.load(f)
             if "history" in data:
                 return data["history"]
@@ -629,7 +643,7 @@ def export_cost_report(output_file: str = "cost_report.json"):
     }
 
     try:
-        with open(output_file, "w") as f:
+        with Path(output_file).open("w") as f:
             json.dump(report, f, indent=2)
         return True
     except Exception as e:
@@ -650,7 +664,7 @@ def export_prometheus_metrics(output_file: str = "metrics.txt"):
     metrics = get_cost_metrics()
 
     try:
-        with open(output_file, "w") as f:
+        with Path(output_file).open("w") as f:
             f.write("\n".join(metrics))
         return True
     except Exception as e:

@@ -56,7 +56,7 @@ class TechStackAnalyzer:
         self.wappalyzer = Wappalyzer.latest()
         logger.info("Wappalyzer initialized successfully")
 
-    def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[dict, str | None]:
         """Analyze a website to identify technologies used.
         Args:
             url: Website URL.
@@ -121,14 +121,14 @@ class TechStackAnalyzer:
 class PageSpeedAnalyzer:
     """Analyzes website performance using Google PageSpeed Insights API."""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """Initialize the PageSpeed analyzer.
         Args:
             api_key: Google PageSpeed Insights API key.
         """
         self.api_key = api_key
 
-    def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[dict, str | None]:
         """Analyze a website's performance using PageSpeed Insights.
         Args:
             url: Website URL.
@@ -210,7 +210,7 @@ class ScreenshotGenerator:
         """
         self.api_key = api_key
 
-    def capture_screenshot(self, url: str) -> Tuple[Optional[str], Optional[str]]:
+    def capture_screenshot(self, url: str) -> tuple[str | None, str | None]:
         """Capture a screenshot of a website.
         Args:
             url: Website URL.
@@ -270,7 +270,7 @@ class SEMrushAnalyzer:
         """
         self.api_key = api_key
 
-    def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[dict, str | None]:
         """Analyze a website using SEMrush Site Audit.
         Args:
             url: Website URL.
@@ -322,8 +322,8 @@ class SEMrushAnalyzer:
 
 
 def get_businesses_to_enrich(
-    limit: Optional[int] = None, business_id: Optional[int] = None
-) -> List[Dict]:
+    limit: int | None = None, business_id: int | None = None
+) -> list[dict]:
     """Get list of businesses to enrich.
     Args:
         limit: Maximum number of businesses to return.
@@ -365,10 +365,10 @@ def get_businesses_to_enrich(
 
 def save_features(
     business_id: int,
-    tech_stack: Dict,
-    page_speed: Dict,
-    screenshot_url: Optional[str] = None,
-    semrush_json: Optional[Dict] = None,
+    tech_stack: dict,
+    page_speed: dict,
+    screenshot_url: str | None = None,
+    semrush_json: dict | None = None,
 ) -> bool:
     """Save features information to database.
     Args:
@@ -403,7 +403,7 @@ def save_features(
         return False
 
 
-def enrich_business(business: Dict, tier: int = CURRENT_TIER) -> bool:
+def enrich_business(business: dict, tier: int = CURRENT_TIER) -> bool:
     """Enrich a business with tech stack and performance data.
     Args:
         business: Business information.

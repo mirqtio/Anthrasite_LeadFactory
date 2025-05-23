@@ -18,14 +18,11 @@ Features:
 """
 
 import argparse
-import json
 import logging
 import os
 import shutil
 import subprocess
 import sys
-from datetime import datetime
-from pathlib import Path
 
 # Setup logging
 logging.basicConfig(
@@ -66,10 +63,10 @@ def run_command(command, cwd=None, env=None, shell=False):
         )
 
         if result.returncode == 0:
-            logger.info(f"Command succeeded")
+            logger.info("Command succeeded")
             return True, result.stdout
         else:
-            logger.error(f"Command failed")
+            logger.error("Command failed")
             logger.error(f"Error: {result.stderr}")
             return False, result.stderr
     except Exception as e:
@@ -147,7 +144,7 @@ def install_wal_g():
     for command in commands:
         success, output = run_command(command)
         if not success:
-            logger.error(f"Failed to install WAL-G")
+            logger.error("Failed to install WAL-G")
             return False
 
     logger.info("WAL-G installed successfully")
@@ -168,7 +165,7 @@ def create_wal_g_config():
         env_file_path = ".env.production"
 
     if os.path.exists(env_file_path):
-        with open(env_file_path, "r") as f:
+        with open(env_file_path) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#"):

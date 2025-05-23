@@ -4,20 +4,19 @@ Feature: Seed helpers
 """
 
 import csv
-import os
 import sqlite3
+from pathlib import Path
 
 import pytest
 import yaml
 
 # Path constants
-DB_MIGRATIONS_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "db", "migrations"
-)
-ETC_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "etc")
-MIGRATION_FILE = os.path.join(DB_MIGRATIONS_PATH, "2025-05-19_init.sql")
-ZIPS_FILE = os.path.join(ETC_PATH, "zips.csv")
-VERTICALS_FILE = os.path.join(ETC_PATH, "verticals.yml")
+PROJECT_ROOT = Path(__file__).parent.parent
+DB_MIGRATIONS_PATH = PROJECT_ROOT / "db" / "migrations"
+ETC_PATH = PROJECT_ROOT / "etc"
+MIGRATION_FILE = DB_MIGRATIONS_PATH / "2025-05-19_init.sql"
+ZIPS_FILE = ETC_PATH / "zips.csv"
+VERTICALS_FILE = ETC_PATH / "verticals.yml"
 
 
 @pytest.fixture
@@ -30,27 +29,23 @@ def db_connection():
 
 def test_migration_file_exists():
     """Test that the migration file exists"""
-    assert os.path.exists(
-        MIGRATION_FILE
-    ), f"Migration file {MIGRATION_FILE} does not exist"
+    assert MIGRATION_FILE.exists(), f"Migration file {MIGRATION_FILE} does not exist"
 
 
 def test_zips_file_exists():
     """Test that the zips.csv file exists"""
-    assert os.path.exists(ZIPS_FILE), f"Zips file {ZIPS_FILE} does not exist"
+    assert ZIPS_FILE.exists(), f"Zips file {ZIPS_FILE} does not exist"
 
 
 def test_verticals_file_exists():
     """Test that the verticals.yml file exists"""
-    assert os.path.exists(
-        VERTICALS_FILE
-    ), f"Verticals file {VERTICALS_FILE} does not exist"
+    assert VERTICALS_FILE.exists(), f"Verticals file {VERTICALS_FILE} does not exist"
 
 
 def test_zips_contains_required_zips():
     """Test that zips.csv contains the required zip codes"""
     required_zips = ["10002", "98908", "46032"]
-    with open(ZIPS_FILE, "r") as f:
+    with ZIPS_FILE.open() as f:
         reader = csv.DictReader(f)
         zips = [row["zip"] for row in reader]
     for zip_code in required_zips:
@@ -60,7 +55,7 @@ def test_zips_contains_required_zips():
 def test_verticals_contains_required_verticals():
     """Test that verticals.yml contains the required verticals"""
     required_verticals = ["HVAC", "Plumbers", "Vets"]
-    with open(VERTICALS_FILE, "r") as f:
+    with VERTICALS_FILE.open() as f:
         data = yaml.safe_load(f)
     vertical_names = [v["name"] for v in data["verticals"]]
     for vertical in required_verticals:
@@ -71,7 +66,7 @@ def test_verticals_contains_required_verticals():
 
 def test_schema_creation(db_connection):
     """Test that the schema can be created successfully"""
-    with open(MIGRATION_FILE, "r") as f:
+    with MIGRATION_FILE.open() as f:
         sql = f.read()
     cursor = db_connection.cursor()
     cursor.executescript(sql)
@@ -100,12 +95,12 @@ def test_seed_zip_queue(db_connection):
     Then zip_queue has row where zip="10002" AND done=false
     """
     # Setup the database
-    with open(MIGRATION_FILE, "r") as f:
+    with MIGRATION_FILE.open() as f:
         sql = f.read()
     cursor = db_connection.cursor()
     cursor.executescript(sql)
     # Read the zips from the CSV
-    with open(ZIPS_FILE, "r") as f:
+    with ZIPS_FILE.open() as f:
         reader = csv.DictReader(f)
         zips_data = list(reader)
     # Insert the zips into the database

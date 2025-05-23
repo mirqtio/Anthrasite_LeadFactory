@@ -5,7 +5,6 @@ Tests for the nightly batch processing script.
 import os
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 from unittest.mock import MagicMock, call, patch
@@ -123,7 +122,7 @@ class TestRunNightly(unittest.TestCase):
         )
 
         # Verify that the Python code to record metrics was called
-        expected_calls = [
+        [
             call(
                 [
                     "python",
@@ -169,7 +168,7 @@ class TestRunNightly(unittest.TestCase):
         )
 
         # Verify that the Supabase usage check was called
-        expected_call = call(
+        call(
             ["python", "scripts/monitor_supabase_usage.py", "--alert-threshold", "80"],
             cwd=self.test_dir,
             check=True,

@@ -58,7 +58,7 @@ class MinimalTestTracker:
         """Load existing test status from file with error handling."""
         try:
             if STATUS_FILE.exists():
-                with open(STATUS_FILE, "r") as f:
+                with open(STATUS_FILE) as f:
                     self.tests = json.load(f)
                 logger.info(f"Loaded test status from {STATUS_FILE}")
             else:
@@ -92,7 +92,7 @@ class MinimalTestTracker:
             for test_file in test_files:
                 try:
                     rel_path = test_file.relative_to(project_root)
-                    with open(test_file, "r") as f:
+                    with open(test_file) as f:
                         content = f.read()
 
                     # Find test functions (def test_*)
@@ -170,7 +170,7 @@ class MinimalTestTracker:
             report_path = project_root / "test_results" / "report.json"
             if report_path.exists():
                 try:
-                    with open(report_path, "r") as f:
+                    with open(report_path) as f:
                         report = json.load(f)
 
                     # Update test status based on report
@@ -262,10 +262,7 @@ class MinimalTestTracker:
             # Write report
             report_text = "\n".join(report_lines)
 
-            if output_file:
-                output_path = Path(output_file)
-            else:
-                output_path = REPORT_FILE
+            output_path = Path(output_file) if output_file else REPORT_FILE
 
             # Ensure directory exists
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -274,7 +271,6 @@ class MinimalTestTracker:
                 f.write(report_text)
 
             logger.info(f"Report generated: {output_path}")
-            print(report_text)
 
             return report_text
         except Exception as e:
@@ -309,9 +305,7 @@ def main():
         tracker = MinimalTestTracker()
 
         if args.run_tests:
-            exit_code = tracker.run_tests(
-                test_pattern=args.test_pattern, ci_mode=args.ci_mode
-            )
+            tracker.run_tests(test_pattern=args.test_pattern, ci_mode=args.ci_mode)
 
         if args.report or (not args.run_tests):
             tracker.generate_report(output_file=args.output)

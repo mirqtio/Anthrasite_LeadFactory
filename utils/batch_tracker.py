@@ -1,25 +1,28 @@
 """
 Anthrasite Lead-Factory: Batch Completion Tracker
-This module tracks batch completion status and provides alerts if batches don't complete on time.
+This module tracks batch completion status and provides alerts if batches don't
+complete on time.
 """
 
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import logging configuration
-from .logging_config import get_logger
+from utils.logging_config import get_logger  # noqa: E402
 
-# Import metrics for updating batch completion gauge
-from .metrics import BATCH_COMPLETION_GAUGE
-
-# Set up logging
+# Initialize logger
 logger = get_logger(__name__)
 
 # Constants
-BATCH_TRACKER_FILE = os.getenv("BATCH_TRACKER_FILE", "data/batch_tracker.json")
+DEFAULT_TRACKER_PATH = Path("data") / "batch_tracker.json"
+BATCH_TRACKER_FILE = Path(os.getenv("BATCH_TRACKER_FILE", str(DEFAULT_TRACKER_PATH)))
 BATCH_COMPLETION_DEADLINE_HOUR = int(
     os.getenv("BATCH_COMPLETION_DEADLINE_HOUR", "5")
 )  # 5:00 AM EST
@@ -30,10 +33,12 @@ BATCH_COMPLETION_TIMEZONE = os.getenv(
     "BATCH_COMPLETION_TIMEZONE", "America/New_York"
 )  # EST
 
+# Import metrics for updating batch completion gauge
+from utils.metrics import BATCH_COMPLETION_GAUGE  # noqa: E402
 
-def ensure_tracker_file_exists() -> None:
+
+def ensure_tracker_file_exists(tracker_file: Path = BATCH_TRACKER_FILE) -> None:
     """Ensure the batch tracker file exists."""
-    tracker_file = Path(BATCH_TRACKER_FILE)
     tracker_file.parent.mkdir(parents=True, exist_ok=True)
 
     if not tracker_file.exists():
@@ -45,16 +50,16 @@ def ensure_tracker_file_exists() -> None:
             "current_batch_stages": {},
             "alerts": [],
         }
-        with open(tracker_file, "w") as f:
+        with tracker_file.open("w") as f:
             json.dump(initial_data, f, indent=2)
         logger.info(f"Created batch tracker file: {tracker_file}")
 
 
-def load_tracker_data() -> Dict:
+def load_tracker_data() -> dict:
     """Load batch tracker data from file."""
     ensure_tracker_file_exists()
     try:
-        with open(BATCH_TRACKER_FILE, "r") as f:
+        with BATCH_TRACKER_FILE.open() as f:
             data = json.load(f)
         return data
     except Exception as e:
@@ -68,7 +73,7 @@ def load_tracker_data() -> Dict:
         }
 
 
-def save_tracker_data(data: Dict) -> bool:
+def save_tracker_data(data: dict) -> bool:
     """Save batch tracker data to file.
 
     Args:
@@ -79,7 +84,7 @@ def save_tracker_data(data: Dict) -> bool:
     """
     ensure_tracker_file_exists()
     try:
-        with open(BATCH_TRACKER_FILE, "w") as f:
+        with BATCH_TRACKER_FILE.open("w") as f:
             json.dump(data, f, indent=2)
         return True
     except Exception as e:
@@ -152,7 +157,8 @@ def record_batch_stage_completion(stage: str, completion_percentage: float) -> b
         success = save_tracker_data(data)
         if success:
             logger.info(
-                f"Recorded {stage} stage completion: {completion_percentage}% at {current_time}"
+                f"Recorded {stage} stage completion: "
+                f"{completion_percentage}% at {current_time}"
             )
 
         return success
@@ -208,7 +214,7 @@ def record_batch_end() -> bool:
         return False
 
 
-def check_batch_completion() -> Tuple[bool, Optional[str]]:
+def check_batch_completion() -> tuple[bool, str | None]:
     """Check if the current batch completed on time.
 
     Returns:
@@ -247,7 +253,10 @@ def check_batch_completion() -> Tuple[bool, Optional[str]]:
                     return True, "Batch completed today"
                 else:
                     # Batch didn't complete today
-                    reason = f"Last batch completed on {last_end_est.date()}, not today ({current_time.date()})"
+                    reason = (
+                        f"Last batch completed on {last_end_est.date()}, "
+                        f"not today ({current_time.date()})"
+                    )
                     logger.warning(reason)
 
                     # Record alert
@@ -283,7 +292,7 @@ def check_batch_completion() -> Tuple[bool, Optional[str]]:
         return False, f"Error checking batch completion: {e}"
 
 
-def get_batch_status() -> Dict:
+def get_batch_status() -> dict:
     """Get the current batch status.
 
     Returns:

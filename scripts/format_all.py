@@ -68,20 +68,17 @@ def main():
     python_files.sort()  # Sort for consistent output
 
     # Print summary
-    print(f"Found {len(python_files)} Python files to format")
 
     # Build the command
     cmd = ["black"]
     cmd.extend(python_files)
 
     # Run Black
-    print(f"Running Black on {len(python_files)} files...")
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     # Print the output
-    print(result.stdout)
     if result.stderr:
-        print(result.stderr, file=sys.stderr)
+        pass
 
     # Return the exit code
     return result.returncode

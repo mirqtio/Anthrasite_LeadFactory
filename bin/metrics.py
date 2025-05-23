@@ -16,7 +16,6 @@ Usage:
 """
 
 import argparse
-import json
 import logging
 import os
 import sys
@@ -248,7 +247,7 @@ class LeadFactoryMetrics:
         """Update system metrics."""
         try:
             # Memory usage
-            with open("/proc/meminfo", "r") as f:
+            with open("/proc/meminfo") as f:
                 mem_info = {}
                 for line in f:
                     key, value = line.split(":", 1)
@@ -265,7 +264,7 @@ class LeadFactoryMetrics:
             self.system_memory_usage_mb.set(used_memory_mb)
 
             # CPU usage
-            with open("/proc/stat", "r") as f:
+            with open("/proc/stat") as f:
                 cpu_line = f.readline()
 
             cpu_parts = cpu_line.split()
@@ -280,7 +279,7 @@ class LeadFactoryMetrics:
             self.system_cpu_usage_percent.set(usage)
 
             # Disk usage
-            with open("/proc/mounts", "r") as f:
+            with open("/proc/mounts") as f:
                 for line in f:
                     parts = line.split()
                     if len(parts) >= 2:

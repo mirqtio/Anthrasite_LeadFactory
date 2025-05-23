@@ -6,8 +6,9 @@ import os
 import sqlite3
 import sys
 import tempfile
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Dict, Generator
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -32,7 +33,7 @@ def target_zip_code() -> str:
 
 
 @pytest.fixture
-def target_vertical() -> Dict[str, Any]:
+def target_vertical() -> dict[str, Any]:
     """Return a test vertical configuration."""
     return {
         "name": "restaurants",
@@ -131,8 +132,7 @@ def temp_db() -> Generator[str, None, None]:
             )
             conn.commit()
         yield temp_db_path
-    except Exception as e:
-        print(f"Error setting up test database: {e}")
+    except Exception:
         raise
     finally:
         # Clean up
@@ -252,10 +252,6 @@ def test_scrape_businesses(
         target_zip_code, test_vertical, limit=2
     )
     # Print debug information
-    print("\n=== Debug Information ===")
-    print(f"Yelp count: {yelp_count}, Google count: {google_count}")
-    print("Yelp API calls:", mock_yelp.search_businesses.call_args_list)
-    print("Google API calls:", mock_google.search_places.call_args_list)
     # Verify the results
     assert yelp_count == 2, f"Expected 2 Yelp businesses, got {yelp_count}"
     assert google_count == 2, f"Expected 2 Google businesses, got {google_count}"
@@ -263,15 +259,12 @@ def test_scrape_businesses(
     with db_connection(temp_db) as conn:
         # Check businesses table
         cursor = conn.execute("SELECT * FROM businesses")
-        businesses = cursor.fetchall()
-        print(f"Businesses in database: {businesses}")
+        cursor.fetchall()
         # Check for the specific businesses we expect
         cursor = conn.execute("SELECT COUNT(*) FROM businesses WHERE source = 'yelp'")
         yelp_count = cursor.fetchone()[0]
         cursor = conn.execute("SELECT COUNT(*) FROM businesses WHERE source = 'google'")
         google_count = cursor.fetchone()[0]
-        print(f"Yelp businesses in DB: {yelp_count}")
-        print(f"Google businesses in DB: {google_count}")
         # Verify we have the expected number of businesses from each source
         assert yelp_count == 2, f"Expected 2 Yelp businesses in DB, got {yelp_count}"
         assert (

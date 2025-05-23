@@ -11,7 +11,7 @@ import sqlite3
 import sys
 import time
 from contextlib import contextmanager
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import psycopg2
 import psycopg2.extras
@@ -219,7 +219,7 @@ def postgres_connection(db_url: str):
         conn.close()
 
 
-def get_sqlite_tables(sqlite_conn) -> List[str]:
+def get_sqlite_tables(sqlite_conn) -> list[str]:
     """Get list of tables in SQLite database.
 
     Args:
@@ -235,7 +235,7 @@ def get_sqlite_tables(sqlite_conn) -> List[str]:
     return [row[0] for row in cursor.fetchall()]
 
 
-def get_sqlite_table_schema(sqlite_conn, table_name: str) -> List[Tuple[str, str]]:
+def get_sqlite_table_schema(sqlite_conn, table_name: str) -> list[tuple[str, str]]:
     """Get schema of a table in SQLite database.
 
     Args:
@@ -277,7 +277,7 @@ def create_postgres_tables(pg_conn):
     pg_conn.commit()
 
 
-def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
+def get_sqlite_data(sqlite_conn, table_name: str) -> list[dict[str, Any]]:
     """Get data from a table in SQLite database.
 
     Args:
@@ -298,10 +298,10 @@ def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
     # This is safe because we've validated the table_name above
     cursor.execute(f"SELECT * FROM {table_name}")  # nosec B608
     columns = [column[0] for column in cursor.description]
-    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
 
 
-def insert_postgres_data(pg_conn, table_name: str, data: List[Dict[str, Any]]):
+def insert_postgres_data(pg_conn, table_name: str, data: list[dict[str, Any]]):
     """Insert data into a table in Postgres database.
 
     Args:
@@ -340,9 +340,7 @@ def insert_postgres_data(pg_conn, table_name: str, data: List[Dict[str, Any]]):
     total_rows = len(data)
     for i in range(0, total_rows, batch_size):
         batch = data[i : i + batch_size]
-        batch_values = [
-            [row[col] if col in row else None for col in columns] for row in batch
-        ]
+        batch_values = [[row.get(col, None) for col in columns] for row in batch]
         cursor.executemany(sql, batch_values)
         pg_conn.commit()
         logger.info(

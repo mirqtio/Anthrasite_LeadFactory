@@ -23,11 +23,9 @@ import argparse
 import json
 import logging
 import os
-import shutil
 import subprocess
 import sys
 from datetime import datetime
-from pathlib import Path
 
 # Setup logging
 logging.basicConfig(
@@ -69,7 +67,7 @@ def load_test_status():
     status_file = "test_results/test_status.json"
     if os.path.exists(status_file):
         try:
-            with open(status_file, "r") as f:
+            with open(status_file) as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"Error loading test status: {e}")
@@ -113,7 +111,7 @@ def find_test_files(directory):
 def analyze_test_importance(test_file):
     """Analyze the importance of a test file based on its content."""
     try:
-        with open(test_file, "r") as f:
+        with open(test_file) as f:
             content = f.read()
 
         # Check for priority markers in the file
@@ -208,7 +206,7 @@ def update_ci_workflow(converted_files):
     # Create the workflow file
     with open(workflow_path, "w") as f:
         f.write(
-            f"""name: CI Tests Workflow
+            """name: CI Tests Workflow
 
 on:
   push:
@@ -247,7 +245,7 @@ jobs:
             f.write(f'          python {test_file} || echo "Test {test_file} failed"\n')
 
         f.write(
-            f"""
+            """
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
