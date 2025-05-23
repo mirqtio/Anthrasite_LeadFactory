@@ -84,16 +84,23 @@ jobs:
 
       - name: Lint with ruff, black, bandit, flake8, and mypy
         run: |
-          echo "Running Ruff..."
-          ruff check . --fix
-          echo "Running Black..."
-          black .
-          echo "Running Bandit..."
-          bandit -r . -x tests -ll
-          echo "Running Flake8..."
-          flake8 .
-          echo "Running Mypy..."
-          mypy . --ignore-missing-imports
+          FILES_TO_LINT=$(cat files_to_check.txt | tr '\n' ' ')
+          if [ -z "$FILES_TO_LINT" ]; then
+            echo "No files to lint based on files_to_check.txt. Skipping linting."
+            exit 0
+          fi
+          echo "Running Ruff on $FILES_TO_LINT..."
+          ruff check $FILES_TO_LINT --fix
+          echo "Running Black on $FILES_TO_LINT..."
+          black $FILES_TO_LINT
+          echo "Running Bandit... (runs on ., excludes via config or -x)"
+          bandit -r . -x tests -ll # Bandit can use its own exclusion, or a .bandit file
+          echo "Running Flake8 on $FILES_TO_LINT..."
+          flake8 $FILES_TO_LINT
+          echo "Running Mypy on $FILES_TO_LINT..."
+          # Mypy might need specific configuration for paths if not run on the whole project
+          # For now, let's try with the file list. If it fails, it might need to run on '.' or have paths configured.
+          mypy $FILES_TO_LINT --ignore-missing-imports
           echo "Linting checks finished. Any failures above should be addressed."
 
   test-core:

@@ -172,21 +172,22 @@ def update_metrics():
                 logger.debug(f"GPU cost for mockup generation: ${gpu_cost:.2f}")
 
             conn.close()
-        except Exception as e:
-            logger.warning(f"Error updating cost per lead metric: {e}")
 
-        logger.debug("Updated Prometheus metrics")
+            logger.debug("Updated Prometheus metrics")
+        except Exception as e:
+            logger.error(f"Error updating Prometheus metrics: {e}")
+            VERSION_INFO.info(
+                {
+                    "version": "1.0.0",
+                    "build_date": datetime.utcnow().isoformat(),
+                    "environment": os.getenv("ENVIRONMENT", "development"),
+                }
+            )
     except Exception as e:
-        logger.error(f"Error updating Prometheus metrics: {e}")
-        VERSION_INFO.info(
-            {
-                "version": "1.0.0",
-                "build_date": datetime.utcnow().isoformat(),
-                "environment": os.getenv("ENVIRONMENT", "development"),
-            }
+        logger.error(
+            f"Error updating Prometheus metrics in update_metrics: {e}", exc_info=True
         )
-    except Exception as e:
-        logger.error(f"Error updating metrics: {str(e)}", exc_info=True)
+        # Optionally, re-raise or handle more specifically if needed
 
 
 @app.middleware("http")

@@ -17,16 +17,15 @@ import sys
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
+# Third-party imports
 import requests
 from dotenv import load_dotenv
-
-# Import Wappalyzer (using the new API structure)
 from wappalyzer import Wappalyzer, WebPage
 
-# Add project root to path
+# Add project root to path to allow importing local 'utils' modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import utility functions
+# Local application/library specific imports
 from utils.io import DatabaseConnection, make_api_request, track_api_cost
 from utils.logging_config import get_logger
 
