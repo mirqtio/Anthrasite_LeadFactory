@@ -58,9 +58,7 @@ def format_specific_files():
         "utils/website_scraper.py",
     ]
 
-    print(
-        f"Formatting {len(problem_files)} specific files with known formatting issues..."
-    )
+    print(f"Formatting {len(problem_files)} specific files with known formatting issues...")
 
     # Get the project root directory
     project_root = Path(__file__).parent.parent.absolute()
