@@ -16,7 +16,7 @@ Options:
 
 import argparse
 import json
-import os
+import logging
 import re
 import subprocess
 import sys
@@ -27,7 +27,6 @@ from pathlib import Path
 
 # Try to import visualization libraries, but don't fail if they're not available
 try:
-    import matplotlib
     import matplotlib.pyplot as plt
     import numpy as np
 
@@ -71,7 +70,7 @@ class TestStatusTracker:
     def load_status(self):
         """Load existing test status from file"""
         if STATUS_FILE.exists():
-            with open(STATUS_FILE) as f:
+            with STATUS_FILE.open() as f:
                 self.tests = json.load(f)
         else:
             self.discover_tests()
@@ -79,19 +78,19 @@ class TestStatusTracker:
     def load_history(self):
         """Load test history from file"""
         if HISTORY_FILE.exists():
-            with open(HISTORY_FILE) as f:
+            with HISTORY_FILE.open() as f:
                 return json.load(f)
         else:
             return {"runs": [], "status_history": {}, "last_update": None}
 
     def save_status(self):
         """Save current test status to file"""
-        with open(STATUS_FILE, "w") as f:
+        with STATUS_FILE.open("w") as f:
             json.dump(self.tests, f, indent=2)
 
     def save_history(self):
         """Save test history to file"""
-        with open(HISTORY_FILE, "w") as f:
+        with HISTORY_FILE.open("w") as f:
             json.dump(self.history, f, indent=2)
 
     def discover_tests(self):
@@ -104,7 +103,7 @@ class TestStatusTracker:
         # Extract test functions from files
         for test_file in test_files:
             rel_path = test_file.relative_to(project_root)
-            with open(test_file) as f:
+            with test_file.open() as f:
                 content = f.read()
 
             # Find test functions (def test_*)
@@ -117,7 +116,7 @@ class TestStatusTracker:
                     self.tests[test_id] = {
                         "file": str(rel_path),
                         "function": func,
-                        "status": STATUS_DISABLED,  # All tests are initially disabled in CI
+                        "status": STATUS_DISABLED,  # Initially disabled in CI
                         "category": "uncategorized",
                         "last_run": None,
                         "error_message": None,
@@ -154,7 +153,7 @@ class TestStatusTracker:
                 test_info["priority"] = 3  # Medium-low priority
             else:
                 # Read file content to better categorize
-                with open(file_path) as f:
+                with file_path.open() as f:
                     content = f.read()
 
                 if "requests" in content or "api" in content.lower():
@@ -178,7 +177,7 @@ class TestStatusTracker:
         """
 
         # Create a temporary directory for test results
-        os.makedirs(project_root / "test_results", exist_ok=True)
+        (project_root / "test_results").mkdir(parents=True, exist_ok=True)
 
         # Build pytest command
         pytest_cmd = [
@@ -209,7 +208,7 @@ class TestStatusTracker:
         # Parse the JSON report
         report_path = project_root / "test_results" / "report.json"
         if report_path.exists():
-            with open(report_path) as f:
+            with report_path.open() as f:
                 report = json.load(f)
 
             # Create a new history entry
@@ -287,7 +286,7 @@ class TestStatusTracker:
         status_counts = defaultdict(int)
         category_counts = defaultdict(lambda: defaultdict(int))
 
-        for test_id, test_info in self.tests.items():
+        for _test_id, test_info in self.tests.items():
             status = test_info["status"]
             category = test_info["category"]
 
@@ -312,10 +311,12 @@ class TestStatusTracker:
             priority_tests[test_info["priority"]].append(test_id)
 
         report_lines.append("\nPriority 1 (Highest) tests to enable first:")
-        for test_id in sorted(priority_tests[1]):
+        tests_to_report = sorted(priority_tests[1])
+        for test_id in tests_to_report:
             test_info = self.tests[test_id]
             report_lines.append(
-                f"  - {test_info['file']}::{test_info['function']} ({test_info['category']})"
+                f"  - {test_info['file']}::{test_info['function']} "
+                f"({test_info['category']})"
             )
 
         # Add next steps
@@ -330,7 +331,8 @@ class TestStatusTracker:
 
         if high_priority_disabled:
             report_lines.append(
-                f"1. Enable these {len(high_priority_disabled)} high-priority tests first:"
+                f"1. Enable these {len(high_priority_disabled)} "
+                f"high-priority tests first:"
             )
             for test_id in sorted(high_priority_disabled)[:5]:  # Show top 5
                 test_info = self.tests[test_id]
@@ -350,7 +352,8 @@ class TestStatusTracker:
             ]
             if medium_priority_disabled:
                 report_lines.append(
-                    f"1. Enable these {len(medium_priority_disabled)} medium-priority tests:"
+                    f"1. Enable these {len(medium_priority_disabled)} "
+                    f"medium-priority tests:"
                 )
                 for test_id in sorted(medium_priority_disabled)[:5]:  # Show top 5
                     test_info = self.tests[test_id]
@@ -369,20 +372,17 @@ class TestStatusTracker:
                 run_time = datetime.fromisoformat(run["timestamp"]).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
-                passing = sum(
-                    1 for r in run["results"].values() if r["status"] == STATUS_PASSING
-                )
-                failing = sum(
-                    1 for r in run["results"].values() if r["status"] == STATUS_FAILING
-                )
-                skipped = sum(
-                    1 for r in run["results"].values() if r["status"] == STATUS_SKIPPED
-                )
-                total = len(run["results"])
-                report_lines.append(
-                    f"  Run {len(self.history['runs']) - i}: {run_time} - "
-                    f"Passing: {passing}/{total}, Failing: {failing}, Skipped: {skipped}"
-                )
+                if i < len(self.history["runs"]):
+                    run_info = self.history["status_history"][run_time]
+                    passing = run_info.get(STATUS_PASSING, 0)
+                    failing = run_info.get(STATUS_FAILING, 0)
+                    skipped = run_info.get(STATUS_SKIPPED, 0)
+                    total = passing + failing + skipped
+                    report_lines.append(
+                        f"  Run {len(self.history['runs']) - i}: {run_time} - "
+                        f"Passing: {passing}/{total}, Failing: {failing}, "
+                        f"Skipped: {skipped}"
+                    )
 
         # Add failing tests with error messages
         failing_tests = [
@@ -393,7 +393,7 @@ class TestStatusTracker:
 
         if failing_tests:
             report_lines.append("\nFailing Tests:")
-            for test_id, test_info in failing_tests[:5]:  # Show top 5
+            for _test_id, test_info in failing_tests[:5]:  # Show top 5
                 report_lines.append(f"  - {test_info['file']}::{test_info['function']}")
                 error_msg = test_info.get("error_message", "")
                 if error_msg:
@@ -413,18 +413,23 @@ class TestStatusTracker:
 
         # Write to file if requested
         if output_file:
-            with open(output_file, "w") as f:
+            with Path(output_file).open("w") as f:
                 f.write(report_text)
+            logging.info(f"Report written to {output_file}")
 
         return report_text
 
     def generate_visualizations(self):
         """Generate visualizations of test status and history"""
         if not HAS_VISUALIZATION:
+            logging.warning(
+                "Visualization libraries (matplotlib, numpy) not found. "
+                "Skipping visualization generation."
+            )
             return
 
         # Create visualization directory
-        os.makedirs(VISUALIZATION_DIR, exist_ok=True)
+        VISUALIZATION_DIR.mkdir(parents=True, exist_ok=True)
 
         # 1. Status distribution pie chart
         self._create_status_pie_chart()
@@ -704,7 +709,7 @@ class TestStatusTracker:
         if not report_path.exists():
             return "No test report found. Run tests first."
 
-        with open(report_path) as f:
+        with report_path.open() as f:
             report = json.load(f)
 
         # Categorize failures
@@ -790,7 +795,7 @@ class TestStatusTracker:
 
         # Write to file
         analysis_path = project_root / "test_results" / "failure_analysis.txt"
-        with open(analysis_path, "w") as f:
+        with analysis_path.open("w") as f:
             f.write(report_text)
 
         return report_text
@@ -901,4 +906,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     main()
