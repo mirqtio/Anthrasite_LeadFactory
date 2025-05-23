@@ -95,7 +95,9 @@ def get_supabase_client(env_vars):
             if response.status_code == 200:
                 return response.json()
             else:
-                logger.error(f"Failed to list objects in bucket {bucket}: {response.text}")
+                logger.error(
+                    f"Failed to list objects in bucket {bucket}: {response.text}"
+                )
                 return []
 
         def storage_download(self, bucket, path):
@@ -106,7 +108,9 @@ def get_supabase_client(env_vars):
             if response.status_code == 200:
                 return response.content
             else:
-                logger.error(f"Failed to download object {path} from bucket {bucket}: {response.text}")
+                logger.error(
+                    f"Failed to download object {path} from bucket {bucket}: {response.text}"
+                )
                 return None
 
     return SupabaseClient(supabase_url, supabase_key)
@@ -168,7 +172,10 @@ def mirror_bucket(supabase, bucket, output_dir, max_workers=5):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_path = {
-            executor.submit(download_object, supabase, bucket, obj["name"], bucket_dir): obj["name"] for obj in objects
+            executor.submit(
+                download_object, supabase, bucket, obj["name"], bucket_dir
+            ): obj["name"]
+            for obj in objects
         }
 
         for future in concurrent.futures.as_completed(future_to_path):
@@ -183,7 +190,9 @@ def mirror_bucket(supabase, bucket, output_dir, max_workers=5):
                 logger.exception(f"Error downloading object {path}: {e}")
                 failure_count += 1
 
-    logger.info(f"Mirroring completed: {success_count} objects downloaded, {failure_count} failed")
+    logger.info(
+        f"Mirroring completed: {success_count} objects downloaded, {failure_count} failed"
+    )
     return success_count
 
 
@@ -211,7 +220,9 @@ def create_manifest(output_dir, buckets):
                 relative_path = os.path.relpath(file_path, bucket_dir)
 
                 file_size = os.path.getsize(file_path)
-                file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat()
+                file_mtime = datetime.fromtimestamp(
+                    os.path.getmtime(file_path)
+                ).isoformat()
 
                 # Calculate file hash
                 file_hash = hashlib.md5(usedforsecurity=False)
@@ -260,7 +271,9 @@ def main():
         default="backups/storage",
         help="Output directory for mirrored objects",
     )
-    parser.add_argument("--workers", type=int, default=5, help="Maximum number of concurrent downloads")
+    parser.add_argument(
+        "--workers", type=int, default=5, help="Maximum number of concurrent downloads"
+    )
     args = parser.parse_args()
 
     try:

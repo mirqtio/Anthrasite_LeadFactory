@@ -25,7 +25,9 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 # Constants
-CHECK_INTERVAL = int(os.getenv("BATCH_COMPLETION_CHECK_INTERVAL_SECONDS", "300"))  # 5 minutes
+CHECK_INTERVAL = int(
+    os.getenv("BATCH_COMPLETION_CHECK_INTERVAL_SECONDS", "300")
+)  # 5 minutes
 ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "alerts@anthrasite.com")
 ALERT_EMAIL_FROM = os.getenv("ALERT_EMAIL_FROM", "leadfactory@anthrasite.com")
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.sendgrid.net")

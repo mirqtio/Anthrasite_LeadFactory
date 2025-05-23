@@ -25,7 +25,9 @@ logger = get_logger(__name__)
 CHECK_INTERVAL = int(os.getenv("GPU_USAGE_CHECK_INTERVAL_SECONDS", "3600"))  # 1 hour
 GPU_BURST_COST = float(os.getenv("GPU_BURST_COST_DOLLARS", "0.50"))  # $0.50 per hour
 DAILY_THRESHOLD = float(os.getenv("GPU_COST_DAILY_THRESHOLD", "25.0"))  # $25 per day
-MONTHLY_THRESHOLD = float(os.getenv("GPU_COST_MONTHLY_THRESHOLD", "100.0"))  # $100 per month
+MONTHLY_THRESHOLD = float(
+    os.getenv("GPU_COST_MONTHLY_THRESHOLD", "100.0")
+)  # $100 per month
 
 
 def check_and_track_gpu_usage() -> bool:

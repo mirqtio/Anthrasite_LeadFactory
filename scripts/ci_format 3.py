@@ -33,8 +33,12 @@ ADDITIONAL_DIRS = [
 def main():
     """Format specific files with known formatting issues."""
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="Format files with known formatting issues")
-    parser.add_argument("--check", action="store_true", help="Check files without modifying them")
+    parser = argparse.ArgumentParser(
+        description="Format files with known formatting issues"
+    )
+    parser.add_argument(
+        "--check", action="store_true", help="Check files without modifying them"
+    )
     args = parser.parse_args()
 
     # Get the project root directory
@@ -44,7 +48,9 @@ def main():
     os.chdir(project_root)
 
     # First, fix the specific problem files
-    print(f"Formatting {len(PROBLEM_FILES)} specific files with known formatting issues...")
+    print(
+        f"Formatting {len(PROBLEM_FILES)} specific files with known formatting issues..."
+    )
     format_problem_files(project_root, check_only=args.check)
 
     # Then run a comprehensive check on all Python files
@@ -142,9 +148,7 @@ def fix_raw_data_retention(file_path):
         content = f.read()
 
     # Fix the HTML_STORAGE_DIR constant
-    html_old = (
-        'HTML_STORAGE_DIR = os.path.join(\n    os.path.dirname(os.path.dirname(__file__)), "data", "html_storage"\n)'
-    )
+    html_old = 'HTML_STORAGE_DIR = os.path.join(\n    os.path.dirname(os.path.dirname(__file__)), "data", "html_storage"\n)'
     html_new = 'HTML_STORAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "html_storage")'
     content = content.replace(html_old, html_new)
 
@@ -168,14 +172,20 @@ def fix_cost_tracker(file_path):
 
     # Fix the percent_used calculations
     # Fix the daily percent_used calculation
-    daily_old_part1 = '"percent_used": (\n                (daily_cost / DAILY_BUDGET) * 100'
+    daily_old_part1 = (
+        '"percent_used": (\n                (daily_cost / DAILY_BUDGET) * 100'
+    )
     daily_old_part2 = " if DAILY_BUDGET > 0 else 0\n            ),"
     daily_old = daily_old_part1 + daily_old_part2
-    daily_new = '"percent_used": (daily_cost / DAILY_BUDGET) * 100 if DAILY_BUDGET > 0 else 0,'
+    daily_new = (
+        '"percent_used": (daily_cost / DAILY_BUDGET) * 100 if DAILY_BUDGET > 0 else 0,'
+    )
     content = content.replace(daily_old, daily_new)
 
     # Fix the monthly percent_used calculation
-    monthly_old_part1 = '"percent_used": (\n                (monthly_cost / MONTHLY_BUDGET) * 100'
+    monthly_old_part1 = (
+        '"percent_used": (\n                (monthly_cost / MONTHLY_BUDGET) * 100'
+    )
     monthly_old_part2 = " if MONTHLY_BUDGET > 0 else 0\n            ),"
     monthly_old = monthly_old_part1 + monthly_old_part2
     monthly_new = '"percent_used": (monthly_cost / MONTHLY_BUDGET) * 100 if MONTHLY_BUDGET > 0 else 0,'
@@ -198,14 +208,18 @@ def fix_website_scraper(file_path):
         content = f.read()
 
     # Fix the logger.info statements
-    businesses_old_part1 = 'logger.info(\n            f"Found {len(businesses)} businesses'
+    businesses_old_part1 = (
+        'logger.info(\n            f"Found {len(businesses)} businesses'
+    )
     businesses_old_part2 = ' with websites but no HTML stored"\n        )'
     businesses_old = businesses_old_part1 + businesses_old_part2
     businesses_new = 'logger.info(f"Found {len(businesses)} businesses with websites but no HTML stored")'
     content = content.replace(businesses_old, businesses_new)
 
     # Fix the finished processing logger.info statement
-    finished_old_part1 = 'logger.info(\n            f"Finished processing {processed_count} businesses,'
+    finished_old_part1 = (
+        'logger.info(\n            f"Finished processing {processed_count} businesses,'
+    )
     finished_old_part2 = ' {success_count} successful"\n        )'
     finished_old = finished_old_part1 + finished_old_part2
     finished_new = 'logger.info(f"Finished processing {processed_count} businesses, {success_count} successful")'
@@ -221,14 +235,18 @@ def fix_enrich(file_path):
         content = f.read()
 
     # Fix import order issues
-    utils_io_import = "from utils.io import DatabaseConnection, make_api_request, track_api_cost"
+    utils_io_import = (
+        "from utils.io import DatabaseConnection, make_api_request, track_api_cost"
+    )
     utils_logging_import = "from utils.logging_config import get_logger"
 
     # Ensure imports are in the correct order with proper spacing
     if utils_io_import in content and utils_logging_import in content:
         # Add isort directive if not present
         if "# isort: skip" not in content:
-            content = content.replace(utils_io_import, f"{utils_io_import}  # isort: skip")
+            content = content.replace(
+                utils_io_import, f"{utils_io_import}  # isort: skip"
+            )
 
     # Fix SQL injection in get_businesses_to_enrich function
     # Make sure we're using parameterized queries for LIMIT
@@ -260,7 +278,9 @@ def fix_dedupe(file_path):
     if utils_io_import in content and utils_logging_import in content:
         # Add isort directive if not present
         if "# isort: skip" not in content:
-            content = content.replace(utils_io_import, f"{utils_io_import}  # isort: skip")
+            content = content.replace(
+                utils_io_import, f"{utils_io_import}  # isort: skip"
+            )
 
     # Fix SQL injection in get_potential_duplicates function
     # Make sure we're using parameterized queries for LIMIT

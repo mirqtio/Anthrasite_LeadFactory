@@ -431,7 +431,8 @@ archive_timeout = 60
                     new_config_lines.append("archive_mode = on")
                 elif line.strip().startswith("archive_command"):
                     new_config_lines.append(
-                        "archive_command = 'source /path/to/scripts/wal_archive/" "wal-g.env && wal-g wal-push %p'"
+                        "archive_command = 'source /path/to/scripts/wal_archive/"
+                        "wal-g.env && wal-g wal-push %p'"
                     )
                 elif line.strip().startswith("archive_timeout"):
                     new_config_lines.append("archive_timeout = 60")
@@ -496,9 +497,13 @@ def test_wal_g_setup():
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Setup WAL Archiving for Point-in-Time Recovery")
+    parser = argparse.ArgumentParser(
+        description="Setup WAL Archiving for Point-in-Time Recovery"
+    )
     parser.add_argument("--install", action="store_true", help="Install WAL-G")
-    parser.add_argument("--configure", action="store_true", help="Configure WAL-G and PostgreSQL")
+    parser.add_argument(
+        "--configure", action="store_true", help="Configure WAL-G and PostgreSQL"
+    )
     parser.add_argument("--test", action="store_true", help="Test WAL-G setup")
     parser.add_argument("--fail-fast", action="store_true", help="Fail fast on errors")
     args = parser.parse_args()

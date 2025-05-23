@@ -262,9 +262,15 @@ def setup_test_database(project_root):
     )
 
     # Create indexes needed for tests
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_score ON businesses(score)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue(status)")
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_businesses_score ON businesses(score)"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue(status)"
+    )
 
     # Create triggers needed for tests
     cursor.execute(
@@ -432,8 +438,12 @@ def setup_environment_variables():
         "HTML_STORAGE_DIR": str(project_root / "data" / "html_storage"),
         "LLM_LOGS_DIR": str(project_root / "data" / "llm_logs"),
         # Scaling gate configuration
-        "SCALING_GATE_LOCKFILE": str(project_root / "data" / "mock" / "scaling_gate.lock"),
-        "SCALING_GATE_HISTORY_FILE": str(project_root / "data" / "mock" / "scaling_gate_history.json"),
+        "SCALING_GATE_LOCKFILE": str(
+            project_root / "data" / "mock" / "scaling_gate.lock"
+        ),
+        "SCALING_GATE_HISTORY_FILE": str(
+            project_root / "data" / "mock" / "scaling_gate_history.json"
+        ),
         # Test configuration
         "TEST_MODE": "True",
         "MOCK_EXTERNAL_APIS": "True",

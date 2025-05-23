@@ -96,7 +96,10 @@ def analyze_test_importance(test_file):
             content = f.read()
 
         # Check for priority markers in the file
-        if "@pytest.mark.critical" in content or "priority: critical" in content.lower():
+        if (
+            "@pytest.mark.critical" in content
+            or "priority: critical" in content.lower()
+        ):
             return "critical"
         elif "@pytest.mark.high" in content or "priority: high" in content.lower():
             return "high"
@@ -178,7 +181,9 @@ def analyze_tests():
         "enabled_files": 0,
         "enabled_test_cases": 0,
         "categories": {},
-        "priorities": {priority: {"count": 0, "enabled": 0} for priority in TEST_PRIORITIES},
+        "priorities": {
+            priority: {"count": 0, "enabled": 0} for priority in TEST_PRIORITIES
+        },
         "tests": {},
     }
 
@@ -230,7 +235,9 @@ def generate_ascii_bar(value, max_value, width=20):
 
     percentage = value / max_value * 100
     filled_width = int(width * value / max_value)
-    bar = "[" + "#" * filled_width + " " * (width - filled_width) + f"] {percentage:.1f}%"
+    bar = (
+        "[" + "#" * filled_width + " " * (width - filled_width) + f"] {percentage:.1f}%"
+    )
     return bar
 
 
@@ -251,7 +258,9 @@ def generate_recommendations(test_data):
             )
 
     # Sort by priority and then by number of test cases
-    recommendations.sort(key=lambda x: (TEST_PRIORITIES.index(x["priority"]), -x["test_cases"]))
+    recommendations.sort(
+        key=lambda x: (TEST_PRIORITIES.index(x["priority"]), -x["test_cases"])
+    )
 
     return recommendations[:5]  # Return top 5 recommendations
 
@@ -275,18 +284,30 @@ def generate_markdown_report(test_data, output_file):
 
         # ASCII bar chart for overall progress
         f.write("```\n")
-        f.write(f"Files:  {generate_ascii_bar(test_data['enabled_files'], test_data['total_files'])}\n")
-        f.write(f"Cases:  {generate_ascii_bar(test_data['enabled_test_cases'], test_data['total_test_cases'])}\n")
+        f.write(
+            f"Files:  {generate_ascii_bar(test_data['enabled_files'], test_data['total_files'])}\n"
+        )
+        f.write(
+            f"Cases:  {generate_ascii_bar(test_data['enabled_test_cases'], test_data['total_test_cases'])}\n"
+        )
         f.write("```\n\n")
 
         # Category progress
         f.write("## Category Progress\n\n")
-        f.write("| Category | Enabled Files | Total Files | Enabled Cases | Total Cases | Progress |\n")
-        f.write("|----------|--------------|-------------|---------------|-------------|----------|\n")
+        f.write(
+            "| Category | Enabled Files | Total Files | Enabled Cases | Total Cases | Progress |\n"
+        )
+        f.write(
+            "|----------|--------------|-------------|---------------|-------------|----------|\n"
+        )
 
         for category, cat_data in sorted(test_data["categories"].items()):
             if cat_data["count"] > 0:
-                progress = cat_data["enabled"] / cat_data["count"] * 100 if cat_data["count"] > 0 else 0
+                progress = (
+                    cat_data["enabled"] / cat_data["count"] * 100
+                    if cat_data["count"] > 0
+                    else 0
+                )
                 f.write(
                     f"| {category} | {cat_data['enabled']} | {cat_data['count']} | {cat_data['enabled_test_cases']} | {cat_data['test_cases']} | {progress:.1f}% |\n"
                 )
@@ -300,8 +321,14 @@ def generate_markdown_report(test_data, output_file):
 
         for priority in TEST_PRIORITIES:
             priority_data = test_data["priorities"][priority]
-            progress = priority_data["enabled"] / priority_data["count"] * 100 if priority_data["count"] > 0 else 0
-            f.write(f"| {priority} | {priority_data['enabled']} | {priority_data['count']} | {progress:.1f}% |\n")
+            progress = (
+                priority_data["enabled"] / priority_data["count"] * 100
+                if priority_data["count"] > 0
+                else 0
+            )
+            f.write(
+                f"| {priority} | {priority_data['enabled']} | {priority_data['count']} | {progress:.1f}% |\n"
+            )
 
         f.write("\n")
 
@@ -315,7 +342,9 @@ def generate_markdown_report(test_data, output_file):
             f.write("|------|----------|----------|------------|\n")
 
             for rec in recommendations:
-                f.write(f"| {rec['file']} | {rec['category']} | {rec['priority']} | {rec['test_cases']} |\n")
+                f.write(
+                    f"| {rec['file']} | {rec['category']} | {rec['priority']} | {rec['test_cases']} |\n"
+                )
         else:
             f.write("No recommendations available.\n")
 
@@ -324,7 +353,9 @@ def generate_markdown_report(test_data, output_file):
         # Next steps
         f.write("## Next Steps\n\n")
         f.write("To enable the recommended tests, follow these steps:\n\n")
-        f.write("1. Use the test conversion tool to convert pytest tests to unittest:\n")
+        f.write(
+            "1. Use the test conversion tool to convert pytest tests to unittest:\n"
+        )
         f.write("   ```bash\n")
         if recommendations:
             f.write(
@@ -336,14 +367,18 @@ def generate_markdown_report(test_data, output_file):
             )
         f.write("   ```\n\n")
 
-        f.write("2. Use the test enablement tool to enable tests by category and priority:\n")
+        f.write(
+            "2. Use the test enablement tool to enable tests by category and priority:\n"
+        )
         f.write("   ```bash\n")
         if recommendations and recommendations[0]["category"] != "uncategorized":
             f.write(
                 f"   python scripts/enable_ci_tests.py --category {recommendations[0]['category']} --priority {recommendations[0]['priority']}\n"
             )
         else:
-            f.write("   python scripts/enable_ci_tests.py --category core_utils --priority high\n")
+            f.write(
+                "   python scripts/enable_ci_tests.py --category core_utils --priority high\n"
+            )
         f.write("   ```\n\n")
 
         f.write("3. Update the CI workflow to include the newly converted tests:\n")

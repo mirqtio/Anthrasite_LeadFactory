@@ -23,7 +23,9 @@ logging.basicConfig(
 logger = logging.getLogger("cleanup_expired_data")
 
 
-def get_expired_data(retention_days: int, dry_run: bool = False) -> tuple[list[str], list[int]]:
+def get_expired_data(
+    retention_days: int, dry_run: bool = False
+) -> tuple[list[str], list[int]]:
     """
     Get a list of HTML files and LLM log IDs that are older than the retention period.
 
@@ -51,7 +53,9 @@ def get_expired_data(retention_days: int, dry_run: bool = False) -> tuple[list[s
             logger.info(f"Found {len(expired_html_paths)} expired HTML records")
 
             # Find expired LLM log records
-            cursor.execute("SELECT id FROM llm_logs WHERE created_at < %s", (cutoff_date,))
+            cursor.execute(
+                "SELECT id FROM llm_logs WHERE created_at < %s", (cutoff_date,)
+            )
             expired_log_ids = [row[0] for row in cursor.fetchall()]
             logger.info(f"Found {len(expired_log_ids)} expired LLM log records")
 
@@ -120,7 +124,9 @@ def delete_database_records(
                     html_records_deleted = len(expired_html_paths)
                     logger.info(f"Deleted {html_records_deleted} HTML storage records")
                 else:
-                    logger.info(f"[DRY RUN] Would delete {len(expired_html_paths)} HTML storage records")
+                    logger.info(
+                        f"[DRY RUN] Would delete {len(expired_html_paths)} HTML storage records"
+                    )
                     html_records_deleted = len(expired_html_paths)
 
             # Delete LLM log records
@@ -136,7 +142,9 @@ def delete_database_records(
                     log_records_deleted = len(expired_log_ids)
                     logger.info(f"Deleted {log_records_deleted} LLM log records")
                 else:
-                    logger.info(f"[DRY RUN] Would delete {len(expired_log_ids)} LLM log records")
+                    logger.info(
+                        f"[DRY RUN] Would delete {len(expired_log_ids)} LLM log records"
+                    )
                     log_records_deleted = len(expired_log_ids)
 
     except Exception as e:
@@ -145,7 +153,9 @@ def delete_database_records(
     return html_records_deleted, log_records_deleted
 
 
-def cleanup_expired_data(retention_days: int | None = None, dry_run: bool = False) -> None:
+def cleanup_expired_data(
+    retention_days: int | None = None, dry_run: bool = False
+) -> None:
     """
     Clean up expired HTML and LLM log data based on retention policy.
 
@@ -169,7 +179,9 @@ def cleanup_expired_data(retention_days: int | None = None, dry_run: bool = Fals
     logger.info(f"Deleted {files_deleted} HTML files from filesystem")
 
     # Delete expired records from database
-    html_records_deleted, log_records_deleted = delete_database_records(expired_html_paths, expired_log_ids, dry_run)
+    html_records_deleted, log_records_deleted = delete_database_records(
+        expired_html_paths, expired_log_ids, dry_run
+    )
 
     logger.info(
         f"Cleanup complete: {files_deleted} files, {html_records_deleted} HTML records, "
@@ -178,7 +190,9 @@ def cleanup_expired_data(retention_days: int | None = None, dry_run: bool = Fals
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Clean up expired data based on retention policy")
+    parser = argparse.ArgumentParser(
+        description="Clean up expired data based on retention policy"
+    )
     parser.add_argument(
         "--retention-days",
         type=int,

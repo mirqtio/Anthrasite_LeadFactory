@@ -69,7 +69,9 @@ def run_command(command, cwd=None):
     logger.info(f"Running command: {' '.join(command)}")
 
     try:
-        result = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
+        result = subprocess.run(
+            command, cwd=cwd, check=False, capture_output=True, text=True
+        )
 
         if result.returncode == 0:
             logger.info(f"Command succeeded: {' '.join(command)}")
@@ -224,7 +226,9 @@ def update_ci_workflow(category):
 
                     # Add commands to run each test file
                     for test_file in test_files:
-                        run_command += f"\n          # Run {os.path.basename(test_file)}\n"
+                        run_command += (
+                            f"\n          # Run {os.path.basename(test_file)}\n"
+                        )
                         run_command += f'          python {test_file} || echo "Test {test_file} failed"\n'
 
                     step["run"] = run_command
@@ -257,7 +261,9 @@ def get_recommendations():
         # Find high-priority tests that aren't enabled yet
         recommendations = []
         for test_file, test_info in test_data.get("tests", {}).items():
-            if not test_info.get("enabled", False) and test_info.get("priority", "") in ["critical", "high"]:
+            if not test_info.get("enabled", False) and test_info.get(
+                "priority", ""
+            ) in ["critical", "high"]:
                 recommendations.append(
                     {
                         "file": test_file,
@@ -268,7 +274,9 @@ def get_recommendations():
                 )
 
         # Sort by priority and then by number of test cases
-        recommendations.sort(key=lambda x: (TEST_PRIORITIES.index(x["priority"]), -x["test_cases"]))
+        recommendations.sort(
+            key=lambda x: (TEST_PRIORITIES.index(x["priority"]), -x["test_cases"])
+        )
 
         return recommendations[:5]  # Return top 5 recommendations
     except Exception as e:
@@ -325,7 +333,9 @@ def main():
         default="auto",
         help="Mode to run in (auto or manual)",
     )
-    parser.add_argument("--category", type=str, help="Test category to enable (required in manual mode)")
+    parser.add_argument(
+        "--category", type=str, help="Test category to enable (required in manual mode)"
+    )
     parser.add_argument(
         "--priority",
         type=str,

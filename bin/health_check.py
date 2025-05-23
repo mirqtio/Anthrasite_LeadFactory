@@ -44,10 +44,16 @@ class HealthCheckSystem:
         # Load configuration from environment variables
         self.primary_host = os.environ.get("PRIMARY_HOST", "localhost")
         self.backup_host = os.environ.get("BACKUP_HOST", "")
-        self.failure_threshold = int(os.environ.get("HEALTH_CHECK_FAILURES_THRESHOLD", "2"))
-        self.check_interval = int(os.environ.get("HEALTH_CHECK_INTERVAL", "300"))  # 5 minutes
+        self.failure_threshold = int(
+            os.environ.get("HEALTH_CHECK_FAILURES_THRESHOLD", "2")
+        )
+        self.check_interval = int(
+            os.environ.get("HEALTH_CHECK_INTERVAL", "300")
+        )  # 5 minutes
         self.notification_email = os.environ.get("NOTIFICATION_EMAIL", "")
-        self.notification_slack_webhook = os.environ.get("NOTIFICATION_SLACK_WEBHOOK", "")
+        self.notification_slack_webhook = os.environ.get(
+            "NOTIFICATION_SLACK_WEBHOOK", ""
+        )
 
         # Initialize state
         self.failure_count = 0
@@ -127,7 +133,9 @@ class HealthCheckSystem:
         """
         try:
             # Run docker ps command
-            result = subprocess.run(["docker", "ps"], capture_output=True, text=True, check=False)
+            result = subprocess.run(
+                ["docker", "ps"], capture_output=True, text=True, check=False
+            )
 
             if result.returncode == 0:
                 # Count running containers
@@ -154,7 +162,9 @@ class HealthCheckSystem:
             password = os.environ.get("DB_PASSWORD", "")
             dbname = os.environ.get("DB_NAME", "postgres")
 
-            conn = psycopg2.connect(host=host, port=port, user=user, password=password, dbname=dbname)
+            conn = psycopg2.connect(
+                host=host, port=port, user=user, password=password, dbname=dbname
+            )
 
             cursor = conn.cursor()
             cursor.execute("SELECT version()")
@@ -359,11 +369,15 @@ class HealthCheckSystem:
                 )
 
                 if result.returncode == 0:
-                    logger.info(f"Failover script executed successfully: {result.stdout.strip()}")
+                    logger.info(
+                        f"Failover script executed successfully: {result.stdout.strip()}"
+                    )
                 else:
                     logger.error(f"Failover script failed: {result.stderr.strip()}")
             else:
-                logger.warning("Failover script not found at /usr/local/bin/trigger_failover.sh")
+                logger.warning(
+                    "Failover script not found at /usr/local/bin/trigger_failover.sh"
+                )
 
                 # Try SSH to backup VPS
                 ssh_command_list = [
@@ -371,12 +385,18 @@ class HealthCheckSystem:
                     self.backup_host,
                     "sudo /usr/local/bin/activate_failover.sh",
                 ]
-                result = subprocess.run(ssh_command_list, capture_output=True, text=True, check=False)
+                result = subprocess.run(
+                    ssh_command_list, capture_output=True, text=True, check=False
+                )
 
                 if result.returncode == 0:
-                    logger.info(f"Failover activated on backup VPS: {result.stdout.strip()}")
+                    logger.info(
+                        f"Failover activated on backup VPS: {result.stdout.strip()}"
+                    )
                 else:
-                    logger.error(f"Failed to activate failover on backup VPS: {result.stderr.strip()}")
+                    logger.error(
+                        f"Failed to activate failover on backup VPS: {result.stderr.strip()}"
+                    )
         except Exception as e:
             logger.exception(f"Error triggering failover: {e}")
 
@@ -431,7 +451,9 @@ class HealthCheckSystem:
                     if response.status_code == 200:
                         logger.info("Slack notification sent")
                     else:
-                        logger.error(f"Error sending Slack notification: {response.status_code} {response.text}")
+                        logger.error(
+                            f"Error sending Slack notification: {response.status_code} {response.text}"
+                        )
                 except Exception as e:
                     logger.error(f"Error sending Slack notification: {str(e)}")
         except Exception as e:
@@ -457,7 +479,11 @@ class HealthCheckSystem:
                         "passed": self.last_check_status,
                         "failure_count": self.failure_count,
                         "failover_active": self.failover_active,
-                        "failover_time": (self.failover_time.isoformat() if self.failover_time else None),
+                        "failover_time": (
+                            self.failover_time.isoformat()
+                            if self.failover_time
+                            else None
+                        ),
                         "results": results,
                     },
                     f,
@@ -493,7 +519,9 @@ class HealthCheckSystem:
         # Start thread
         thread = threading.Thread(target=monitoring_thread, daemon=True)
         thread.start()
-        logger.info(f"Started health check monitoring (interval={self.check_interval}s)")
+        logger.info(
+            f"Started health check monitoring (interval={self.check_interval}s)"
+        )
 
         return thread
 
@@ -505,9 +533,15 @@ health_check = HealthCheckSystem()
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Health Check System")
-    parser.add_argument("--check-all", action="store_true", help="Run all health checks")
-    parser.add_argument("--monitor", action="store_true", help="Start continuous monitoring")
-    parser.add_argument("--trigger-failover", action="store_true", help="Trigger failover to backup VPS")
+    parser.add_argument(
+        "--check-all", action="store_true", help="Run all health checks"
+    )
+    parser.add_argument(
+        "--monitor", action="store_true", help="Start continuous monitoring"
+    )
+    parser.add_argument(
+        "--trigger-failover", action="store_true", help="Trigger failover to backup VPS"
+    )
     args = parser.parse_args()
 
     try:

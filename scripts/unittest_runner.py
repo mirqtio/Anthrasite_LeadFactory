@@ -145,7 +145,9 @@ class JUnitXMLTestRunner(unittest.TextTestRunner):
     def _add_test_case(self, test_suite, test, status, details):
         """Add a test case to the test suite XML."""
         test_case = ET.SubElement(test_suite, "testcase")
-        test_case.set("classname", test.__class__.__module__ + "." + test.__class__.__name__)
+        test_case.set(
+            "classname", test.__class__.__module__ + "." + test.__class__.__name__
+        )
         test_case.set("name", test._testMethodName)
 
         # Calculate test duration (this is approximate)
@@ -207,7 +209,9 @@ def discover_and_run_tests(test_pattern, verbose=False):
 
         # Create runner with XML output
         verbosity = 2 if verbose else 1
-        runner = JUnitXMLTestRunner(verbosity=verbosity, xml_file="test_results/junit.xml")
+        runner = JUnitXMLTestRunner(
+            verbosity=verbosity, xml_file="test_results/junit.xml"
+        )
 
         # Run tests
         result = runner.run(suite)

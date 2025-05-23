@@ -106,8 +106,12 @@ def main():
     """Main function with error handling."""
     try:
         parser = argparse.ArgumentParser(description="Minimal Test Environment Setup")
-        parser.add_argument("--skip-db", action="store_true", help="Skip database setup")
-        parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+        parser.add_argument(
+            "--skip-db", action="store_true", help="Skip database setup"
+        )
+        parser.add_argument(
+            "--verbose", action="store_true", help="Enable verbose logging"
+        )
 
         args = parser.parse_args()
 

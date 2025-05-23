@@ -12,7 +12,9 @@ import sys
 def run_command(command, cwd=None, env=None):
     """Run a command and return its output."""
     try:
-        result = subprocess.run(command, cwd=cwd, env=env, check=True, capture_output=True, text=True)
+        result = subprocess.run(
+            command, cwd=cwd, env=env, check=True, capture_output=True, text=True
+        )
         return True, result.stdout
     except subprocess.CalledProcessError as e:
         return False, f"Error: {e.stderr}"
@@ -23,14 +25,18 @@ def fix_formatting(project_root):
     print("🔧 Fixing formatting issues...")
 
     # Fix import sorting with ruff
-    success, output = run_command(["ruff", "check", "--select=I", "--fix", "."], cwd=project_root)
+    success, output = run_command(
+        ["ruff", "check", "--select=I", "--fix", "."], cwd=project_root
+    )
     if not success:
         print(f"❌ Failed to fix imports: {output}")
     else:
         print("✅ Fixed imports with ruff")
 
     # Format code with black
-    success, output = run_command(["black", ".", "--config", ".black.toml"], cwd=project_root)
+    success, output = run_command(
+        ["black", ".", "--config", ".black.toml"], cwd=project_root
+    )
     if not success:
         print(f"❌ Failed to format code: {output}")
     else:
@@ -64,7 +70,9 @@ def fix_test_imports(project_root):
             with open(conftest_file, "w") as f:
                 f.write("import os\nimport sys\n\n")
                 f.write("# Add project root to path\n")
-                f.write("sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\n\n")
+                f.write(
+                    "sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\n\n"
+                )
                 f.write(content)
             print(f"✅ Fixed {conftest_file}")
 

@@ -119,7 +119,9 @@ class TestDependencyGraph:
                 )
                 for fixture in fixture_names:
                     # Find tests that use this fixture
-                    fixture_usage = re.findall(rf"def\s+(test_\w+)\s*\(\s*.*?{fixture}.*?\):", content)
+                    fixture_usage = re.findall(
+                        rf"def\s+(test_\w+)\s*\(\s*.*?{fixture}.*?\):", content
+                    )
                     if func in fixture_usage:
                         # Find where this fixture is defined
                         fixture_files = self.find_fixture_definition(fixture)
@@ -197,7 +199,9 @@ class TestPrioritizer:
             # Initialize from tracker priorities
             priorities = {}
             for test_id, test_info in self.tracker.tests.items():
-                priorities[test_id] = test_info.get("priority", 3)  # Default to medium priority
+                priorities[test_id] = test_info.get(
+                    "priority", 3
+                )  # Default to medium priority
 
             self.save_priorities(priorities)
             return priorities
@@ -237,7 +241,9 @@ class TestPrioritizer:
 
             # Adjust score based on dependents
             dependents = self.dependency_graph.get_dependents(test_id)
-            dependent_bonus = min(len(dependents) * 0.2, 2.0)  # Cap at doubling the score
+            dependent_bonus = min(
+                len(dependents) * 0.2, 2.0
+            )  # Cap at doubling the score
 
             # Calculate final score
             final_score = base_score * dependency_factor + dependent_bonus
@@ -276,7 +282,9 @@ class TestPrioritizer:
         """Generate a report of recommended tests with their details."""
         report_lines = ["\n===== TEST PRIORITIZATION REPORT =====\n"]
 
-        report_lines.append(f"Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append(
+            f"Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
         report_lines.append(f"Total tests: {len(self.tracker.tests)}")
 
         # Count tests by status
@@ -292,7 +300,9 @@ class TestPrioritizer:
         for i, (test_id, score) in enumerate(recommended_tests, 1):
             test_info = self.tracker.tests[test_id]
             report_lines.append(f"{i}. {test_id} (Score: {score:.2f})")
-            report_lines.append(f"   Category: {test_info.get('category', 'uncategorized')}")
+            report_lines.append(
+                f"   Category: {test_info.get('category', 'uncategorized')}"
+            )
             report_lines.append(f"   Priority: {test_info.get('priority', 3)}")
 
             # Add dependency info
@@ -307,7 +317,11 @@ class TestPrioritizer:
                 if dep_statuses:
                     report_lines.append(
                         f"   Dependencies: {', '.join(dep_statuses[:3])}"
-                        + (f" and {len(dep_statuses) - 3} more" if len(dep_statuses) > 3 else "")
+                        + (
+                            f" and {len(dep_statuses) - 3} more"
+                            if len(dep_statuses) > 3
+                            else ""
+                        )
                     )
 
             # Add dependent info
@@ -318,7 +332,9 @@ class TestPrioritizer:
         # Add command to enable these tests
         test_ids = [test_id for test_id, _ in recommended_tests]
         report_lines.append("\nTo enable these tests, run:")
-        report_lines.append(f"python scripts/prioritize_tests.py --enable-recommended --recommend={len(test_ids)}")
+        report_lines.append(
+            f"python scripts/prioritize_tests.py --enable-recommended --recommend={len(test_ids)}"
+        )
 
         report_text = "\n".join(report_lines)
         print(report_text)

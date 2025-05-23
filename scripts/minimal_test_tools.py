@@ -75,10 +75,14 @@ def main():
 
     # Report results
     if failure_count == 0:
-        logger.info(f"Successfully installed/verified all {success_count} essential dependencies!")
+        logger.info(
+            f"Successfully installed/verified all {success_count} essential dependencies!"
+        )
         return 0
     else:
-        logger.warning(f"Installed/verified {success_count} packages, but {failure_count} failed")
+        logger.warning(
+            f"Installed/verified {success_count} packages, but {failure_count} failed"
+        )
         return 1
 
 

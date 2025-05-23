@@ -74,8 +74,12 @@ def generate_bar_chart_svg(data, title, width=600, height=400, output_file=None)
     ]
 
     # Draw axes
-    svg.append(f'  <line x1="{margin}" y1="{height-margin}" x2="{width-margin}" y2="{height-margin}" class="axis" />')
-    svg.append(f'  <line x1="{margin}" y1="{margin}" x2="{margin}" y2="{height-margin}" class="axis" />')
+    svg.append(
+        f'  <line x1="{margin}" y1="{height-margin}" x2="{width-margin}" y2="{height-margin}" class="axis" />'
+    )
+    svg.append(
+        f'  <line x1="{margin}" y1="{margin}" x2="{margin}" y2="{height-margin}" class="axis" />'
+    )
 
     # Draw bars
     for i, (label, value) in enumerate(data):
@@ -83,12 +87,16 @@ def generate_bar_chart_svg(data, title, width=600, height=400, output_file=None)
         bar_height = (value / max_value) * chart_height if max_value > 0 else 0
         y = height - margin - bar_height
 
-        svg.append(f'  <rect x="{x}" y="{y}" width="{bar_width}" height="{bar_height}" class="bar">')
+        svg.append(
+            f'  <rect x="{x}" y="{y}" width="{bar_width}" height="{bar_height}" class="bar">'
+        )
         svg.append(f"    <title>{label}: {value}</title>")
         svg.append("  </rect>")
 
         # Draw value on top of bar
-        svg.append(f'  <text x="{x + bar_width/2}" y="{y-5}" class="value">{value}</text>')
+        svg.append(
+            f'  <text x="{x + bar_width/2}" y="{y-5}" class="value">{value}</text>'
+        )
 
         # Draw label below bar
         svg.append(
@@ -99,8 +107,12 @@ def generate_bar_chart_svg(data, title, width=600, height=400, output_file=None)
     for i in range(5):
         value = max_value * i / 4
         y = height - margin - (i / 4) * chart_height
-        svg.append(f'  <text x="{margin-5}" y="{y}" text-anchor="end" class="label">{int(value)}</text>')
-        svg.append(f'  <line x1="{margin-2}" y1="{y}" x2="{margin}" y2="{y}" class="axis" />')
+        svg.append(
+            f'  <text x="{margin-5}" y="{y}" text-anchor="end" class="label">{int(value)}</text>'
+        )
+        svg.append(
+            f'  <line x1="{margin-2}" y1="{y}" x2="{margin}" y2="{y}" class="axis" />'
+        )
 
     svg.append("</svg>")
 
@@ -187,7 +199,9 @@ def generate_pie_chart_svg(data, title, width=400, height=400, output_file=None)
 
         # Draw label if slice is large enough
         if angle > 15:
-            svg.append(f'  <text x="{label_x}" y="{label_y}" text-anchor="middle" class="label">{label}</text>')
+            svg.append(
+                f'  <text x="{label_x}" y="{label_y}" text-anchor="middle" class="label">{label}</text>'
+            )
 
         start_angle = end_angle
 
@@ -201,7 +215,9 @@ def generate_pie_chart_svg(data, title, width=400, height=400, output_file=None)
         percentage = value / total * 100 if total > 0 else 0
         color = colors[i % len(colors)]
 
-        svg.append(f'  <rect x="{legend_x-10}" y="{legend_y+i*20}" width="10" height="10" fill="{color}" />')
+        svg.append(
+            f'  <rect x="{legend_x-10}" y="{legend_y+i*20}" width="10" height="10" fill="{color}" />'
+        )
         svg.append(
             f'  <text x="{legend_x-15}" y="{legend_y+i*20+9}" text-anchor="end" class="label">{label}: {percentage:.1f}%</text>'
         )
@@ -217,7 +233,9 @@ def generate_pie_chart_svg(data, title, width=400, height=400, output_file=None)
     return "\n".join(svg)
 
 
-def generate_stacked_bar_chart_svg(data, title, width=600, height=400, output_file=None):
+def generate_stacked_bar_chart_svg(
+    data, title, width=600, height=400, output_file=None
+):
     """Generate an SVG stacked bar chart."""
     logger.info(f"Generating stacked bar chart: {title}")
 
@@ -248,8 +266,12 @@ def generate_stacked_bar_chart_svg(data, title, width=600, height=400, output_fi
     ]
 
     # Draw axes
-    svg.append(f'  <line x1="{margin}" y1="{height-margin}" x2="{width-margin}" y2="{height-margin}" class="axis" />')
-    svg.append(f'  <line x1="{margin}" y1="{margin}" x2="{margin}" y2="{height-margin}" class="axis" />')
+    svg.append(
+        f'  <line x1="{margin}" y1="{height-margin}" x2="{width-margin}" y2="{height-margin}" class="axis" />'
+    )
+    svg.append(
+        f'  <line x1="{margin}" y1="{margin}" x2="{margin}" y2="{height-margin}" class="axis" />'
+    )
 
     # Draw bars
     for i, (label, values) in enumerate(data):
@@ -257,12 +279,16 @@ def generate_stacked_bar_chart_svg(data, title, width=600, height=400, output_fi
 
         # Enabled value (bottom part of the stack)
         enabled_value = values[0]
-        enabled_height = (enabled_value / max_value) * chart_height if max_value > 0 else 0
+        enabled_height = (
+            (enabled_value / max_value) * chart_height if max_value > 0 else 0
+        )
         enabled_y = height - margin - enabled_height
 
         # Disabled value (top part of the stack)
         disabled_value = values[1]
-        disabled_height = (disabled_value / max_value) * chart_height if max_value > 0 else 0
+        disabled_height = (
+            (disabled_value / max_value) * chart_height if max_value > 0 else 0
+        )
         disabled_y = enabled_y - disabled_height
 
         # Draw enabled bar
@@ -281,7 +307,9 @@ def generate_stacked_bar_chart_svg(data, title, width=600, height=400, output_fi
 
         # Draw total value on top of bar
         total_value = enabled_value + disabled_value
-        svg.append(f'  <text x="{x + bar_width/2}" y="{disabled_y-5}" class="value">{total_value}</text>')
+        svg.append(
+            f'  <text x="{x + bar_width/2}" y="{disabled_y-5}" class="value">{total_value}</text>'
+        )
 
         # Draw label below bar
         svg.append(
@@ -292,18 +320,30 @@ def generate_stacked_bar_chart_svg(data, title, width=600, height=400, output_fi
     for i in range(5):
         value = max_value * i / 4
         y = height - margin - (i / 4) * chart_height
-        svg.append(f'  <text x="{margin-5}" y="{y}" text-anchor="end" class="label">{int(value)}</text>')
-        svg.append(f'  <line x1="{margin-2}" y1="{y}" x2="{margin}" y2="{y}" class="axis" />')
+        svg.append(
+            f'  <text x="{margin-5}" y="{y}" text-anchor="end" class="label">{int(value)}</text>'
+        )
+        svg.append(
+            f'  <line x1="{margin-2}" y1="{y}" x2="{margin}" y2="{y}" class="axis" />'
+        )
 
     # Draw legend
     legend_x = width - margin
     legend_y = margin
 
-    svg.append(f'  <rect x="{legend_x-10}" y="{legend_y}" width="10" height="10" class="bar-enabled" />')
-    svg.append(f'  <text x="{legend_x-15}" y="{legend_y+9}" text-anchor="end" class="label">Enabled</text>')
+    svg.append(
+        f'  <rect x="{legend_x-10}" y="{legend_y}" width="10" height="10" class="bar-enabled" />'
+    )
+    svg.append(
+        f'  <text x="{legend_x-15}" y="{legend_y+9}" text-anchor="end" class="label">Enabled</text>'
+    )
 
-    svg.append(f'  <rect x="{legend_x-10}" y="{legend_y+20}" width="10" height="10" class="bar-disabled" />')
-    svg.append(f'  <text x="{legend_x-15}" y="{legend_y+29}" text-anchor="end" class="label">Disabled</text>')
+    svg.append(
+        f'  <rect x="{legend_x-10}" y="{legend_y+20}" width="10" height="10" class="bar-disabled" />'
+    )
+    svg.append(
+        f'  <text x="{legend_x-15}" y="{legend_y+29}" text-anchor="end" class="label">Disabled</text>'
+    )
 
     svg.append("</svg>")
 
@@ -419,7 +459,9 @@ def generate_visualizations(test_data, output_dir):
 """
         )
 
-    logger.info(f"HTML index file generated at {os.path.join(output_dir, 'index.html')}")
+    logger.info(
+        f"HTML index file generated at {os.path.join(output_dir, 'index.html')}"
+    )
 
 
 def main():

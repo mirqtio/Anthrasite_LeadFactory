@@ -51,8 +51,12 @@ class LeadFactoryMetrics:
     def __init__(self):
         """Initialize metrics."""
         # Email metrics
-        self.email_bounce_rate = Gauge("leadfactory_email_bounce_rate", "Email bounce rate", ["pool", "subuser"])
-        self.email_spam_rate = Gauge("leadfactory_email_spam_rate", "Email spam rate", ["pool", "subuser"])
+        self.email_bounce_rate = Gauge(
+            "leadfactory_email_bounce_rate", "Email bounce rate", ["pool", "subuser"]
+        )
+        self.email_spam_rate = Gauge(
+            "leadfactory_email_spam_rate", "Email spam rate", ["pool", "subuser"]
+        )
         self.email_sent_count = Counter(
             "leadfactory_email_sent_total",
             "Total number of emails sent",
@@ -70,7 +74,9 @@ class LeadFactoryMetrics:
         )
 
         # Cost metrics
-        self.cost_per_lead = Gauge("leadfactory_cost_per_lead", "Cost per lead", ["tier"])
+        self.cost_per_lead = Gauge(
+            "leadfactory_cost_per_lead", "Cost per lead", ["tier"]
+        )
         self.total_cost = Counter("leadfactory_total_cost", "Total cost", ["service"])
         self.gpu_cost_daily = Gauge("leadfactory_gpu_cost_daily", "Daily GPU cost")
 
@@ -103,8 +109,12 @@ class LeadFactoryMetrics:
         )
 
         # Supabase metrics
-        self.supabase_storage_mb = Gauge("supabase_storage_mb", "Supabase storage usage in MB")
-        self.supabase_row_count = Gauge("supabase_row_count", "Supabase row count", ["table"])
+        self.supabase_storage_mb = Gauge(
+            "supabase_storage_mb", "Supabase storage usage in MB"
+        )
+        self.supabase_row_count = Gauge(
+            "supabase_row_count", "Supabase row count", ["table"]
+        )
 
         # Budget gate metrics
         self.budget_gate_status = Gauge(
@@ -118,8 +128,12 @@ class LeadFactoryMetrics:
         )
 
         # System metrics
-        self.system_memory_usage_mb = Gauge("leadfactory_system_memory_usage_mb", "System memory usage in MB")
-        self.system_cpu_usage_percent = Gauge("leadfactory_system_cpu_usage_percent", "System CPU usage in percent")
+        self.system_memory_usage_mb = Gauge(
+            "leadfactory_system_memory_usage_mb", "System memory usage in MB"
+        )
+        self.system_cpu_usage_percent = Gauge(
+            "leadfactory_system_cpu_usage_percent", "System CPU usage in percent"
+        )
         self.system_disk_usage_percent = Gauge(
             "leadfactory_system_disk_usage_percent",
             "System disk usage in percent",
@@ -141,17 +155,23 @@ class LeadFactoryMetrics:
     def increment_email_sent(self, count=1, pool="shared", subuser="prod"):
         """Increment email sent counter."""
         self.email_sent_count.labels(pool=pool, subuser=subuser).inc(count)
-        logger.info(f"Incremented sent count by {count} (pool={pool}, subuser={subuser})")
+        logger.info(
+            f"Incremented sent count by {count} (pool={pool}, subuser={subuser})"
+        )
 
     def increment_email_delivered(self, count=1, pool="shared", subuser="prod"):
         """Increment email delivered counter."""
         self.email_delivered_count.labels(pool=pool, subuser=subuser).inc(count)
-        logger.info(f"Incremented delivered count by {count} (pool={pool}, subuser={subuser})")
+        logger.info(
+            f"Incremented delivered count by {count} (pool={pool}, subuser={subuser})"
+        )
 
     def increment_email_opened(self, count=1, pool="shared", subuser="prod"):
         """Increment email opened counter."""
         self.email_opened_count.labels(pool=pool, subuser=subuser).inc(count)
-        logger.info(f"Incremented opened count by {count} (pool={pool}, subuser={subuser})")
+        logger.info(
+            f"Incremented opened count by {count} (pool={pool}, subuser={subuser})"
+        )
 
     def update_cost_per_lead(self, cost, tier="1"):
         """Update cost per lead metric."""
@@ -172,7 +192,9 @@ class LeadFactoryMetrics:
         """Update batch completed timestamp to current time."""
         timestamp = time.time()
         self.batch_completed_timestamp.set(timestamp)
-        logger.info(f"Updated batch completed timestamp: {datetime.fromtimestamp(timestamp)}")
+        logger.info(
+            f"Updated batch completed timestamp: {datetime.fromtimestamp(timestamp)}"
+        )
 
     def increment_batch_leads(self, count=1, status="processed"):
         """Increment batch lead counter."""
@@ -184,11 +206,19 @@ class LeadFactoryMetrics:
         self.batch_duration.observe(duration_seconds)
         logger.info(f"Observed batch duration: {duration_seconds:.2f} seconds")
 
-    def observe_api_request(self, duration_seconds, endpoint, method="GET", status="success"):
+    def observe_api_request(
+        self, duration_seconds, endpoint, method="GET", status="success"
+    ):
         """Observe API request duration and increment counter."""
-        self.api_request_duration.labels(endpoint=endpoint, method=method).observe(duration_seconds)
-        self.api_request_count.labels(endpoint=endpoint, method=method, status=status).inc()
-        logger.debug(f"Observed API request: {endpoint} {method} {status} {duration_seconds:.2f}s")
+        self.api_request_duration.labels(endpoint=endpoint, method=method).observe(
+            duration_seconds
+        )
+        self.api_request_count.labels(
+            endpoint=endpoint, method=method, status=status
+        ).inc()
+        logger.debug(
+            f"Observed API request: {endpoint} {method} {status} {duration_seconds:.2f}s"
+        )
 
     def update_supabase_storage(self, size_mb):
         """Update Supabase storage usage metric."""
@@ -209,7 +239,9 @@ class LeadFactoryMetrics:
     def increment_budget_gate_skipped(self, operation):
         """Increment budget gate skipped operations counter."""
         self.budget_gate_skipped_operations.labels(operation=operation).inc()
-        logger.info(f"Incremented budget gate skipped operations (operation={operation})")
+        logger.info(
+            f"Incremented budget gate skipped operations (operation={operation})"
+        )
 
     def update_system_metrics(self):
         """Update system metrics."""
@@ -262,9 +294,13 @@ class LeadFactoryMetrics:
                                 used = total - free
                                 usage_percent = used / total * 100
 
-                                self.system_disk_usage_percent.labels(mount_point=mount_point).set(usage_percent)
+                                self.system_disk_usage_percent.labels(
+                                    mount_point=mount_point
+                                ).set(usage_percent)
                             except Exception as e:
-                                logger.error(f"Error getting disk usage for {mount_point}: {e}")
+                                logger.error(
+                                    f"Error getting disk usage for {mount_point}: {e}"
+                                )
 
             logger.info("Updated system metrics")
         except Exception as e:
@@ -318,7 +354,9 @@ class LeadFactoryMetrics:
                         logger.error(f"Error in system metrics update thread: {e}")
                     time.sleep(15)
 
-            thread = threading.Thread(target=update_system_metrics_periodically, daemon=True)
+            thread = threading.Thread(
+                target=update_system_metrics_periodically, daemon=True
+            )
             thread.start()
 
             return True

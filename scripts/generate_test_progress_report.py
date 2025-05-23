@@ -79,7 +79,9 @@ class TestProgressReporter:
         # Calculate progress percentage
         if metrics["total_tests"] > 0:
             metrics["progress_percentage"] = (
-                (status_counts[STATUS_PASSING] + status_counts[STATUS_SKIPPED]) / metrics["total_tests"] * 100
+                (status_counts[STATUS_PASSING] + status_counts[STATUS_SKIPPED])
+                / metrics["total_tests"]
+                * 100
             )
         else:
             metrics["progress_percentage"] = 0
@@ -90,9 +92,15 @@ class TestProgressReporter:
 
             for run in sorted(self.history["runs"], key=lambda x: x["timestamp"]):
                 timestamp = datetime.fromisoformat(run["timestamp"])
-                passing = sum(1 for r in run["results"].values() if r["status"] == STATUS_PASSING)
-                failing = sum(1 for r in run["results"].values() if r["status"] == STATUS_FAILING)
-                skipped = sum(1 for r in run["results"].values() if r["status"] == STATUS_SKIPPED)
+                passing = sum(
+                    1 for r in run["results"].values() if r["status"] == STATUS_PASSING
+                )
+                failing = sum(
+                    1 for r in run["results"].values() if r["status"] == STATUS_FAILING
+                )
+                skipped = sum(
+                    1 for r in run["results"].values() if r["status"] == STATUS_SKIPPED
+                )
                 total = len(run["results"])
 
                 if total > 0:
@@ -191,7 +199,9 @@ class TestProgressReporter:
         plt.savefig(f"{self.output_dir}/visualizations/status_pie_chart.png")
         plt.close()
 
-    def _create_category_progress_chart(self, category_status: dict[str, dict[str, int]]):
+    def _create_category_progress_chart(
+        self, category_status: dict[str, dict[str, int]]
+    ):
         """Create a stacked bar chart showing progress by category."""
         categories = []
         passing = []
@@ -272,8 +282,12 @@ class TestProgressReporter:
         ]
 
         # Add category progress table
-        report_lines.append("| Category | Total | Passing | Failing | Disabled | Skipped | Progress |")
-        report_lines.append("|----------|-------|---------|---------|----------|---------|----------|")
+        report_lines.append(
+            "| Category | Total | Passing | Failing | Disabled | Skipped | Progress |"
+        )
+        report_lines.append(
+            "|----------|-------|---------|---------|----------|---------|----------|"
+        )
 
         for category, statuses in metrics["category_status"].items():
             total = sum(statuses.values())
@@ -343,10 +357,14 @@ class TestProgressReporter:
         if low_progress_categories:
             report_lines.append("### Focus Areas")
             report_lines.append("")
-            report_lines.append("These categories have low progress and should be prioritized:")
+            report_lines.append(
+                "These categories have low progress and should be prioritized:"
+            )
             report_lines.append("")
 
-            for category, progress in sorted(low_progress_categories, key=lambda x: x[1]):
+            for category, progress in sorted(
+                low_progress_categories, key=lambda x: x[1]
+            ):
                 report_lines.append(f"- **{category}**: {progress:.1f}% complete")
 
         # Add next steps

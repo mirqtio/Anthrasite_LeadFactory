@@ -40,7 +40,9 @@ try:
     from bin.enrich import enrich_business, fetch_business_data
 except ImportError:
     # Mock implementation for testing
-    logger.warning("Could not import original enrichment module, using mock implementation")
+    logger.warning(
+        "Could not import original enrichment module, using mock implementation"
+    )
 
     def enrich_business(business_id, **kwargs):
         """Mock implementation of enrich_business."""
@@ -172,7 +174,9 @@ def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> dict[st
             }
         )
 
-        logger.info(f"Enriched business {business_id} with LLM (cost=${cost:.4f}, log_id={log_id})")
+        logger.info(
+            f"Enriched business {business_id} with LLM (cost=${cost:.4f}, log_id={log_id})"
+        )
 
         return business_data
     except Exception as e:
@@ -204,10 +208,15 @@ def enrich_business_with_retention(business_id: str, **kwargs) -> dict[str, Any]
         business_data = enrich_business_with_llm(business_data, **kwargs)
 
         # Call original enrichment function
-        enriched_data = enrich_business(business_id, business_data=business_data, **kwargs)
+        enriched_data = enrich_business(
+            business_id, business_data=business_data, **kwargs
+        )
 
         # Ensure HTML storage path is preserved
-        if "html_storage_path" in business_data and "html_storage_path" not in enriched_data:
+        if (
+            "html_storage_path" in business_data
+            and "html_storage_path" not in enriched_data
+        ):
             enriched_data["html_storage_path"] = business_data["html_storage_path"]
 
         logger.info(f"Enriched business {business_id} with retention")
@@ -222,15 +231,21 @@ def enrich_business_with_retention(business_id: str, **kwargs) -> dict[str, Any]
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Enrich a business with data retention")
-    parser.add_argument("--business-id", type=str, required=True, help="Business ID to enrich")
+    parser = argparse.ArgumentParser(
+        description="Enrich a business with data retention"
+    )
+    parser.add_argument(
+        "--business-id", type=str, required=True, help="Business ID to enrich"
+    )
     parser.add_argument("--batch-id", type=str, help="Batch ID for cost tracking")
     parser.add_argument("--tier", type=str, default="1", help="Tier level (1, 2, or 3)")
     args = parser.parse_args()
 
     try:
         # Enrich business
-        enrich_business_with_retention(args.business_id, batch_id=args.batch_id, tier=args.tier)
+        enrich_business_with_retention(
+            args.business_id, batch_id=args.batch_id, tier=args.tier
+        )
 
         # Print result
 
