@@ -3,6 +3,7 @@ Cost tracking utilities for API usage.
 """
 
 import json
+from typing import Dict, List, Optional, Tuple, Union, Any
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -58,7 +59,7 @@ def track_api_cost(
     operation: str,
     cost_dollars: float,
     tier: str = "default",
-    business_id: int | None = None,
+    business_id: Optional[int] = None,
 ) -> bool:
     """
     Track API cost for a service and operation.
@@ -81,7 +82,7 @@ def track_api_cost(
     return True
 
 
-def get_daily_cost(service: str | None = None) -> float:
+def get_daily_cost(service: Optional[str] = None) -> float:
     """
     Get the total API cost for today.
 
@@ -106,7 +107,7 @@ def get_daily_cost(service: str | None = None) -> float:
         return 7.0
 
 
-def get_monthly_cost(service: str | None = None) -> float:
+def get_monthly_cost(service: Optional[str] = None) -> float:
     """
     Get the total API cost for the current month.
 
@@ -237,7 +238,7 @@ def check_budget_thresholds() -> dict[str, Any]:
     }
 
 
-def is_scaling_gate_active() -> tuple[bool, str]:
+def is_scaling_gate_active() -> Tuple[bool, str]:
     """
     Check if the scaling gate is currently active.
 
@@ -327,8 +328,8 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
 def check_operation_permission(
     service: str,
     operation: str,
-    critical_operations: dict[str, list[str]] | None = None,
-) -> tuple[bool, str]:
+    critical_operations: Optional[Dict[str, List[str]]] = None,
+) -> Tuple[bool, str]:
     """
     Check if an operation is permitted based on the scaling gate status.
 
@@ -370,7 +371,7 @@ def check_operation_permission(
 def should_allow_operation(
     service: str,
     operation: str,
-    critical_operations: dict[str, list[str]] | None = None,
+    critical_operations: Optional[Dict[str, List[str]]] = None,
 ) -> bool:
     """
     Determine if an operation should be allowed based on the scaling gate status.
