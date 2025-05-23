@@ -85,7 +85,7 @@ jobs:
       - name: Lint with ruff, black, bandit, flake8, and mypy
         run: |
           echo "Running Ruff..."
-          ruff check . --fix --show-source
+          ruff check . --fix
           echo "Running Black..."
           black .
           echo "Running Bandit..."
