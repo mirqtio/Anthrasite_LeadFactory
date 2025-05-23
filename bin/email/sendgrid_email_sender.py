@@ -104,7 +104,7 @@ class SendGridEmailSender:
         bcc: Optional[List[str]] = None,
         categories: Optional[List[str]] = None,
         custom_args: Optional[Dict[str, str]] = None,
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Send an email using SendGrid.
 
         Args:
@@ -208,7 +208,7 @@ class SendGridEmailSender:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         aggregated_by: str = "day",
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Get email statistics from SendGrid.
 
         Args:
