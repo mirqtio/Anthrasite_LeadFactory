@@ -10,7 +10,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 # Use lowercase type annotations for Python 3.9 compatibility
 

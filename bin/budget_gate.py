@@ -37,23 +37,28 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Optional, Union
 
+# We need to use a different approach to handle imports to satisfy ruff linting
+# First modify sys.path before any local imports
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
-# Use a function to set up imports properly
-def _setup_imports():
-    project_root = Path(__file__).parent.parent
-    sys.path.insert(0, str(project_root))
+
+# Instead of direct imports, we'll use a function to get the modules we need
+def _get_cost_tracker():
+    import bin.cost_tracking
+
+    return bin.cost_tracking.cost_tracker
 
 
-# Call the setup function before any imports
-_setup_imports()
+def _get_metrics():
+    import bin.metrics
 
-# Now we can import our local modules
-import bin.cost_tracking
-import bin.metrics
+    return bin.metrics.metrics
 
-# Define aliases for better readability
-cost_tracker = bin.cost_tracking.cost_tracker
-metrics = bin.metrics.metrics
+
+# Create instances to use in the code
+cost_tracker = _get_cost_tracker()
+metrics = _get_metrics()
 
 # Setup logging
 logging.basicConfig(
