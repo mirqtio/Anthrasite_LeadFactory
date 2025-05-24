@@ -30,12 +30,17 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities with conditional imports for testing
 
 
-# Define dummy classes that we'll use if the real ones aren't available
-class IoDatabaseConnection:
-    """Dummy implementation of DatabaseConnection for testing environments."""
+# For Python 3.9 compatibility, use a different approach that avoids type assignment issues
+
+
+# First, create our own DatabaseConnection class - use this if import fails
+class DatabaseConnection:
+    """Implementation of DatabaseConnection that works in all environments."""
 
     def __init__(self, db_path=None):
-        pass
+        self.db_path = db_path
+        self.connection = None
+        self.cursor = None
 
     def __enter__(self):
         return self
@@ -56,21 +61,34 @@ class IoDatabaseConnection:
         pass
 
 
-def dummy_track_api_cost(service, operation, cost, *args, **kwargs):
-    """Dummy implementation of track_api_cost for testing environments."""
+# Define a track_api_cost function that works in all environments
+def track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
+    """Track API cost - dummy implementation that works in all environments."""
     pass
 
 
-# Try to import the real implementations
+# Try to import and replace with real implementations
 try:
-    from utils.io import DatabaseConnection, track_api_cost
+    # Import the real implementations so we can use their functionality
+    from utils.io import DatabaseConnection as RealDatabaseConnection
+    from utils.io import track_api_cost as real_track_api_cost
 
-    # Use the real implementations
+    # If import succeeds, copy the methods from the real class
+    # This avoids type compatibility issues while preserving functionality
+    DatabaseConnection.__init__ = RealDatabaseConnection.__init__
+    DatabaseConnection.__enter__ = RealDatabaseConnection.__enter__
+    DatabaseConnection.__exit__ = RealDatabaseConnection.__exit__
+    DatabaseConnection.execute = RealDatabaseConnection.execute
+    DatabaseConnection.fetchall = RealDatabaseConnection.fetchall
+    DatabaseConnection.fetchone = RealDatabaseConnection.fetchone
+    DatabaseConnection.commit = RealDatabaseConnection.commit
+
+    # Replace our track_api_cost function with the real one
+    track_api_cost = real_track_api_cost
 except ImportError:
-    # If import fails, use our dummy implementations instead
-    # This provides Python 3.9 compatibility during testing
-    DatabaseConnection = IoDatabaseConnection
-    track_api_cost = dummy_track_api_cost
+    # If imports fail, we keep our own implementations
+    # No need to do anything as our versions are already defined
+    pass
 
 
 # Import all necessary modules before any local imports
