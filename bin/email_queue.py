@@ -21,7 +21,8 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from collections.abc import Sequence
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import requests
 from dotenv import load_dotenv
@@ -29,25 +30,21 @@ from dotenv import load_dotenv
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Import with conditional imports for testing
-has_db_connection = False
+# Create a class variable to hold our database connection class
+EmailDBConnection = None
+
+# Import DatabaseConnection with fallback for testing
 try:
-    from utils.io import DatabaseConnection as IoDBConnection
+    from utils.io import DatabaseConnection
 
-    # Use IoDBConnection as the new name to avoid redefinition conflicts
-    has_db_connection = True
+    EmailDBConnection = DatabaseConnection
 except ImportError:
-    # Dummy implementation only created if the import fails
-    pass
-
-# Define dummy IoDBConnection only if needed
-if not has_db_connection:
-
-    class IoDBConnection:
+    # Define a dummy DatabaseConnection class for testing
+    class EmailDBConnection:
         def __init__(self, db_path: Optional[str] = None) -> None:
             pass
 
-        def __enter__(self) -> "IoDBConnection":
+        def __enter__(self) -> "EmailDBConnection":
             return self
 
         def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
@@ -578,7 +575,7 @@ def get_businesses_for_email(
         List of dictionaries containing business information.
     """
     try:
-        with IoDBConnection() as cursor:
+        with EmailDBConnection() as cursor:
             # Build query based on parameters
             query_parts = ["SELECT b.*, f.*, m.* FROM businesses b"]
             query_parts.append("LEFT JOIN features f ON b.id = f.business_id")
@@ -626,7 +623,7 @@ def is_email_unsubscribed(email: str) -> bool:
         True if the email has unsubscribed, False otherwise.
     """
     try:
-        with IoDBConnection() as cursor:
+        with EmailDBConnection() as cursor:
             cursor.execute("SELECT id FROM unsubscribes WHERE email = ?", (email,))
             result = cursor.fetchone()
             return result is not None
@@ -652,7 +649,7 @@ def add_unsubscribe(
         True if successful, False otherwise.
     """
     try:
-        with IoDBConnection() as cursor:
+        with EmailDBConnection() as cursor:
             cursor.execute(
                 "INSERT OR REPLACE INTO unsubscribes (email, reason, ip_address, user_agent) VALUES (?, ?, ?, ?)",
                 (email, reason, ip_address, user_agent),
@@ -685,7 +682,7 @@ def save_email_record(
         True if successful, False otherwise.
     """
     try:
-        with IoDBConnection() as cursor:
+        with EmailDBConnection() as cursor:
             # Insert email record
             cursor.execute(
                 """
@@ -882,13 +879,16 @@ def send_business_email(
     return success
 
 
-def process_business_email(business_id: int, dry_run: bool = None) -> bool:
+def process_business_email(
+    business_id: int, dry_run: bool = None
+) -> Union[bool, Tuple[bool, Optional[str], Optional[str]]]:
     """Process a single business for email sending.
     Args:
         business_id: The ID of the business to process
         dry_run: If True, don't actually send emails. If None, uses the global DRY_RUN setting.
     Returns:
-        bool: True if processing was successful, False otherwise
+        Union[bool, Tuple[bool, Optional[str], Optional[str]]]:
+            Either a boolean indicating success, or a tuple with (success, message_id, error)
     """
 
     # Set up debug logging
