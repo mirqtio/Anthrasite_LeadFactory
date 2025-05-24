@@ -5,6 +5,7 @@ Monitors batch completion status and sends alerts if batches don't complete on t
 """
 
 import argparse
+import logging
 import os
 import smtplib
 import sys
@@ -12,13 +13,15 @@ import time
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from pathlib import Path
+from typing import Dict, List, Optional, Any
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# Import batch tracker
+# Add project root to path using pathlib for better compatibility
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Import batch tracker and logging configuration
 from utils.batch_tracker import check_batch_completion, get_batch_status
-
-# Import logging configuration
 from utils.logging_config import get_logger
 
 # Set up logging

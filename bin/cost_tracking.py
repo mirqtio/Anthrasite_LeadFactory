@@ -3,20 +3,32 @@
 Cost Tracking and Metrics
 ----------------------
 This module provides cost tracking and metrics for the Anthrasite LeadFactory
-platform. It tracks costs for various services, calculates cost per lead, and
-exposes metrics for monitoring and alerting.
+
+It offers the following core features:
+- Tracking of API costs per request/operation
+- Batch-level cost tracking
+- Monthly budget management
+- GPU usage cost tracking
+- Cost per lead calculation
+- Integration with budget gate for cost control
+
+The CostTracker class is exposed as a singleton instance at the module level.
 
 Usage:
     from bin.cost_tracking import cost_tracker
 
-    # Track API costs
-    cost_tracker.add_cost(0.12, service="openai", operation="gpt-4")
+    # Track a specific API cost
+    cost_tracker.add_cost(0.25, "openai", "gpt-4", {"tokens": 1500})
 
-    # Track GPU usage
-    cost_tracker.start_gpu_tracking()
+    # Start a batch for grouping related costs
+    batch_id = cost_tracker.start_batch()
 
-    # Calculate cost per lead at the end of a batch
-    cost_tracker.calculate_cost_per_lead(leads_processed=150, tier="1")
+    # Add costs to the batch
+    cost_tracker.add_cost(0.10, "openai", "gpt-4", {"tokens": 500}, batch_id=batch_id)
+
+    # End the batch and get summary
+    summary = cost_tracker.end_batch(leads_processed=10)
+    print(f"Cost per lead: ${summary['cost_per_lead']:.2f}")
 """
 
 import json
@@ -27,10 +39,13 @@ import sys
 import threading
 import time
 from datetime import datetime
-from typing import Any
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Any, Union
 
-# Add parent directory to path to allow importing metrics
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Import metrics - using proper path handling
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 from bin.metrics import metrics
 
 # Setup logging
@@ -42,7 +57,7 @@ logging.basicConfig(
         logging.FileHandler(os.path.join("logs", "cost_tracking.log")),
     ],
 )
-logger = logging.getLogger("cost_tracking")
+logger = logging.getLogger(__name__)
 
 
 class CostTracker:

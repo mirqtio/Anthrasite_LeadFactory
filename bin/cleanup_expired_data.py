@@ -7,11 +7,16 @@ import argparse
 import logging
 import os
 import sys
+import time
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Optional, Tuple, List, Dict, Any
 
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to path using pathlib for better compatibility
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
+# Import dependencies after path setup
 from utils.config import get_config
 from utils.database import DatabaseConnection
 

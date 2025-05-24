@@ -16,27 +16,32 @@ Usage:
 
 import json
 import logging
-import os
-import sys
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Any
+from pathlib import Path
+from typing import Dict, List, Optional, Any, Union
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (
+    Mail,
     Attachment,
-    Disposition,
     FileContent,
     FileName,
     FileType,
-    Mail,
+    Disposition,
+    Content,
+    Email,
+    To,
+    Cc,
+    Bcc,
 )
 
-# Add parent directory to path to allow importing metrics
-sys.path.append(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+# Add project root to path using pathlib for better compatibility
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+# Import dependencies after path setup
 from bin.metrics import metrics
 
 # Setup logging

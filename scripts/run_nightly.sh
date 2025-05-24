@@ -68,7 +68,12 @@ handle_error() {
   # Record failure metric
   python -c "
 import sys
-sys.path.append('.')
+from pathlib import Path
+
+# Add project root to path using pathlib for better compatibility
+project_root = Path('.')
+sys.path.insert(0, str(project_root))
+
 from bin.metrics import metrics
 metrics.batch_completed_timestamp.set(0)  # 0 indicates failure
 "

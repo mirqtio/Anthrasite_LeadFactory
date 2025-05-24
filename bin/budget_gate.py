@@ -29,15 +29,19 @@ Usage:
 """
 
 import functools
+import json
 import logging
 import os
 import sys
-import time
 from collections.abc import Callable
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict, Optional, Union, List
 
-# Add parent directory to path to allow importing metrics and cost_tracking
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to path using pathlib for better compatibility
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Import dependencies after path setup
 from bin.cost_tracking import cost_tracker
 from bin.metrics import metrics
 
