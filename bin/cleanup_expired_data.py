@@ -10,7 +10,9 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional, Tuple, List
+from typing import Any, Optional, Tuple
+
+# Use lowercase type annotations for Python 3.9 compatibility
 
 # Add project root to path using pathlib for better compatibility
 project_root = Path(__file__).parent.parent

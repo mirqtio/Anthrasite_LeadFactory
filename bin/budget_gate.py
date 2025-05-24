@@ -37,13 +37,23 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Optional, Union
 
-# Add project root to path using pathlib for better compatibility
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
-# Import dependencies after path setup
-from bin.cost_tracking import cost_tracker
-from bin.metrics import metrics
+# Use a function to set up imports properly
+def _setup_imports():
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+
+
+# Call the setup function before any imports
+_setup_imports()
+
+# Now we can import our local modules
+import bin.cost_tracking
+import bin.metrics
+
+# Define aliases for better readability
+cost_tracker = bin.cost_tracking.cost_tracker
+metrics = bin.metrics.metrics
 
 # Setup logging
 logging.basicConfig(
