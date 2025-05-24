@@ -48,8 +48,11 @@ except ImportError:
         return logging.getLogger(name)
 
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to path using pathlib for better compatibility
+from pathlib import Path
+
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 # Load environment variables
 load_dotenv()
 # Set up logging

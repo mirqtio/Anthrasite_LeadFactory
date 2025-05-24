@@ -5,6 +5,7 @@ Monitors batch completion status and sends alerts if batches don't complete on t
 """
 
 import argparse
+import json
 import logging
 import os
 import smtplib
@@ -20,12 +21,12 @@ from typing import Any, Optional
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-# Import batch tracker and logging configuration
-from utils.batch_tracker import check_batch_completion, get_batch_status
-from utils.logging_config import get_logger
+# Import local dependencies - must be after sys.path modification
+import utils.batch_tracker
+import utils.logging_config
 
 # Set up logging
-logger = get_logger(__name__)
+logger = utils.logging_config.get_logger(__name__)
 
 # Constants
 CHECK_INTERVAL = int(
@@ -77,11 +78,11 @@ def send_alert_email(subject: str, message: str) -> bool:
 
 def check_and_alert() -> None:
     """Check batch completion status and send alerts if needed."""
-    completed_on_time, reason = check_batch_completion()
+    completed_on_time, reason = utils.batch_tracker.check_batch_completion()
 
     if not completed_on_time:
         # Get detailed batch status
-        status = get_batch_status()
+        status = utils.batch_tracker.get_batch_status()
 
         # Create alert message
         subject = f"ALERT: Batch Completion Failure - {reason}"
