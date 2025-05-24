@@ -59,7 +59,7 @@ class _TestingDatabaseConnection:
         pass
 
 
-def _testing_track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
+def _testing_track_cost(service, operation, cost_cents, tier=1, business_id=None):
     """Dummy implementation of track_api_cost for testing environments."""
     pass
 
@@ -88,9 +88,7 @@ def track_cost(service, operation, cost_cents, tier=1, business_id=None):
         return track_api_cost(service, operation, cost_cents, tier, business_id)
     except ImportError:
         # Fall back to our testing implementation
-        return _testing_track_api_cost(
-            service, operation, cost_cents, tier, business_id
-        )
+        return _testing_track_cost(service, operation, cost_cents, tier, business_id)
 
 
 # Import logging utilities with conditional imports for testing
@@ -277,7 +275,7 @@ class OllamaVerifier:
             # Track cost
             cost_dollars = (total_tokens / 1000) * OLLAMA_COST_PER_1K_TOKENS
             cost_cents = cost_dollars * 100
-            track_api_cost(
+            track_cost(
                 service="ollama",
                 operation="dedupe_verification",
                 cost_cents=cost_cents,
@@ -365,7 +363,7 @@ def get_potential_duplicates(limit: Optional[int] = None) -> List[Dict]:
         List of dictionaries containing potential duplicate pairs.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             # Base query
             query = """
                 SELECT * FROM candidate_duplicate_pairs
@@ -392,7 +390,7 @@ def get_business_by_id(business_id: int) -> Optional[dict]:
         Business record as dictionary, or None if not found.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             cursor.execute(
                 """
                 SELECT * FROM businesses WHERE id = ?
@@ -426,7 +424,7 @@ def merge_businesses(
         )
         return primary_id
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             # Start transaction
             cursor.execute("BEGIN TRANSACTION")
             # Update references in features table
@@ -530,7 +528,7 @@ def flag_for_review(
         similarity_score: Optional similarity score between the businesses.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             # Ensure business1_id is always the smaller ID for consistency
             if business1_id > business2_id:
                 business1_id, business2_id = business2_id, business1_id

@@ -554,7 +554,7 @@ def get_businesses_to_score(
         List of dictionaries containing business information.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             # Build query based on parameters
             query_parts = ["SELECT b.*, f.* FROM businesses b"]
             query_parts.append("LEFT JOIN features f ON b.id = f.business_id")
@@ -600,7 +600,7 @@ def save_business_score(
         True if successful, False otherwise.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             # Update business score
             cursor.execute(
                 """

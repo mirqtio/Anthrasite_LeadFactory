@@ -61,7 +61,7 @@ class _TestingDatabaseConnection:
         pass
 
 
-def _testing_track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
+def _testing_track_cost(service, operation, cost_cents, tier=1, business_id=None):
     """Dummy implementation of track_api_cost for testing environments."""
     pass
 
@@ -90,9 +90,7 @@ def track_cost(service, operation, cost_cents, tier=1, business_id=None):
         return track_api_cost(service, operation, cost_cents, tier, business_id)
     except ImportError:
         # Fall back to our testing implementation
-        return _testing_track_api_cost(
-            service, operation, cost_cents, tier, business_id
-        )
+        return _testing_track_cost(service, operation, cost_cents, tier, business_id)
 
 
 # Import all necessary modules before any local imports
@@ -208,7 +206,7 @@ class GPT4oMockupGenerator:
                 completion_tokens / 1000
             ) * GPT4O_COST_PER_1K_TOKENS_OUTPUT
             total_cost_cents = input_cost_cents + output_cost_cents
-            track_api_cost(
+            track_cost(
                 service="openai",
                 operation="mockup_generation",
                 cost_cents=total_cost_cents,
@@ -375,7 +373,7 @@ class ClaudeMockupGenerator:
                 usage["output_tokens"] / 1000
             ) * CLAUDE_COST_PER_1K_TOKENS_OUTPUT
             total_cost_cents = input_cost_cents + output_cost_cents
-            track_api_cost(
+            track_cost(
                 service="anthropic",
                 operation="mockup_generation",
                 cost_cents=total_cost_cents,
@@ -501,7 +499,7 @@ def get_businesses_for_mockup(
         List of dictionaries containing business information.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             # Build query based on parameters
             query_parts = ["SELECT b.*, f.* FROM businesses b"]
             query_parts.append("LEFT JOIN features f ON b.id = f.business_id")
@@ -565,7 +563,7 @@ def save_mockup(
         tokens_used = usage_data.get("usage", {}).get("total_tokens", 0)
         cost_cents = tokens_used * 0.01  # $0.01 per token for simplicity
         # Track the cost
-        track_api_cost(
+        track_cost(
             service="openai",
             operation="mockup_generation",
             cost_cents=cost_cents,
@@ -578,7 +576,7 @@ def save_mockup(
         # If we have a base64 image, save it to Supabase Storage
         if mockup_image_base64:
             mockup_url = save_mockup_image(mockup_image_base64, mockup_filename)
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             # Insert mockup record
             cursor.execute(
                 """

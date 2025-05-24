@@ -61,7 +61,7 @@ class _TestingDatabaseConnection:
         pass
 
 
-def _testing_make_api_request(
+def _testing_make_request(
     url,
     method="GET",
     headers=None,
@@ -81,7 +81,7 @@ def _testing_make_api_request(
     return {"status": "success", "data": {}}, None
 
 
-def _testing_track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
+def _testing_track_cost(service, operation, cost_cents, tier=1, business_id=None):
     """Dummy implementation of track_api_cost for testing environments."""
     pass
 
@@ -140,7 +140,7 @@ def make_request(
         )
     except ImportError:
         # Fall back to our testing implementation
-        return _testing_make_api_request(
+        return _testing_make_request(
             url,
             method,
             headers,
@@ -167,9 +167,7 @@ def track_cost(service, operation, cost_cents, tier=1, business_id=None):
         return track_api_cost(service, operation, cost_cents, tier, business_id)
     except ImportError:
         # Fall back to our testing implementation
-        return _testing_track_api_cost(
-            service, operation, cost_cents, tier, business_id
-        )
+        return _testing_track_cost(service, operation, cost_cents, tier, business_id)
 
 
 # Import logging utilities with conditional imports for testing
@@ -318,7 +316,7 @@ class PageSpeedAnalyzer:
         }
         if self.api_key:
             params["key"] = self.api_key
-        response_data, error = make_api_request(
+        response_data, error = make_request(
             url=api_url,
             params=params,
             track_cost=True,
@@ -408,7 +406,7 @@ class ScreenshotGenerator:
             response = requests.get(api_url, params=params, timeout=DEFAULT_TIMEOUT)
             response.raise_for_status()
             # Track the cost
-            track_api_cost(
+            track_cost(
                 service="screenshotone",
                 operation="capture",
                 cost_cents=SCREENSHOT_ONE_COST,
@@ -460,7 +458,7 @@ class SEMrushAnalyzer:
             "url": domain,
             "limit": "10",  # Limit to top 10 issues
         }
-        response_data, error = make_api_request(
+        response_data, error = make_request(
             url=api_url,
             params=params,
             track_cost=True,
@@ -500,7 +498,7 @@ def get_businesses_to_enrich(
         List of dictionaries containing business information.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             if business_id:
                 cursor.execute(
                     """
@@ -549,7 +547,7 @@ def save_features(
         True if successful, False otherwise.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with get_database_connection() as cursor:
             cursor.execute(
                 """
                 INSERT INTO features
