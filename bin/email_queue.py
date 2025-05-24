@@ -30,16 +30,17 @@ from dotenv import load_dotenv
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Define a single EmailDBConnection class that will be used throughout the module
-# This avoids redefinition issues with conditional imports
+# Use typing.Type for creating a type variable that can accept multiple class types
+# This avoids type checking errors when assigning different class types to the same variable
+T = TypeVar("T")
 
 
-# First define our own class for testing scenarios
+# Define our own base connection class for testing scenarios
 class _EmailDBConnectionBase:
     def __init__(self, db_path: Optional[str] = None) -> None:
         pass
 
-    def __enter__(self):
+    def __enter__(self) -> "_EmailDBConnectionBase":
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
@@ -58,11 +59,14 @@ class _EmailDBConnectionBase:
         pass
 
 
-# Now try to import and set the actual class
-try:
-    from utils.io import DatabaseConnection as _RealDBConnection
+# Type variable for our database connection class
+EmailDBConnection: Any = None
 
-    EmailDBConnection = _RealDBConnection  # Use the real one if available
+# Try to import the real database connection class
+try:
+    from utils.io import DatabaseConnection
+
+    EmailDBConnection = DatabaseConnection  # Use the real one if available
 except ImportError:
     EmailDBConnection = _EmailDBConnectionBase  # Use our base class if import fails
 
@@ -112,12 +116,20 @@ def is_valid_email(email: str) -> bool:
 # Import cost tracker with conditional imports for testing
 has_cost_tracker = False
 try:
-    from utils.cost_tracker import get_daily_cost, get_monthly_cost, log_cost
+    # Try to import from the actual module first
+    from utils.cost_tracker import get_daily_cost, get_monthly_cost
 
-    has_cost_tracker = True
+    # Check if log_cost exists in the module
+    try:
+        from utils.cost_tracker import log_cost
+
+        has_cost_tracker = True
+    except ImportError:
+        # log_cost doesn't exist in the module, will create a dummy implementation
+        has_cost_tracker = False
 except ImportError:
-    # Dummy implementations only created if the import fails
-    pass
+    # Entire module not available, will create dummy implementations for all functions
+    has_cost_tracker = False
 
 # Define dummy cost tracker functions only if needed
 if not has_cost_tracker:
