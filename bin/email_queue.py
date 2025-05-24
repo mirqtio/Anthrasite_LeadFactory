@@ -19,10 +19,10 @@ import os
 import re
 import sys
 import time
+from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
-from collections.abc import Sequence
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, TypeVar, cast
 
 import requests
 from dotenv import load_dotenv
@@ -30,21 +30,21 @@ from dotenv import load_dotenv
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Create a class variable to hold our database connection class
-EmailDBConnection = None
-
 # Import DatabaseConnection with fallback for testing
 try:
-    from utils.io import DatabaseConnection
+    from utils.io import DatabaseConnection as _DBConnection
 
-    EmailDBConnection = DatabaseConnection
+    # Define a type alias
+    class EmailDBConnection(_DBConnection):
+        pass
+
 except ImportError:
     # Define a dummy DatabaseConnection class for testing
     class EmailDBConnection:
         def __init__(self, db_path: Optional[str] = None) -> None:
             pass
 
-        def __enter__(self) -> "EmailDBConnection":
+        def __enter__(self):
             return self
 
         def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
@@ -278,7 +278,9 @@ class SendGridEmailSender:
                 # Add attachment
                 if "attachments" not in payload:
                     payload["attachments"] = []
-                payload["attachments"].append(
+                # Use cast to ensure proper typing for append operation
+                attachments_list = cast(List[Dict[str, str]], payload["attachments"])
+                attachments_list.append(
                     {
                         "content": image_data,
                         "type": "image/png",
@@ -876,7 +878,7 @@ def send_business_email(
         status=status,
         error_message=error,
     )
-    return success
+    return success, message_id, error
 
 
 def process_business_email(
@@ -1134,7 +1136,7 @@ def process_business_email(
                     log_debug(f"Error saving email record: {e}")
                     # Don't fail the function if saving the record fails
                     pass
-            return success
+            return success, message_id, error
         except Exception as e:
             logger.error(f"Error sending business email: {str(e)}", exc_info=True)
             return False
