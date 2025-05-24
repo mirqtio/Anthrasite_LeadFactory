@@ -10,8 +10,7 @@ echo "Generating list of files to check..."
 find . \( -name ".venv" -o -name "venv" \) -prune -o -type f -name "*.py" -print | \
   grep -v "tests/" | grep -v ".cursor/" | grep -v ".github/workflows/" | \
   grep -v "bin/enrich.py" | grep -v "bin/dedupe.py" | \
-  grep -v ".git/" | grep -v "archive/" | \
-  xargs -I{} test -f {} -a -r {} && echo {} > $OUTDIR/files_to_check.txt
+  grep -v ".git/" | grep -v "archive/" > $OUTDIR/files_to_check.txt
 
 # Ensure each file exists and is readable
 cat $OUTDIR/files_to_check.txt | while read file; do
