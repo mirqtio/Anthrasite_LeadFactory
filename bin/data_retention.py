@@ -343,7 +343,7 @@ class DataRetentionManager:
             logger.exception(f"Error logging LLM interaction: {e}")
             return ""
 
-    def get_llm_log(self, log_id: str) -> Optional[Dict[str, Any]]:
+    def get_llm_log(self, log_id: str) -> Optional[dict[str, Any]]:
         """Get an LLM interaction log by ID.
 
         Args:

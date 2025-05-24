@@ -90,7 +90,7 @@ class CostTracker:
         # Initialize batch tracking
         self.current_batch_id: Optional[str] = None
         self.current_batch_start_time: Optional[datetime] = None
-        self.current_batch_costs: Dict[str, float] = {}
+        self.current_batch_costs: dict[str, float] = {}
 
         # Load tier thresholds
         self.tier_thresholds = {
@@ -172,7 +172,7 @@ class CostTracker:
         amount: float,
         service: str,
         operation: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        details: Optional[dict[str, Any]] = None,
         batch_id: Optional[str] = None,
     ):
         """Add a cost entry.

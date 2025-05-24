@@ -106,12 +106,12 @@ class SendGridEmailSender:
         to: str,
         subject: str,
         content: str,
-        attachments: Optional[List[Dict[str, Any]]] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        categories: Optional[List[str]] = None,
-        custom_args: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        attachments: Optional[list[dict[str, Any]]] = None,
+        cc: Optional[list[str]] = None,
+        bcc: Optional[list[str]] = None,
+        categories: Optional[list[str]] = None,
+        custom_args: Optional[dict[str, str]] = None,
+    ) -> dict[str, Any]:
         """Send an email using SendGrid.
 
         Args:
