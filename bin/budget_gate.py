@@ -120,7 +120,7 @@ class BudgetGate:
             # Operation can proceed
             return True
 
-    def get_skipped_operations(self) -> Dict[str, int]:
+    def get_skipped_operations(self) -> dict[str, int]:
         """Get a dictionary of skipped operations and their counts.
 
         Returns:

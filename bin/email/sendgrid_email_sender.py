@@ -215,7 +215,7 @@ class SendGridEmailSender:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         aggregated_by: str = "day",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get email statistics from SendGrid.
 
         Args:
