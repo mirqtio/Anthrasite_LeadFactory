@@ -126,36 +126,41 @@ def log_cost(
     pass
 
 
-# Import cost tracker with conditional imports for testing
-has_cost_tracker = False
+# Import cost tracker functions with a more direct approach for Python 3.9 compatibility
+# Always define our own versions first, then try to import the real ones
+
+
+# Our dummy implementations
+def get_daily_cost(service: Optional[str] = None) -> float:
+    return 0.0
+
+
+def get_monthly_cost(service: Optional[str] = None) -> float:
+    return 0.0
+
+
+# Try to import the real implementations
 try:
-    # Try to import from the actual module first
-    from utils.cost_tracker import get_daily_cost, get_monthly_cost
+    # First try to import the main module functions
+    from utils.cost_tracker import get_daily_cost as real_get_daily_cost
+    from utils.cost_tracker import get_monthly_cost as real_get_monthly_cost
 
-    # Check if log_cost exists in the module - if it does, replace our dummy implementation
+    # Replace our dummy implementations with the real ones
+    get_daily_cost = real_get_daily_cost
+    get_monthly_cost = real_get_monthly_cost
+
+    # Now try to import log_cost separately since it might not exist
     try:
-        from utils.cost_tracker import log_cost as imported_log_cost
+        from utils.cost_tracker import log_cost as real_log_cost
 
-        # Replace our dummy implementation with the real one
-        log_cost = imported_log_cost
-        has_cost_tracker = True
+        # If successful, replace our dummy implementation
+        log_cost = real_log_cost
     except ImportError:
-        # log_cost doesn't exist in the module, we'll use our dummy implementation
+        # Keep using our own log_cost function
         pass
 except ImportError:
-    # Entire module not available, we'll use our dummy implementations for all functions
+    # Keep using our own implementations
     pass
-
-# Define dummy cost tracker functions only if needed
-if not has_cost_tracker:
-    # We've already defined log_cost at the module level
-
-    # Define the other cost tracker functions
-    def get_daily_cost(service: Optional[str] = None) -> float:
-        return 0.0
-
-    def get_monthly_cost(service: Optional[str] = None) -> float:
-        return 0.0
 
 
 # Load environment variables
