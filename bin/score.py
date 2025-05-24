@@ -30,48 +30,50 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities with conditional imports for testing
 
 
-# For Python 3.9 compatibility, use a completely different approach to avoid any type errors
+# For Python 3.9 compatibility, define fallback implementations for when imports are not available
 
-# First, check if we can import from utils.io
-utils_io_available = False
-try:
-    import utils.io
 
-    utils_io_available = True
-except ImportError:
-    utils_io_available = False
+# Define fallback function and class implementations
+class _TestingDatabaseConnection:
+    """Alternative database connection for testing environments."""
 
-# Now define DatabaseConnection appropriately based on availability
-if utils_io_available:
-    # If utils.io is available, use the real DatabaseConnection
-    from utils.io import DatabaseConnection
-else:
-    # Otherwise, define our own version
-    class DatabaseConnection:
-        """Implementation of DatabaseConnection for testing environments."""
+    def __init__(self, db_path=None):
+        self.db_path = db_path
+        self.connection = None
+        self.cursor = None
 
-        def __init__(self, db_path=None):
-            self.db_path = db_path
-            self.connection = None
-            self.cursor = None
+    def __enter__(self):
+        return self
 
-        def __enter__(self):
-            return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            pass
+    def execute(self, query, params=None):
+        return None
 
-        def execute(self, query, params=None):
-            return None
+    def fetchall(self):
+        return []
 
-        def fetchall(self):
-            return []
+    def fetchone(self):
+        return None
 
-        def fetchone(self):
-            return None
+    def commit(self):
+        pass
 
-        def commit(self):
-            pass
+
+# Try to import real implementations first
+# Instead of defining a local DatabaseConnection, we use an adapter function
+# This avoids name conflicts while providing the same functionality
+def get_database_connection(db_path=None):
+    """Return appropriate DatabaseConnection implementation based on environment."""
+    try:
+        # Try to import the real implementation
+        from utils.io import DatabaseConnection
+
+        return DatabaseConnection(db_path)
+    except ImportError:
+        # Fall back to our testing implementation
+        return _TestingDatabaseConnection(db_path)
 
 
 try:
