@@ -14,54 +14,71 @@ import argparse
 import base64
 import html
 import json
+import logging
 import os
 import re
 import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Dict, List, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from dotenv import load_dotenv
 
 # Add project root to path
-sys.path.insert(0, Path(__file__).resolve().parent.parent)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Import with try-except for Python 3.9 compatibility during testing
+# Import with conditional imports for testing
+has_db_connection = False
 try:
     from utils.io import DatabaseConnection
+
+    has_db_connection = True
 except ImportError:
-    # During testing, provide a dummy implementation
+    # Dummy implementation only created if the import fails
+    pass
+
+# Define dummy DatabaseConnection only if needed
+if not has_db_connection:
+
     class DatabaseConnection:
-        def __init__(self, db_path=None):
+        def __init__(self, db_path: Optional[str] = None) -> None:
             pass
 
-        def __enter__(self):
+        def __enter__(self) -> "DatabaseConnection":
             return self
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
             pass
 
-        def execute(self, *args, **kwargs):
+        def execute(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def fetchall(self):
+        def fetchall(self) -> List[Any]:
             return []
 
-        def fetchone(self):
+        def fetchone(self) -> Optional[Any]:
             return None
 
-        def commit(self):
+        def commit(self) -> None:
             pass
 
 
-# Import logging configuration with try-except for Python 3.9 compatibility during testing
+# Import logging utilities with conditional imports for testing
+has_logger = False
 try:
     from utils.logging_config import get_logger
+
+    has_logger = True
 except ImportError:
-    # During testing, provide a dummy logger
-    def get_logger(name):
+    # Dummy implementation only created if the import fails
+    pass
+
+# Define dummy get_logger only if needed
+if not has_logger:
+
+    def get_logger(name: str) -> logging.Logger:
         import logging
 
         return logging.getLogger(name)
@@ -536,7 +553,7 @@ def load_email_template() -> str:
 
 def get_businesses_for_email(
     limit: Optional[int] = None, business_id: Optional[int] = None, force: bool = False
-) -> list[dict]:
+) -> List[dict]:
     """Get list of businesses for email sending.
     Args:
         limit: Maximum number of businesses to return.

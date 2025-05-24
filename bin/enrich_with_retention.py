@@ -16,7 +16,7 @@ import logging
 import os
 import sys
 import time
-from typing import Any
+from typing import Any, Dict
 
 # Add parent directory to path to allow importing other modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,21 +36,32 @@ logging.basicConfig(
 logger = logging.getLogger("enrich_with_retention")
 
 # Import original enrichment module
+has_enrich_module = False
 try:
-    from bin.enrich import enrich_business, fetch_business_data
+    # We're only importing enrich_business, as fetch_business_data isn't in bin.enrich
+    from bin.enrich import enrich_business
+
+    has_enrich_module = True
 except ImportError:
     # Mock implementation for testing
     logger.warning(
         "Could not import original enrichment module, using mock implementation"
     )
 
-    def enrich_business(business_id, **kwargs):
-        """Mock implementation of enrich_business."""
-        logger.info(f"Mock enrichment for business {business_id}")
-        return {"business_id": business_id, "enriched": True}
+# Define mock functions only if needed
+if not has_enrich_module:
 
-    def fetch_business_data(business_id, **kwargs):
+    def enrich_business(business: Dict[Any, Any], tier: int = 1) -> bool:
+        """Mock implementation of enrich_business."""
+        business_id = business.get("id", "unknown")
+        logger.info(f"Mock enrichment for business {business_id}")
+        return True
+
+    def fetch_business_data(business_id: Union[int, str]) -> Dict[str, Any]:
         """Mock implementation of fetch_business_data."""
+        # Convert business_id to int if it's a string and contains only digits
+        if isinstance(business_id, str) and business_id.isdigit():
+            business_id = int(business_id)
         logger.info(f"Mock fetch for business {business_id}")
         return {
             "business_id": business_id,
@@ -60,7 +71,7 @@ except ImportError:
         }
 
 
-def fetch_business_data_with_retention(business_id: str, **kwargs) -> dict[str, Any]:
+def fetch_business_data_with_retention(business_id: str, **kwargs) -> Dict[str, Any]:
     """Fetch business data with retention for raw HTML.
 
     Args:
@@ -94,7 +105,7 @@ def fetch_business_data_with_retention(business_id: str, **kwargs) -> dict[str, 
     operation="gpt-4-enrichment",
     fallback_value={"status": "skipped", "reason": "budget_gate"},
 )
-def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> dict[str, Any]:
+def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> Dict[str, Any]:
     """Enrich business data using LLM with cost tracking and logging.
 
     Args:
@@ -184,7 +195,7 @@ def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> dict[st
         return business_data
 
 
-def enrich_business_with_retention(business_id: str, **kwargs) -> dict[str, Any]:
+def enrich_business_with_retention(business_id: str, **kwargs) -> Dict[str, Any]:
     """Enrich a business with data retention.
 
     Args:
@@ -207,17 +218,22 @@ def enrich_business_with_retention(business_id: str, **kwargs) -> dict[str, Any]
         # Enrich with LLM if budget gate allows
         business_data = enrich_business_with_llm(business_data, **kwargs)
 
-        # Call original enrichment function
-        enriched_data = enrich_business(
-            business_id, business_data=business_data, **kwargs
-        )
+        # Call original enrichment function with correct signature
+        # Create a dictionary with business ID that matches what enrich_business expects
+        business = business_data.copy()
+        business["id"] = business_id
+        # Get tier from kwargs
+        tier = int(kwargs.get("tier", 1))
 
-        # Ensure HTML storage path is preserved
-        if (
-            "html_storage_path" in business_data
-            and "html_storage_path" not in enriched_data
-        ):
-            enriched_data["html_storage_path"] = business_data["html_storage_path"]
+        # Call enrich_business with correct signature
+        enrichment_result = enrich_business(business=business, tier=tier)
+
+        # Since enrich_business returns a boolean, we'll keep using our existing business_data
+        # but update it with the enrichment status
+        business_data["enriched"] = enrichment_result
+
+        # Ensure enriched_data has the necessary data
+        enriched_data = business_data
 
         logger.info(f"Enriched business {business_id} with retention")
 
