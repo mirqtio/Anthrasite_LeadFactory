@@ -46,7 +46,7 @@ def ensure_tracker_file_exists(tracker_file: Path = BATCH_TRACKER_FILE) -> None:
 
     if not tracker_file.exists():
         # Create initial tracker file
-        initial_data = {
+        initial_data: Dict[str, Any] = {
             "last_batch_start": None,
             "last_batch_end": None,
             "current_batch_start": None,
