@@ -30,40 +30,43 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities with conditional imports for testing
 
 
-# For Python 3.9 compatibility, use a simpler approach without method assignment
+# For Python 3.9 compatibility, create a dummy implementation that only gets used when needed
 
-# First attempt to import the real DatabaseConnection
+
+# Create a backup implementation that will only be used if import fails
+class _DummyDatabaseConnection:
+    """Internal dummy implementation of DatabaseConnection for testing environments."""
+
+    def __init__(self, db_path=None):
+        self.db_path = db_path
+        self.connection = None
+        self.cursor = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def execute(self, query, params=None):
+        return None
+
+    def fetchall(self):
+        return []
+
+    def fetchone(self):
+        return None
+
+    def commit(self):
+        pass
+
+
+# Now try to import the real one, using our dummy as fallback
 try:
     from utils.io import DatabaseConnection
-
-    # If successful, we have the real implementation
 except ImportError:
-    # If import fails, create our own DatabaseConnection class
-    class DatabaseConnection:
-        """Implementation of DatabaseConnection for testing environments."""
-
-        def __init__(self, db_path=None):
-            self.db_path = db_path
-            self.connection = None
-            self.cursor = None
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            pass
-
-        def execute(self, query, params=None):
-            return None
-
-        def fetchall(self):
-            return []
-
-        def fetchone(self):
-            return None
-
-        def commit(self):
-            pass
+    # If import fails, use our dummy implementation
+    DatabaseConnection = _DummyDatabaseConnection
 
 
 try:

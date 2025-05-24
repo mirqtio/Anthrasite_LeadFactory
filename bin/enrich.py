@@ -31,11 +31,38 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities with conditional imports for testing
 
 
-# For Python 3.9 compatibility, use a simpler approach without method assignment
+# For Python 3.9 compatibility, create dummy implementations that only get used when needed
 
 
-# Define dummy utility functions for fallback
-def dummy_make_api_request(
+# Create backup implementations that will only be used if imports fail
+class _DummyDatabaseConnection:
+    """Internal dummy implementation of DatabaseConnection for testing environments."""
+
+    def __init__(self, db_path=None):
+        self.db_path = db_path
+        self.connection = None
+        self.cursor = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def execute(self, query, params=None):
+        return None
+
+    def fetchall(self):
+        return []
+
+    def fetchone(self):
+        return None
+
+    def commit(self):
+        pass
+
+
+def _dummy_make_api_request(
     url,
     method="GET",
     headers=None,
@@ -51,52 +78,33 @@ def dummy_make_api_request(
     tier=1,
     business_id=None,
 ):
-    """Make API request - dummy implementation for testing environments."""
+    """Internal dummy implementation of make_api_request for testing environments."""
     return {"status": "success", "data": {}}, None
 
 
-def dummy_track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
-    """Track API cost - dummy implementation for testing environments."""
+def _dummy_track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
+    """Internal dummy implementation of track_api_cost for testing environments."""
     pass
 
 
-# Try to import the real implementations
+# Now try to import the real ones, using our dummies as fallbacks
 try:
-    from utils.io import DatabaseConnection, make_api_request, track_api_cost
-
-    # If successful, we have the real implementations
+    from utils.io import DatabaseConnection
 except ImportError:
-    # If import fails, create our own implementations
-    # Define our own DatabaseConnection class
-    class DatabaseConnection:
-        """Implementation of DatabaseConnection for testing environments."""
+    # If import fails, use our dummy implementation
+    DatabaseConnection = _DummyDatabaseConnection
 
-        def __init__(self, db_path=None):
-            self.db_path = db_path
-            self.connection = None
-            self.cursor = None
+try:
+    from utils.io import make_api_request
+except ImportError:
+    # If import fails, use our dummy implementation
+    make_api_request = _dummy_make_api_request
 
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            pass
-
-        def execute(self, query, params=None):
-            return None
-
-        def fetchall(self):
-            return []
-
-        def fetchone(self):
-            return None
-
-        def commit(self):
-            pass
-
-    # Use our dummy utility functions
-    make_api_request = dummy_make_api_request
-    track_api_cost = dummy_track_api_cost
+try:
+    from utils.io import track_api_cost
+except ImportError:
+    # If import fails, use our dummy implementation
+    track_api_cost = _dummy_track_api_cost
 
 
 # Import logging utilities with conditional imports for testing
