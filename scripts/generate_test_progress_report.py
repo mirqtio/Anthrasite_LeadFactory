@@ -34,6 +34,9 @@ except ImportError:
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# Import typing modules for type annotations
+from typing import Union, List, Dict, Any, Optional
+
 # Import test status tracker constants
 from scripts.test_status_tracker import (
     CATEGORIES,
@@ -283,7 +286,7 @@ class TestProgressReporter:
 
         # Add category progress table
         report_lines.append(
-            "| Category | Total | Passing | Failing | Disabled | Skipped | Progress |"
+            "| Union[Category, Total] | Union[Passing, Failing] | Union[Disabled, Skipped] | Progress |"
         )
         report_lines.append(
             "|----------|-------|---------|---------|----------|---------|----------|"
@@ -309,7 +312,7 @@ class TestProgressReporter:
                     "",
                     "## Progress Over Time",
                     "",
-                    "| Date | Passing | Failing | Skipped | Total | Progress |",
+                    "| Union[Date, Passing] | Union[Failing, Skipped] | Union[Total, Progress] |",
                     "|------|---------|---------|---------|-------|----------|",
                 ]
             )
@@ -329,7 +332,7 @@ class TestProgressReporter:
                     "",
                     "These tests have failed consistently across multiple runs and should be prioritized for fixing:",
                     "",
-                    "| Test | Failure Count |",
+                    "| Union[Test, Failure] Count |",
                     "|------|---------------|",
                 ]
             )

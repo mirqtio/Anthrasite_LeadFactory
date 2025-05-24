@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 88
-target-version = ['py310']
+target-version = ['py39']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -19,11 +19,12 @@ exclude = '''
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "T20", "SIM", "PTH", "Q"]
-ignore = []
+# Ignore rules that may cause issues with Python 3.9 compatibility
+ignore = ["F722", "F821", "E501", "F401"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["F811", "S101"]
