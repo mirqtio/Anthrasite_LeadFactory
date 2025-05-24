@@ -130,7 +130,7 @@ def show_cost_breakdown(period: str = "day") -> None:
     # Print table header
     # Print each service's cost
     total = 0
-    for service, cost in costs_by_service.items():
+    for _service, cost in costs_by_service.items():
         total += cost
     # Print total
     # Show top operations for each service
@@ -139,7 +139,7 @@ def show_cost_breakdown(period: str = "day") -> None:
         operations = get_cost_breakdown_by_operation(service_name)
         if operations:
             print_success(f"\n{service_name.upper()} operations:")
-            for _op, cost in operations.items():
+            for _op, _cost in operations.items():
                 pass
 
 
