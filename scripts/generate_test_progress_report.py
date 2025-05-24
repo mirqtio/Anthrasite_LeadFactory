@@ -14,11 +14,13 @@ Options:
 """
 
 import argparse
+import json
 import os
 import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Any, Tuple, Optional, Union
 
 # Try to import visualization libraries, but don't fail if they're not available
 try:
@@ -35,7 +37,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import typing modules for type annotations
-from typing import Union, List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional, Union
 
 # Import test status tracker constants
 from scripts.test_status_tracker import (
@@ -57,13 +59,13 @@ class TestProgressReporter:
         self.output_dir = project_root / "test_results"
         os.makedirs(self.output_dir, exist_ok=True)
 
-    def calculate_progress_metrics(self) -> dict:
+    def calculate_progress_metrics(self) -> Dict[str, Any]:
         """Calculate metrics for test re-enablement progress."""
-        metrics = {}
+        metrics: Dict[str, Any] = {}
 
         # Current status counts
-        status_counts = defaultdict(int)
-        category_status = {}
+        status_counts: Dict[str, int] = defaultdict(int)
+        category_status: Dict[str, Dict[str, int]] = {}
 
         for category in CATEGORIES:
             category_status[category] = defaultdict(int)
@@ -91,7 +93,7 @@ class TestProgressReporter:
 
         # Calculate progress over time
         if self.history["runs"]:
-            progress_over_time = []
+            progress_over_time: List[Dict[str, Any]] = []
 
             for run in sorted(self.history["runs"], key=lambda x: x["timestamp"]):
                 timestamp = datetime.fromisoformat(run["timestamp"])
@@ -126,7 +128,7 @@ class TestProgressReporter:
 
         # Calculate failure trends
         if self.history["runs"] and len(self.history["runs"]) >= 2:
-            failure_trends = defaultdict(list)
+            failure_trends: dict[str, list[str]] = defaultdict(list)
 
             for run in sorted(self.history["runs"], key=lambda x: x["timestamp"]):
                 for test_id, result in run["results"].items():
@@ -134,7 +136,7 @@ class TestProgressReporter:
                         failure_trends[test_id].append(run["timestamp"])
 
             # Find persistent failures (failing in multiple runs)
-            persistent_failures = []
+            persistent_failures: list[tuple[str, int]] = []
             for test_id, timestamps in failure_trends.items():
                 if len(timestamps) >= 2:
                     persistent_failures.append((test_id, len(timestamps)))
