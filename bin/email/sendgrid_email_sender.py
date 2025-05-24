@@ -16,25 +16,27 @@ Usage:
 
 import json
 import logging
+import os
+import sys
 import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
+from typing import Any, Dict, List, Optional, Union
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (
-    Mail,
     Attachment,
+    Bcc,
+    Cc,
+    Content,
+    Disposition,
+    Email,
     FileContent,
     FileName,
     FileType,
-    Disposition,
-    Content,
-    Email,
+    Mail,
     To,
-    Cc,
-    Bcc,
 )
 
 # Add project root to path using pathlib for better compatibility

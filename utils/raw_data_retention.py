@@ -373,11 +373,11 @@ def get_llm_logs(
     try:
         # Build query
         query = "SELECT * FROM llm_logs WHERE 1=1"
-        params = []
+        params: List[Union[int, str]] = []
 
         if business_id is not None:
             query += " AND business_id = ?"
-            params.append(business_id)
+            params.append(int(business_id) if business_id is not None else None)
 
         if operation is not None:
             query += " AND operation = ?"

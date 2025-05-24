@@ -5,6 +5,7 @@ This script provides a command-line interface for monitoring and managing the bu
 and scaling gate status of the Anthrasite Lead-Factory system.
 """
 import argparse
+import logging
 import os
 import sys
 
@@ -41,10 +42,9 @@ except ImportError:
 try:
     from utils.logging_config import get_logger
 except ImportError:
-    # During testing, provide a dummy logger
-    def get_logger(name):
-        import logging
-
+    # During testing, provide a dummy logger with identical signature to the imported one
+    def get_logger(name: str) -> logging.Logger:
+        # Match the return type of the original function
         return logging.getLogger(name)
 
 
@@ -121,7 +121,7 @@ def show_cost_breakdown(period: str = "day") -> None:
     period_display = "Daily" if period == "day" else "Monthly"
     print_header(f"{period_display} Cost Breakdown by Service")
     # Get cost breakdown by service
-    costs_by_service = get_cost_breakdown_by_service(period=period)
+    costs_by_service = get_cost_breakdown_by_service()
     if not costs_by_service:
         return
     # Print table header
@@ -133,7 +133,7 @@ def show_cost_breakdown(period: str = "day") -> None:
     # Show top operations for each service
     print_header(f"\n{period_display} Top Operations by Cost")
     for service in costs_by_service:
-        operations = get_cost_breakdown_by_operation(service, period=period)
+        operations = get_cost_breakdown_by_operation(service)
         if operations:
             for _op, cost in operations.items():
                 pass
@@ -144,7 +144,7 @@ def show_scaling_gate_status() -> None:
     print_header("Scaling Gate Status")
     active, reason = is_scaling_gate_active()
     # Show scaling gate history
-    history = get_scaling_gate_history(limit=5)
+    history = get_scaling_gate_history()
     if history:
         print_header("\nRecent History")
         for entry in history:
@@ -172,7 +172,7 @@ def manage_scaling_gate(activate: bool, reason: str = "") -> None:
 def export_report(period: str, output_file: str) -> None:
     """Export a cost report to a file."""
     try:
-        success = export_cost_report(output_file, period=period)
+        success = export_cost_report(output_file)
         if success:
             print_success(f"Report exported to {output_file}")
         else:

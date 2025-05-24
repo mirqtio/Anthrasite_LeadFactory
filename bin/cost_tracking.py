@@ -40,7 +40,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Import metrics - using proper path handling
 # Add project root to path
@@ -84,13 +84,13 @@ class CostTracker:
 
         # Initialize GPU tracking
         self.gpu_tracking_active = False
-        self.gpu_start_time = None
+        self.gpu_start_time: Optional[datetime] = None
         self.gpu_hourly_rate = float(os.environ.get("GPU_HOURLY_RATE", "2.5"))
 
         # Initialize batch tracking
-        self.current_batch_id = None
-        self.current_batch_start_time = None
-        self.current_batch_costs = {}
+        self.current_batch_id: Optional[str] = None
+        self.current_batch_start_time: Optional[datetime] = None
+        self.current_batch_costs: Dict[str, float] = {}
 
         # Load tier thresholds
         self.tier_thresholds = {
@@ -256,12 +256,19 @@ class CostTracker:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
+            # Ensure current_batch_start_time is not None before calling isoformat
+            start_time_iso = (
+                self.current_batch_start_time.isoformat()
+                if self.current_batch_start_time
+                else datetime.now().isoformat()
+            )
+
             cursor.execute(
                 """
             INSERT INTO batches (id, start_time, tier, status)
             VALUES (?, ?, ?, ?)
             """,
-                (batch_id, self.current_batch_start_time.isoformat(), tier, "running"),
+                (batch_id, start_time_iso, tier, "running"),
             )
 
             conn.commit()
@@ -425,6 +432,7 @@ class CostTracker:
             self.gpu_hourly_rate = hourly_rate
 
         self.gpu_tracking_active = True
+        # Update the existing gpu_start_time variable
         self.gpu_start_time = datetime.now()
 
         # Add initial cost entry
@@ -434,7 +442,11 @@ class CostTracker:
             operation="start",
             details={
                 "hourly_rate": self.gpu_hourly_rate,
-                "start_time": self.gpu_start_time.isoformat(),
+                "start_time": (
+                    self.gpu_start_time.isoformat()
+                    if self.gpu_start_time
+                    else datetime.now().isoformat()
+                ),
             },
         )
 

@@ -165,7 +165,7 @@ def load_yaml_config(file_path: str) -> dict:
         raise
 
 
-def load_csv_data(file_path: str) -> list[dict]:
+def load_csv_data(file_path: str) -> List[dict]:
     """Load data from CSV file.
     Args:
         file_path: Path to CSV file.
@@ -259,6 +259,8 @@ def make_api_request(
             else:
                 logger.error(f"API request failed after {max_retries} retries: {e}")
                 return None, str(e)
+    # In case we exit the while loop without returning
+    return None, "Maximum retries exceeded"
 
 
 def track_api_cost(
@@ -293,7 +295,7 @@ def track_api_cost(
         logger.error(f"Error tracking API cost: {e}")
 
 
-def get_active_zip_codes() -> list[dict]:
+def get_active_zip_codes() -> List[dict]:
     """Get list of active zip codes to process.
     Returns:
         List of dictionaries containing zip code information.
@@ -309,7 +311,7 @@ def get_active_zip_codes() -> list[dict]:
         return []
 
 
-def get_verticals() -> list[dict]:
+def get_verticals() -> List[dict]:
     """Get list of verticals to process.
     Returns:
         List of dictionaries containing vertical information.
