@@ -299,10 +299,10 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
     else:
         try:
             with SCALING_GATE_FILE.open() as f:
-                data = json.load(f)
+                data: Dict[str, Any] = json.load(f)
                 # Only add to history if the status changed
                 if data.get("active", False) != active:
-                    history_entry = {
+                    history_entry: Dict[str, Any] = {
                         "timestamp": datetime.now().isoformat(),
                         "active": active,
                         "reason": reason,
@@ -395,14 +395,14 @@ def should_allow_operation(
     return permitted
 
 
-def get_cost_metrics() -> list[str]:
+def get_cost_metrics() -> List[str]:
     """
     Get Prometheus metrics for API costs.
 
     Returns:
         List[str]: A list of Prometheus metrics
     """
-    metrics = []
+    metrics: List[str] = []
 
     # Add daily cost metrics
     daily_cost = get_daily_cost()
