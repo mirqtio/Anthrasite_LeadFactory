@@ -139,27 +139,26 @@ def get_monthly_cost(service: Optional[str] = None) -> float:
     return 0.0
 
 
-# Try to import the real implementations
+# Try to import the real implementations without risking attribute errors
 try:
-    # First try to import the main module functions
-    from utils.cost_tracker import get_daily_cost as real_get_daily_cost
-    from utils.cost_tracker import get_monthly_cost as real_get_monthly_cost
+    # Import the module itself first
+    import utils.cost_tracker as cost_tracker_module
 
-    # Replace our dummy implementations with the real ones
-    get_daily_cost = real_get_daily_cost
-    get_monthly_cost = real_get_monthly_cost
+    # Use getattr with fallbacks to safely access attributes
+    # This avoids the "no attribute" errors that can happen with direct imports
+    get_daily_cost = getattr(cost_tracker_module, "get_daily_cost", get_daily_cost)
+    get_monthly_cost = getattr(
+        cost_tracker_module, "get_monthly_cost", get_monthly_cost
+    )
 
-    # Now try to import log_cost separately since it might not exist
-    try:
-        from utils.cost_tracker import log_cost as real_log_cost
+    # For log_cost, keep using our own implementation if it doesn't exist
+    if hasattr(cost_tracker_module, "log_cost"):
+        log_cost = getattr(cost_tracker_module, "log_cost")
+    # If log_cost doesn't exist in the module, we keep our own implementation
 
-        # If successful, replace our dummy implementation
-        log_cost = real_log_cost
-    except ImportError:
-        # Keep using our own log_cost function
-        pass
 except ImportError:
-    # Keep using our own implementations
+    # If the module import fails entirely, we keep using our own implementations
+    # This will happen during testing or if the module isn't available
     pass
 
 
