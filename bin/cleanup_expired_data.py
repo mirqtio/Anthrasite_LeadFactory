@@ -10,32 +10,15 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Tuple, List
 
 # Add project root to path using pathlib for better compatibility
-# Define globals for module-level imports
-get_config = None
-DatabaseConnection = None
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
-
-# Setup project path and imports
-def setup_imports():
-    # Add project root to path using pathlib for better compatibility
-    project_root = Path(__file__).parent.parent
-    sys.path.insert(0, str(project_root))
-
-    # Now import the modules
-    global get_config, DatabaseConnection
-    from utils.config import get_config as gc
-    from utils.database import DatabaseConnection as db
-
-    # Assign to globals
-    globals()["get_config"] = gc
-    globals()["DatabaseConnection"] = db
-
-
-# Initialize imports
-setup_imports()
+# Now we can safely import our local modules
+from utils.config import get_config
+from utils.database import DatabaseConnection
 
 # Configure logging
 logging.basicConfig(
