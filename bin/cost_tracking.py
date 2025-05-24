@@ -46,7 +46,17 @@ from typing import Any, Optional, Union
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-from bin.metrics import metrics
+
+
+# Use function to get the module to avoid E402 errors
+def _get_metrics():
+    import bin.metrics
+
+    return bin.metrics.metrics
+
+
+# Create reference to use in the code
+metrics = _get_metrics()
 
 # Setup logging
 logging.basicConfig(

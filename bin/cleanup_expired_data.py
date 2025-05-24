@@ -103,7 +103,7 @@ def delete_expired_files(expired_html_paths: list[str], dry_run: bool = False) -
         if Path(path).exists():
             if not dry_run:
                 try:
-                    os.remove(path)
+                    Path(path).unlink()
                     files_deleted += 1
                 except Exception as e:
                     logger.error(f"Error deleting file {path}: {e}")
