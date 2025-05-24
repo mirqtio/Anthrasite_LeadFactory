@@ -18,25 +18,37 @@ from pathlib import Path
 from typing import Any, Optional
 
 
+# Declare global variables that will be populated by setup_imports
+get_logger: Any = None
+check_batch_completion: Any = None
+get_batch_status: Any = None
+
+
 # Define utility functions to avoid module-level imports
-def setup_imports():
+def setup_imports() -> Any:
     # Add project root to path using pathlib for better compatibility
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
 
     # Now we can import our local modules
     global get_logger, check_batch_completion, get_batch_status
-    from utils.logging_config import get_logger
-    from utils.batch_tracker import check_batch_completion, get_batch_status
+    from utils.logging_config import get_logger as logger_func
+    from utils.batch_tracker import check_batch_completion as check_func
+    from utils.batch_tracker import get_batch_status as status_func
 
-    return get_logger
+    # Assign to global variables
+    globals()["get_logger"] = logger_func
+    globals()["check_batch_completion"] = check_func
+    globals()["get_batch_status"] = status_func
+
+    return logger_func
 
 
 # Setup imports before using them
 get_logger = setup_imports()
 
 # Set up logging
-logger = get_logger(__name__)
+logger: Any = get_logger(__name__)
 
 # Constants
 CHECK_INTERVAL = int(
