@@ -16,7 +16,7 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Add parent directory to path to allow importing other modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

@@ -32,21 +32,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # Import with conditional imports for testing
 has_db_connection = False
 try:
-    from utils.io import DatabaseConnection
+    from utils.io import DatabaseConnection as IoDatabaseConnection
 
     has_db_connection = True
 except ImportError:
     # Dummy implementation only created if the import fails
     pass
 
-# Define dummy DatabaseConnection only if needed
+# Define dummy IoDatabaseConnection only if needed
 if not has_db_connection:
 
-    class DatabaseConnection:
+    class IoDatabaseConnection:
         def __init__(self, db_path: Optional[str] = None) -> None:
             pass
 
-        def __enter__(self) -> "DatabaseConnection":
+        def __enter__(self) -> "IoDatabaseConnection":
             return self
 
         def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
@@ -108,18 +108,26 @@ def is_valid_email(email: str) -> bool:
     return bool(re.match(pattern, email))
 
 
-# Try to import cost tracker
+# Import cost tracker with conditional imports for testing
+has_cost_tracker = False
 try:
     from utils.cost_tracker import get_daily_cost, get_monthly_cost, log_cost
+
+    has_cost_tracker = True
 except ImportError:
-    # Define dummy functions if cost_tracker is not available
-    def log_cost(service, operation, cost_dollars):
+    # Dummy implementations only created if the import fails
+    pass
+
+# Define dummy cost tracker functions only if needed
+if not has_cost_tracker:
+
+    def log_cost(service: str, operation: str, cost_dollars: float) -> None:
         pass
 
-    def get_daily_cost():
+    def get_daily_cost() -> float:
         return 0.0
 
-    def get_monthly_cost():
+    def get_monthly_cost() -> float:
         return 0.0
 
 
@@ -563,7 +571,7 @@ def get_businesses_for_email(
         List of dictionaries containing business information.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with IoDatabaseConnection() as cursor:
             # Build query based on parameters
             query_parts = ["SELECT b.*, f.*, m.* FROM businesses b"]
             query_parts.append("LEFT JOIN features f ON b.id = f.business_id")
@@ -611,7 +619,7 @@ def is_email_unsubscribed(email: str) -> bool:
         True if the email has unsubscribed, False otherwise.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with IoDatabaseConnection() as cursor:
             cursor.execute("SELECT id FROM unsubscribes WHERE email = ?", (email,))
             result = cursor.fetchone()
             return result is not None
@@ -637,7 +645,7 @@ def add_unsubscribe(
         True if successful, False otherwise.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with IoDatabaseConnection() as cursor:
             cursor.execute(
                 "INSERT OR REPLACE INTO unsubscribes (email, reason, ip_address, user_agent) VALUES (?, ?, ?, ?)",
                 (email, reason, ip_address, user_agent),
@@ -670,7 +678,7 @@ def save_email_record(
         True if successful, False otherwise.
     """
     try:
-        with DatabaseConnection() as cursor:
+        with IoDatabaseConnection() as cursor:
             # Insert email record
             cursor.execute(
                 """
