@@ -27,10 +27,19 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
+# Import database utilities with conditional imports for testing
+has_io_imports = False
 try:
     from utils.io import DatabaseConnection, track_api_cost
+
+    has_io_imports = True
 except ImportError:
-    # During testing, provide dummy implementations
+    # Dummy implementations only created if the import fails
+    pass
+
+# Define dummies only if needed
+if not has_io_imports:
+
     class DatabaseConnection:
         def __init__(self, db_path=None):
             pass
@@ -53,6 +62,7 @@ except ImportError:
         def commit(self):
             pass
 
+    # Define dummy track_api_cost function
     def track_api_cost(
         service: str,
         operation: str,

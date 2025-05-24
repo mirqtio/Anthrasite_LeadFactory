@@ -27,10 +27,19 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
+# Import database utilities with conditional imports for testing
+has_db_connection = False
 try:
     from utils.io import DatabaseConnection
+
+    has_db_connection = True
 except ImportError:
-    # During testing, provide dummy implementations
+    # Dummy implementation only created if the import fails
+    pass
+
+# Define dummy only if needed
+if not has_db_connection:
+
     class DatabaseConnection:
         def __init__(self, db_path=None):
             pass
