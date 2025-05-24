@@ -18,7 +18,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import yaml
 from dotenv import load_dotenv
@@ -28,39 +28,43 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
 # Import database utilities with conditional imports for testing
-has_db_connection = False
+
+
+# Define a dummy DatabaseConnection class that we'll use if the real one isn't available
+class IoDatabaseConnection:
+    """Dummy implementation of DatabaseConnection for testing environments."""
+
+    def __init__(self, db_path=None):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def execute(self, query, params=None):
+        return None
+
+    def fetchall(self):
+        return []
+
+    def fetchone(self):
+        return None
+
+    def commit(self):
+        pass
+
+
+# Try to import the real DatabaseConnection
 try:
     from utils.io import DatabaseConnection
 
-    has_db_connection = True
+    # Use the real implementation
 except ImportError:
-    # Dummy implementation only created if the import fails
-    pass
-
-# Define dummy only if needed
-if not has_db_connection:
-
-    class DatabaseConnection:
-        def __init__(self, db_path=None):
-            pass
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            pass
-
-        def execute(self, query, params=None):
-            return None
-
-        def fetchall(self):
-            return []
-
-        def fetchone(self):
-            return None
-
-        def commit(self):
-            pass
+    # If import fails, use our dummy implementation instead
+    # This provides Python 3.9 compatibility during testing
+    DatabaseConnection = IoDatabaseConnection
 
 
 try:
@@ -101,8 +105,8 @@ class RuleEngine:
         self.settings: Dict[str, Any] = {}
         self.multipliers: List[Dict[str, Any]] = []
         self.load_rules()
-        # Define condition evaluators
-        self.condition_evaluators = {
+        # Define condition evaluators with proper type annotation
+        self.condition_evaluators: Dict[str, Callable[[Any, Dict[str, Any]], bool]] = {
             "tech_stack_contains": self._eval_tech_stack_contains,
             "tech_stack_contains_any": self._eval_tech_stack_contains_any,
             "tech_stack_version_lt": self._eval_tech_stack_version_lt,

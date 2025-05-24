@@ -28,49 +28,49 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
 # Import database utilities with conditional imports for testing
-has_io_imports = False
+
+
+# Define dummy classes that we'll use if the real ones aren't available
+class IoDatabaseConnection:
+    """Dummy implementation of DatabaseConnection for testing environments."""
+
+    def __init__(self, db_path=None):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def execute(self, query, params=None):
+        return None
+
+    def fetchall(self):
+        return []
+
+    def fetchone(self):
+        return None
+
+    def commit(self):
+        pass
+
+
+def dummy_track_api_cost(service, operation, cost, *args, **kwargs):
+    """Dummy implementation of track_api_cost for testing environments."""
+    pass
+
+
+# Try to import the real implementations
 try:
     from utils.io import DatabaseConnection, track_api_cost
 
-    has_io_imports = True
+    # Use the real implementations
 except ImportError:
-    # Dummy implementations only created if the import fails
-    pass
-
-# Define dummies only if needed
-if not has_io_imports:
-
-    class DatabaseConnection:
-        def __init__(self, db_path=None):
-            pass
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            pass
-
-        def execute(self, query, params=None):
-            return None
-
-        def fetchall(self):
-            return []
-
-        def fetchone(self):
-            return None
-
-        def commit(self):
-            pass
-
-    # Define dummy track_api_cost function
-    def track_api_cost(
-        service: str,
-        operation: str,
-        cost_cents: int,
-        tier: int = 1,
-        business_id: Optional[int] = None,
-    ) -> None:
-        return
+    # If import fails, use our dummy implementations instead
+    # This provides Python 3.9 compatibility during testing
+    DatabaseConnection = IoDatabaseConnection
+    track_api_cost = dummy_track_api_cost
 
 
 # Import all necessary modules before any local imports

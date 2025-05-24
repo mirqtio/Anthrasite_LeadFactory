@@ -29,68 +29,55 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
 # Import database utilities with conditional imports for testing
-has_io_imports = False
+
+
+# Define dummy classes that we'll use if the real ones aren't available
+class IoDatabaseConnection:
+    """Dummy implementation of DatabaseConnection for testing environments."""
+
+    def __init__(self, db_path=None):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def execute(self, query, params=None):
+        return None
+
+    def fetchall(self):
+        return []
+
+    def fetchone(self):
+        return None
+
+    def commit(self):
+        pass
+
+
+def dummy_make_api_request(*args, **kwargs):
+    """Dummy implementation of make_api_request for testing environments."""
+    return {"status": "success", "data": {}}
+
+
+def dummy_track_api_cost(service, operation, cost, *args, **kwargs):
+    """Dummy implementation of track_api_cost for testing environments."""
+    pass
+
+
+# Try to import the real implementations
 try:
     from utils.io import DatabaseConnection, make_api_request, track_api_cost
 
-    has_io_imports = True
+    # Use the real implementations
 except ImportError:
-    # Dummy implementations only created if the import fails
-    pass
-
-# Define dummies only if needed
-if not has_io_imports:
-
-    class DatabaseConnection:
-        def __init__(self, db_path=None):
-            pass
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            pass
-
-        def execute(self, *args, **kwargs):
-            pass
-
-        def fetchall(self):
-            return []
-
-        def fetchone(self):
-            return None
-
-        def commit(self):
-            pass
-
-    # Define dummy make_api_request function
-    def make_api_request(
-        url: str,
-        method: str = "GET",
-        headers: Optional[Dict[Any, Any]] = None,
-        params: Optional[Dict[Any, Any]] = None,
-        data: Optional[Dict[Any, Any]] = None,
-        timeout: int = 30,
-        max_retries: int = 3,
-        retry_delay: int = 2,
-        track_cost: bool = True,
-        service_name: Optional[str] = None,
-        operation: Optional[str] = None,
-        cost_cents: int = 0,
-        tier: int = 1,
-        business_id: Optional[int] = None,
-    ) -> Tuple[Optional[Dict[Any, Any]], Optional[str]]:
-        return {}, None
-
-    # Define dummy track_api_cost function
-    def track_api_cost(
-        service: str,
-        operation: str,
-        cost_cents: int,
-        tier: int = 1,
-        business_id: Optional[int] = None,
-    ) -> None:
-        return
+    # If import fails, use our dummy implementations instead
+    # This provides Python 3.9 compatibility during testing
+    DatabaseConnection = IoDatabaseConnection
+    make_api_request = dummy_make_api_request
+    track_api_cost = dummy_track_api_cost
 
 
 # Import logging utilities with conditional imports for testing
