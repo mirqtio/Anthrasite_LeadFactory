@@ -37,13 +37,29 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Optional, Union
 
-# Add project root to path using pathlib for better compatibility
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# Define globals for module-level imports
+cost_tracker = None
+metrics = None
 
-# Import dependencies after path setup
-from bin.cost_tracking import cost_tracker
-from bin.metrics import metrics
+
+# Setup project path and imports
+def setup_imports():
+    # Add project root to path using pathlib for better compatibility
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+
+    # Now import the modules
+    global cost_tracker, metrics
+    from bin.cost_tracking import cost_tracker as ct
+    from bin.metrics import metrics as m
+
+    # Assign to globals
+    globals()["cost_tracker"] = ct
+    globals()["metrics"] = m
+
+
+# Initialize imports
+setup_imports()
 
 # Setup logging
 logging.basicConfig(
@@ -51,7 +67,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "budget_gate.log")),
+        logging.FileHandler(str(Path("logs") / "budget_gate.log")),
     ],
 )
 logger = logging.getLogger("budget_gate")
