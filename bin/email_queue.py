@@ -113,36 +113,44 @@ def is_valid_email(email: str) -> bool:
     return bool(re.match(pattern, email))
 
 
+# Define the log_cost function at the module level to ensure it's available
+# This avoids attribute errors when checking for its existence
+def log_cost(
+    service: str,
+    operation: str,
+    cost_dollars: float,
+    tier: int = 1,
+    business_id: Optional[int] = None,
+) -> None:
+    """Dummy implementation of log_cost for when the real one is not available."""
+    pass
+
+
 # Import cost tracker with conditional imports for testing
 has_cost_tracker = False
 try:
     # Try to import from the actual module first
     from utils.cost_tracker import get_daily_cost, get_monthly_cost
 
-    # Check if log_cost exists in the module
+    # Check if log_cost exists in the module - if it does, replace our dummy implementation
     try:
-        from utils.cost_tracker import log_cost
+        from utils.cost_tracker import log_cost as imported_log_cost
 
+        # Replace our dummy implementation with the real one
+        log_cost = imported_log_cost
         has_cost_tracker = True
     except ImportError:
-        # log_cost doesn't exist in the module, will create a dummy implementation
-        has_cost_tracker = False
+        # log_cost doesn't exist in the module, we'll use our dummy implementation
+        pass
 except ImportError:
-    # Entire module not available, will create dummy implementations for all functions
-    has_cost_tracker = False
+    # Entire module not available, we'll use our dummy implementations for all functions
+    pass
 
 # Define dummy cost tracker functions only if needed
 if not has_cost_tracker:
+    # We've already defined log_cost at the module level
 
-    def log_cost(
-        service: str,
-        operation: str,
-        cost_dollars: float,
-        tier: int = 1,
-        business_id: Optional[int] = None,
-    ) -> None:
-        pass
-
+    # Define the other cost tracker functions
     def get_daily_cost(service: Optional[str] = None) -> float:
         return 0.0
 
@@ -1101,8 +1109,8 @@ def process_business_email(
             # Don't fail the function if cost tracking fails
             pass
         try:
-            # Send the email
-            success = send_business_email(
+            # Send the email - properly unpack all return values
+            success, message_id, error = send_business_email(
                 business=business,
                 email_sender=email_sender,
                 template=template,
