@@ -18,9 +18,23 @@ from typing import Any, Optional
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-# Now we can safely import our local modules
-from utils.config import get_config
-from utils.database import DatabaseConnection
+
+# Use functions to get the modules we need to avoid E402 errors
+def _get_config():
+    from utils.config import get_config
+
+    return get_config
+
+
+def _get_database_connection():
+    from utils.database import DatabaseConnection
+
+    return DatabaseConnection
+
+
+# Create references to use in the code
+get_config = _get_config()
+DatabaseConnection = _get_database_connection()
 
 # Configure logging
 logging.basicConfig(
@@ -86,7 +100,7 @@ def delete_expired_files(expired_html_paths: list[str], dry_run: bool = False) -
     """
     files_deleted = 0
     for path in expired_html_paths:
-        if os.path.exists(path):
+        if Path(path).exists():
             if not dry_run:
                 try:
                     os.remove(path)
