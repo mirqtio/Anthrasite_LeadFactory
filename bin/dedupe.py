@@ -28,55 +28,52 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import database utilities with conditional imports for testing
 
+# For Python 3.9 compatibility, use a completely different approach to avoid any type errors
 
-# For Python 3.9 compatibility, create dummy implementations that only get used when needed
-
-
-# Create backup implementations that will only be used if imports fail
-class _DummyDatabaseConnection:
-    """Internal dummy implementation of DatabaseConnection for testing environments."""
-
-    def __init__(self, db_path=None):
-        self.db_path = db_path
-        self.connection = None
-        self.cursor = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def execute(self, query, params=None):
-        return None
-
-    def fetchall(self):
-        return []
-
-    def fetchone(self):
-        return None
-
-    def commit(self):
-        pass
-
-
-def _dummy_track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
-    """Internal dummy implementation of track_api_cost for testing environments."""
-    pass
-
-
-# Now try to import the real ones, using our dummies as fallbacks
+# First, check if we can import from utils.io
+utils_io_available = False
 try:
-    from utils.io import DatabaseConnection
-except ImportError:
-    # If import fails, use our dummy implementation
-    DatabaseConnection = _DummyDatabaseConnection
+    import utils.io
 
-try:
-    from utils.io import track_api_cost
+    utils_io_available = True
 except ImportError:
-    # If import fails, use our dummy implementation
-    track_api_cost = _dummy_track_api_cost
+    utils_io_available = False
+
+# Now define necessary functions and classes based on availability
+if utils_io_available:
+    # If utils.io is available, use the real implementations
+    from utils.io import DatabaseConnection, track_api_cost
+else:
+    # Otherwise, define our own versions
+    class DatabaseConnection:
+        """Implementation of DatabaseConnection for testing environments."""
+
+        def __init__(self, db_path=None):
+            self.db_path = db_path
+            self.connection = None
+            self.cursor = None
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+        def execute(self, query, params=None):
+            return None
+
+        def fetchall(self):
+            return []
+
+        def fetchone(self):
+            return None
+
+        def commit(self):
+            pass
+
+    def track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
+        """Dummy implementation of track_api_cost for testing environments."""
+        pass
 
 
 # Import logging utilities with conditional imports for testing
