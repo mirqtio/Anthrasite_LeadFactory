@@ -11,10 +11,14 @@ Options:
 """
 import argparse
 import json
+import logging
 import os
 import re
 import sys
-from typing import Dict, List, Optional, Tuple, Any, Union
+import time
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from dotenv import load_dotenv
@@ -37,8 +41,8 @@ except ImportError:
         def __exit__(self, exc_type, exc_val, exc_tb):
             pass
 
-        def execute(self, *args, **kwargs):
-            pass
+        def execute(self, query, params=None):
+            return None
 
         def fetchall(self):
             return []
@@ -54,7 +58,7 @@ try:
     from utils.logging_config import get_logger
 except ImportError:
     # During testing, provide a dummy logger
-    def get_logger(name):
+    def get_logger(name: str) -> logging.Logger:
         import logging
 
         return logging.getLogger(name)
@@ -84,9 +88,9 @@ class RuleEngine:
             rules_file: Path to the YAML file containing scoring rules.
         """
         self.rules_file = rules_file
-        self.rules = {}
-        self.settings = {}
-        self.multipliers = []
+        self.rules: Dict[str, Any] = {}
+        self.settings: Dict[str, Any] = {}
+        self.multipliers: List[Dict[str, Any]] = []
         self.load_rules()
         # Define condition evaluators
         self.condition_evaluators = {
@@ -147,9 +151,13 @@ class RuleEngine:
         """
         # Start with base score
         score = self.settings.get("base_score", 50)
-        applied_rules = []
+        applied_rules: List[Dict[str, Any]] = []
         # Apply each rule
         for rule in self.rules:
+            # Skip if rule is not a dictionary
+            if not isinstance(rule, dict):
+                logger.warning(f"Skipping invalid rule: {rule}")
+                continue
             rule_name = rule.get("name", "unnamed_rule")
             rule_condition = rule.get("condition", {})
             rule_score = rule.get("score", 0)

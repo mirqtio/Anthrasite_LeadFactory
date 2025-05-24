@@ -13,11 +13,12 @@ Options:
 import argparse
 import base64
 import json
+import logging
 import os
 import re
 import sys
 import time
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from dotenv import load_dotenv
@@ -40,8 +41,8 @@ except ImportError:
         def __exit__(self, exc_type, exc_val, exc_tb):
             pass
 
-        def execute(self, *args, **kwargs):
-            pass
+        def execute(self, query, params=None):
+            return None
 
         def fetchall(self):
             return []
@@ -52,8 +53,14 @@ except ImportError:
         def commit(self):
             pass
 
-    def track_api_cost(*args, **kwargs):
-        return True
+    def track_api_cost(
+        service: str,
+        operation: str,
+        cost_cents: int,
+        tier: int = 1,
+        business_id: Optional[int] = None,
+    ) -> None:
+        return
 
 
 # Import all necessary modules before any local imports
@@ -61,7 +68,7 @@ try:
     from utils.logging_config import get_logger
 except ImportError:
     # During testing, provide a dummy logger
-    def get_logger(name):
+    def get_logger(name: str) -> logging.Logger:
         import logging
 
         return logging.getLogger(name)
@@ -451,7 +458,7 @@ def get_businesses_for_mockup(
     business_id: Optional[int] = None,
     tier: int = CURRENT_TIER,
     force: bool = False,
-) -> list[dict]:
+) -> List[dict]:
     """Get list of businesses for mockup generation.
     Args:
         limit: Maximum number of businesses to return.
