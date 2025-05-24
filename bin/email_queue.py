@@ -22,7 +22,7 @@ import time
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, TypeVar, cast
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union, cast
 
 import requests
 from dotenv import load_dotenv
@@ -30,38 +30,41 @@ from dotenv import load_dotenv
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Import DatabaseConnection with fallback for testing
-try:
-    from utils.io import DatabaseConnection as _DBConnection
+# Define a single EmailDBConnection class that will be used throughout the module
+# This avoids redefinition issues with conditional imports
 
-    # Define a type alias
-    class EmailDBConnection(_DBConnection):
+
+# First define our own class for testing scenarios
+class _EmailDBConnectionBase:
+    def __init__(self, db_path: Optional[str] = None) -> None:
         pass
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        pass
+
+    def execute(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def fetchall(self) -> List[Any]:
+        return []
+
+    def fetchone(self) -> Optional[Any]:
+        return None
+
+    def commit(self) -> None:
+        pass
+
+
+# Now try to import and set the actual class
+try:
+    from utils.io import DatabaseConnection as _RealDBConnection
+
+    EmailDBConnection = _RealDBConnection  # Use the real one if available
 except ImportError:
-    # Define a dummy DatabaseConnection class for testing
-    class EmailDBConnection:
-        def __init__(self, db_path: Optional[str] = None) -> None:
-            pass
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-            pass
-
-        def execute(self, *args: Any, **kwargs: Any) -> None:
-            pass
-
-        def fetchall(self) -> List[Any]:
-            return []
-
-        def fetchone(self) -> Optional[Any]:
-            return None
-
-        def commit(self) -> None:
-            pass
-
+    EmailDBConnection = _EmailDBConnectionBase  # Use our base class if import fails
 
 # Import logging utilities with conditional imports for testing
 has_logger = False
@@ -1138,13 +1141,13 @@ def process_business_email(
                     pass
             return success, message_id, error
         except Exception as e:
-            logger.error(f"Error sending business email: {str(e)}", exc_info=True)
-            return False
+            error_msg = f"Error sending business email: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            return False, None, error_msg
     except Exception as e:
-        logger.error(
-            f"Error processing business ID {business_id}: {str(e)}", exc_info=True
-        )
-        return False
+        error_msg = f"Error processing business ID {business_id}: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        return False, None, error_msg
 
 
 def main():
