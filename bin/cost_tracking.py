@@ -64,7 +64,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "cost_tracking.log")),
+        logging.FileHandler(str(Path("logs") / "cost_tracking.log")),
     ],
 )
 logger = logging.getLogger(__name__)
@@ -81,11 +81,11 @@ class CostTracker:
         """
         # Set default database path if not provided
         if not db_path:
-            db_dir = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
-            )
-            os.makedirs(db_dir, exist_ok=True)
-            db_path = os.path.join(db_dir, "cost_tracking.db")
+            # Use pathlib for better path handling
+            db_dir = Path(__file__).parent.parent / "data"
+            # Create directory if it doesn't exist
+            db_dir.mkdir(exist_ok=True)
+            db_path = str(db_dir / "cost_tracking.db")
 
         self.db_path = db_path
 
