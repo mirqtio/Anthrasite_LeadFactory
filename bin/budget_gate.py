@@ -35,7 +35,7 @@ import os
 import sys
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Optional, Union
 
 # Add project root to path using pathlib for better compatibility
 project_root = Path(__file__).parent.parent
@@ -120,7 +120,7 @@ class BudgetGate:
             # Operation can proceed
             return True
 
-    def get_skipped_operations(self) -> dict[str, int]:
+    def get_skipped_operations(self) -> Dict[str, int]:
         """Get a dictionary of skipped operations and their counts.
 
         Returns:

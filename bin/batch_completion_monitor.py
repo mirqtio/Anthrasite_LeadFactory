@@ -14,7 +14,7 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Optional
 
 # Add project root to path using pathlib for better compatibility
 project_root = Path(__file__).parent.parent
@@ -103,7 +103,9 @@ Stage Completion:
         # Add stage completion details
         stages = status.get("stages", {})
         for stage, details in stages.items():
-            message += f"- {stage.title()}: {details.get('completion_percentage', 0):.2f}% at {details.get('timestamp', 'Unknown')}\n"
+            completion = details.get("completion_percentage", 0)
+            timestamp = details.get("timestamp", "Unknown")
+            message += f"- {stage.title()}: {completion:.2f}% at {timestamp}\n"
 
         # Add recent alerts
         message += "\nRecent Alerts:\n"

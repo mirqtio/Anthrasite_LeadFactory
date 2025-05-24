@@ -22,7 +22,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (

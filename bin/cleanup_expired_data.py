@@ -10,7 +10,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Any, Optional
 
 # Add project root to path using pathlib for better compatibility
 project_root = Path(__file__).parent.parent

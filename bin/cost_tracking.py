@@ -40,7 +40,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 # Import metrics - using proper path handling
 # Add project root to path
@@ -348,11 +348,13 @@ class CostTracker:
 
             if cost_per_lead > threshold_critical:
                 logger.critical(
-                    f"Cost per lead (${cost_per_lead:.2f}) exceeds critical threshold (${threshold_critical:.2f}) for tier {tier}"
+                    f"Cost per lead (${cost_per_lead:.2f}) exceeds critical threshold "
+                    f"(${threshold_critical:.2f}) for tier {tier}"
                 )
             elif cost_per_lead > threshold_warning:
                 logger.warning(
-                    f"Cost per lead (${cost_per_lead:.2f}) exceeds warning threshold (${threshold_warning:.2f}) for tier {tier}"
+                    f"Cost per lead (${cost_per_lead:.2f}) exceeds warning threshold "
+                    f"(${threshold_warning:.2f}) for tier {tier}"
                 )
 
             # Reset current batch
@@ -361,7 +363,8 @@ class CostTracker:
             self.current_batch_costs = {}
 
             logger.info(
-                f"Ended batch: {batch_id} (leads={leads_processed}, cost_per_lead=${cost_per_lead:.2f}, total_cost=${total_cost:.2f})"
+                f"Ended batch: {batch_id} (leads={leads_processed}, "
+                f"cost_per_lead=${cost_per_lead:.2f}, total_cost=${total_cost:.2f})"
             )
 
             return {
@@ -406,15 +409,18 @@ class CostTracker:
 
             if cost_per_lead > threshold_critical:
                 logger.critical(
-                    f"Cost per lead (${cost_per_lead:.2f}) exceeds critical threshold (${threshold_critical:.2f}) for tier {tier}"
+                    f"Cost per lead (${cost_per_lead:.2f}) exceeds critical threshold "
+                    f"(${threshold_critical:.2f}) for tier {tier}"
                 )
             elif cost_per_lead > threshold_warning:
                 logger.warning(
-                    f"Cost per lead (${cost_per_lead:.2f}) exceeds warning threshold (${threshold_warning:.2f}) for tier {tier}"
+                    f"Cost per lead (${cost_per_lead:.2f}) exceeds warning threshold "
+                    f"(${threshold_warning:.2f}) for tier {tier}"
                 )
 
             logger.info(
-                f"Calculated cost per lead: ${cost_per_lead:.2f} (tier={tier}, leads={leads_processed}, total_cost=${total_cost:.2f})"
+                f"Calculated cost per lead: ${cost_per_lead:.2f} "
+                f"(tier={tier}, leads={leads_processed}, total_cost=${total_cost:.2f})"
             )
 
             return cost_per_lead

@@ -29,10 +29,9 @@ import sqlite3
 import sys
 import threading
 import time
-from typing import Dict, List, Optional, Tuple, Any, Union
 import uuid
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Optional, Union
 
 # Add parent directory to path to allow importing supabase client
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -89,7 +88,8 @@ class DataRetentionManager:
         self._start_cleanup_thread()
 
         logger.info(
-            f"Data retention manager initialized (html_retention={self.html_retention_days} days, llm_retention={self.llm_retention_days} days)"
+            f"Data retention manager initialized (html_retention={self.html_retention_days} days, "
+            f"llm_retention={self.llm_retention_days} days)"
         )
 
     def _init_db(self):
@@ -198,7 +198,8 @@ class DataRetentionManager:
             conn.close()
 
             logger.info(
-                f"Stored HTML for business {business_id} at {storage_path} (size={size_bytes} bytes, expires={expires_at.isoformat()})"
+                f"Stored HTML for business {business_id} at {storage_path} "
+                f"(size={size_bytes} bytes, expires={expires_at.isoformat()})"
             )
 
             return storage_path
@@ -333,7 +334,8 @@ class DataRetentionManager:
             conn.close()
 
             logger.info(
-                f"Logged LLM interaction for stage {stage} (log_id={log_id}, cost=${cost:.4f}, expires={expires_at.isoformat()})"
+                f"Logged LLM interaction for stage {stage} "
+                f"(log_id={log_id}, cost=${cost:.4f}, expires={expires_at.isoformat()})"
             )
 
             return log_id
