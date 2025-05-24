@@ -30,65 +30,51 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities with conditional imports for testing
 
 
-# For Python 3.9 compatibility, use a different approach that avoids type assignment issues
+# For Python 3.9 compatibility, use a simpler approach without method assignment
 
 
-# First, create our own DatabaseConnection class - use this if import fails
-class DatabaseConnection:
-    """Implementation of DatabaseConnection that works in all environments."""
-
-    def __init__(self, db_path=None):
-        self.db_path = db_path
-        self.connection = None
-        self.cursor = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def execute(self, query, params=None):
-        return None
-
-    def fetchall(self):
-        return []
-
-    def fetchone(self):
-        return None
-
-    def commit(self):
-        pass
-
-
-# Define a track_api_cost function that works in all environments
-def track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
-    """Track API cost - dummy implementation that works in all environments."""
+# Define a dummy track_api_cost function for fallback
+def dummy_track_api_cost(service, operation, cost_cents, tier=1, business_id=None):
+    """Track API cost - dummy implementation for testing environments."""
     pass
 
 
-# Try to import and replace with real implementations
+# Try to import the real implementations
 try:
-    # Import the real implementations so we can use their functionality
-    from utils.io import DatabaseConnection as RealDatabaseConnection
-    from utils.io import track_api_cost as real_track_api_cost
+    from utils.io import DatabaseConnection, track_api_cost
 
-    # If import succeeds, copy the methods from the real class
-    # This avoids type compatibility issues while preserving functionality
-    DatabaseConnection.__init__ = RealDatabaseConnection.__init__
-    DatabaseConnection.__enter__ = RealDatabaseConnection.__enter__
-    DatabaseConnection.__exit__ = RealDatabaseConnection.__exit__
-    DatabaseConnection.execute = RealDatabaseConnection.execute
-    DatabaseConnection.fetchall = RealDatabaseConnection.fetchall
-    DatabaseConnection.fetchone = RealDatabaseConnection.fetchone
-    DatabaseConnection.commit = RealDatabaseConnection.commit
-
-    # Replace our track_api_cost function with the real one
-    track_api_cost = real_track_api_cost
+    # If successful, we have the real implementations
 except ImportError:
-    # If imports fail, we keep our own implementations
-    # No need to do anything as our versions are already defined
-    pass
+    # If import fails, create our own implementations
+    # Define our own DatabaseConnection class
+    class DatabaseConnection:
+        """Implementation of DatabaseConnection for testing environments."""
+
+        def __init__(self, db_path=None):
+            self.db_path = db_path
+            self.connection = None
+            self.cursor = None
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+        def execute(self, query, params=None):
+            return None
+
+        def fetchall(self):
+            return []
+
+        def fetchone(self):
+            return None
+
+        def commit(self):
+            pass
+
+    # Use our dummy track_api_cost
+    track_api_cost = dummy_track_api_cost
 
 
 # Import all necessary modules before any local imports

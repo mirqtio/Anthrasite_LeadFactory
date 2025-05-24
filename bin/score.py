@@ -30,55 +30,40 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import database utilities with conditional imports for testing
 
 
-# For Python 3.9 compatibility, use a different approach that avoids type assignment issues
+# For Python 3.9 compatibility, use a simpler approach without method assignment
 
-
-# First, create our own DatabaseConnection class - use this if import fails
-class DatabaseConnection:
-    """Implementation of DatabaseConnection that works in all environments."""
-
-    def __init__(self, db_path=None):
-        self.db_path = db_path
-        self.connection = None
-        self.cursor = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def execute(self, query, params=None):
-        return None
-
-    def fetchall(self):
-        return []
-
-    def fetchone(self):
-        return None
-
-    def commit(self):
-        pass
-
-
-# Try to import and replace methods with real implementation
+# First attempt to import the real DatabaseConnection
 try:
-    # Import the real one so we can copy its methods
-    from utils.io import DatabaseConnection as RealDatabaseConnection
+    from utils.io import DatabaseConnection
 
-    # If import succeeds, copy the methods from the real class
-    # This avoids type compatibility issues while preserving functionality
-    DatabaseConnection.__init__ = RealDatabaseConnection.__init__
-    DatabaseConnection.__enter__ = RealDatabaseConnection.__enter__
-    DatabaseConnection.__exit__ = RealDatabaseConnection.__exit__
-    DatabaseConnection.execute = RealDatabaseConnection.execute
-    DatabaseConnection.fetchall = RealDatabaseConnection.fetchall
-    DatabaseConnection.fetchone = RealDatabaseConnection.fetchone
-    DatabaseConnection.commit = RealDatabaseConnection.commit
+    # If successful, we have the real implementation
 except ImportError:
-    # If import fails, we keep our own implementation
-    # No need to do anything as our class is already defined
-    pass
+    # If import fails, create our own DatabaseConnection class
+    class DatabaseConnection:
+        """Implementation of DatabaseConnection for testing environments."""
+
+        def __init__(self, db_path=None):
+            self.db_path = db_path
+            self.connection = None
+            self.cursor = None
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+        def execute(self, query, params=None):
+            return None
+
+        def fetchall(self):
+            return []
+
+        def fetchone(self):
+            return None
+
+        def commit(self):
+            pass
 
 
 try:
