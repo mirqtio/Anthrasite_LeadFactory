@@ -17,16 +17,26 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Any, Optional
 
-# Add project root to path using pathlib for better compatibility
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
-# Import local dependencies - must be after sys.path modification
-import utils.batch_tracker
-import utils.logging_config
+# Define utility functions to avoid module-level imports
+def setup_imports():
+    # Add project root to path using pathlib for better compatibility
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+
+    # Now we can import our local modules
+    global get_logger, check_batch_completion, get_batch_status
+    from utils.logging_config import get_logger
+    from utils.batch_tracker import check_batch_completion, get_batch_status
+
+    return get_logger
+
+
+# Setup imports before using them
+get_logger = setup_imports()
 
 # Set up logging
-logger = utils.logging_config.get_logger(__name__)
+logger = get_logger(__name__)
 
 # Constants
 CHECK_INTERVAL = int(
@@ -78,11 +88,11 @@ def send_alert_email(subject: str, message: str) -> bool:
 
 def check_and_alert() -> None:
     """Check batch completion status and send alerts if needed."""
-    completed_on_time, reason = utils.batch_tracker.check_batch_completion()
+    completed_on_time, reason = check_batch_completion()
 
     if not completed_on_time:
         # Get detailed batch status
-        status = utils.batch_tracker.get_batch_status()
+        status = get_batch_status()
 
         # Create alert message
         subject = f"ALERT: Batch Completion Failure - {reason}"

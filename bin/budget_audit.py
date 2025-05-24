@@ -135,9 +135,10 @@ def show_cost_breakdown(period: str = "day") -> None:
     # Print total
     # Show top operations for each service
     print_header(f"\n{period_display} Top Operations by Cost")
-    for service in costs_by_service:
-        operations = get_cost_breakdown_by_operation(service)
+    for service_name in costs_by_service:
+        operations = get_cost_breakdown_by_operation(service_name)
         if operations:
+            print_success(f"\n{service_name.upper()} operations:")
             for _op, cost in operations.items():
                 pass
 
