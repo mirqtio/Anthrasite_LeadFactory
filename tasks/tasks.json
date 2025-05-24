@@ -933,6 +933,90 @@
           "testStrategy": "Simulate test instability patterns to verify the monitoring system correctly identifies and reports issues. Run the system for two weeks to establish baseline stability metrics."
         }
       ]
+    },
+    {
+      "id": 32,
+      "title": "Python 3.9 Compatibility Implementation",
+      "description": "Systematically resolve Python 3.9 compatibility issues throughout the codebase to ensure proper CI pipeline operation",
+      "details": "This task involves implementing a comprehensive approach to fix Python 3.9 compatibility issues across the Anthrasite LeadFactory codebase. Key steps include:\n\n1. Identify and resolve type annotation issues incompatible with Python 3.9\n2. Fix module import issues and ensure proper typing imports\n3. Update mypy configuration to better handle Python 3.9 compatibility\n4. Create diagnostic and automation scripts to aid in fixing compatibility issues\n5. Document best practices for maintaining Python 3.9 compatibility\n6. Ensure CI pipeline passes with Python 3.9 environment\n\nThis implementation must follow the Feature Development Workflow Template (Task #27) with a focus on maintaining high code quality while addressing ongoing CI failures.",
+      "testStrategy": "Testing will focus on ensuring all linting tools pass in Python 3.9 environment:\n\n1. Run mypy with Python 3.9 to verify type checking passes\n2. Run ruff, black, and flake8 to ensure code style compliance\n3. Execute all unit and integration tests with Python 3.9\n4. Verify CI pipeline passes with Python 3.9 environment\n5. Document any non-automatable issues that require ongoing attention",
+      "status": "in_progress",
+      "dependencies": [],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Analyze Python 3.9 compatibility issues",
+          "description": "Identify all Python 3.9 compatibility issues in the codebase using diagnostic tools",
+          "details": "Run diagnostic scripts to identify and categorize all Python 3.9 compatibility issues. Focus on type annotation syntax differences, missing imports, and function signature mismatches. Create a comprehensive report documenting all identified issues.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 32
+        },
+        {
+          "id": 2,
+          "title": "Create Python 3.9 compatibility fix script",
+          "description": "Develop and implement an automation script to fix common compatibility issues",
+          "details": "Create scripts/fix_python39_compatibility.py to automatically fix common Python 3.9 compatibility issues. Ensure it handles type annotation differences, adds necessary imports, and properly documents any non-automatable issues for manual review.",
+          "status": "done",
+          "dependencies": [1],
+          "parentTaskId": 32
+        },
+        {
+          "id": 3,
+          "title": "Update mypy configuration",
+          "description": "Modify mypy.ini to properly handle Python 3.9 compatibility issues",
+          "details": "Update mypy.ini to exclude duplicate files, temporarily disable unreachable code warnings, and add appropriate ignore patterns for third-party libraries without type stubs. Ensure configuration allows CI pipeline to run successfully while maintaining high code quality standards.",
+          "status": "done",
+          "dependencies": [1],
+          "parentTaskId": 32
+        },
+        {
+          "id": 4,
+          "title": "Fix type annotation issues",
+          "description": "Systematically address type annotation issues throughout the codebase",
+          "details": "Fix type annotation syntax issues, function signature mismatches, and variable annotation problems in critical files including bin/cost_tracking.py, bin/budget_audit.py, and utils modules. Ensure consistent return types across module boundaries.",
+          "status": "done",
+          "dependencies": [2, 3],
+          "parentTaskId": 32
+        },
+        {
+          "id": 5,
+          "title": "Fix missing imports",
+          "description": "Add missing imports in all modules with undefined name errors",
+          "details": "Address all 'Name X is not defined' errors by adding appropriate imports. Focus on bin/email/sendgrid_email_sender.py and other modules with missing imports for sys, os, and typing modules.",
+          "status": "done",
+          "dependencies": [2],
+          "parentTaskId": 32
+        },
+        {
+          "id": 6,
+          "title": "Fix None-aware operations",
+          "description": "Ensure proper handling of None values in method calls",
+          "details": "Fix all instances of 'None has no attribute X' errors by implementing proper None checks before method calls. Focus on datetime.isoformat() calls and other common patterns where None values need special handling.",
+          "status": "done",
+          "dependencies": [4],
+          "parentTaskId": 32
+        },
+        {
+          "id": 7,
+          "title": "Create Python 3.9 compatibility documentation",
+          "description": "Document all compatibility issues, fixes, and best practices",
+          "details": "Create docs/python39_compatibility.md documenting all compatibility issues, fixes applied, remaining issues, and best practices for maintaining compatibility. Include sections on common patterns to avoid and recommended approaches.",
+          "status": "done",
+          "dependencies": [4, 5, 6],
+          "parentTaskId": 32
+        },
+        {
+          "id": 8,
+          "title": "Run CI pipeline with Python 3.9",
+          "description": "Verify CI pipeline passes with Python 3.9 environment",
+          "details": "Run the CI pipeline in GitHub Actions with Python 3.9 environment to ensure all fixes are properly applied. Document any remaining issues and create a plan for addressing them.",
+          "status": "pending",
+          "dependencies": [3, 4, 5, 6, 7],
+          "parentTaskId": 32
+        }
+      ]
     }
   ]
 }
