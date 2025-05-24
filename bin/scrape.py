@@ -12,14 +12,15 @@ Options:
 import argparse
 import os
 import sys
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import utility functions with try-except for Python 3.9 compatibility during testing
+# Import utility functions with conditional imports for testing
+has_io_imports = False
 try:
     from utils.io import (
         get_active_zip_codes,
@@ -29,33 +30,54 @@ try:
         mark_zip_done,
         save_business,
     )
+
+    has_io_imports = True
 except ImportError:
-    # During testing, provide dummy implementations
-    def get_active_zip_codes():
+    # Dummy implementations only created if the import fails
+    pass
+
+# Define dummies only if needed
+if not has_io_imports:
+
+    def get_active_zip_codes() -> List[Dict[Any, Any]]:
         return []
 
-    def get_verticals():
+    def get_verticals() -> List[Dict[Any, Any]]:
         return []
 
-    def load_yaml_config(file_path):
+    def load_yaml_config(file_path: str) -> Dict[Any, Any]:
         return {}
 
-    def make_api_request(url, headers=None, params=None, method="GET", timeout=30):
+    def make_api_request(
+        url: str,
+        method: str = "GET",
+        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, str]] = None,
+        timeout: int = 30,
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         return {}, None
 
-    def mark_zip_done(zip_code, vertical):
+    def mark_zip_done(zip_code: str, vertical: str) -> None:
         pass
 
-    def save_business(business_data):
-        return 1
+    def save_business(business_data: Dict[str, Any]) -> None:
+        pass
 
 
-# Import logging configuration with try-except for Python 3.9 compatibility during testing
+# Import logging utilities with conditional imports for testing
+has_logger = False
 try:
     from utils.logging_config import get_logger
+
+    has_logger = True
 except ImportError:
-    # During testing, provide a dummy logger
-    def get_logger(name):
+    # Dummy implementation only created if the import fails
+    pass
+
+# Define dummy get_logger only if needed
+if not has_logger:
+
+    def get_logger(name: str) -> logging.Logger:
         import logging
 
         return logging.getLogger(name)
