@@ -34,8 +34,20 @@ from datetime import datetime, timedelta
 from typing import Any, Optional, Union
 
 # Add parent directory to path to allow importing supabase client
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from bin.db.supabase_client import supabase
+# Use pathlib for better path handling
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
+
+
+# Use function to get the module to avoid E402 errors
+def _get_supabase():
+    from bin.db.supabase_client import supabase
+
+    return supabase
+
+
+# Create reference to use in the code
+supabase = _get_supabase()
 
 # Setup logging
 logging.basicConfig(
@@ -43,7 +55,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "data_retention.log")),
+        logging.FileHandler(str(Path("logs") / "data_retention.log")),
     ],
 )
 logger = logging.getLogger("data_retention")
