@@ -90,12 +90,10 @@ class DataRetentionManager:
         self.storage_bucket = os.environ.get("STORAGE_BUCKET", "raw_data")
 
         # Create local storage directories
-        self.local_storage_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "data",
-            "raw_data",
-        )
-        os.makedirs(os.path.join(self.local_storage_dir, "html"), exist_ok=True)
+        # Use pathlib for better path handling
+        self.local_storage_dir = str(Path(__file__).parent.parent / "data" / "raw_data")
+        # Create html directory if it doesn't exist
+        Path(self.local_storage_dir).joinpath("html").mkdir(parents=True, exist_ok=True)
 
         # Start cleanup thread
         self._start_cleanup_thread()
