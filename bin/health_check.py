@@ -277,7 +277,7 @@ class HealthCheckSystem:
         except ImportError:
             # Psutil not installed, try reading from /proc/meminfo
             try:
-                with open("/proc/meminfo") as f:
+                with Path("/proc/meminfo").open() as f:
                     meminfo = {}
                     for line in f:
                         key, value = line.split(":", 1)
@@ -360,7 +360,7 @@ class HealthCheckSystem:
             )
 
             # Call failover script on backup VPS
-            if os.path.exists("/usr/local/bin/trigger_failover.sh"):
+            if Path("/usr/local/bin/trigger_failover.sh").exists():
                 result = subprocess.run(
                     ["/usr/local/bin/trigger_failover.sh"],
                     capture_output=True,
@@ -467,12 +467,12 @@ class HealthCheckSystem:
         """
         try:
             # Create results directory if it doesn't exist
-            os.makedirs("data/health_checks", exist_ok=True)
+            Path("data/health_checks").mkdir(parents=True, exist_ok=True)
 
             # Create results file
             filename = f"data/health_checks/health_check_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
-            with open(filename, "w") as f:
+            with Path(filename).open("w") as f:
                 json.dump(
                     {
                         "timestamp": datetime.now().isoformat(),
