@@ -22,10 +22,11 @@ import time
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Optional, TypeVar, Union, cast
 
 # Use lowercase versions for Python 3.9 compatibility
 
+# Use lowercase versions for Python 3.9 compatibility
 import requests
 from dotenv import load_dotenv
 
@@ -235,7 +236,7 @@ class SendGridEmailSender:
         mockup_image_url: Optional[str] = None,
         mockup_html: Optional[str] = None,
         is_dry_run: bool = False,
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    ) -> tuple[bool, Optional[str], Optional[str]]:
         """Send an email via SendGrid.
         Args:
             to_email: Recipient email address.
