@@ -1,0 +1,281 @@
+name: Large-Scale Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      lead_count:
+        description: 'Number of leads to process'
+        required: true
+        default: '10000'
+        type: string
+      generate_report:
+        description: 'Generate performance report'
+        required: false
+        default: true
+        type: boolean
+      skip_10k:
+        description: 'Skip 10,000 lead test (for faster testing)'
+        required: false
+        default: false
+        type: boolean
+      test_failures:
+        description: 'Run failure scenario tests'
+        required: false
+        default: true
+        type: boolean
+      test_bottlenecks:
+        description: 'Run performance bottleneck tests'
+        required: false
+        default: true
+        type: boolean
+  # Run monthly on the first Sunday at 2am UTC
+  schedule:
+    - cron: '0 2 1-7 * 0'
+  # Also run after successful merges to main for critical changes
+  push:
+    branches: [ main ]
+    paths:
+      - 'leadfactory/pipeline/**'
+      - 'leadfactory/utils/**'
+      - 'tests/integration/test_large_scale_validation.py'
+      - 'scripts/run_large_scale_tests.py'
+      - '.github/workflows/large-scale-validation.yml'
+
+jobs:
+  large-scale-validation:
+    name: Large-Scale Pipeline Validation
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: leadfactory_test
+        ports:
+          - 5432:5432
+        options: >
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-xdist pytest-cov matplotlib numpy
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Setup test environment
+        run: |
+          # Create necessary directories
+          mkdir -p data/html_storage
+          mkdir -p data/supabase_usage
+          mkdir -p performance_reports
+
+          # Setup test database
+          python scripts/minimal_db_setup.py --verbose
+
+          # Create .env file with test values
+          cp .env.example .env
+
+          # Use mock APIs to avoid costs during large-scale testing
+          echo "LEADFACTORY_USE_REAL_APIS=0" >> .env
+          echo "LEADFACTORY_USE_MOCKS=1" >> .env
+
+          # Configure throttling settings to maximize throughput
+          echo "LEADFACTORY_THROTTLE_APIS=0" >> .env
+
+          # Set performance testing flags
+          echo "LEADFACTORY_PERFORMANCE_METRICS=1" >> .env
+          echo "LEADFACTORY_PERF_REPORT_DIR=performance_reports" >> .env
+
+      - name: Run large-scale validation tests
+        id: validation_tests
+        run: |
+          # Make script executable
+          chmod +x scripts/run_large_scale_tests.py
+
+          # Build command with appropriate flags
+          CMD="scripts/run_large_scale_tests.py --output-dir=performance_reports --generate-charts"
+
+          # Add lead count if specified
+          if [ -n "${{ github.event.inputs.lead_count }}" ]; then
+            CMD="$CMD --lead-count=${{ github.event.inputs.lead_count }}"
+          fi
+
+          # Skip 10k test if specified
+          if [ "${{ github.event.inputs.skip_10k }}" == "true" ]; then
+            CMD="$CMD --skip-10k"
+          fi
+
+          # Run failure tests if specified
+          if [ "${{ github.event.inputs.test_failures }}" == "true" ]; then
+            CMD="$CMD --test-failures"
+          fi
+
+          # Run bottleneck tests if specified
+          if [ "${{ github.event.inputs.test_bottlenecks }}" == "true" ]; then
+            CMD="$CMD --test-bottlenecks"
+          fi
+
+          # Add verification
+          CMD="$CMD --verify-thresholds --min-throughput=100 --max-error-rate=0.01 --max-runtime-minutes=180"
+
+          echo "Running command: $CMD"
+          $CMD
+
+          # Store exit code
+          EXIT_CODE=$?
+
+          # Set output variable for use in other steps
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          # Return appropriate exit code
+          exit $EXIT_CODE
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          junit_files: performance_reports/*.xml
+          check_name: "Large-Scale Validation Test Results"
+
+      - name: Generate validation dashboard
+        if: always()
+        run: |
+          echo "Generating validation dashboard..."
+
+          # Install required packages
+          pip install pandas matplotlib seaborn jinja2
+
+          # Run dashboard generator
+          python scripts/generate_validation_dashboard.py \
+            --metrics-dir=performance_reports \
+            --output-dir=performance_reports/dashboard \
+            --history-file=performance_reports/validation_history.json
+
+      - name: Archive performance reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-reports
+          path: performance_reports/
+          retention-days: 90
+
+      - name: Deploy dashboard to Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: performance_reports/dashboard
+          target-folder: validation-dashboard
+          clean: true
+
+      - name: Add badge to README
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # Create badge based on test results
+          if [ "${{ steps.validation_tests.outputs.exit_code }}" == "0" ]; then
+            BADGE_URL="https://img.shields.io/badge/Large--Scale%20Validation-Passing-brightgreen"
+          else
+            BADGE_URL="https://img.shields.io/badge/Large--Scale%20Validation-Failing-red"
+          fi
+
+          # Update README.md with badge
+          if grep -q "\[Large-Scale Validation\]" README.md; then
+            # Replace existing badge
+            sed -i "s|\[Large-Scale Validation\]([^)]*)\!|\[Large-Scale Validation\]($BADGE_URL)\!|" README.md
+          else
+            # Add new badge after existing CI badge
+            sed -i "/\[CI\]/a \\\n\!\[Large-Scale Validation\]($BADGE_URL)" README.md
+          fi
+
+          # Check if we need to commit changes
+          if git diff --quiet README.md; then
+            echo "No changes to commit"
+          else
+            # Configure git
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+
+            # Commit and push changes
+            git add README.md
+            git commit -m "Update large-scale validation badge in README [skip ci]"
+            git push
+          fi
+
+      - name: Send notification
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            # Prepare the payload
+            if [ "${{ steps.validation_tests.outputs.exit_code }}" == "0" ]; then
+              COLOR="good"
+              STATUS="✅ Passed"
+            else
+              COLOR="danger"
+              STATUS="❌ Failed"
+            fi
+
+            # Create payload file
+            cat > payload.json << EOF
+            {
+              "attachments": [
+                {
+                  "color": "$COLOR",
+                  "pretext": "Large-Scale Validation Results",
+                  "title": "Validation Run #${{ github.run_id }}",
+                  "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                  "fields": [
+                    {
+                      "title": "Repository",
+                      "value": "${{ github.repository }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.ref_name }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Status",
+                      "value": "$STATUS",
+                      "short": true
+                    },
+                    {
+                      "title": "Lead Count",
+                      "value": "${{ github.event.inputs.lead_count || '10000' }}",
+                      "short": true
+                    }
+                  ],
+                  "footer": "GitHub Actions",
+                  "footer_icon": "https://github.com/rtCamp.png?size=48",
+                  "ts": $(date +%s)
+                }
+              ]
+            }
+            EOF
+
+            # Send to Slack
+            curl -X POST -H 'Content-type: application/json' --data @payload.json $SLACK_WEBHOOK_URL
+          else
+            echo "Skipping Slack notification - SLACK_WEBHOOK_URL not set"
+          fi

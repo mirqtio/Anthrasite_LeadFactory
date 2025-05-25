@@ -1,5 +1,7 @@
 # Anthrasite Lead-Factory
 
+![CI](https://github.com/anthrasite/lead-factory/actions/workflows/ci.yml/badge.svg)
+
 A pipeline for automatically scraping, enriching, scoring, and reaching out to SMB leads with positive unit economics.
 
 ## Project Overview
@@ -17,12 +19,17 @@ The pipeline operates on a nightly batch process, processing leads from three ve
 
 The pipeline consists of six sequential stages:
 
-1. **Scraping** (`01_scrape.py`): Fetches business listings from Yelp Fusion and Google Places APIs.
-2. **Enrichment** (`02_enrich.py`): Analyzes websites for tech stack and Core Web Vitals, with tier-based additional enrichment.
-3. **Deduplication** (`03_dedupe.py`): Uses Ollama Llama-3 8B to identify and merge duplicate leads.
-4. **Scoring** (`04_score.py`): Applies YAML-defined rules to score leads based on their features.
-5. **Mock-up Generation** (`05_mockup.py`): Creates website improvement mock-ups using GPT-4o (with Claude fallback).
-6. **Email Queueing** (`06_email_queue.py`): Sends personalized outreach via SendGrid.
+1. **Scraping** (`leadfactory.pipeline.scrape`): Fetches business listings from Yelp Fusion and Google Places APIs.
+2. **Enrichment** (`leadfactory.pipeline.enrich`): Analyzes websites for tech stack and Core Web Vitals, with tier-based additional enrichment.
+3. **Deduplication** (`leadfactory.pipeline.dedupe`): Uses Ollama Llama-3 8B to identify and merge duplicate leads.
+4. **Scoring** (`leadfactory.pipeline.score`): Applies YAML-defined rules to score leads based on their features.
+5. **Mock-up Generation** (`leadfactory.pipeline.mockup`): Creates website improvement mock-ups using GPT-4o (with Claude fallback).
+6. **Email Queueing** (`leadfactory.pipeline.email_queue`): Sends personalized outreach via SendGrid.
+
+Additional components include:
+
+- **Cost Management** (`leadfactory.cost.*`): Budget gating, auditing, and cost tracking.
+- **Utilities** (`leadfactory.utils.*`): Metrics, logging, and other support functions.
 
 ## Setup Instructions
 
@@ -38,8 +45,8 @@ The pipeline consists of six sequential stages:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/anthrasite/lead-factory.git
-   cd lead-factory
+   git clone https://github.com/mirqtio/Anthrasite_LeadFactory.git
+   cd Anthrasite_LeadFactory
    ```
 
 2. Create a virtual environment:
@@ -48,12 +55,24 @@ The pipeline consists of six sequential stages:
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install dependencies:
+3. Install the package and dependencies:
    ```bash
-   pip install -r requirements.txt
+   # For development installation with all tools
+   pip install -e ".[dev]"
+
+   # For metrics-only installation
+   pip install -e ".[metrics]"
+
+   # For basic installation
+   pip install -e .
    ```
 
-4. Set up environment variables:
+4. For development only - install pre-commit hooks:
+   ```bash
+   pre-commit install
+   ```
+
+5. Set up environment variables:
    ```bash
    cp .env.example .env
    # Edit .env with your API keys and configuration
@@ -172,8 +191,40 @@ The pipeline exports Prometheus metrics on port 9090 (configurable via `PROMETHE
 - `leads_scraped_total`: Counter of total leads scraped
 - `batch_runtime_seconds`: Gauge of batch processing time
 - `leadfactory_cpu_hours_per_lead`: Gauge of CPU usage per lead
+- `pipeline_failure_rate`: Counter tracking pipeline failures
 
 These metrics can be visualized in Grafana Cloud with the provided alert rules.
+
+### Large-Scale Validation
+
+The pipeline includes comprehensive large-scale validation tests that verify its ability to handle high volumes of leads efficiently. These tests are automatically run:
+
+- Monthly (first Sunday of each month at 2am UTC)
+- After significant changes to core pipeline components
+- On-demand via GitHub Actions UI
+
+The validation suite includes:
+
+1. **Scale Testing**: Processes up to 10,000 leads through the complete pipeline
+2. **Performance Metrics**: Tracks throughput, success rates, and processing times
+3. **Failure Simulation**: Validates graceful handling of various error conditions
+4. **Bottleneck Detection**: Identifies performance bottlenecks in the pipeline
+
+Performance reports and visualizations are automatically generated and published as GitHub Actions artifacts. The system enforces the following performance requirements:
+
+- **Minimum throughput**: 100 leads/minute
+- **Maximum error rate**: 1%
+- **Maximum runtime**: 180 minutes for 10,000 leads
+
+Run the large-scale validation tests locally with:
+
+```bash
+# Run the complete validation suite
+python scripts/run_large_scale_tests.py
+
+# Run a smaller test for quick verification
+python scripts/run_large_scale_tests.py --lead-count=100 --skip-10k
+```
 
 ## Data Durability
 
@@ -292,27 +343,91 @@ All feature development follows the standardized workflow:
 
 ## Continuous Integration
 
-The project uses GitHub Actions for continuous integration. The CI pipeline includes:
+The project uses GitHub Actions for comprehensive continuous integration. All CI checks are now configured in strict blocking mode to ensure code quality and reliability.
 
-1. **Pre-commit Checks**: Runs all pre-commit hooks to enforce code quality
-2. **Linting**: Checks code quality using flake8, black, and isort
-3. **Testing**: Runs unit tests and BDD acceptance tests with coverage reporting
-4. **Database Validation**: Verifies database schema integrity
-5. **Docker Build**: Creates and validates a Docker image
+### CI Workflows
 
-The CI workflow runs automatically on:
+The project has three main CI workflow configurations:
+
+1. **Unified CI (`unified-ci.yml`)**: Primary CI workflow for code quality and testing
+2. **API Integration Tests (`api-integration-tests.yml`)**: API-specific integration testing
+3. **Large-Scale Validation (`large-scale-validation.yml`)**: Performance testing at scale (10,000 leads)
+
+### CI Gates and Requirements
+
+All pull requests must pass the following quality gates before merging:
+
+#### 1. Code Quality Gates (Blocking)
+
+| Gate | Tool | Threshold | Configuration |
+|------|------|-----------|---------------|
+| Formatting | Black | 0 errors | `--check` mode |
+| Linting | Ruff | 0 errors | Standard rules |
+| Linting | Flake8 | 0 errors | See `setup.cfg` |
+| Type checking | MyPy | 0 errors | See `mypy.ini` |
+| Security | Bandit | 0 high/medium issues | `-ll` flag |
+
+#### 2. Testing Gates (Blocking)
+
+| Gate | Tool | Threshold | Configuration |
+|------|------|-----------|---------------|
+| Unit tests | Pytest | 100% pass | All test modules |
+| Test coverage | Coverage | ≥80% coverage | `--cov-fail-under=80` |
+| Integration tests | Pytest | 100% pass | Mock APIs by default |
+
+#### 3. Performance Gates (Blocking)
+
+| Gate | Metric | Threshold | Validation |
+|------|--------|-----------|------------|
+| Throughput | Leads/minute | ≥100 leads/min | Large-scale test |
+| Error rate | Failed leads % | ≤1% | Large-scale test |
+| Runtime | Total minutes | ≤180 minutes | Large-scale test |
+
+### CI Workflow Execution
+
+The CI workflows run automatically on:
 - Push to `main` and `develop` branches
 - Pull requests to `main` and `develop` branches
 - Manual trigger via GitHub Actions interface
+- Scheduled runs (weekly for API tests, monthly for large-scale validation)
 
-To manually trigger the CI workflow:
-1. Go to the GitHub repository
-2. Navigate to Actions > Anthrasite Lead-Factory CI
-3. Click "Run workflow"
-4. Select the environment (test or staging)
-5. Click "Run workflow"
+### CI Artifacts
 
-The CI workflow can be configured in `.github/workflows/ci.yml`.
+The CI process generates several important artifacts:
+
+1. **Test Coverage Reports**: Uploaded to Codecov for tracking coverage trends
+2. **Performance Metrics**: Generated during large-scale validation
+3. **API Usage Reports**: Tracking API costs and usage statistics
+
+### Triggering CI Workflows
+
+#### Unified CI
+
+```bash
+# Trigger unified CI workflow manually
+git push origin my-feature-branch
+```
+
+#### API Integration Tests
+
+```bash
+# Manual trigger with GitHub CLI
+gh workflow run api-integration-tests.yml --ref my-branch --field use_real_apis=false
+```
+
+#### Large-Scale Validation
+
+```bash
+# Manual trigger with GitHub CLI
+gh workflow run large-scale-validation.yml --ref my-branch --field lead_count=10000
+```
+
+### CI Configuration Files
+
+- **Unified CI**: `.github/workflows/unified-ci.yml`
+- **API Tests**: `.github/workflows/api-integration-tests.yml`
+- **Large-Scale**: `.github/workflows/large-scale-validation.yml`
+- **Coverage**: `.codecov.yml`
 
 ## Budget Monitoring
 

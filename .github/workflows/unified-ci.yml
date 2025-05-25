@@ -33,9 +33,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pre-commit
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          if [ -f constraints.txt ]; then
+            if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt -c constraints.txt; fi
+          else
+            if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
+          fi
 
       - name: Generate file list for checks
         run: |
@@ -105,40 +107,51 @@ jobs:
 
           # Set up variables to track failures
           FAILURES=0
+          FAILURE_DETAILS=""
 
           echo "Running Ruff on $FILES_TO_LINT..."
           ruff check --ignore F722 $FILES_TO_LINT --fix || {
-            echo "Ruff linting found issues but continuing..."
+            echo "::error::Ruff linting found issues. CI will fail."
             FAILURES=$((FAILURES+1))
+            FAILURE_DETAILS="$FAILURE_DETAILS\n- Ruff linting errors found"
           }
 
           echo "Running Black on $FILES_TO_LINT..."
-          black --quiet $FILES_TO_LINT || {
-            echo "Black formatting found issues but continuing..."
+          black --quiet --check $FILES_TO_LINT || {
+            echo "::error::Black formatting found issues. CI will fail."
             FAILURES=$((FAILURES+1))
+            FAILURE_DETAILS="$FAILURE_DETAILS\n- Black formatting errors found"
           }
 
           echo "Running Bandit... (runs on ., excludes via config or -x)"
           bandit -r . -x tests,venv,.venv -ll || {
-            echo "Bandit security checks found issues but continuing as warnings..."
+            echo "::error::Bandit security checks found issues. CI will fail."
+            FAILURES=$((FAILURES+1))
+            FAILURE_DETAILS="$FAILURE_DETAILS\n- Security issues detected by Bandit"
           }
 
           echo "Running Flake8 on $FILES_TO_LINT..."
           flake8 $FILES_TO_LINT || {
-            echo "Flake8 linting found issues but continuing..."
+            echo "::error::Flake8 linting found issues. CI will fail."
             FAILURES=$((FAILURES+1))
+            FAILURE_DETAILS="$FAILURE_DETAILS\n- Flake8 linting errors found"
           }
 
           echo "Running Mypy on $FILES_TO_LINT..."
           mypy $FILES_TO_LINT --config-file=mypy.ini || {
-            echo "Mypy type checking found issues but continuing as warnings..."
+            echo "::error::Mypy type checking found issues. CI will fail."
+            FAILURES=$((FAILURES+1))
+            FAILURE_DETAILS="$FAILURE_DETAILS\n- Type checking errors found by Mypy"
           }
 
           echo "Linting checks finished. $FAILURES linters reported issues."
 
-          # During transition, we're treating all linting errors as warnings
-          # Once fully migrated to Python 3.9, we can make this strict again
-          echo "Linting errors are temporarily treated as warnings during Python 3.9 migration."
+          if [ $FAILURES -gt 0 ]; then
+            echo "::error::Code quality checks failed:$FAILURE_DETAILS"
+            exit 1
+          fi
+
+          echo "All code quality checks passed successfully."
           exit 0
 
   test-core:
@@ -206,8 +219,15 @@ jobs:
         if: always() # Always run, even if previous steps had soft failures
         run: |
           echo "Running core tests..."
-          pytest -n auto --dist loadscope --cov=core --cov-report term-missing --cov-report xml --cov-fail-under=80 tests/core/
+          pytest -n auto --dist loadscope --cov=leadfactory --cov-report term-missing --cov-report xml --cov-fail-under=80 tests/
           echo "Core tests finished. Any failures above should be addressed."
+
+      - name: Publish coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
   build-docker:
     name: Build Docker Image
@@ -228,6 +248,35 @@ jobs:
           tags: anthrasite-lead-factory:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  trigger-large-scale-validation:
+    name: Trigger Large-Scale Validation
+    needs: [test-core, build-docker]
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.test-core.result == 'success' &&
+      needs.build-docker.result == 'success'
+    steps:
+      - name: Trigger large-scale validation workflow
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'large-scale-validation.yml',
+              ref: 'main',
+              inputs: {
+                skip_10k: 'true',  // Skip 10k test for regular builds to save time
+                test_failures: 'true',
+                test_bottlenecks: 'true',
+                generate_report: 'true'
+              }
+            });
+            console.log('Large-scale validation workflow triggered successfully');
 
   notify:
     name: Notify on Completion

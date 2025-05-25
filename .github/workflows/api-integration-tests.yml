@@ -1,0 +1,649 @@
+name: API Integration Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      use_real_apis:
+        description: 'Use real APIs instead of mocks'
+        required: true
+        default: false
+        type: boolean
+      apis_to_test:
+        description: 'APIs to test (comma-separated)'
+        required: false
+        default: 'all'
+        type: string
+      generate_report:
+        description: 'Generate metrics report'
+        required: false
+        default: true
+        type: boolean
+  schedule:
+    # Run API tests weekly to control costs (Sunday at 3am UTC)
+    - cron: '0 3 * * 0'
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'leadfactory/pipeline/**'
+      - 'tests/integration/**'
+      - 'requirements*.txt'
+      - '.github/workflows/api-integration-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'leadfactory/pipeline/**'
+      - 'tests/integration/**'
+      - 'requirements*.txt'
+      - '.github/workflows/api-integration-tests.yml'
+
+jobs:
+  api-tests:
+    name: API Integration Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10']
+      # Don't cancel all tests if one fails
+      fail-fast: false
+      # Set max parallel runs to avoid rate limiting
+      max-parallel: 1
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: leadfactory_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f constraints.txt ]; then
+            if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt -c constraints.txt; fi
+          else
+            if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
+          fi
+
+      - name: Setup test environment
+        run: |
+          # Create necessary directories
+          mkdir -p data/html_storage
+          mkdir -p metrics
+
+          # Create .env file with test values
+          cp .env.example .env
+
+          # Determine whether to use real APIs based on input or schedule
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.use_real_apis }}" == "true" ]]; then
+            echo "LEADFACTORY_USE_REAL_APIS=1" >> .env
+            echo "Using real APIs for integration tests"
+
+            # Set API throttling to avoid excessive costs
+            echo "LEADFACTORY_THROTTLE_YELP_API=1" >> .env
+            echo "LEADFACTORY_YELP_RPM=20" >> .env
+            echo "LEADFACTORY_THROTTLE_GOOGLE_API=1" >> .env
+            echo "LEADFACTORY_GOOGLE_RPM=20" >> .env
+            echo "LEADFACTORY_THROTTLE_OPENAI_API=1" >> .env
+            echo "LEADFACTORY_OPENAI_RPM=10" >> .env
+            echo "LEADFACTORY_THROTTLE_SENDGRID_API=1" >> .env
+            echo "LEADFACTORY_SENDGRID_RPM=10" >> .env
+            echo "LEADFACTORY_THROTTLE_SCREENSHOTONE_API=1" >> .env
+            echo "LEADFACTORY_SCREENSHOTONE_RPM=10" >> .env
+
+            # Set APIs to test based on input
+            if [[ "${{ github.event.inputs.apis_to_test }}" != "all" && "${{ github.event.inputs.apis_to_test }}" != "" ]]; then
+              echo "LEADFACTORY_TEST_APIS=${{ github.event.inputs.apis_to_test }}" >> .env
+              echo "Testing specific APIs: ${{ github.event.inputs.apis_to_test }}"
+            else
+              echo "LEADFACTORY_TEST_APIS=all" >> .env
+              echo "Testing all APIs"
+            fi
+          else
+            echo "LEADFACTORY_USE_REAL_APIS=0" >> .env
+            echo "Using mock APIs for integration tests"
+          fi
+
+          # Configure metrics collection
+          echo "LEADFACTORY_LOG_API_METRICS=1" >> .env
+          echo "METRICS_DIR=metrics" >> .env
+          echo "GENERATE_PER_TEST_REPORTS=${{ github.event.inputs.generate_report || 'true' }}" >> .env
+
+      - name: Setup mock API keys
+        run: |
+          cp .env.example .env
+
+          # Add default mock API keys
+          echo "YELP_API_KEY=mock_yelp_key" >> .env
+          echo "GOOGLE_API_KEY=mock_google_key" >> .env
+          echo "OPENAI_API_KEY=mock_openai_key" >> .env
+          echo "SENDGRID_API_KEY=mock_sendgrid_key" >> .env
+          echo "SCREENSHOTONE_API_KEY=mock_screenshot_key" >> .env
+          echo "ANTHROPIC_API_KEY=sk-ant-mock01234" >> .env
+
+          # Set flags to use mocks for tests
+          echo "LEADFACTORY_USE_MOCKS=1" >> .env
+          echo "LEADFACTORY_TEST_YELP_API=0" >> .env
+          echo "LEADFACTORY_TEST_GOOGLE_API=0" >> .env
+          echo "LEADFACTORY_TEST_OPENAI_API=0" >> .env
+          echo "LEADFACTORY_TEST_SENDGRID_API=0" >> .env
+          echo "LEADFACTORY_TEST_SCREENSHOTONE_API=0" >> .env
+          echo "LEADFACTORY_TEST_ANTHROPIC_API=0" >> .env
+
+      - name: Set real API keys
+        if: ${{ github.event.inputs.use_real_apis == 'true' || github.event_name == 'schedule' }}
+        run: |
+          echo "Setting up real API keys where available"
+          echo "LEADFACTORY_USE_MOCKS=0" >> .env
+
+          # Masked output helper function
+          mask_api_key() {
+            local key_name=$1
+            local key_value=$2
+
+            if [ -n "$key_value" ]; then
+              # Safely update the key without exposing it in logs
+              echo "$key_name=$key_value" >> .env
+              local prefix="${key_value:0:4}"
+              local suffix="${key_value: -4}"
+              local masked="${prefix}...${suffix}"
+              echo "✅ $key_name configured ($masked)"
+
+              # Also set the test flag
+              local test_flag="LEADFACTORY_TEST_${key_name%%_API_KEY*}_API"
+              if [ "$key_name" == "ANTHROPIC_API_KEY" ]; then
+                test_flag="LEADFACTORY_TEST_ANTHROPIC_API"
+              fi
+              echo "$test_flag=1" >> .env
+            else
+              echo "⚠️ No $key_name available, using mock"
+            fi
+          }
+
+          # Set Yelp API key if available
+          if [ -n "$YELP_API_KEY" ]; then
+            mask_api_key "YELP_API_KEY" "$YELP_API_KEY"
+          fi
+
+          # Set Google API key if available
+          if [ -n "$GOOGLE_API_KEY" ]; then
+            mask_api_key "GOOGLE_API_KEY" "$GOOGLE_API_KEY"
+          fi
+
+          # Set OpenAI API key if available
+          if [ -n "$OPENAI_API_KEY" ]; then
+            mask_api_key "OPENAI_API_KEY" "$OPENAI_API_KEY"
+          fi
+
+          # Set SendGrid API key if available
+          if [ -n "$SENDGRID_API_KEY" ]; then
+            mask_api_key "SENDGRID_API_KEY" "$SENDGRID_API_KEY"
+          fi
+
+          # Set ScreenshotOne API key if available
+          if [ -n "$SCREENSHOTONE_API_KEY" ]; then
+            mask_api_key "SCREENSHOTONE_API_KEY" "$SCREENSHOTONE_API_KEY"
+          fi
+
+          # Set Anthropic API key if available
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            mask_api_key "ANTHROPIC_API_KEY" "$ANTHROPIC_API_KEY"
+          fi
+        env:
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SCREENSHOTONE_API_KEY: ${{ secrets.SCREENSHOTONE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Run API integration tests
+        id: api_tests
+        run: |
+          echo "Running API integration tests..."
+
+          # Set options based on the event type
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.use_real_apis }}" == "true" ]]; then
+            USE_REAL_FLAG="--use-real-apis"
+          else
+            USE_REAL_FLAG=""
+          fi
+
+          if [[ "${{ github.event.inputs.generate_report }}" == "true" || "${{ github.event_name }}" == "schedule" ]]; then
+            REPORT_FLAG="--generate-report"
+          else
+            REPORT_FLAG=""
+          fi
+
+          APIS_TO_TEST="${{ github.event.inputs.apis_to_test }}"
+          if [[ "$APIS_TO_TEST" != "all" && "$APIS_TO_TEST" != "" ]]; then
+            APIS_FLAG="--apis=$APIS_TO_TEST"
+          else
+            APIS_FLAG="--apis=all"
+          fi
+
+          # Run tests with appropriate flags
+          # Use --failfast to stop after first failing test to avoid wasting API calls
+          pytest tests/integration/test_pipeline_api_integration.py -v $USE_REAL_FLAG $APIS_FLAG --log-metrics $REPORT_FLAG --metrics-dir=metrics --failfast || {
+            echo "API integration tests failed with real APIs, falling back to mocks for testing completeness"
+            echo "::warning::API tests failed with real APIs, falling back to mocks"
+
+            # Run with mocks to ensure tests are valid even if APIs are unreachable
+            echo "LEADFACTORY_USE_REAL_APIS=0" > .env
+            echo "Running with mocks to verify test integrity..."
+            pytest tests/integration/test_pipeline_api_integration.py -v --log-metrics
+
+            # This indicates the mock tests ran, but we're still propagating the original failure
+            echo "Mock tests completed. Original API test failure is still reported."
+            exit 1
+          }
+
+      - name: Archive API metrics reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-metrics-reports
+          path: |
+            metrics/
+          retention-days: 30
+
+      - name: Analyze metrics and generate cost report
+        if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.use_real_apis == 'true') }}
+        run: |
+          echo "Generating API usage and cost report..."
+
+          # Use Python to analyze metrics
+          python - <<EOF
+          import json
+          import os
+          import glob
+          from datetime import datetime
+
+          # Find all JSON metrics files
+          metrics_files = glob.glob('metrics/*.json')
+
+          # Initialize summary data
+          summary = {
+              "total_cost": 0.0,
+              "total_calls": 0,
+              "apis": {},
+              "timestamp": datetime.now().isoformat()
+          }
+
+          # Process each metrics file
+          for file_path in metrics_files:
+              try:
+                  with open(file_path, 'r') as f:
+                      data = json.load(f)
+
+                      # Skip files that don't have the right structure
+                      if not isinstance(data, dict) or "apis" not in data:
+                          continue
+
+                      # Aggregate costs and calls
+                      for api_name, api_data in data.get("apis", {}).items():
+                          stats = api_data.get("stats", {})
+
+                          # Initialize API if not seen before
+                          if api_name not in summary["apis"]:
+                              summary["apis"][api_name] = {
+                                  "calls": 0,
+                                  "cost": 0.0,
+                                  "tokens": 0
+                              }
+
+                          # Update stats
+                          summary["apis"][api_name]["calls"] += stats.get("call_count", 0)
+                          summary["apis"][api_name]["cost"] += stats.get("total_cost", 0) or 0
+                          summary["apis"][api_name]["tokens"] += stats.get("total_tokens", 0) or 0
+
+                          # Update total
+                          summary["total_calls"] += stats.get("call_count", 0)
+                          summary["total_cost"] += stats.get("total_cost", 0) or 0
+              except Exception as e:
+                  print(f"Error processing {file_path}: {e}")
+
+          # Generate formatted report
+          report = f"# API Usage and Cost Report\n\n"
+          report += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+          report += f"## Summary\n\n"
+          report += f"- Total API Calls: {summary['total_calls']}\n"
+          report += f"- Total Estimated Cost: ${summary['total_cost']:.4f}\n\n"
+          report += f"## API Details\n\n"
+
+          for api_name, api_data in summary["apis"].items():
+              report += f"### {api_name.upper()} API\n\n"
+              report += f"- Total Calls: {api_data['calls']}\n"
+              report += f"- Estimated Cost: ${api_data['cost']:.4f}\n"
+              if api_data['tokens'] > 0:
+                  report += f"- Total Tokens: {api_data['tokens']}\n"
+              report += "\n"
+
+          # Save report to file
+          with open('metrics/cost_report.md', 'w') as f:
+              f.write(report)
+
+          # Print summary to console
+          print("\n============ API COST SUMMARY ============")
+          print(f"Total API Calls: {summary['total_calls']}")
+          print(f"Total Estimated Cost: ${summary['total_cost']:.4f}")
+          print("==========================================\n")
+
+          # Check if cost exceeds budget warning threshold (80% of monthly budget)
+          monthly_budget = 250  # $250 monthly budget
+          daily_budget = monthly_budget / 30  # Approximate daily budget
+
+          # For scheduled runs, use daily budget; for manual runs, use a percentage of monthly
+          if os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
+              budget_threshold = daily_budget * 1.5  # 150% of daily budget
+          else:
+              budget_threshold = monthly_budget * 0.05  # 5% of monthly budget
+
+          if summary['total_cost'] > budget_threshold:
+              print(f"::warning::API cost exceeds budget threshold! Cost: ${summary['total_cost']:.2f}, Threshold: ${budget_threshold:.2f}")
+
+          # Save summary to JSON
+          with open('metrics/cost_summary.json', 'w') as f:
+              json.dump(summary, f, indent=2)
+          EOF
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            # Create payload file
+            cat > payload.json << EOF
+            {
+              "attachments": [
+                {
+                  "color": "danger",
+                  "pretext": "API Integration Tests Failed",
+                  "title": "Test Run #${{ github.run_id }}",
+                  "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                  "fields": [
+                    {
+                      "title": "Repository",
+                      "value": "${{ github.repository }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.ref_name }}",
+                      "short": true
+                    }
+                  ],
+                  "footer": "GitHub Actions",
+                  "footer_icon": "https://github.com/rtCamp.png?size=48",
+                  "ts": $(date +%s)
+                }
+              ]
+            }
+            EOF
+
+            # Send to Slack
+            curl -X POST -H 'Content-type: application/json' --data @payload.json $SLACK_WEBHOOK_URL
+          else
+            echo "Skipping Slack notification - SLACK_WEBHOOK_URL not set"
+          fi
+
+      - name: Upload cost report
+        if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.use_real_apis == 'true') }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-cost-report
+          path: |
+            metrics/cost_report.md
+            metrics/cost_summary.json
+          retention-days: 90
+
+      - name: Notify on cost alert
+        if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.use_real_apis == 'true') }}
+        run: |
+          # Check if cost summary shows high usage
+          if grep -q "warning::API cost exceeds budget threshold" $GITHUB_STEP_SUMMARY; then
+            echo "::warning::API cost alert triggered - see cost report for details"
+            # If you have a notification system like Slack, you could integrate it here
+            # curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"⚠️ API Cost Alert: Budget threshold exceeded in API tests\"}" ${{ secrets.SLACK_WEBHOOK_URL != '' && secrets.SLACK_WEBHOOK_URL || '' }}
+          fi
+
+  # Cron-only weekly report generation
+  weekly-report:
+    name: Generate Weekly API Usage Report
+    needs: api-tests
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all metrics
+        uses: actions/download-artifact@v3
+        with:
+          name: api-metrics-reports
+          path: ./metrics
+
+      - name: Download cost report
+        uses: actions/download-artifact@v3
+        with:
+          name: api-cost-report
+          path: ./reports
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas matplotlib seaborn tabulate
+
+      - name: Generate weekly report
+        run: |
+          echo "Generating weekly API usage report..."
+          python - <<EOF
+          import json
+          import glob
+          import os
+          import pandas as pd
+          import matplotlib.pyplot as plt
+          import seaborn as sns
+          from datetime import datetime, timedelta
+          from pathlib import Path
+
+          # Set plot style
+          sns.set_theme(style="whitegrid")
+
+          # Create output directory
+          os.makedirs("weekly_report", exist_ok=True)
+
+          # Find all metrics files from the past week
+          now = datetime.now()
+          week_ago = now - timedelta(days=7)
+
+          metrics_files = glob.glob('metrics/*.json')
+          cost_summary_file = 'reports/cost_summary.json'
+
+          # Load cost summary if available
+          cost_summary = {}
+          if os.path.exists(cost_summary_file):
+              with open(cost_summary_file, 'r') as f:
+                  cost_summary = json.load(f)
+
+          # Initialize data structure
+          api_data = {}
+          all_calls = []
+
+          # Process metrics files
+          for file_path in metrics_files:
+              try:
+                  with open(file_path, 'r') as f:
+                      data = json.load(f)
+
+                      # Skip files that don't have metrics or aren't for API calls
+                      if not isinstance(data, dict) or "apis" not in data:
+                          continue
+
+                      # Extract timestamp if available
+                      file_date = datetime.now()  # Default to now if no timestamp
+                      if "timestamp" in data:
+                          try:
+                              file_date = datetime.fromisoformat(data["timestamp"])
+                          except:
+                              pass
+
+                      # Skip if older than a week
+                      if file_date < week_ago:
+                          continue
+
+                      # Process API calls
+                      for api_name, api_data in data.get("apis", {}).items():
+                          for metric in api_data.get("metrics", []):
+                              # Add to all_calls for overall analysis
+                              call_info = {
+                                  "api": api_name,
+                                  "endpoint": metric.get("endpoint", "unknown"),
+                                  "request_time": metric.get("request_time", 0),
+                                  "success": metric.get("success", False),
+                                  "cost": metric.get("cost", 0) or 0,
+                                  "timestamp": file_date.isoformat(),
+                                  "date": file_date.strftime("%Y-%m-%d")
+                              }
+                              all_calls.append(call_info)
+
+          # Convert to DataFrame
+          if all_calls:
+              df = pd.DataFrame(all_calls)
+
+              # Generate basic statistics report
+              with open("weekly_report/api_stats.md", "w") as f:
+                  f.write("# Weekly API Usage Report\n\n")
+                  f.write(f"Period: {week_ago.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')}\n\n")
+
+                  f.write("## Summary\n\n")
+                  total_calls = len(df)
+                  success_rate = df["success"].mean() * 100
+                  avg_response = df["request_time"].mean() * 1000  # Convert to ms
+                  total_cost = df["cost"].sum()
+
+                  f.write(f"- Total API Calls: {total_calls}\n")
+                  f.write(f"- Overall Success Rate: {success_rate:.1f}%\n")
+                  f.write(f"- Average Response Time: {avg_response:.2f} ms\n")
+                  f.write(f"- Total Estimated Cost: ${total_cost:.4f}\n\n")
+
+                  # Add cost summary from the cost report if available
+                  if cost_summary:
+                      f.write("## Cost Breakdown\n\n")
+                      for api_name, api_info in cost_summary.get("apis", {}).items():
+                          f.write(f"### {api_name.upper()}\n")
+                          f.write(f"- Calls: {api_info.get('calls', 0)}\n")
+                          f.write(f"- Cost: ${api_info.get('cost', 0):.4f}\n")
+                          if api_info.get('tokens', 0) > 0:
+                              f.write(f"- Tokens: {api_info.get('tokens', 0)}\n")
+                          f.write("\n")
+
+                  # API-specific stats
+                  f.write("## API Statistics\n\n")
+
+                  api_stats = df.groupby("api").agg({
+                      "request_time": ["count", "mean"],
+                      "success": "mean",
+                      "cost": "sum"
+                  })
+
+                  for api_name, stats in api_stats.iterrows():
+                      call_count = stats[("request_time", "count")]
+                      avg_time = stats[("request_time", "mean")] * 1000  # ms
+                      success_rate = stats[("success", "mean")] * 100
+                      api_cost = stats[("cost", "sum")]
+
+                      f.write(f"### {api_name.upper()}\n\n")
+                      f.write(f"- Calls: {call_count}\n")
+                      f.write(f"- Success Rate: {success_rate:.1f}%\n")
+                      f.write(f"- Average Response Time: {avg_time:.2f} ms\n")
+                      f.write(f"- Total Cost: ${api_cost:.4f}\n\n")
+
+                      # Top endpoints
+                      top_endpoints = df[df["api"] == api_name].groupby("endpoint")["request_time"].count().sort_values(ascending=False).head(5)
+                      if not top_endpoints.empty:
+                          f.write("#### Top Endpoints\n\n")
+                          for endpoint, count in top_endpoints.items():
+                              f.write(f"- {endpoint}: {count} calls\n")
+                          f.write("\n")
+
+              # Generate visualizations
+              # 1. API call distribution
+              plt.figure(figsize=(10, 6))
+              api_counts = df["api"].value_counts()
+              api_counts.plot(kind="bar")
+              plt.title("API Call Distribution")
+              plt.xlabel("API")
+              plt.ylabel("Number of Calls")
+              plt.tight_layout()
+              plt.savefig("weekly_report/api_distribution.png")
+
+              # 2. Response time by API
+              plt.figure(figsize=(10, 6))
+              sns.boxplot(x="api", y="request_time", data=df)
+              plt.title("Response Time by API")
+              plt.xlabel("API")
+              plt.ylabel("Response Time (seconds)")
+              plt.tight_layout()
+              plt.savefig("weekly_report/response_times.png")
+
+              # 3. Success rate by API
+              plt.figure(figsize=(10, 6))
+              success_by_api = df.groupby("api")["success"].mean() * 100
+              success_by_api.plot(kind="bar")
+              plt.title("Success Rate by API")
+              plt.xlabel("API")
+              plt.ylabel("Success Rate (%)")
+              plt.tight_layout()
+              plt.savefig("weekly_report/success_rates.png")
+
+              # 4. Cost breakdown
+              plt.figure(figsize=(10, 6))
+              cost_by_api = df.groupby("api")["cost"].sum()
+              cost_by_api.plot(kind="pie", autopct='%1.1f%%')
+              plt.title("Cost Distribution by API")
+              plt.ylabel("")
+              plt.tight_layout()
+              plt.savefig("weekly_report/cost_distribution.png")
+
+              print("Weekly report generated successfully!")
+          else:
+              with open("weekly_report/api_stats.md", "w") as f:
+                  f.write("# Weekly API Usage Report\n\n")
+                  f.write(f"Period: {week_ago.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')}\n\n")
+                  f.write("No API calls were recorded during this period.\n")
+
+              print("No API metrics found for the past week.")
+          EOF
+
+      - name: Upload weekly report
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-weekly-report
+          path: ./weekly_report
+          retention-days: 90

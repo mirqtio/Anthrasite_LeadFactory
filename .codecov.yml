@@ -1,0 +1,33 @@
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        # Overall project coverage requirement
+        target: 80%
+        threshold: 1%
+    patch:
+      default:
+        # Patch coverage requirement (new code)
+        target: 80%
+        threshold: 1%
+        only_pulls: true
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+ignore:
+  - "tests/**/*"  # Don't include test files in coverage stats
+  - "docs/**/*"   # Don't include documentation
+  - "scripts/**/*" # Don't include utility scripts
