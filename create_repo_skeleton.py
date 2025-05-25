@@ -3,7 +3,14 @@
 Creates the initial repository skeleton structure for the Anthrasite Lead-Factory project.
 """
 
+import logging
 from pathlib import Path
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 # Define the directory structure
 DIRS = ["bin", "utils", "etc", "tests", "db/migrations", "db/seeds", "tmp"]
@@ -55,19 +62,19 @@ def create_skeleton():
     # Create directories
     for directory in DIRS:
         Path(directory).mkdir(parents=True, exist_ok=True)
-        print(f"Created directory: {directory}")
+        logger.info(f"Created directory: {directory}")
 
     # Create stub files
     for file_path, content in STUBS.items():
         if not Path(file_path).exists():
-            with open(file_path, "w") as f:
+            with Path(file_path).open("w") as f:
                 f.write(content)
-            print(f"Created file: {file_path}")
+            logger.info(f"Created file: {file_path}")
 
     # Make scripts executable
     for script in Path("bin").glob("*.py"):
         script.chmod(0o755)
-        print(f"Made executable: {script}")
+        logger.info(f"Made executable: {script}")
 
 
 if __name__ == "__main__":
