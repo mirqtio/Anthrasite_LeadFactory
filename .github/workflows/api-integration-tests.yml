@@ -227,12 +227,12 @@ jobs:
             mask_api_key "ANTHROPIC_API_KEY" "$ANTHROPIC_API_KEY"
           fi
         env:
-          YELP_API_KEY: ${{ secrets.YELP_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-          SCREENSHOTONE_API_KEY: ${{ secrets.SCREENSHOTONE_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY || 'mock_yelp_key_for_ci' }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || 'mock_google_key_for_ci' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'mock_openai_key_for_ci' }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY || 'mock_sendgrid_key_for_ci' }}
+          SCREENSHOTONE_API_KEY: ${{ secrets.SCREENSHOTONE_API_KEY || 'mock_screenshot_key_for_ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-mock01234-ci' }}
 
       - name: Run API integration tests
         id: api_tests
@@ -387,7 +387,7 @@ jobs:
       - name: Notify on failure
         if: failure()
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           if [ -n "$SLACK_WEBHOOK_URL" ]; then
             # Create payload file
