@@ -1,4 +1,4 @@
-name: Anthrasite Lead-Factory Unified CI
+name: Anthrasite Lead-Factory Simplified CI
 
 on:
   push:
