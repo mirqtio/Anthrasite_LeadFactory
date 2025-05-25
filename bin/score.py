@@ -21,12 +21,11 @@ from pathlib import Path
 from typing import Any, Callable, Optional, Union
 
 # Use lowercase versions for Python 3.9 compatibility
-
 import yaml
 from dotenv import load_dotenv
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
 # Import database utilities with conditional imports for testing
@@ -96,11 +95,7 @@ load_dotenv()
 DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
 CURRENT_TIER = int(os.getenv("TIER", "1"))
-RULES_FILE = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "etc",
-    "scoring_rules.yml",
-)
+RULES_FILE = str(Path(__file__).resolve().parent.parent / "etc" / "scoring_rules.yml")
 
 
 class RuleEngine:
@@ -146,7 +141,7 @@ class RuleEngine:
     def load_rules(self):
         """Load scoring rules from YAML file."""
         try:
-            with open(self.rules_file) as f:
+            with Path(self.rules_file).open() as f:
                 data = yaml.safe_load(f)
             self.settings = data.get("settings", {})
             self.rules = data.get("rules", [])
