@@ -495,10 +495,12 @@ class HealthCheckSystem:
             # Create a symlink to the latest results
             latest_link = "data/health_checks/latest.json"
 
-            if os.path.exists(latest_link):
-                os.remove(latest_link)
+            latest_link_path = Path(latest_link)
+            if latest_link_path.exists():
+                latest_link_path.unlink()
 
-            os.symlink(os.path.abspath(filename), latest_link)
+            # Create a symlink to the latest health check
+            os.symlink(Path(filename).resolve(), latest_link)
         except Exception as e:
             logger.error(f"Error saving health check results: {str(e)}")
 
