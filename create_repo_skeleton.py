@@ -79,4 +79,4 @@ def create_skeleton():
 
 if __name__ == "__main__":
     create_skeleton()
-    print("\nRepository skeleton created successfully!")
+    logger.info("Repository skeleton created successfully!")

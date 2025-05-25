@@ -3,12 +3,21 @@
 Script to fix PEP8 issues in test_dedupe_simple.py.
 """
 
+import logging
+from pathlib import Path
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 def fix_dedupe_simple():
     """Fix PEP8 issues in test_dedupe_simple.py."""
-    file_path = "tests/test_dedupe_simple.py"
+    file_path = Path("tests/test_dedupe_simple.py")
 
-    with open(file_path) as f:
+    with file_path.open() as f:
         lines = f.readlines()
 
     fixed_lines = []
@@ -71,10 +80,10 @@ def fix_dedupe_simple():
 
         fixed_lines.append(line)
 
-    with open(file_path, "w") as f:
+    with file_path.open("w") as f:
         f.writelines(fixed_lines)
 
-    print(f"Fixed PEP8 issues in {file_path}")
+    logger.info("Fixed PEP8 issues in test_dedupe_simple.py")
 
 
 if __name__ == "__main__":
