@@ -171,11 +171,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov
+          pip install pytest pytest-cov pytest-xdist
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-          # Install the package in development mode - specifically using setup.py to ensure proper discovery
-          python setup.py develop
 
       - name: Setup test environment
         run: |
@@ -206,8 +204,10 @@ jobs:
           # Add the project root to PYTHONPATH to ensure modules are accessible
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           echo "Using PYTHONPATH: $PYTHONPATH"
-          # Run the tests
-          pytest -n auto --dist loadscope --cov=leadfactory --cov-report term-missing --cov-report xml --cov-fail-under=80 tests/
+          # List installed pytest plugins for debugging
+          python -m pip list | grep pytest
+          # Run the tests with simpler pytest arguments
+          pytest --cov=leadfactory --cov-report term-missing --cov-report xml --cov-fail-under=80 tests/
           echo "Core tests finished. Any failures above should be addressed."
 
       - name: Publish coverage report
