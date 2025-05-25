@@ -3,12 +3,21 @@
 Script to fix issues in test_mockup_unit.py.
 """
 
+import logging
+from pathlib import Path
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 def fix_test_mockup_unit():
     """Fix issues in test_mockup_unit.py."""
-    file_path = "tests/test_mockup_unit.py"
+    file_path = Path("tests/test_mockup_unit.py")
 
-    with open(file_path) as f:
+    with file_path.open() as f:
         content = f.read()
 
     # Fix the logger and track_api_cost mocks
@@ -36,10 +45,10 @@ def fix_test_mockup_unit():
     for old, new in patterns_to_fix:
         fixed_content = fixed_content.replace(old, new)
 
-    with open(file_path, "w") as f:
+    with file_path.open("w") as f:
         f.write(fixed_content)
 
-    print(f"Fixed mocks in {file_path}")
+    logger.info(f"Fixed mocks in {file_path}")
 
 
 if __name__ == "__main__":
