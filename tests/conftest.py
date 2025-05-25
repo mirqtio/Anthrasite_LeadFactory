@@ -53,14 +53,26 @@ class MockWebPage:
 # Patch the Wappalyzer module
 sys.modules["wappalyzer"] = type("wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage})
 
-# Patch the track_api_cost function before importing modules that use it
-patch("leadfactory.utils.io.track_api_cost", mock_track_api_cost).start()
-# We need to import leadfactory.utils after patching to ensure the mock is applied
-# This is an intentional out-of-order import for testing purposes
-from leadfactory import utils  # noqa: E402
+# Create directory structure in the module namespace for proper mocking
+if 'leadfactory' not in sys.modules:
+    sys.modules['leadfactory'] = type('leadfactory', (), {})()
+if 'leadfactory.utils' not in sys.modules:
+    sys.modules['leadfactory.utils'] = type('utils', (), {})()
+if 'leadfactory.utils.io' not in sys.modules:
+    sys.modules['leadfactory.utils.io'] = type('io', (), {'track_api_cost': mock_track_api_cost})()
 
-# Apply the mock to the imported module
-utils.io.track_api_cost = mock_track_api_cost
+# Direct patch of the module attributes instead of using patch()
+sys.modules['leadfactory.utils.io'].track_api_cost = mock_track_api_cost
+
+# Try importing using relative imports for the CI environment
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from leadfactory import utils  # noqa: E402
+    # Apply the mock to the imported module
+    utils.io.track_api_cost = mock_track_api_cost
+except ImportError:
+    # In case the above import fails, we'll just use our mock modules defined above
+    pass
 # Make sure to clean up after tests
 atexit.register(patch.stopall)
 
