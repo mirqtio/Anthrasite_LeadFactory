@@ -264,7 +264,7 @@ class LeadFactoryMetrics:
             self.system_memory_usage_mb.set(used_memory_mb)
 
             # CPU usage
-            with open("/proc/stat") as f:
+            with Path("/proc/stat").open() as f:
                 cpu_line = f.readline()
 
             cpu_parts = cpu_line.split()
@@ -279,7 +279,7 @@ class LeadFactoryMetrics:
             self.system_cpu_usage_percent.set(usage)
 
             # Disk usage
-            with open("/proc/mounts") as f:
+            with Path("/proc/mounts").open() as f:
                 for line in f:
                     parts = line.split()
                     if len(parts) >= 2:
