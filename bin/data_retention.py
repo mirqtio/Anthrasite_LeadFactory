@@ -164,18 +164,19 @@ class DataRetentionManager:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"{business_id}_{timestamp}.html.gz"
             storage_path = f"raw_html/{filename}"
-            local_path = os.path.join(self.local_storage_dir, "html", filename)
+            # Use Path for better path handling
+            local_path = Path(self.local_storage_dir) / "html" / filename
 
             # Compress HTML content
-            with gzip.open(local_path, "wt", encoding="utf-8") as f:
+            with gzip.open(str(local_path), "wt", encoding="utf-8") as f:
                 f.write(html_content)
 
-            # Calculate size and hash
-            size_bytes = os.path.getsize(local_path)
-            md5_hash = self._calculate_md5(local_path)
+            # Calculate size and hash using Path methods
+            size_bytes = local_path.stat().st_size
+            md5_hash = self._calculate_md5(str(local_path))
 
-            # Upload to Supabase Storage
-            with open(local_path, "rb") as f:
+            # Upload to Supabase Storage using Path.open()
+            with local_path.open("rb") as f:
                 supabase.storage.from_(self.storage_bucket).upload(
                     path=storage_path,
                     file=f,
@@ -270,12 +271,13 @@ class DataRetentionManager:
                 logger.error(f"Error downloading HTML from Supabase: {e}")
 
                 # Try local fallback
-                local_path = os.path.join(
-                    self.local_storage_dir, *storage_path.split("/")
+                # Use Path for better path handling
+                local_path = Path(self.local_storage_dir).joinpath(
+                    *storage_path.split("/")
                 )
 
-                if os.path.exists(local_path):
-                    with gzip.open(local_path, "rt", encoding="utf-8") as f:
+                if local_path.exists():
+                    with gzip.open(str(local_path), "rt", encoding="utf-8") as f:
                         html_content = f.read()
 
                     logger.info(
@@ -462,9 +464,10 @@ class DataRetentionManager:
                     supabase.storage.from_(self.storage_bucket).remove([path])
 
                     # Delete local copy
-                    local_path = os.path.join(self.local_storage_dir, *path.split("/"))
-                    if os.path.exists(local_path):
-                        os.remove(local_path)
+                    # Use Path for better path handling
+                    local_path = Path(self.local_storage_dir).joinpath(*path.split("/"))
+                    if local_path.exists():
+                        local_path.unlink()
                 except Exception as e:
                     logger.error(f"Error deleting expired HTML at {path}: {e}")
 
