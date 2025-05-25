@@ -515,7 +515,7 @@ class DataRetentionManager:
 
         md5 = hashlib.md5(usedforsecurity=False)
 
-        with open(file_path, "rb") as f:
+        with Path(file_path).open("rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):
                 md5.update(chunk)
 

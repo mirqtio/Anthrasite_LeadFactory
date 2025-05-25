@@ -43,8 +43,16 @@ from sendgrid.helpers.mail import (
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-# Import dependencies after path setup
-from bin.metrics import metrics
+
+# Use function to get the module to avoid E402 errors
+def _get_metrics():
+    import bin.metrics
+
+    return bin.metrics.metrics
+
+
+# Create reference to use in the code
+metrics = _get_metrics()
 
 # Setup logging
 logging.basicConfig(
@@ -52,7 +60,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "sendgrid_email_sender.log")),
+        logging.FileHandler(str(Path("logs") / "sendgrid_email_sender.log")),
     ],
 )
 logger = logging.getLogger("sendgrid_email_sender")
