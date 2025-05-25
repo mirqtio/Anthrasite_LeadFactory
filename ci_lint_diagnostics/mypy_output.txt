@@ -1,37 +1,4 @@
-utils/cost_tracker 2.py:616: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
 utils/cost_tracker.py:617: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
-bin/scrape 2.py:148: error: Name "Tuple" is not defined  [name-defined]
-bin/scrape 2.py:148: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
-bin/scrape 2.py:148: error: Name "List" is not defined  [name-defined]
-bin/scrape 2.py:148: note: Did you forget to import it from "typing"? (Suggestion: "from typing import List")
-bin/scrape 2.py:148: error: Name "Dict" is not defined  [name-defined]
-bin/scrape 2.py:148: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Dict")
-bin/scrape 2.py:225: error: Name "Tuple" is not defined  [name-defined]
-bin/scrape 2.py:225: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
-bin/scrape 2.py:225: error: Name "List" is not defined  [name-defined]
-bin/scrape 2.py:225: note: Did you forget to import it from "typing"? (Suggestion: "from typing import List")
-bin/scrape 2.py:225: error: Name "Dict" is not defined  [name-defined]
-bin/scrape 2.py:225: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Dict")
-bin/scrape 2.py:258: error: Name "Tuple" is not defined  [name-defined]
-bin/scrape 2.py:258: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
-bin/scrape 2.py:258: error: Name "Dict" is not defined  [name-defined]
-bin/scrape 2.py:258: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Dict")
-bin/scrape 2.py:455: error: Name "Tuple" is not defined  [name-defined]
-bin/scrape 2.py:455: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
-bin/scrape.py:148: error: Name "Dict" is not defined  [name-defined]
-bin/scrape.py:148: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Dict")
-bin/scrape.py:225: error: Name "Dict" is not defined  [name-defined]
-bin/scrape.py:225: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Dict")
-bin/scrape.py:258: error: Name "Dict" is not defined  [name-defined]
-bin/scrape.py:258: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Dict")
-bin/metrics.py:42: error: Name "Path" is not defined  [name-defined]
-bin/mockup 2.py:29: error: Name "Path" is not defined  [name-defined]
-bin/health_check 2.py:34: error: Name "Path" is not defined  [name-defined]
-bin/health_check 2.py:281: error: Name "Path" is not defined  [name-defined]
-bin/health_check 2.py:471: error: Name "Path" is not defined  [name-defined]
-bin/health_check 2.py:476: error: Name "Path" is not defined  [name-defined]
-bin/health_check 2.py:499: error: Name "Path" is not defined  [name-defined]
-bin/health_check 2.py:504: error: Name "Path" is not defined  [name-defined]
 bin/enrich.py:220: error: Name "Dict" is not defined  [name-defined]
 bin/enrich.py:220: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Dict")
 bin/enrich.py:299: error: Name "Dict" is not defined  [name-defined]
@@ -52,5 +19,5 @@ bin/__init__.py:7: error: Module "bin" has no attribute "mockup"  [attr-defined]
 bin/__init__.py:7: error: Module "bin" has no attribute "score"  [attr-defined]
 bin/enrich_with_retention 2.py:26: error: Name "Path" is not defined  [name-defined]
 bin/enrich_with_retention 2.py:37: error: Name "Path" is not defined  [name-defined]
-Found 32 errors in 10 files (checked 70 source files)
+Found 12 errors in 5 files (checked 66 source files)
 Mypy exit code: 1

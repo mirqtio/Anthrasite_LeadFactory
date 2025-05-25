@@ -17,7 +17,7 @@ import logging
 import os
 import re
 import sys
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 # Use lowercase versions for Python 3.9 compatibility
 
 import Levenshtein

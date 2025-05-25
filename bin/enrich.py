@@ -16,8 +16,7 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Optional
-# Use lowercase versions for Python 3.9 compatibility
+from typing import Any, Dict, Optional
 # Use lowercase versions for Python 3.9 compatibility
 from urllib.parse import urlparse
 

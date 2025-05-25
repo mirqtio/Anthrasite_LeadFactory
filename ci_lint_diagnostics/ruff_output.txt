@@ -14,67 +14,49 @@ bin/data_retention:1:1: E902 No such file or directory (os error 2)
 bin/email/sendgrid_email_sender:1:1: E902 No such file or directory (os error 2)
 bin/email_queue:1:1: E902 No such file or directory (os error 2)
 bin/enrich_with_retention:1:1: E902 No such file or directory (os error 2)
-bin/health_check:1:1: E902 No such file or directory (os error 2)
-bin/mockup:1:1: E902 No such file or directory (os error 2)
 bin/score:1:1: E902 No such file or directory (os error 2)
-bin/scrape:1:1: E902 No such file or directory (os error 2)
-bin/unsubscribe_handler.py:49:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+bin/scrape.py:17:1: UP035 `typing.Dict` is deprecated, use `dict` instead
    |
-48 | # Create unsubscribe template if it doesn't exist
-49 | unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
-   |                             ^^^^^^^^^^^^ PTH118
-50 | if not os.path.exists(unsubscribe_template_path):
-51 |     with open(unsubscribe_template_path, "w") as f:
-   |
-
-bin/unsubscribe_handler.py:50:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
-   |
-48 | # Create unsubscribe template if it doesn't exist
-49 | unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
-50 | if not os.path.exists(unsubscribe_template_path):
-   |        ^^^^^^^^^^^^^^ PTH110
-51 |     with open(unsubscribe_template_path, "w") as f:
-52 |         f.write(
+15 | import sys
+16 | from pathlib import Path
+17 | from typing import Any, Dict, Optional, Union
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ UP035
+18 |
+19 | # Use lowercase versions for Python 3.9 compatibility
    |
 
-bin/unsubscribe_handler.py:51:10: PTH123 `open()` should be replaced by `Path.open()`
-   |
-49 | unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
-50 | if not os.path.exists(unsubscribe_template_path):
-51 |     with open(unsubscribe_template_path, "w") as f:
-   |          ^^^^ PTH123
-52 |         f.write(
-53 |             """
-   |
+bin/scrape.py:148:21: UP006 Use `dict` instead of `Dict` for type annotation
+    |
+146 |         limit: int = 50,
+147 |         sort_by: str = "best_match",
+148 |     ) -> tuple[list[Dict], Optional[str]]:
+    |                     ^^^^ UP006
+149 |         """Search for businesses on Yelp.
+150 |         Args:
+    |
+    = help: Replace with `dict`
 
-bin/unsubscribe_handler.py:202:25: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+bin/scrape.py:225:21: UP006 Use `dict` instead of `Dict` for type annotation
     |
-201 | # Create success template if it doesn't exist
-202 | success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
-    |                         ^^^^^^^^^^^^ PTH118
-203 | if not os.path.exists(success_template_path):
-204 |     with open(success_template_path, "w") as f:
+223 |         radius: int = 40000,  # 25 miles in meters
+224 |         type_filter: str = "business",
+225 |     ) -> tuple[list[Dict], Optional[str]]:
+    |                     ^^^^ UP006
+226 |         """Search for places on Google Maps.
+227 |         Args:
     |
+    = help: Replace with `dict`
 
-bin/unsubscribe_handler.py:203:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+bin/scrape.py:258:66: UP006 Use `dict` instead of `Dict` for type annotation
     |
-201 | # Create success template if it doesn't exist
-202 | success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
-203 | if not os.path.exists(success_template_path):
-    |        ^^^^^^^^^^^^^^ PTH110
-204 |     with open(success_template_path, "w") as f:
-205 |         f.write(
+256 |         return response_data.get("results", []), None
+257 |
+258 |     def get_place_details(self, place_id: str) -> tuple[Optional[Dict], Optional[str]]:
+    |                                                                  ^^^^ UP006
+259 |         """Get detailed information about a place.
+260 |         Args:
     |
-
-bin/unsubscribe_handler.py:204:10: PTH123 `open()` should be replaced by `Path.open()`
-    |
-202 | success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
-203 | if not os.path.exists(success_template_path):
-204 |     with open(success_template_path, "w") as f:
-    |          ^^^^ PTH123
-205 |         f.write(
-206 |             """
-    |
+    = help: Replace with `dict`
 
 create_repo_skeleton.py:58:9: T201 `print` found
    |
@@ -2383,10 +2365,9 @@ utils/cost_metrics.py:13:1: UP035 `typing.Dict` is deprecated, use `dict` instea
 15 | # Use lowercase versions for Python 3.9 compatibility
    |
 
-utils/cost_tracker:1:1: E902 No such file or directory (os error 2)
 utils/llm_logger:1:1: E902 No such file or directory (os error 2)
 utils/logging_config:1:1: E902 No such file or directory (os error 2)
 utils/raw_data_retention:1:1: E902 No such file or directory (os error 2)
-Found 276 errors (2 fixed, 274 remaining).
-No fixes available (46 hidden fixes can be enabled with the `--unsafe-fixes` option).
+Found 268 errors.
+No fixes available (49 hidden fixes can be enabled with the `--unsafe-fixes` option).
 Ruff exit code: 1

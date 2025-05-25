@@ -27,13 +27,10 @@
 ./bin/email_queue.py:1074:128: E501 line too long (138 > 127 characters)
 ./bin/email_queue.py:1180:1: C901 'main' is too complex (16)
 ./bin/enrich_with_retention:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/enrich_with_retention'
-./bin/health_check:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/health_check'
-./bin/mockup:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/mockup'
 ./bin/process_raw_data.py:25:1: E402 module level import not at top of file
 ./bin/process_raw_data.py:26:1: E402 module level import not at top of file
 ./bin/process_raw_data.py:27:1: E402 module level import not at top of file
 ./bin/score:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/score'
-./bin/scrape:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/scrape'
 ./bin/scrape.py:46:5: F811 redefinition of unused 'get_active_zip_codes' from line 29
 ./bin/scrape.py:49:5: F811 redefinition of unused 'get_verticals' from line 29
 ./bin/scrape.py:52:5: F811 redefinition of unused 'load_yaml_config' from line 29
@@ -89,7 +86,6 @@
 ./update_tasks_qa_fix:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './update_tasks_qa_fix'
 ./update_tasks_qa_fix.py:16:1: C901 'update_tasks' is too complex (16)
 ./utils/batch_tracker:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/batch_tracker'
-./utils/cost_tracker:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/cost_tracker'
 ./utils/llm_logger:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/llm_logger'
 ./utils/logging_config:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/logging_config'
 ./utils/metrics.py:104:1: C901 'update_metrics' is too complex (11)
@@ -97,10 +93,6 @@
 ./utils/website_scraper.py:20:1: E402 module level import not at top of file
 ./utils/website_scraper.py:23:1: E402 module level import not at top of file
 ./utils/website_scraper.py:26:1: E402 module level import not at top of file
-2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
-2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
-2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
-2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'

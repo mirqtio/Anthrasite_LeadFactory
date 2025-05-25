@@ -31,7 +31,7 @@
 [manager]	WARNING	Test in comment: gitignore is not a test name or id, ignoring
 [manager]	WARNING	Test in comment: support is not a test name or id, ignoring
 Working... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:50
-Run started:2025-05-25 02:03:46.941790
+Run started:2025-05-25 02:06:54.469175
 
 Test results:
 >> Issue: [B102:exec_used] Use of exec detected.
@@ -4740,21 +4740,21 @@ Test results:
 --------------------------------------------------
 
 Code scanned:
-	Total lines of code: 1859391
+	Total lines of code: 1857274
 	Total lines skipped (#nosec): 22
 	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 5
 
 Run metrics:
 	Total issues (by severity):
 		Undefined: 0
-		Low: 10467
+		Low: 10460
 		Medium: 331
 		High: 79
 	Total issues (by confidence):
 		Undefined: 0
 		Low: 52
 		Medium: 170
-		High: 10655
+		High: 10648
 Files skipped (512):
 	./.venv/lib/python3.11/site-packages/Levenshtein/__init__.py (syntax error while parsing AST from file)
 	./.venv/lib/python3.11/site-packages/_pytest/_code/code.py (syntax error while parsing AST from file)

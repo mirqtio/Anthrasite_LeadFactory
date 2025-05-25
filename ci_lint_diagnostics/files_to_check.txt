@@ -4,7 +4,6 @@
 ./bin/batch_completion_monitor 2.py
 ./bin/data_retention 2.py
 ./bin/email_queue 2.py
-./bin/mockup 2.py
 ./bin/cost_tracking.py
 ./bin/__init__.py
 ./bin/utils/__init__.py
@@ -18,16 +17,13 @@
 ./bin/unsubscribe_handler.py
 ./bin/cleanup_expired_data 2.py
 ./bin/budget_gate.py
-./bin/health_check 2.py
 ./bin/email/sendgrid_email_sender 2.py
 ./bin/scrape.py
-./bin/scrape 2.py
 ./update_phase0_status.py
 ./fix_test_mockup_unit.py
 ./update_tasks_qa_fix.py
 ./utils/logging_config 2.py
 ./utils/metrics.py
-./utils/cost_tracker 2.py
 ./utils/batch_tracker.py
 ./utils/cost_tracker.py
 ./utils/__init__.py
