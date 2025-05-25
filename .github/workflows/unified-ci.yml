@@ -148,10 +148,10 @@ jobs:
 
           # Ensure ci_lint_diagnostics directory exists and files are created
           mkdir -p ci_lint_diagnostics
-          touch ci_lint_diagnostics/ruff_output.tx
-          touch ci_lint_diagnostics/black_output.tx
-          touch ci_lint_diagnostics/flake8_output.tx
-          touch ci_lint_diagnostics/mypy_output.tx
+          touch ci_lint_diagnostics/ruff_output.txt
+          touch ci_lint_diagnostics/black_output.txt
+          touch ci_lint_diagnostics/flake8_output.txt
+          touch ci_lint_diagnostics/mypy_output.txt
           touch ci_lint_diagnostics/bandit_output.json
 
           echo "Code quality checks recorded but not blocking CI."
