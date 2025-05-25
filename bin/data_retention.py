@@ -73,11 +73,11 @@ class DataRetentionManager:
         """
         # Set default database path if not provided
         if not db_path:
-            db_dir = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
-            )
-            os.makedirs(db_dir, exist_ok=True)
-            db_path = os.path.join(db_dir, "data_retention.db")
+            # Use pathlib for better path handling
+            db_dir = Path(__file__).parent.parent / "data"
+            # Create directory if it doesn't exist
+            db_dir.mkdir(exist_ok=True)
+            db_path = str(db_dir / "data_retention.db")
 
         self.db_path = db_path
 
