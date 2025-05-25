@@ -7,7 +7,9 @@ Utilities for scraping websites and storing HTML content.
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 from urllib.parse import urlparse
 
 # Add project root to path
@@ -164,11 +166,11 @@ def update_business_with_website_data(business_id: int, website: str) -> bool:
         return False
 
 
-def process_pending_websites() -> Tuple[int, int]:
+def process_pending_websites() -> tuple[int, int]:
     """Process all businesses with websites but no HTML stored.
 
     Returns:
-        Tuple of (processed_count, success_count).
+        tuple of (processed_count, success_count).
     """
     processed_count = 0
     success_count = 0

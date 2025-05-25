@@ -11,7 +11,9 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 from urllib.parse import urlparse
 
 # Add project root to path
@@ -76,14 +78,14 @@ def generate_storage_path(url: str, business_id: int) -> str:
     return str(Path(domain_dir) / str(business_id) / f"{url_hash}.html.gz")
 
 
-def compress_html(html_content: str) -> Tuple[bytes, float]:
+def compress_html(html_content: str) -> tuple[bytes, float]:
     """Compress HTML content using gzip.
 
     Args:
         html_content: HTML content to compress.
 
     Returns:
-        Tuple of (compressed_content, compression_ratio).
+        tuple of (compressed_content, compression_ratio).
     """
     # Convert to bytes if string
     if isinstance(html_content, str):
@@ -248,13 +250,13 @@ def log_llm_interaction(
     operation: str,
     model_version: str,
     prompt_text: str,
-    response_json: Union[Dict, str],
+    response_json: Union[dict, str],
     business_id: Optional[int] = None,
     tokens_prompt: Optional[int] = None,
     tokens_completion: Optional[int] = None,
     duration_ms: Optional[int] = None,
     status: str = "success",
-    metadata: Optional[Dict] = None,
+    metadata: Optional[dict] = None,
 ) -> Optional[int]:
     """Log an LLM interaction.
 
@@ -358,7 +360,7 @@ def get_llm_logs(
     operation: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
-) -> List[Dict]:
+) -> list[dict]:
     """Get LLM logs from the database.
 
     Args:
@@ -368,12 +370,12 @@ def get_llm_logs(
         offset: Offset for pagination.
 
     Returns:
-        List of log entries.
+        list of log entries.
     """
     try:
         # Build query
         query = "SELECT * FROM llm_logs WHERE 1=1"
-        params: List[Union[int, str]] = []
+        params: list[Union[int, str]] = []
 
         if business_id is not None:
             query += " AND business_id = ?"
@@ -412,11 +414,11 @@ def get_llm_logs(
         return []
 
 
-def identify_expired_data() -> Tuple[List[Dict], List[Dict]]:
+def identify_expired_data() -> tuple[list[dict], list[dict]]:
     """Identify data that has expired based on retention policy.
 
     Returns:
-        Tuple of (expired_html_files, expired_llm_logs).
+        tuple of (expired_html_files, expired_llm_logs).
     """
     try:
         expired_html_files = []

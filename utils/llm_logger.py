@@ -9,7 +9,9 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -64,12 +66,12 @@ class LLMLogger:
         self,
         operation: str,
         prompt_text: str,
-        response_json: Union[Dict, str],
+        response_json: Union[dict, str],
         business_id: Optional[int] = None,
         tokens_prompt: Optional[int] = None,
         tokens_completion: Optional[int] = None,
         status: str = "success",
-        metadata: Optional[Dict] = None,
+        metadata: Optional[dict] = None,
     ) -> Optional[int]:
         """Log an LLM interaction.
 
@@ -197,7 +199,7 @@ def log_mockup_generation(
 def get_recent_llm_logs(
     operation: Optional[str] = None,
     limit: int = 100,
-) -> List[Dict]:
+) -> list[dict]:
     """Get recent LLM logs from the database.
 
     Args:
@@ -214,7 +216,7 @@ def get_business_llm_logs(
     business_id: int,
     operation: Optional[str] = None,
     limit: int = 100,
-) -> List[Dict]:
+) -> list[dict]:
     """Get LLM logs for a specific business.
 
     Args:
@@ -228,11 +230,11 @@ def get_business_llm_logs(
     return get_llm_logs(business_id=business_id, operation=operation, limit=limit)
 
 
-def check_retention_status() -> Dict[str, Any]:
+def check_retention_status() -> dict[str, Any]:
     """Check the status of data retention.
 
     Returns:
-        Dictionary with retention status information.
+        dictionary with retention status information.
     """
     # Identify expired data
     expired_html_files, expired_llm_logs = identify_expired_data()
