@@ -179,7 +179,7 @@ jobs:
 
           # Try different wappalyzer versions to find one that works
           pip uninstall -y wappalyzer python-wappalyzer
-          pip install python-Wappalyzer==0.4.0
+          pip install python-Wappalyzer==0.3.1
 
       - name: Setup test environment
         run: |
