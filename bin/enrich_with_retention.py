@@ -21,7 +21,7 @@ from typing import Any, Optional, Union
 # Use lowercase versions for Python 3.9 compatibility
 
 # Add parent directory to path to allow importing other modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from bin.budget_gate import budget_gated
 from bin.cost_tracking import cost_tracker
 from bin.data_retention import data_retention
