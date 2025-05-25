@@ -21,12 +21,11 @@ import time
 from typing import Any, Optional
 
 # Use lowercase versions for Python 3.9 compatibility
-
 import requests
 from dotenv import load_dotenv
 
 # Add project root to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
 # Import database utilities with conditional imports for testing
