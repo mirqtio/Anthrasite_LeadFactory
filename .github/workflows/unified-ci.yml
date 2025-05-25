@@ -182,6 +182,15 @@ jobs:
           # Create necessary directories
           mkdir -p data/html_storage
           mkdir -p data/supabase_usage
+          mkdir -p logs
+
+          # Create empty log files needed by tests
+          touch logs/metrics.log
+          touch logs/app.log
+
+          # Create symbolic links to fix import issues
+          ln -sf $(pwd)/leadfactory/utils utils
+          ln -sf $(pwd)/leadfactory/bin bin
 
           # Setup test database
           python scripts/minimal_db_setup.py --verbose
