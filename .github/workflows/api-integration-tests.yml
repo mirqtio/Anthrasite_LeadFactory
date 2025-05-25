@@ -39,7 +39,7 @@ on:
 jobs:
   api-tests:
     name: API Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-lates
     strategy:
       matrix:
         python-version: ['3.10']
@@ -58,7 +58,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: leadfactory_test
+          POSTGRES_DB: leadfactory_tes
         ports:
           - 5432:5432
         options: >-
@@ -86,7 +86,7 @@ jobs:
             if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
           fi
 
-      - name: Setup test environment
+      - name: Setup test environmen
         run: |
           # Create necessary directories
           mkdir -p data/html_storage
@@ -112,7 +112,7 @@ jobs:
             echo "LEADFACTORY_THROTTLE_SCREENSHOTONE_API=1" >> .env
             echo "LEADFACTORY_SCREENSHOTONE_RPM=10" >> .env
 
-            # Set APIs to test based on input
+            # Set APIs to test based on inpu
             if [[ "${{ github.event.inputs.apis_to_test }}" != "all" && "${{ github.event.inputs.apis_to_test }}" != "" ]]; then
               echo "LEADFACTORY_TEST_APIS=${{ github.event.inputs.apis_to_test }}" >> .env
               echo "Testing specific APIs: ${{ github.event.inputs.apis_to_test }}"
@@ -123,25 +123,41 @@ jobs:
           else
             echo "LEADFACTORY_USE_REAL_APIS=0" >> .env
             echo "Using mock APIs for integration tests"
-          fi
 
-          # Configure metrics collection
-          echo "LEADFACTORY_LOG_API_METRICS=1" >> .env
-          echo "METRICS_DIR=metrics" >> .env
-          echo "GENERATE_PER_TEST_REPORTS=${{ github.event.inputs.generate_report || 'true' }}" >> .env
-
-      - name: Setup mock API keys
+      - name: Setup test environment and mock API keys
         run: |
+          # Create .env file
           cp .env.example .env
 
-          # Add default mock API keys
-          echo "YELP_API_KEY=mock_yelp_key" >> .env
-          echo "GOOGLE_API_KEY=mock_google_key" >> .env
-          echo "OPENAI_API_KEY=mock_openai_key" >> .env
-          echo "SENDGRID_API_KEY=mock_sendgrid_key" >> .env
-          echo "SCREENSHOTONE_API_KEY=mock_screenshot_key" >> .env
-          echo "ANTHROPIC_API_KEY=sk-ant-mock01234" >> .env
+          # Set up environment variables for testing
+          echo "TEST_MODE=1" >> $GITHUB_ENV
+          echo "LOG_LEVEL=INFO" >> $GITHUB_ENV
+          echo "LEADFACTORY_USE_MOCKS=1" >> $GITHUB_ENV
+          echo "RUN_ID=${{ github.run_id }}" >> $GITHUB_ENV
 
+          # Add mock API keys - using hardcoded values for CI tests
+          # Add to both GitHub Environment and .env file
+          echo "YELP_API_KEY=mock_yelp_key_for_ci" >> $GITHUB_ENV
+          echo "YELP_API_KEY=mock_yelp_key_for_ci" >> .env
+
+          echo "GOOGLE_API_KEY=mock_google_key_for_ci" >> $GITHUB_ENV
+          echo "GOOGLE_API_KEY=mock_google_key_for_ci" >> .env
+
+          echo "OPENAI_API_KEY=mock_openai_key_for_ci" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=mock_openai_key_for_ci" >> .env
+
+          echo "SENDGRID_API_KEY=mock_sendgrid_key_for_ci" >> $GITHUB_ENV
+          echo "SENDGRID_API_KEY=mock_sendgrid_key_for_ci" >> .env
+
+          echo "SCREENSHOTONE_API_KEY=mock_screenshot_key_for_ci" >> $GITHUB_ENV
+          echo "SCREENSHOTONE_API_KEY=mock_screenshot_key_for_ci" >> .env
+
+          echo "ANTHROPIC_API_KEY=sk-ant-mock01234-ci" >> $GITHUB_ENV
+          echo "ANTHROPIC_API_KEY=sk-ant-mock01234-ci" >> .env
+
+          echo "GENERATE_PER_TEST_REPORTS=${{ github.event.inputs.generate_report || 'true' }}" >> .env
+          echo "LEADFACTORY_LOG_API_METRICS=1" >> .env
+          echo "METRICS_DIR=metrics" >> .env
           # Set flags to use mocks for tests
           echo "LEADFACTORY_USE_MOCKS=1" >> .env
           echo "LEADFACTORY_TEST_YELP_API=0" >> .env
@@ -268,7 +284,7 @@ jobs:
             metrics/
           retention-days: 30
 
-      - name: Analyze metrics and generate cost report
+      - name: Analyze metrics and generate cost repor
         if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.use_real_apis == 'true') }}
         run: |
           echo "Generating API usage and cost report..."
@@ -324,7 +340,7 @@ jobs:
               except Exception as e:
                   print(f"Error processing {file_path}: {e}")
 
-          # Generate formatted report
+          # Generate formatted repor
           report = f"# API Usage and Cost Report\n\n"
           report += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
           report += f"## Summary\n\n"
@@ -351,14 +367,14 @@ jobs:
           print("==========================================\n")
 
           # Check if cost exceeds budget warning threshold (80% of monthly budget)
-          monthly_budget = 250  # $250 monthly budget
-          daily_budget = monthly_budget / 30  # Approximate daily budget
+          monthly_budget = 250  # $250 monthly budge
+          daily_budget = monthly_budget / 30  # Approximate daily budge
 
           # For scheduled runs, use daily budget; for manual runs, use a percentage of monthly
           if os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
-              budget_threshold = daily_budget * 1.5  # 150% of daily budget
+              budget_threshold = daily_budget * 1.5  # 150% of daily budge
           else:
-              budget_threshold = monthly_budget * 0.05  # 5% of monthly budget
+              budget_threshold = monthly_budget * 0.05  # 5% of monthly budge
 
           if summary['total_cost'] > budget_threshold:
               print(f"::warning::API cost exceeds budget threshold! Cost: ${summary['total_cost']:.2f}, Threshold: ${budget_threshold:.2f}")
@@ -371,7 +387,7 @@ jobs:
       - name: Notify on failure
         if: failure()
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
         run: |
           if [ -n "$SLACK_WEBHOOK_URL" ]; then
             # Create payload file
@@ -409,32 +425,32 @@ jobs:
             echo "Skipping Slack notification - SLACK_WEBHOOK_URL not set"
           fi
 
-      - name: Upload cost report
+      - name: Upload cost repor
         if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.use_real_apis == 'true') }}
         uses: actions/upload-artifact@v3
         with:
-          name: api-cost-report
+          name: api-cost-repor
           path: |
             metrics/cost_report.md
             metrics/cost_summary.json
           retention-days: 90
 
-      - name: Notify on cost alert
+      - name: Notify on cost aler
         if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.use_real_apis == 'true') }}
         run: |
           # Check if cost summary shows high usage
           if grep -q "warning::API cost exceeds budget threshold" $GITHUB_STEP_SUMMARY; then
             echo "::warning::API cost alert triggered - see cost report for details"
             # If you have a notification system like Slack, you could integrate it here
-            # curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"⚠️ API Cost Alert: Budget threshold exceeded in API tests\"}" ${{ secrets.SLACK_WEBHOOK_URL != '' && secrets.SLACK_WEBHOOK_URL || '' }}
+            # curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"⚠️ API Cost Alert: Budget threshold exceeded in API tests\"}" "$SLACK_WEBHOOK_URL"
           fi
 
   # Cron-only weekly report generation
   weekly-report:
-    name: Generate Weekly API Usage Report
+    name: Generate Weekly API Usage Repor
     needs: api-tests
     if: ${{ github.event_name == 'schedule' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-lates
     steps:
       - name: Download all metrics
         uses: actions/download-artifact@v3
@@ -442,10 +458,10 @@ jobs:
           name: api-metrics-reports
           path: ./metrics
 
-      - name: Download cost report
+      - name: Download cost repor
         uses: actions/download-artifact@v3
         with:
-          name: api-cost-report
+          name: api-cost-repor
           path: ./reports
 
       - name: Set up Python
@@ -459,7 +475,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas matplotlib seaborn tabulate
 
-      - name: Generate weekly report
+      - name: Generate weekly repor
         run: |
           echo "Generating weekly API usage report..."
           python - <<EOF
@@ -467,7 +483,7 @@ jobs:
           import glob
           import os
           import pandas as pd
-          import matplotlib.pyplot as plt
+          import matplotlib.pyplot as pl
           import seaborn as sns
           from datetime import datetime, timedelta
           from pathlib import Path
@@ -536,7 +552,7 @@ jobs:
           if all_calls:
               df = pd.DataFrame(all_calls)
 
-              # Generate basic statistics report
+              # Generate basic statistics repor
               with open("weekly_report/api_stats.md", "w") as f:
                   f.write("# Weekly API Usage Report\n\n")
                   f.write(f"Period: {week_ago.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')}\n\n")
@@ -641,9 +657,9 @@ jobs:
               print("No API metrics found for the past week.")
           EOF
 
-      - name: Upload weekly report
+      - name: Upload weekly repor
         uses: actions/upload-artifact@v3
         with:
-          name: api-weekly-report
-          path: ./weekly_report
+          name: api-weekly-repor
+          path: ./weekly_repor
           retention-days: 90
