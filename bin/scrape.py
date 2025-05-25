@@ -14,7 +14,9 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
+
+# Use dict instead of Dict for Python 3.9 compatibility
 
 # Use lowercase versions for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
@@ -145,7 +147,7 @@ class YelpAPI:
         radius: int = 40000,  # 25 miles in meters
         limit: int = 50,
         sort_by: str = "best_match",
-    ) -> tuple[list[Dict], Optional[str]]:
+    ) -> tuple[list[dict], Optional[str]]:
         """Search for businesses on Yelp.
         Args:
             term: Search term (e.g., "hvac").
@@ -222,7 +224,7 @@ class GooglePlacesAPI:
         location: str,
         radius: int = 40000,  # 25 miles in meters
         type_filter: str = "business",
-    ) -> tuple[list[Dict], Optional[str]]:
+    ) -> tuple[list[dict], Optional[str]]:
         """Search for places on Google Maps.
         Args:
             query: Search query.
@@ -255,7 +257,7 @@ class GooglePlacesAPI:
             return [], error
         return response_data.get("results", []), None
 
-    def get_place_details(self, place_id: str) -> tuple[Optional[Dict], Optional[str]]:
+    def get_place_details(self, place_id: str) -> tuple[Optional[dict], Optional[str]]:
         """Get detailed information about a place.
         Args:
             place_id: Google Place ID.

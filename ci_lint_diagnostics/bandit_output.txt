@@ -31,7 +31,7 @@
 [manager]	WARNING	Test in comment: gitignore is not a test name or id, ignoring
 [manager]	WARNING	Test in comment: support is not a test name or id, ignoring
 Working... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:50
-Run started:2025-05-25 02:06:54.469175
+Run started:2025-05-25 08:20:15.234513
 
 Test results:
 >> Issue: [B102:exec_used] Use of exec detected.
@@ -4740,7 +4740,7 @@ Test results:
 --------------------------------------------------
 
 Code scanned:
-	Total lines of code: 1857274
+	Total lines of code: 1855960
 	Total lines skipped (#nosec): 22
 	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 5
 

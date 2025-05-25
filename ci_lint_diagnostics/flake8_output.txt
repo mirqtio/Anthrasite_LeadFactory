@@ -10,7 +10,6 @@
 ./bin/cleanup_expired_data:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/cleanup_expired_data'
 ./bin/data_retention:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/data_retention'
 ./bin/email/sendgrid_email_sender:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/email/sendgrid_email_sender'
-./bin/email_queue:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/email_queue'
 ./bin/email_queue.py:89:5: F811 redefinition of unused 'get_logger' from line 79
 ./bin/email_queue.py:159:9: F811 redefinition of unused 'log_cost' from line 121
 ./bin/email_queue.py:229:5: C901 'SendGridEmailSender.send_email' is too complex (16)
@@ -26,7 +25,6 @@
 ./bin/email_queue.py:914:1: C901 'process_business_email' is too complex (39)
 ./bin/email_queue.py:1074:128: E501 line too long (138 > 127 characters)
 ./bin/email_queue.py:1180:1: C901 'main' is too complex (16)
-./bin/enrich_with_retention:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/enrich_with_retention'
 ./bin/process_raw_data.py:25:1: E402 module level import not at top of file
 ./bin/process_raw_data.py:26:1: E402 module level import not at top of file
 ./bin/process_raw_data.py:27:1: E402 module level import not at top of file
@@ -93,8 +91,6 @@
 ./utils/website_scraper.py:20:1: E402 module level import not at top of file
 ./utils/website_scraper.py:23:1: E402 module level import not at top of file
 ./utils/website_scraper.py:26:1: E402 module level import not at top of file
-2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
-2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'

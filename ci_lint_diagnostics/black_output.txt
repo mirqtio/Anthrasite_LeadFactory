@@ -1,5 +1,5 @@
 Usage: black [OPTIONS] SRC ...
 Try 'black -h' for help.
 
-Error: Invalid value for 'SRC ...': Path './bin/enrich_with_retention' does not exist.
+Error: Invalid value for 'SRC ...': Path './bin/batch_completion_monitor' does not exist.
 Black exit code: 2

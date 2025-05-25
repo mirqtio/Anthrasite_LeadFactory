@@ -17,7 +17,8 @@ import logging
 import os
 import re
 import sys
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
+# Use lowercase dict for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
 
 import Levenshtein
@@ -356,7 +357,7 @@ Provide your analysis:
         return is_duplicate, confidence, reasoning
 
 
-def get_potential_duplicates(limit: Optional[int] = None) -> list[Dict]:
+def get_potential_duplicates(limit: Optional[int] = None) -> list[dict]:
     """Get list of potential duplicate pairs from the database.
     Args:
         limit: Maximum number of potential duplicate pairs to return.

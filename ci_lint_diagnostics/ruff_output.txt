@@ -12,8 +12,6 @@ bin/batch_completion_monitor:1:1: E902 No such file or directory (os error 2)
 bin/cleanup_expired_data:1:1: E902 No such file or directory (os error 2)
 bin/data_retention:1:1: E902 No such file or directory (os error 2)
 bin/email/sendgrid_email_sender:1:1: E902 No such file or directory (os error 2)
-bin/email_queue:1:1: E902 No such file or directory (os error 2)
-bin/enrich_with_retention:1:1: E902 No such file or directory (os error 2)
 bin/score:1:1: E902 No such file or directory (os error 2)
 bin/scrape.py:17:1: UP035 `typing.Dict` is deprecated, use `dict` instead
    |
@@ -2368,6 +2366,6 @@ utils/cost_metrics.py:13:1: UP035 `typing.Dict` is deprecated, use `dict` instea
 utils/llm_logger:1:1: E902 No such file or directory (os error 2)
 utils/logging_config:1:1: E902 No such file or directory (os error 2)
 utils/raw_data_retention:1:1: E902 No such file or directory (os error 2)
-Found 268 errors.
+Found 266 errors.
 No fixes available (49 hidden fixes can be enabled with the `--unsafe-fixes` option).
 Ruff exit code: 1

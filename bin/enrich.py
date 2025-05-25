@@ -16,7 +16,8 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Optional
+# Use lowercase dict for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
 from urllib.parse import urlparse
 
@@ -216,7 +217,7 @@ class TechStackAnalyzer:
         self.wappalyzer = Wappalyzer.latest()
         logger.info("Wappalyzer initialized successfully")
 
-    def analyze_website(self, url: str) -> tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[dict, Optional[str]]:
         """Analyze a website to identify technologies used.
         Args:
             url: Website URL.
@@ -269,7 +270,7 @@ class TechStackAnalyzer:
                 if "technologies" not in tech_data[category]:
                     tech_data[category]["technologies"] = []
                 tech_data[category]["technologies"].append(tech_name)
-            # Convert tech_data to the expected return type (Dict)
+            # Convert tech_data to the expected return type (dict)
             return_data: dict[Any, Any] = {
                 "technologies": list(tech_set),
                 "categorized": tech_data,
@@ -295,7 +296,7 @@ class PageSpeedAnalyzer:
         """
         self.api_key = api_key
 
-    def analyze_website(self, url: str) -> tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[dict, Optional[str]]:
         """Analyze a website's performance using PageSpeed Insights.
         Args:
             url: Website URL.
@@ -437,7 +438,7 @@ class SEMrushAnalyzer:
         """
         self.api_key = api_key
 
-    def analyze_website(self, url: str) -> tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[dict, Optional[str]]:
         """Analyze a website using SEMrush Site Audit.
         Args:
             url: Website URL.
@@ -490,7 +491,7 @@ class SEMrushAnalyzer:
 
 def get_businesses_to_enrich(
     limit: Optional[int] = None, business_id: Optional[int] = None
-) -> list[Dict]:
+) -> list[dict]:
     """Get list of businesses to enrich.
     Args:
         limit: Maximum number of businesses to return.
@@ -535,7 +536,7 @@ def save_features(
     tech_stack: dict,
     page_speed: dict,
     screenshot_url: Optional[str] = None,
-    semrush_json: Optional[Dict] = None,
+    semrush_json: Optional[dict] = None,
 ) -> bool:
     """Save features information to database.
     Args:

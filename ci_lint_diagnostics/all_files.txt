@@ -1,9 +1,7 @@
 ./conftest.py
 ./bin/metrics.py
-./bin/enrich_with_retention 2.py
 ./bin/batch_completion_monitor 2.py
 ./bin/data_retention 2.py
-./bin/email_queue 2.py
 ./bin/cost_tracking.py
 ./bin/__init__.py
 ./bin/utils/__init__.py
