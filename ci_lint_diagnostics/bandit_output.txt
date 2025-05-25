@@ -12,6 +12,11 @@
 [manager]	WARNING	Test in comment: for is not a test name or id, ignoring
 [manager]	WARNING	Test in comment: gitignore is not a test name or id, ignoring
 [manager]	WARNING	Test in comment: support is not a test name or id, ignoring
+[tester]	WARNING	nosec encountered (B608), but no failed test on line 257
+[tester]	WARNING	nosec encountered (B608), but no failed test on line 257
+[tester]	WARNING	nosec encountered (B608), but no failed test on line 338
+[tester]	WARNING	nosec encountered (B608), but no failed test on line 338
+[tester]	WARNING	nosec encountered (B608), but no failed test on line 338
 [tester]	WARNING	nosec encountered (B103), but no failed test on line 247
 [tester]	WARNING	nosec encountered (B103), but no failed test on line 343
 [tester]	WARNING	nosec encountered (B103), but no failed test on line 369
@@ -26,7 +31,7 @@
 [manager]	WARNING	Test in comment: gitignore is not a test name or id, ignoring
 [manager]	WARNING	Test in comment: support is not a test name or id, ignoring
 Working... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:50
-Run started:2025-05-25 01:53:27.915399
+Run started:2025-05-25 02:03:46.941790
 
 Test results:
 >> Issue: [B102:exec_used] Use of exec detected.
@@ -4735,22 +4740,22 @@ Test results:
 --------------------------------------------------
 
 Code scanned:
-	Total lines of code: 1860753
+	Total lines of code: 1859391
 	Total lines skipped (#nosec): 22
-	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 2
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 5
 
 Run metrics:
 	Total issues (by severity):
 		Undefined: 0
-		Low: 10466
+		Low: 10467
 		Medium: 331
 		High: 79
 	Total issues (by confidence):
 		Undefined: 0
 		Low: 52
 		Medium: 170
-		High: 10654
-Files skipped (530):
+		High: 10655
+Files skipped (512):
 	./.venv/lib/python3.11/site-packages/Levenshtein/__init__.py (syntax error while parsing AST from file)
 	./.venv/lib/python3.11/site-packages/_pytest/_code/code.py (syntax error while parsing AST from file)
 	./.venv/lib/python3.11/site-packages/_pytest/_code/source.py (syntax error while parsing AST from file)
@@ -4923,24 +4928,6 @@ Files skipped (530):
 	./.venv/lib/python3.11/site-packages/urllib3/util/timeout.py (syntax error while parsing AST from file)
 	./.venv/lib/python3.11/site-packages/virtualenv/create/via_global_ref/builtin/cpython/common.py (syntax error while parsing AST from file)
 	./archive/prioritize_tests.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/cost_tracking 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/data_retention 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/dedupe 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/email_queue 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/mockup 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/score 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/scrape 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/bin/unsubscribe_handler 2.py (syntax error while parsing AST from file)
-	./backup_files/backup_20250524_061616/scripts/monitor_supabase_usage 2.py (syntax error while parsing AST from file)
-	./bin/dedupe.py (syntax error while parsing AST from file)
-	./bin/enrich.py (syntax error while parsing AST from file)
-	./scripts/generate_test_progress_report.py (syntax error while parsing AST from file)
-	./scripts/migrate_to_postgres.py (syntax error while parsing AST from file)
-	./scripts/monitor_supabase_usage.py (syntax error while parsing AST from file)
-	./scripts/prioritize_tests 3.py (syntax error while parsing AST from file)
-	./utils/batch_tracker.py (syntax error while parsing AST from file)
-	./utils/cost_tracker.py (syntax error while parsing AST from file)
-	./utils/io.py (syntax error while parsing AST from file)
 	./venv/lib/python3.9/site-packages/Levenshtein/__init__.py (syntax error while parsing AST from file)
 	./venv/lib/python3.9/site-packages/_pytest/_code/code.py (syntax error while parsing AST from file)
 	./venv/lib/python3.9/site-packages/_pytest/_code/source.py (syntax error while parsing AST from file)

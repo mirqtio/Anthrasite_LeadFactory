@@ -2,20 +2,15 @@
 ./backup_files/backup_20250524_061616/bin/batch_completion_monitor:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/batch_completion_monitor'
 ./backup_files/backup_20250524_061616/bin/budget_gate:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/budget_gate'
 ./backup_files/backup_20250524_061616/bin/cleanup_expired_data:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/cleanup_expired_data'
-./backup_files/backup_20250524_061616/bin/cost_tracking:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/cost_tracking'
-./backup_files/backup_20250524_061616/bin/data_retention:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/data_retention'
-./backup_files/backup_20250524_061616/bin/dedupe:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/dedupe'
 ./backup_files/backup_20250524_061616/bin/email/sendgrid_email_sender:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/email/sendgrid_email_sender'
-./backup_files/backup_20250524_061616/bin/email_queue:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/email_queue'
-./backup_files/backup_20250524_061616/bin/mockup:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/mockup'
-./backup_files/backup_20250524_061616/bin/score:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/score'
-./backup_files/backup_20250524_061616/bin/scrape:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/scrape'
-./backup_files/backup_20250524_061616/bin/unsubscribe_handler:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/bin/unsubscribe_handler'
 ./backup_files/backup_20250524_061616/scripts/enable_ci_tests:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/scripts/enable_ci_tests'
 ./backup_files/backup_20250524_061616/scripts/generate_test_progress_report:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/scripts/generate_test_progress_report'
 ./backup_files/backup_20250524_061616/scripts/generate_test_status_report:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/scripts/generate_test_status_report'
-./backup_files/backup_20250524_061616/scripts/monitor_supabase_usage:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './backup_files/backup_20250524_061616/scripts/monitor_supabase_usage'
-./bin/email/sendgrid_email_sender.py:113:5: C901 'SendGridEmailSender.send_email' is too complex (15)
+./bin/batch_completion_monitor:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/batch_completion_monitor'
+./bin/cleanup_expired_data:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/cleanup_expired_data'
+./bin/data_retention:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/data_retention'
+./bin/email/sendgrid_email_sender:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/email/sendgrid_email_sender'
+./bin/email_queue:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/email_queue'
 ./bin/email_queue.py:89:5: F811 redefinition of unused 'get_logger' from line 79
 ./bin/email_queue.py:159:9: F811 redefinition of unused 'log_cost' from line 121
 ./bin/email_queue.py:229:5: C901 'SendGridEmailSender.send_email' is too complex (16)
@@ -31,19 +26,14 @@
 ./bin/email_queue.py:914:1: C901 'process_business_email' is too complex (39)
 ./bin/email_queue.py:1074:128: E501 line too long (138 > 127 characters)
 ./bin/email_queue.py:1180:1: C901 'main' is too complex (16)
-./bin/enrich_with_retention.py:27:1: E402 module level import not at top of file
-./bin/enrich_with_retention.py:28:1: E402 module level import not at top of file
-./bin/enrich_with_retention.py:29:1: E402 module level import not at top of file
-./bin/enrich_with_retention.py:58:5: F811 redefinition of unused 'enrich_business' from line 46
-./bin/health_check.py:77:128: E501 line too long (130 > 127 characters)
-./bin/health_check.py:120:128: E501 line too long (130 > 127 characters)
-./bin/health_check.py:360:128: E501 line too long (145 > 127 characters)
-./bin/health_check.py:404:5: C901 'HealthCheckSystem._send_notification' is too complex (11)
-./bin/mockup.py:182:128: E501 line too long (277 > 127 characters)
-./bin/mockup.py:351:128: E501 line too long (268 > 127 characters)
+./bin/enrich_with_retention:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/enrich_with_retention'
+./bin/health_check:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/health_check'
+./bin/mockup:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/mockup'
 ./bin/process_raw_data.py:25:1: E402 module level import not at top of file
 ./bin/process_raw_data.py:26:1: E402 module level import not at top of file
 ./bin/process_raw_data.py:27:1: E402 module level import not at top of file
+./bin/score:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/score'
+./bin/scrape:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './bin/scrape'
 ./bin/scrape.py:46:5: F811 redefinition of unused 'get_active_zip_codes' from line 29
 ./bin/scrape.py:49:5: F811 redefinition of unused 'get_verticals' from line 29
 ./bin/scrape.py:52:5: F811 redefinition of unused 'load_yaml_config' from line 29
@@ -51,7 +41,7 @@
 ./bin/scrape.py:73:5: F811 redefinition of unused 'mark_zip_done' from line 29
 ./bin/scrape.py:76:5: F811 redefinition of unused 'save_business' from line 29
 ./bin/scrape.py:103:5: F811 redefinition of unused 'get_logger' from line 93
-./bin/scrape.py:451:1: C901 'scrape_businesses' is too complex (13)
+./bin/scrape.py:453:1: C901 'scrape_businesses' is too complex (13)
 ./bin/track_gpu_usage.py:17:1: E402 module level import not at top of file
 ./bin/track_gpu_usage.py:20:1: E402 module level import not at top of file
 ./bin/unsubscribe_handler.py:22:1: E402 module level import not at top of file
@@ -59,17 +49,21 @@
 ./fix_dedupe_simple.py:54:128: E501 line too long (131 > 127 characters)
 ./scripts/ci_format:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './scripts/ci_format'
 ./scripts/ci_pipeline_integration.py:189:1: C901 'update_ci_workflow' is too complex (14)
-./scripts/fix_python39_compatibility.py:25:1: E122 continuation line missing indentation or outdented
-./scripts/fix_python39_compatibility.py:78:1: C901 'add_imports_if_needed' is too complex (21)
-./scripts/fix_python39_compatibility.py:78:1: E302 expected 2 blank lines, found 1
-./scripts/fix_python39_compatibility.py:141:1: E115 expected an indented block (comment)
-./scripts/fix_python39_compatibility.py:316:128: E501 line too long (130 > 127 characters)
-./scripts/fix_typing_issues.py:21:1: E122 continuation line missing indentation or outdented
-./scripts/fix_typing_issues.py:22:1: E122 continuation line missing indentation or outdented
+./scripts/fix_python39_compatibility:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './scripts/fix_python39_compatibility'
+./scripts/fix_python39_compatibility.py:87:1: C901 'add_imports_if_needed' is too complex (21)
+./scripts/fix_python39_compatibility.py:323:128: E501 line too long (130 > 127 characters)
 ./scripts/fix_typing_issues.py:23:128: E501 line too long (146 > 127 characters)
-./scripts/fix_typing_issues.py:24:1: E122 continuation line missing indentation or outdented
 ./scripts/generate_ci_tests.py:93:5: C901 'PytestToUnittestConverter.convert_assert' is too complex (13)
-./scripts/generate_test_progress_report.py:23:26: E999 SyntaxError: invalid syntax
+./scripts/generate_test_progress_report:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './scripts/generate_test_progress_report'
+./scripts/generate_test_progress_report.py:44:1: E402 module level import not at top of file
+./scripts/generate_test_progress_report.py:63:5: C901 'TestProgressReporter.calculate_progress_metrics' is too complex (13)
+./scripts/generate_test_progress_report.py:265:5: C901 'TestProgressReporter.generate_markdown_report' is too complex (13)
+./scripts/generate_test_progress_report.py:281:128: E501 line too long (174 > 127 characters)
+./scripts/generate_test_progress_report.py:282:128: E501 line too long (174 > 127 characters)
+./scripts/generate_test_progress_report.py:283:128: E501 line too long (177 > 127 characters)
+./scripts/generate_test_progress_report.py:284:128: E501 line too long (174 > 127 characters)
+./scripts/generate_test_progress_report.py:326:128: E501 line too long (157 > 127 characters)
+./scripts/generate_test_status_report:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './scripts/generate_test_status_report'
 ./scripts/generate_test_status_report.py:282:128: E501 line too long (190 > 127 characters)
 ./scripts/generate_test_status_report.py:285:128: E501 line too long (217 > 127 characters)
 ./scripts/generate_test_status_report.py:301:128: E501 line too long (129 > 127 characters)
@@ -81,28 +75,39 @@
 ./scripts/generate_test_visualizations.py:189:128: E501 line too long (140 > 127 characters)
 ./scripts/generate_test_visualizations.py:222:128: E501 line too long (128 > 127 characters)
 ./scripts/generate_test_visualizations.py:316:128: E501 line too long (179 > 127 characters)
-./scripts/migrate_to_postgres.py:15:26: E999 SyntaxError: invalid syntax
+./scripts/migrate_to_postgres.py:25:1: E402 module level import not at top of file
 ./scripts/minimal_path_fix.py:35:1: C901 'create_pth_file' is too complex (14)
 ./scripts/minimal_test_setup.py:29:1: C901 'setup_test_environment' is too complex (13)
 ./scripts/minimal_test_tracker.py:120:5: C901 'MinimalTestTracker.run_tests' is too complex (19)
-./scripts/monitor_supabase_usage.py:25:26: E999 SyntaxError: invalid syntax
+./scripts/monitor_supabase_usage:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './scripts/monitor_supabase_usage'
 ./scripts/prioritize_tests:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './scripts/prioritize_tests'
 ./scripts/setup_wal_archiving.py:374:1: C901 'configure_postgresql' is too complex (11)
 ./scripts/test_status_tracker.py:278:5: C901 'TestStatusTracker.generate_report' is too complex (22)
 ./scripts/test_status_tracker.py:580:5: C901 'TestStatusTracker.categorize_test_failures' is too complex (19)
 ./scripts/test_status_tracker.py:698:5: C901 'TestStatusTracker.analyze_failures' is too complex (13)
 ./scripts/test_status_tracker.py:805:1: C901 'main' is too complex (14)
+./update_tasks_qa_fix:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './update_tasks_qa_fix'
 ./update_tasks_qa_fix.py:16:1: C901 'update_tasks' is too complex (16)
-./utils/batch_tracker.py:14:26: E999 SyntaxError: invalid syntax
-./utils/cost_tracker.py:9:26: E999 SyntaxError: invalid syntax
-./utils/io.py:10:26: E999 SyntaxError: invalid syntax
+./utils/batch_tracker:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/batch_tracker'
+./utils/cost_tracker:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/cost_tracker'
+./utils/llm_logger:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/llm_logger'
+./utils/logging_config:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/logging_config'
 ./utils/metrics.py:104:1: C901 'update_metrics' is too complex (11)
-./utils/raw_data_retention.py:24:1: E402 module level import not at top of file
-./utils/raw_data_retention.py:26:1: E402 module level import not at top of file
-./utils/raw_data_retention.py:29:1: E402 module level import not at top of file
+./utils/raw_data_retention:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: './utils/raw_data_retention'
 ./utils/website_scraper.py:20:1: E402 module level import not at top of file
 ./utils/website_scraper.py:23:1: E402 module level import not at top of file
 ./utils/website_scraper.py:26:1: E402 module level import not at top of file
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
+2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'
 2.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: '2.py'

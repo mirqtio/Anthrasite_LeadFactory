@@ -15,7 +15,6 @@ from contextlib import contextmanager
 from typing import Any
 
 # Use lowercase versions for Python 3.9 compatibility
-
 import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv

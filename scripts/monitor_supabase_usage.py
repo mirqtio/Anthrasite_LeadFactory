@@ -25,7 +25,6 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 # Use lowercase versions for Python 3.9 compatibility
-
 import requests
 
 # Add parent directory to path to allow importing metrics

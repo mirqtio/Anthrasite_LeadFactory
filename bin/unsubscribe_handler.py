@@ -46,9 +46,9 @@ templates_dir.mkdir(parents=True, exist_ok=True)
 templates = Jinja2Templates(directory=templates_dir)
 
 # Create unsubscribe template if it doesn't exist
-unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
-if not os.path.exists(unsubscribe_template_path):
-    with open(unsubscribe_template_path, "w") as f:
+unsubscribe_template_path = templates_dir / "unsubscribe.html"
+if not unsubscribe_template_path.exists():
+    with unsubscribe_template_path.open("w") as f:
         f.write(
             """
 <!DOCTYPE html>
@@ -199,9 +199,9 @@ if not os.path.exists(unsubscribe_template_path):
         )
 
 # Create success template if it doesn't exist
-success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
-if not os.path.exists(success_template_path):
-    with open(success_template_path, "w") as f:
+success_template_path = templates_dir / "unsubscribe_success.html"
+if not success_template_path.exists():
+    with success_template_path.open("w") as f:
         f.write(
             """
 <!DOCTYPE html>

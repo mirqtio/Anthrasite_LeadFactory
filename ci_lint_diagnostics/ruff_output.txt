@@ -4,53 +4,20 @@
 backup_files/backup_20250524_061616/bin/batch_completion_monitor:1:1: E902 No such file or directory (os error 2)
 backup_files/backup_20250524_061616/bin/budget_gate:1:1: E902 No such file or directory (os error 2)
 backup_files/backup_20250524_061616/bin/cleanup_expired_data:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/cost_tracking:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/data_retention:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/dedupe:1:1: E902 No such file or directory (os error 2)
 backup_files/backup_20250524_061616/bin/email/sendgrid_email_sender:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/email_queue:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/mockup:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/score:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/scrape:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/bin/unsubscribe_handler:1:1: E902 No such file or directory (os error 2)
 backup_files/backup_20250524_061616/scripts/enable_ci_tests:1:1: E902 No such file or directory (os error 2)
 backup_files/backup_20250524_061616/scripts/generate_test_progress_report:1:1: E902 No such file or directory (os error 2)
 backup_files/backup_20250524_061616/scripts/generate_test_status_report:1:1: E902 No such file or directory (os error 2)
-backup_files/backup_20250524_061616/scripts/monitor_supabase_usage:1:1: E902 No such file or directory (os error 2)
-bin/unsubscribe_handler.py:42:17: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
-   |
-41 | # Create templates directory if it doesn't exist
-42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
-   |                 ^^^^^^^^^^^^ PTH118
-43 | os.makedirs(templates_dir, exist_ok=True)
-   |
-
-bin/unsubscribe_handler.py:42:30: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
-   |
-41 | # Create templates directory if it doesn't exist
-42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
-   |                              ^^^^^^^^^^^^^^^ PTH120
-43 | os.makedirs(templates_dir, exist_ok=True)
-   |
-
-bin/unsubscribe_handler.py:42:46: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
-   |
-41 | # Create templates directory if it doesn't exist
-42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
-   |                                              ^^^^^^^^^^^^^^^ PTH120
-43 | os.makedirs(templates_dir, exist_ok=True)
-   |
-
-bin/unsubscribe_handler.py:43:1: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
-   |
-41 | # Create templates directory if it doesn't exist
-42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
-43 | os.makedirs(templates_dir, exist_ok=True)
-   | ^^^^^^^^^^^ PTH103
-44 |
-45 | # Create templates
-   |
-
+bin/batch_completion_monitor:1:1: E902 No such file or directory (os error 2)
+bin/cleanup_expired_data:1:1: E902 No such file or directory (os error 2)
+bin/data_retention:1:1: E902 No such file or directory (os error 2)
+bin/email/sendgrid_email_sender:1:1: E902 No such file or directory (os error 2)
+bin/email_queue:1:1: E902 No such file or directory (os error 2)
+bin/enrich_with_retention:1:1: E902 No such file or directory (os error 2)
+bin/health_check:1:1: E902 No such file or directory (os error 2)
+bin/mockup:1:1: E902 No such file or directory (os error 2)
+bin/score:1:1: E902 No such file or directory (os error 2)
+bin/scrape:1:1: E902 No such file or directory (os error 2)
 bin/unsubscribe_handler.py:49:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
    |
 48 | # Create unsubscribe template if it doesn't exist
@@ -1110,12 +1077,13 @@ scripts/enable_ci_tests.py:298:10: PTH123 `open()` should be replaced by `Path.o
 300 |         f.write(f"Generated: {datetime.now().isoformat()}\n\n")
     |
 
+scripts/fix_python39_compatibility:1:1: E902 No such file or directory (os error 2)
 scripts/fix_python39_compatibility.py:24:1: UP035 `typing.Dict` is deprecated, use `dict` instead
    |
 22 |   from pathlib import Path
 23 |   from re import Match, Pattern
 24 | / from typing import (
-25 | | # Use lowercase versions for Python 3.9 compatibility
+25 | |     # Use lowercase versions for Python 3.9 compatibility
 26 | |     Any,
 27 | |     Dict,
 28 | |     Final,
@@ -1135,7 +1103,7 @@ scripts/fix_python39_compatibility.py:24:1: UP035 `typing.List` is deprecated, u
 22 |   from pathlib import Path
 23 |   from re import Match, Pattern
 24 | / from typing import (
-25 | | # Use lowercase versions for Python 3.9 compatibility
+25 | |     # Use lowercase versions for Python 3.9 compatibility
 26 | |     Any,
 27 | |     Dict,
 28 | |     Final,
@@ -1155,7 +1123,7 @@ scripts/fix_python39_compatibility.py:24:1: UP035 `typing.Set` is deprecated, us
 22 |   from pathlib import Path
 23 |   from re import Match, Pattern
 24 | / from typing import (
-25 | | # Use lowercase versions for Python 3.9 compatibility
+25 | |     # Use lowercase versions for Python 3.9 compatibility
 26 | |     Any,
 27 | |     Dict,
 28 | |     Final,
@@ -1175,7 +1143,7 @@ scripts/fix_python39_compatibility.py:24:1: UP035 `typing.Tuple` is deprecated, 
 22 |   from pathlib import Path
 23 |   from re import Match, Pattern
 24 | / from typing import (
-25 | | # Use lowercase versions for Python 3.9 compatibility
+25 | |     # Use lowercase versions for Python 3.9 compatibility
 26 | |     Any,
 27 | |     Dict,
 28 | |     Final,
@@ -1190,216 +1158,216 @@ scripts/fix_python39_compatibility.py:24:1: UP035 `typing.Tuple` is deprecated, 
 36 |   # Type annotation patterns to find and replace
    |
 
-scripts/fix_python39_compatibility.py:243:5: T201 `print` found
+scripts/fix_python39_compatibility.py:250:5: T201 `print` found
     |
-241 |         return False
-242 |
-243 |     print(f"Processing {file_path}...")
+248 |         return False
+249 |
+250 |     print(f"Processing {file_path}...")
     |     ^^^^^ T201
-244 |     try:
-245 |         with open(file_path, encoding="utf-8") as f:
+251 |     try:
+252 |         with open(file_path, encoding="utf-8") as f:
     |
     = help: Remove `print`
 
-scripts/fix_python39_compatibility.py:245:14: PTH123 `open()` should be replaced by `Path.open()`
+scripts/fix_python39_compatibility.py:252:14: PTH123 `open()` should be replaced by `Path.open()`
     |
-243 |     print(f"Processing {file_path}...")
-244 |     try:
-245 |         with open(file_path, encoding="utf-8") as f:
+250 |     print(f"Processing {file_path}...")
+251 |     try:
+252 |         with open(file_path, encoding="utf-8") as f:
     |              ^^^^ PTH123
-246 |             content = f.read()
-247 |     except Exception as e:
+253 |             content = f.read()
+254 |     except Exception as e:
     |
 
-scripts/fix_python39_compatibility.py:248:9: T201 `print` found
+scripts/fix_python39_compatibility.py:255:9: T201 `print` found
     |
-246 |             content = f.read()
-247 |     except Exception as e:
-248 |         print(f"Error reading {file_path}: {e}")
+253 |             content = f.read()
+254 |     except Exception as e:
+255 |         print(f"Error reading {file_path}: {e}")
     |         ^^^^^ T201
-249 |         return False
+256 |         return False
     |
     = help: Remove `print`
 
-scripts/fix_python39_compatibility.py:273:18: PTH123 `open()` should be replaced by `Path.open()`
+scripts/fix_python39_compatibility.py:280:18: PTH123 `open()` should be replaced by `Path.open()`
     |
-271 |     if content != original_content:
-272 |         try:
-273 |             with open(file_path, "w", encoding="utf-8") as f:
+278 |     if content != original_content:
+279 |         try:
+280 |             with open(file_path, "w", encoding="utf-8") as f:
     |                  ^^^^ PTH123
-274 |                 f.write(content)
-275 |             print(f"✅ Fixed {file_path}")
+281 |                 f.write(content)
+282 |             print(f"✅ Fixed {file_path}")
     |
 
-scripts/fix_python39_compatibility.py:275:13: T201 `print` found
+scripts/fix_python39_compatibility.py:282:13: T201 `print` found
     |
-273 |             with open(file_path, "w", encoding="utf-8") as f:
-274 |                 f.write(content)
-275 |             print(f"✅ Fixed {file_path}")
+280 |             with open(file_path, "w", encoding="utf-8") as f:
+281 |                 f.write(content)
+282 |             print(f"✅ Fixed {file_path}")
     |             ^^^^^ T201
-276 |             return True
-277 |         except Exception as e:
+283 |             return True
+284 |         except Exception as e:
     |
     = help: Remove `print`
 
-scripts/fix_python39_compatibility.py:278:13: T201 `print` found
+scripts/fix_python39_compatibility.py:285:13: T201 `print` found
     |
-276 |             return True
-277 |         except Exception as e:
-278 |             print(f"Error writing {file_path}: {e}")
+283 |             return True
+284 |         except Exception as e:
+285 |             print(f"Error writing {file_path}: {e}")
     |             ^^^^^ T201
-279 |             return False
-280 |     return False
+286 |             return False
+287 |     return False
     |
     = help: Remove `print`
 
-scripts/fix_python39_compatibility.py:300:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+scripts/fix_python39_compatibility.py:307:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
     |
-298 |         for file in files:
-299 |             if file.endswith(".py"):
-300 |                 file_path = os.path.join(root, file)
+305 |         for file in files:
+306 |             if file.endswith(".py"):
+307 |                 file_path = os.path.join(root, file)
     |                             ^^^^^^^^^^^^ PTH118
-301 |                 files_processed += 1
-302 |                 if fix_file(file_path):
+308 |                 files_processed += 1
+309 |                 if fix_file(file_path):
     |
 
-scripts/fix_python39_compatibility.py:339:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+scripts/fix_python39_compatibility.py:346:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
     |
-337 |         for file in files:
-338 |             if file.endswith(".py"):
-339 |                 file_path = os.path.join(root, file)
+344 |         for file in files:
+345 |             if file.endswith(".py"):
+346 |                 file_path = os.path.join(root, file)
     |                             ^^^^^^^^^^^^ PTH118
-340 |                 try:
-341 |                     with open(file_path, encoding="utf-8") as f:
+347 |                 try:
+348 |                     with open(file_path, encoding="utf-8") as f:
     |
 
-scripts/fix_python39_compatibility.py:341:26: PTH123 `open()` should be replaced by `Path.open()`
+scripts/fix_python39_compatibility.py:348:26: PTH123 `open()` should be replaced by `Path.open()`
     |
-339 |                 file_path = os.path.join(root, file)
-340 |                 try:
-341 |                     with open(file_path, encoding="utf-8") as f:
+346 |                 file_path = os.path.join(root, file)
+347 |                 try:
+348 |                     with open(file_path, encoding="utf-8") as f:
     |                          ^^^^ PTH123
-342 |                         content = f.read()
-343 |                         for pattern in difficult_patterns:
+349 |                         content = f.read()
+350 |                         for pattern in difficult_patterns:
     |
 
-scripts/fix_python39_compatibility.py:355:19: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+scripts/fix_python39_compatibility.py:362:19: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
     |
-354 |     # Write the list to a file
-355 |     issues_file = os.path.join(directory, "python39_non_automatable_issues.md")
+361 |     # Write the list to a file
+362 |     issues_file = os.path.join(directory, "python39_non_automatable_issues.md")
     |                   ^^^^^^^^^^^^ PTH118
-356 |     with open(issues_file, "w", encoding="utf-8") as f:
-357 |         f.writelines(non_automatable_issues)
+363 |     with open(issues_file, "w", encoding="utf-8") as f:
+364 |         f.writelines(non_automatable_issues)
     |
 
-scripts/fix_python39_compatibility.py:356:10: PTH123 `open()` should be replaced by `Path.open()`
+scripts/fix_python39_compatibility.py:363:10: PTH123 `open()` should be replaced by `Path.open()`
     |
-354 |     # Write the list to a file
-355 |     issues_file = os.path.join(directory, "python39_non_automatable_issues.md")
-356 |     with open(issues_file, "w", encoding="utf-8") as f:
+361 |     # Write the list to a file
+362 |     issues_file = os.path.join(directory, "python39_non_automatable_issues.md")
+363 |     with open(issues_file, "w", encoding="utf-8") as f:
     |          ^^^^ PTH123
-357 |         f.writelines(non_automatable_issues)
+364 |         f.writelines(non_automatable_issues)
     |
 
-scripts/fix_python39_compatibility.py:359:5: T201 `print` found
+scripts/fix_python39_compatibility.py:366:5: T201 `print` found
     |
-357 |         f.writelines(non_automatable_issues)
-358 |
-359 |     print(f"\nCreated list of non-automatable issues at {issues_file}")
+364 |         f.writelines(non_automatable_issues)
+365 |
+366 |     print(f"\nCreated list of non-automatable issues at {issues_file}")
     |     ^^^^^ T201
     |
     = help: Remove `print`
 
-scripts/fix_python39_compatibility.py:364:9: T201 `print` found
+scripts/fix_python39_compatibility.py:371:9: T201 `print` found
     |
-362 | def main():
-363 |     if len(sys.argv) < 2:
-364 |         print("Usage: python fix_python39_compatibility.py <directory>")
+369 | def main():
+370 |     if len(sys.argv) < 2:
+371 |         print("Usage: python fix_python39_compatibility.py <directory>")
     |         ^^^^^ T201
-365 |         return 1
+372 |         return 1
     |
     = help: Remove `print`
 
-scripts/fix_python39_compatibility.py:368:12: PTH112 `os.path.isdir()` should be replaced by `Path.is_dir()`
+scripts/fix_python39_compatibility.py:375:12: PTH112 `os.path.isdir()` should be replaced by `Path.is_dir()`
     |
-367 |     directory = sys.argv[1]
-368 |     if not os.path.isdir(directory):
+374 |     directory = sys.argv[1]
+375 |     if not os.path.isdir(directory):
     |            ^^^^^^^^^^^^^ PTH112
-369 |         print(f"Error: {directory} is not a valid directory")
-370 |         return 1
+376 |         print(f"Error: {directory} is not a valid directory")
+377 |         return 1
     |
 
-scripts/fix_python39_compatibility.py:369:9: T201 `print` found
+scripts/fix_python39_compatibility.py:376:9: T201 `print` found
     |
-367 |     directory = sys.argv[1]
-368 |     if not os.path.isdir(directory):
-369 |         print(f"Error: {directory} is not a valid directory")
+374 |     directory = sys.argv[1]
+375 |     if not os.path.isdir(directory):
+376 |         print(f"Error: {directory} is not a valid directory")
     |         ^^^^^ T201
-370 |         return 1
-    |
-    = help: Remove `print`
-
-scripts/fix_python39_compatibility.py:372:5: T201 `print` found
-    |
-370 |         return 1
-371 |
-372 |     print(f"Fixing Python 3.9 compatibility issues in {directory}...\n")
-    |     ^^^^^ T201
-373 |     files_processed, files_modified = process_directory(directory)
-374 |     print(f"\nProcessed {files_processed} Python files, modified {files_modified} files")
-    |
-    = help: Remove `print`
-
-scripts/fix_python39_compatibility.py:374:5: T201 `print` found
-    |
-372 |     print(f"Fixing Python 3.9 compatibility issues in {directory}...\n")
-373 |     files_processed, files_modified = process_directory(directory)
-374 |     print(f"\nProcessed {files_processed} Python files, modified {files_modified} files")
-    |     ^^^^^ T201
-375 |
-376 |     # Create list of non-automatable issues
+377 |         return 1
     |
     = help: Remove `print`
 
 scripts/fix_python39_compatibility.py:379:5: T201 `print` found
     |
-377 |     create_non_automatable_issues_list(directory)
+377 |         return 1
 378 |
-379 |     print("\nRemaining tasks:")
+379 |     print(f"Fixing Python 3.9 compatibility issues in {directory}...\n")
     |     ^^^^^ T201
-380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
-381 |     print("2. Run the CI pipeline to verify the fixes")
-    |
-    = help: Remove `print`
-
-scripts/fix_python39_compatibility.py:380:5: T201 `print` found
-    |
-379 |     print("\nRemaining tasks:")
-380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
-    |     ^^^^^ T201
-381 |     print("2. Run the CI pipeline to verify the fixes")
-382 |     print("3. Manually address remaining issues from the non-automatable issues list")
+380 |     files_processed, files_modified = process_directory(directory)
+381 |     print(
     |
     = help: Remove `print`
 
 scripts/fix_python39_compatibility.py:381:5: T201 `print` found
     |
-379 |     print("\nRemaining tasks:")
-380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
-381 |     print("2. Run the CI pipeline to verify the fixes")
+379 |     print(f"Fixing Python 3.9 compatibility issues in {directory}...\n")
+380 |     files_processed, files_modified = process_directory(directory)
+381 |     print(
     |     ^^^^^ T201
-382 |     print("3. Manually address remaining issues from the non-automatable issues list")
+382 |         f"\nProcessed {files_processed} Python files, modified {files_modified} files"
+383 |     )
     |
     = help: Remove `print`
 
-scripts/fix_python39_compatibility.py:382:5: T201 `print` found
+scripts/fix_python39_compatibility.py:388:5: T201 `print` found
     |
-380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
-381 |     print("2. Run the CI pipeline to verify the fixes")
-382 |     print("3. Manually address remaining issues from the non-automatable issues list")
+386 |     create_non_automatable_issues_list(directory)
+387 |
+388 |     print("\nRemaining tasks:")
     |     ^^^^^ T201
-383 |
-384 |     return 0
+389 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+390 |     print("2. Run the CI pipeline to verify the fixes")
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:389:5: T201 `print` found
+    |
+388 |     print("\nRemaining tasks:")
+389 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+    |     ^^^^^ T201
+390 |     print("2. Run the CI pipeline to verify the fixes")
+391 |     print("3. Manually address remaining issues from the non-automatable issues list")
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:390:5: T201 `print` found
+    |
+388 |     print("\nRemaining tasks:")
+389 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+390 |     print("2. Run the CI pipeline to verify the fixes")
+    |     ^^^^^ T201
+391 |     print("3. Manually address remaining issues from the non-automatable issues list")
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:391:5: T201 `print` found
+    |
+389 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+390 |     print("2. Run the CI pipeline to verify the fixes")
+391 |     print("3. Manually address remaining issues from the non-automatable issues list")
+    |     ^^^^^ T201
+392 |
+393 |     return 0
     |
     = help: Remove `print`
 
@@ -1431,13 +1399,13 @@ scripts/fix_typing_issues.py:39:10: PTH123 `open()` should be replaced by `Path.
 40 |         f.write(content)
    |
 
-scripts/fix_typing_issues.py:67:33: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+scripts/fix_typing_issues.py:71:33: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
    |
-65 |             for file in files:
-66 |                 if file.endswith(".py") and not file.endswith("_backup.py") and ".tmp" not in file:
-67 |                     file_path = os.path.join(root, file)
+69 |                     and ".tmp" not in file
+70 |                 ):
+71 |                     file_path = os.path.join(root, file)
    |                                 ^^^^^^^^^^^^ PTH118
-68 |                     process_file(file_path)
+72 |                     process_file(file_path)
    |
 
 scripts/format_all.py:48:37: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
@@ -1653,36 +1621,60 @@ scripts/generate_ci_tests.py:356:27: PTH118 `os.path.join()` should be replaced 
 358 |             # Convert the file
     |
 
-scripts/generate_test_progress_report.py:23:25: SyntaxError: Expected an import name
+scripts/generate_test_progress_report:1:1: E902 No such file or directory (os error 2)
+scripts/generate_test_progress_report.py:44:1: E402 Module level import not at top of file
    |
-21 | from datetime import datetime
-22 | from pathlib import Path
-23 | from typing import Any, , , Optional, , Union
-   |                         ^
-24 | # Use lowercase versions for Python 3.9 compatibility
-25 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-scripts/generate_test_progress_report.py:23:27: SyntaxError: Expected an import name
-   |
-21 | from datetime import datetime
-22 | from pathlib import Path
-23 | from typing import Any, , , Optional, , Union
-   |                           ^
-24 | # Use lowercase versions for Python 3.9 compatibility
-25 | # Use lowercase versions for Python 3.9 compatibility
+43 |   # Import test status tracker constants
+44 | / from scripts.test_status_tracker import (
+45 | |     CATEGORIES,
+46 | |     STATUS_DISABLED,
+47 | |     STATUS_FAILING,
+48 | |     STATUS_PASSING,
+49 | |     STATUS_SKIPPED,
+50 | |     TestStatusTracker,
+51 | | )
+   | |_^ E402
    |
 
-scripts/generate_test_progress_report.py:23:39: SyntaxError: Expected an import name
+scripts/generate_test_progress_report.py:61:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
    |
-21 | from datetime import datetime
-22 | from pathlib import Path
-23 | from typing import Any, , , Optional, , Union
-   |                                       ^
-24 | # Use lowercase versions for Python 3.9 compatibility
-25 | # Use lowercase versions for Python 3.9 compatibility
+59 |         self.history = self.tracker.history
+60 |         self.output_dir = project_root / "test_results"
+61 |         os.makedirs(self.output_dir, exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+62 |
+63 |     def calculate_progress_metrics(self) -> dict[str, Any]:
    |
 
+scripts/generate_test_progress_report.py:74:13: B007 Loop control variable `test_id` not used within loop body
+   |
+72 |             category_status[category] = defaultdict(int)
+73 |
+74 |         for test_id, test_info in self.tracker.tests.items():
+   |             ^^^^^^^ B007
+75 |             status = test_info["status"]
+76 |             category = test_info.get("category", "other")
+   |
+   = help: Rename unused `test_id` to `_test_id`
+
+scripts/generate_test_progress_report.py:157:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+156 |         # Create visualization directory
+157 |         os.makedirs(self.output_dir / "visualizations", exist_ok=True)
+    |         ^^^^^^^^^^^ PTH103
+158 |
+159 |         # 1. Progress over time line chart
+    |
+
+scripts/generate_test_progress_report.py:403:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+402 |         # Write to file
+403 |         with open(output_file, "w") as f:
+    |              ^^^^ PTH123
+404 |             f.write(report_text)
+    |
+
+scripts/generate_test_status_report:1:1: E902 No such file or directory (os error 2)
 scripts/generate_test_status_report.py:37:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
    |
 35 |     handlers=[
@@ -1961,36 +1953,71 @@ scripts/generate_test_visualizations.py:489:14: PTH123 `open()` should be replac
 490 |             test_data = json.load(f)
     |
 
-scripts/migrate_to_postgres.py:15:25: SyntaxError: Expected an import name
+scripts/migrate_to_postgres.py:23:20: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
    |
-13 | from collections.abc import Iterable
-14 | from contextlib import contextmanager
-15 | from typing import Any, , ,
-   |                         ^
-16 | # Use lowercase versions for Python 3.9 compatibility
-17 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-scripts/migrate_to_postgres.py:15:27: SyntaxError: Expected an import name
-   |
-13 | from collections.abc import Iterable
-14 | from contextlib import contextmanager
-15 | from typing import Any, , ,
-   |                           ^
-16 | # Use lowercase versions for Python 3.9 compatibility
-17 | # Use lowercase versions for Python 3.9 compatibility
+22 | # Add project root to path
+23 | sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+   |                    ^^^^^^^^^^^^^^^ PTH120
+24 | # Import logging configuration
+25 | from utils.logging_config import get_logger
    |
 
-scripts/migrate_to_postgres.py:15:28: W291 Trailing whitespace
+scripts/migrate_to_postgres.py:23:36: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
    |
-13 | from collections.abc import Iterable
-14 | from contextlib import contextmanager
-15 | from typing import Any, , ,
-   |                            ^ W291
-16 | # Use lowercase versions for Python 3.9 compatibility
-17 | # Use lowercase versions for Python 3.9 compatibility
+22 | # Add project root to path
+23 | sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+   |                                    ^^^^^^^^^^^^^^^ PTH120
+24 | # Import logging configuration
+25 | from utils.logging_config import get_logger
    |
-   = help: Remove trailing whitespace
+
+scripts/migrate_to_postgres.py:23:52: PTH100 `os.path.abspath()` should be replaced by `Path.resolve()`
+   |
+22 | # Add project root to path
+23 | sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+   |                                                    ^^^^^^^^^^^^^^^ PTH100
+24 | # Import logging configuration
+25 | from utils.logging_config import get_logger
+   |
+
+scripts/migrate_to_postgres.py:33:23: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+32 | # Constants
+33 | DEFAULT_SQLITE_PATH = os.path.join(
+   |                       ^^^^^^^^^^^^ PTH118
+34 |     os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db"
+35 | )
+   |
+
+scripts/migrate_to_postgres.py:34:5: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+   |
+32 | # Constants
+33 | DEFAULT_SQLITE_PATH = os.path.join(
+34 |     os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db"
+   |     ^^^^^^^^^^^^^^^ PTH120
+35 | )
+36 | DATABASE_URL = os.getenv("DATABASE_URL")
+   |
+
+scripts/migrate_to_postgres.py:34:21: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+   |
+32 | # Constants
+33 | DEFAULT_SQLITE_PATH = os.path.join(
+34 |     os.path.dirname(os.path.dirname(__file__)), "data", "leadfactory.db"
+   |                     ^^^^^^^^^^^^^^^ PTH120
+35 | )
+36 | DATABASE_URL = os.getenv("DATABASE_URL")
+   |
+
+scripts/migrate_to_postgres.py:430:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+428 |         sys.exit(1)
+429 |
+430 |     if not os.path.exists(args.sqlite_path):
+    |            ^^^^^^^^^^^^^^ PTH110
+431 |         logger.error(f"SQLite database file not found: {args.sqlite_path}")
+432 |         sys.exit(1)
+    |
 
 scripts/minimal_db_setup.py:48:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
    |
@@ -2324,36 +2351,7 @@ scripts/mirror_supabase_storage.py:251:10: PTH123 `open()` should be replaced by
 253 |             shutil.copyfileobj(f_in, f_out)
     |
 
-scripts/monitor_supabase_usage.py:25:25: SyntaxError: Expected an import name
-   |
-23 | from datetime import datetime, timedelta
-24 | from pathlib import Path
-25 | from typing import Any, , , Optional, , Union
-   |                         ^
-26 | # Use lowercase versions for Python 3.9 compatibility
-27 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-scripts/monitor_supabase_usage.py:25:27: SyntaxError: Expected an import name
-   |
-23 | from datetime import datetime, timedelta
-24 | from pathlib import Path
-25 | from typing import Any, , , Optional, , Union
-   |                           ^
-26 | # Use lowercase versions for Python 3.9 compatibility
-27 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-scripts/monitor_supabase_usage.py:25:39: SyntaxError: Expected an import name
-   |
-23 | from datetime import datetime, timedelta
-24 | from pathlib import Path
-25 | from typing import Any, , , Optional, , Union
-   |                                       ^
-26 | # Use lowercase versions for Python 3.9 compatibility
-27 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
+scripts/monitor_supabase_usage:1:1: E902 No such file or directory (os error 2)
 scripts/prioritize_tests:1:1: E902 No such file or directory (os error 2)
 update_phase0_status.py:9:1: UP035 `typing.Dict` is deprecated, use `dict` instead
   |
@@ -2363,6 +2361,7 @@ update_phase0_status.py:9:1: UP035 `typing.Dict` is deprecated, use `dict` inste
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ UP035
   |
 
+update_tasks_qa_fix:1:1: E902 No such file or directory (os error 2)
 update_tasks_qa_fix.py:9:1: UP035 `typing.Dict` is deprecated, use `dict` instead
    |
  7 | import logging
@@ -2373,36 +2372,7 @@ update_tasks_qa_fix.py:9:1: UP035 `typing.Dict` is deprecated, use `dict` instea
 11 | # Configure basic logging
    |
 
-utils/batch_tracker.py:14:25: SyntaxError: Expected an import name
-   |
-12 | from datetime import datetime, timedelta
-13 | from pathlib import Path
-14 | from typing import Any, , , Optional, , Union
-   |                         ^
-15 | # Use lowercase versions for Python 3.9 compatibility
-16 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-utils/batch_tracker.py:14:27: SyntaxError: Expected an import name
-   |
-12 | from datetime import datetime, timedelta
-13 | from pathlib import Path
-14 | from typing import Any, , , Optional, , Union
-   |                           ^
-15 | # Use lowercase versions for Python 3.9 compatibility
-16 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-utils/batch_tracker.py:14:39: SyntaxError: Expected an import name
-   |
-12 | from datetime import datetime, timedelta
-13 | from pathlib import Path
-14 | from typing import Any, , , Optional, , Union
-   |                                       ^
-15 | # Use lowercase versions for Python 3.9 compatibility
-16 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
+utils/batch_tracker:1:1: E902 No such file or directory (os error 2)
 utils/cost_metrics.py:13:1: UP035 `typing.Dict` is deprecated, use `dict` instead
    |
 11 | from datetime import datetime
@@ -2413,66 +2383,10 @@ utils/cost_metrics.py:13:1: UP035 `typing.Dict` is deprecated, use `dict` instea
 15 | # Use lowercase versions for Python 3.9 compatibility
    |
 
-utils/cost_tracker.py:9:25: SyntaxError: Expected an import name
-   |
- 7 | from datetime import datetime, timedelta
- 8 | from pathlib import Path
- 9 | from typing import Any, , , Optional, , Union
-   |                         ^
-10 | # Use lowercase versions for Python 3.9 compatibility
-11 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-utils/cost_tracker.py:9:27: SyntaxError: Expected an import name
-   |
- 7 | from datetime import datetime, timedelta
- 8 | from pathlib import Path
- 9 | from typing import Any, , , Optional, , Union
-   |                           ^
-10 | # Use lowercase versions for Python 3.9 compatibility
-11 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-utils/cost_tracker.py:9:39: SyntaxError: Expected an import name
-   |
- 7 | from datetime import datetime, timedelta
- 8 | from pathlib import Path
- 9 | from typing import Any, , , Optional, , Union
-   |                                       ^
-10 | # Use lowercase versions for Python 3.9 compatibility
-11 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-utils/io.py:10:25: SyntaxError: Expected an import name
-   |
- 8 | import time
- 9 | from pathlib import Path
-10 | from typing import Any, , , Optional, , Union
-   |                         ^
-11 | # Use lowercase versions for Python 3.9 compatibility
-12 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-utils/io.py:10:27: SyntaxError: Expected an import name
-   |
- 8 | import time
- 9 | from pathlib import Path
-10 | from typing import Any, , , Optional, , Union
-   |                           ^
-11 | # Use lowercase versions for Python 3.9 compatibility
-12 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-utils/io.py:10:39: SyntaxError: Expected an import name
-   |
- 8 | import time
- 9 | from pathlib import Path
-10 | from typing import Any, , , Optional, , Union
-   |                                       ^
-11 | # Use lowercase versions for Python 3.9 compatibility
-12 | # Use lowercase versions for Python 3.9 compatibility
-   |
-
-Found 274 errors (1 fixed, 273 remaining).
+utils/cost_tracker:1:1: E902 No such file or directory (os error 2)
+utils/llm_logger:1:1: E902 No such file or directory (os error 2)
+utils/logging_config:1:1: E902 No such file or directory (os error 2)
+utils/raw_data_retention:1:1: E902 No such file or directory (os error 2)
+Found 276 errors (2 fixed, 274 remaining).
 No fixes available (46 hidden fixes can be enabled with the `--unsafe-fixes` option).
 Ruff exit code: 1

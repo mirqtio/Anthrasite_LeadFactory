@@ -14,7 +14,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 # Use lowercase versions for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
