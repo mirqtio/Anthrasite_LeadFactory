@@ -39,7 +39,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "metrics.log")),
+        logging.FileHandler(str(Path("logs") / "metrics.log")),
     ],
 )
 logger = logging.getLogger("metrics")
@@ -247,7 +247,7 @@ class LeadFactoryMetrics:
         """Update system metrics."""
         try:
             # Memory usage
-            with open("/proc/meminfo") as f:
+            with Path("/proc/meminfo").open() as f:
                 mem_info = {}
                 for line in f:
                     key, value = line.split(":", 1)
