@@ -19,7 +19,10 @@ import json
 import os
 import re
 import sys
-from typing import Dict, List, Set, Tuple, Optional, Any, DefaultDict
+from typing import Set, Optional, Any, DefaultDict
+
+# Use lowercase versions for Python 3.9 compatibility
+# Use lowercase versions for Python 3.9 compatibility
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -30,6 +33,8 @@ sys.path.insert(0, str(project_root))
 
 # Import typing modules
 from typing import Dict, List
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Import test status tracker constants
 from scripts.test_status_tracker import (
@@ -141,7 +146,7 @@ class TestDependencyGraph:
         self.save_dependencies()
         print(f"Discovered dependencies for {len(self.dependencies)} tests")
 
-    def find_fixture_definition(self, fixture_name: str) -> List[str]:
+    def find_fixture_definition(self, fixture_name: str) -> list[str]:
         """Find the file(s) where a fixture is defined."""
         fixture_files = []
 
@@ -194,7 +199,7 @@ class TestPrioritizer:
         self.dependency_graph = TestDependencyGraph()
         self.priorities = self.load_priorities()
 
-    def load_priorities(self) -> Dict[str, int]:
+    def load_priorities(self) -> dict[str, int]:
         """Load test priorities from file or initialize from tracker."""
         if TEST_PRIORITY_FILE.exists():
             with open(TEST_PRIORITY_FILE) as f:
@@ -215,7 +220,7 @@ class TestPrioritizer:
         with open(TEST_PRIORITY_FILE, "w") as f:
             json.dump(priorities, f, indent=2)
 
-    def calculate_test_scores(self) -> Dict[str, float]:
+    def calculate_test_scores(self) -> dict[str, float]:
         """Calculate a score for each test based on priority, dependencies, and status."""
         scores = {}
 
@@ -292,7 +297,7 @@ class TestPrioritizer:
         report_lines.append(f"Total tests: {len(self.tracker.tests)}")
 
         # Count tests by status
-        status_counts: Dict[str, int] = defaultdict(int)
+        status_counts: dict[str, int] = defaultdict(int)
         for test_info in self.tracker.tests.values():
             status_counts[test_info["status"]] += 1
 

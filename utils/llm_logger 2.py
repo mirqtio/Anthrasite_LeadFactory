@@ -13,6 +13,8 @@ from typing import Any, Optional, Union
 
 # Use lowercase versions for Python 3.9 compatibility
 
+# Use lowercase versions for Python 3.9 compatibility
+
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -207,7 +209,7 @@ def get_recent_llm_logs(
         limit: Maximum number of logs to return.
 
     Returns:
-        List of log entries.
+        list of log entries.
     """
     return get_llm_logs(operation=operation, limit=limit)
 
@@ -225,7 +227,7 @@ def get_business_llm_logs(
         limit: Maximum number of logs to return.
 
     Returns:
-        List of log entries.
+        list of log entries.
     """
     return get_llm_logs(business_id=business_id, operation=operation, limit=limit)
 

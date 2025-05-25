@@ -9,9 +9,10 @@ import os
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # Import cost metrics
 from utils.cost_metrics import check_gpu_cost_threshold, track_gpu_usage
 

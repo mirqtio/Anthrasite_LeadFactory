@@ -24,6 +24,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional, Union
 
+# Use lowercase versions for Python 3.9 compatibility
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (
     Attachment,
@@ -126,14 +127,14 @@ class SendGridEmailSender:
             to: Recipient email address
             subject: Email subject
             content: Email content (HTML)
-            attachments: List of attachment dictionaries with keys:
+            attachments: list of attachment dictionaries with keys:
                 - content: Base64-encoded content
                 - filename: Attachment filename
                 - type: MIME type (default: application/pdf)
                 - disposition: Attachment disposition (default: attachment)
-            cc: List of CC recipients
-            bcc: List of BCC recipients
-            categories: List of categories for tracking
+            cc: list of CC recipients
+            bcc: list of BCC recipients
+            categories: list of categories for tracking
             custom_args: Custom arguments for tracking
 
         Returns:

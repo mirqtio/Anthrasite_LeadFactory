@@ -10,14 +10,18 @@ Options:
     --vertical VERTICAL  Process only the specified vertical
 """
 import argparse
+import logging
 import os
 import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
+from pathlib import Path
+from typing import Any, Optional, Union
 
+# Use lowercase versions for Python 3.9 compatibility
+# Use lowercase versions for Python 3.9 compatibility
 from dotenv import load_dotenv
 
 # Add project root to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 # Import utility functions with conditional imports for testing
 has_io_imports = False
@@ -39,29 +43,48 @@ except ImportError:
 # Define dummies only if needed
 if not has_io_imports:
 
-    def get_active_zip_codes() -> List[Dict[Any, Any]]:
+    def get_active_zip_codes() -> list[dict[Any, Any]]:
         return []
 
-    def get_verticals() -> List[Dict[Any, Any]]:
+    def get_verticals() -> list[dict[Any, Any]]:
         return []
 
-    def load_yaml_config(file_path: str) -> Dict[Any, Any]:
+    def load_yaml_config(file_path: str) -> dict[Any, Any]:
         return {}
 
     def make_api_request(
         url: str,
         method: str = "GET",
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, str]] = None,
+        headers: Optional[dict[Any, Any]] = None,
+        params: Optional[dict[Any, Any]] = None,
+        data: Optional[dict[Any, Any]] = None,
         timeout: int = 30,
-    ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+        max_retries: int = 3,
+        retry_delay: int = 2,
+        track_cost: bool = True,
+        service_name: Optional[str] = None,
+        operation: Optional[str] = None,
+        cost_cents: int = 0,
+        tier: int = 1,
+        business_id: Optional[int] = None,
+    ) -> tuple[Optional[dict[Any, Any]], Optional[str]]:
         return {}, None
 
-    def mark_zip_done(zip_code: str, vertical: str) -> None:
-        pass
+    def mark_zip_done(zip_code: str) -> bool:
+        return True
 
-    def save_business(business_data: Dict[str, Any]) -> None:
-        pass
+    def save_business(
+        name: str,
+        address: str,
+        zip_code: str,
+        category: str,
+        website: Optional[str] = None,
+        email: Optional[str] = None,
+        phone: Optional[str] = None,
+        source: str = "manual",
+        source_id: Optional[str] = None,
+    ) -> Optional[int]:
+        return 1
 
 
 # Import logging utilities with conditional imports for testing
@@ -88,8 +111,8 @@ logger = get_logger(__name__)
 # Load environment variables
 load_dotenv()
 # Constants
-VERTICALS_CONFIG_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "etc", "verticals.yml"
+VERTICALS_CONFIG_PATH = str(
+    Path(__file__).resolve().parent.parent / "etc" / "verticals.yml"
 )
 YELP_API_KEY = os.getenv("YELP_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_KEY")
@@ -122,7 +145,7 @@ class YelpAPI:
         radius: int = 40000,  # 25 miles in meters
         limit: int = 50,
         sort_by: str = "best_match",
-    ) -> Tuple[List[Dict], Optional[str]]:
+    ) -> tuple[list[Dict], Optional[str]]:
         """Search for businesses on Yelp.
         Args:
             term: Search term (e.g., "hvac").
@@ -131,7 +154,7 @@ class YelpAPI:
             limit: Maximum number of results to return.
             sort_by: Sort method (best_match, rating, review_count, distance).
         Returns:
-            Tuple of (businesses_list, error_message).
+            tuple of (businesses_list, error_message).
             If successful, error_message is None.
             If failed, businesses_list is an empty list.
         """
@@ -159,12 +182,12 @@ class YelpAPI:
 
     def get_business_details(
         self, business_id: str
-    ) -> Tuple[Optional[Dict], Optional[str]]:
+    ) -> tuple[Optional[dict], Optional[str]]:
         """Get detailed information about a business.
         Args:
             business_id: Yelp business ID.
         Returns:
-            Tuple of (business_details, error_message).
+            tuple of (business_details, error_message).
             If successful, error_message is None.
             If failed, business_details is None.
         """
@@ -199,7 +222,7 @@ class GooglePlacesAPI:
         location: str,
         radius: int = 40000,  # 25 miles in meters
         type_filter: str = "business",
-    ) -> Tuple[List[Dict], Optional[str]]:
+    ) -> tuple[list[Dict], Optional[str]]:
         """Search for places on Google Maps.
         Args:
             query: Search query.
@@ -207,7 +230,7 @@ class GooglePlacesAPI:
             radius: Search radius in meters.
             type_filter: Type of place to search for.
         Returns:
-            Tuple of (places_list, error_message).
+            tuple of (places_list, error_message).
             If successful, error_message is None.
             If failed, places_list is an empty list.
         """
@@ -232,12 +255,12 @@ class GooglePlacesAPI:
             return [], error
         return response_data.get("results", []), None
 
-    def get_place_details(self, place_id: str) -> Tuple[Optional[Dict], Optional[str]]:
+    def get_place_details(self, place_id: str) -> tuple[Optional[Dict], Optional[str]]:
         """Get detailed information about a place.
         Args:
             place_id: Google Place ID.
         Returns:
-            Tuple of (place_details, error_message).
+            tuple of (place_details, error_message).
             If successful, error_message is None.
             If failed, place_details is None.
         """
@@ -429,14 +452,14 @@ def process_google_place(
 
 def scrape_businesses(
     zip_code: str, vertical: dict, limit: int = 50
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     """Scrape businesses for a specific ZIP code and vertical.
     Args:
         zip_code: ZIP code to scrape.
         vertical: Vertical information.
         limit: Maximum number of businesses to fetch per API.
     Returns:
-        Tuple of (yelp_count, google_count) - number of businesses scraped from each source.
+        tuple of (yelp_count, google_count) - number of businesses scraped from each source.
     """
     logger.info(f"Scraping businesses for ZIP {zip_code}, vertical {vertical['name']}")
     # Initialize API clients

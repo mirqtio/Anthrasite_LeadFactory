@@ -16,6 +16,8 @@ from typing import Any
 
 # Use lowercase versions for Python 3.9 compatibility
 
+# Use lowercase versions for Python 3.9 compatibility
+
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -35,7 +37,7 @@ def process_websites(verbose: bool = False) -> tuple[int, int]:
         verbose: Whether to print verbose output.
 
     Returns:
-        Tuple of (processed_count, success_count).
+        tuple of (processed_count, success_count).
     """
     if verbose:
         logger.info("Processing pending websites...")

@@ -24,6 +24,9 @@ import os
 import re
 import sys
 from datetime import datetime
+from typing import Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Setup logging
 logging.basicConfig(
@@ -295,7 +298,7 @@ def generate_markdown_report(test_data, output_file):
         # Category progress
         f.write("## Category Progress\n\n")
         f.write(
-            "| Category | Enabled Files | Total Files | Enabled Cases | Total Cases | Progress |\n"
+            "| Union[Category, Enabled] Union[Files, Total] Union[Files, Enabled] Union[Cases, Total] Union[Cases, Progress] |\n"
         )
         f.write(
             "|----------|--------------|-------------|---------------|-------------|----------|\n"
@@ -316,7 +319,7 @@ def generate_markdown_report(test_data, output_file):
 
         # Priority progress
         f.write("## Priority Progress\n\n")
-        f.write("| Priority | Enabled | Total | Progress |\n")
+        f.write("| Union[Priority, Enabled] | Union[Total, Progress] |\n")
         f.write("|----------|---------|-------|----------|\n")
 
         for priority in TEST_PRIORITIES:
@@ -338,7 +341,7 @@ def generate_markdown_report(test_data, output_file):
 
         recommendations = generate_recommendations(test_data)
         if recommendations:
-            f.write("| File | Category | Priority | Test Cases |\n")
+            f.write("| Union[File, Category] | Union[Priority, Test] Cases |\n")
             f.write("|------|----------|----------|------------|\n")
 
             for rec in recommendations:
@@ -392,7 +395,7 @@ def generate_markdown_report(test_data, output_file):
 
         # Detailed test status
         f.write("## Detailed Test Status\n\n")
-        f.write("| File | Category | Priority | Enabled | Test Cases |\n")
+        f.write("| Union[File, Category] | Union[Priority, Enabled] | Test Cases |\n")
         f.write("|------|----------|----------|---------|------------|\n")
 
         for test_file, test_info in sorted(test_data["tests"].items()):

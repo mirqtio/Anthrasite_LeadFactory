@@ -26,6 +26,9 @@ import os
 import subprocess
 import sys
 from datetime import datetime
+from typing import Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Setup logging
 logging.basicConfig(
@@ -317,7 +320,7 @@ def generate_progress_report(status):
 
         # Category progress
         f.write("## Category Progress\n\n")
-        f.write("| Category | Status | Tests Enabled | Total Tests |\n")
+        f.write("| Union[Category, Status] | Tests Union[Enabled, Total] Tests |\n")
         f.write("|----------|--------|--------------|-------------|\n")
 
         for category, cat_status in status["categories"].items():
@@ -339,7 +342,7 @@ def generate_progress_report(status):
         for category, cat_status in status["categories"].items():
             if cat_status["enabled"]:
                 f.write(f"### {category}\n\n")
-                f.write("| Test | Status | Last Updated |\n")
+                f.write("| Union[Test, Status] | Last Updated |\n")
                 f.write("|------|--------|-------------|\n")
 
                 for test_name, test_status in cat_status["tests"].items():

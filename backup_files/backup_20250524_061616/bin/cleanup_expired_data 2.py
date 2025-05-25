@@ -10,31 +10,15 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
-
-# Use lowercase type annotations for Python 3.9 compatibility
+from typing import Any, Dict, List, Optional, Tuple
 
 # Add project root to path using pathlib for better compatibility
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-
-# Use functions to get the modules we need to avoid E402 errors
-def _get_config():
-    from utils.config import get_config
-
-    return get_config
-
-
-def _get_database_connection():
-    from utils.database import DatabaseConnection
-
-    return DatabaseConnection
-
-
-# Create references to use in the code
-get_config = _get_config()
-DatabaseConnection = _get_database_connection()
+# Import dependencies after path setup
+from utils.config import get_config
+from utils.database import DatabaseConnection
 
 # Configure logging
 logging.basicConfig(
@@ -92,7 +76,7 @@ def delete_expired_files(expired_html_paths: list[str], dry_run: bool = False) -
     Delete expired HTML files from the filesystem.
 
     Args:
-        expired_html_paths: List of paths to HTML files to delete
+        expired_html_paths: list of paths to HTML files to delete
         dry_run: If True, only log what would be deleted without actually deleting
 
     Returns:
@@ -100,10 +84,10 @@ def delete_expired_files(expired_html_paths: list[str], dry_run: bool = False) -
     """
     files_deleted = 0
     for path in expired_html_paths:
-        if Path(path).exists():
+        if os.path.exists(path):
             if not dry_run:
                 try:
-                    Path(path).unlink()
+                    os.remove(path)
                     files_deleted += 1
                 except Exception as e:
                     logger.error(f"Error deleting file {path}: {e}")
@@ -120,8 +104,8 @@ def delete_database_records(
     Delete expired records from the database.
 
     Args:
-        expired_html_paths: List of HTML file paths to delete from database
-        expired_log_ids: List of LLM log IDs to delete
+        expired_html_paths: list of HTML file paths to delete from database
+        expired_log_ids: list of LLM log IDs to delete
         dry_run: If True, only log what would be deleted without actually deleting
 
     Returns:

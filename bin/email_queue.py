@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any, Optional, TypeVar, Union, cast
 
 # Use lowercase versions for Python 3.9 compatibility
-
+# Use lowercase versions for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
 import requests
 from dotenv import load_dotenv
@@ -248,7 +248,7 @@ class SendGridEmailSender:
             mockup_html: HTML code for mockup (optional).
             is_dry_run: If True, don't actually send the email.
         Returns:
-            Tuple of (success, message_id, error_message).
+            tuple of (success, message_id, error_message).
         """
         if not self.api_key:
             return False, None, "SendGrid API key not provided"
@@ -745,7 +745,7 @@ def generate_email_content(business: dict, template: str) -> tuple[str, str, str
         business: Business data.
         template: Email template.
     Returns:
-        Tuple of (subject, html_content, text_content).
+        tuple of (subject, html_content, text_content).
     """
     # Extract business information
     business_id = business["id"]
@@ -848,7 +848,7 @@ def send_business_email(
     email_sender: SendGridEmailSender,
     template: str,
     is_dry_run: bool = False,
-) -> Tuple[bool, Optional[str], Optional[str]]:
+) -> tuple[bool, Optional[str], Optional[str]]:
     """Send email for a business.
     Args:
         business: Business data.
@@ -856,7 +856,7 @@ def send_business_email(
         template: Email template.
         is_dry_run: If True, don't actually send the email.
     Returns:
-        Tuple of (success, message_id, error_message).
+        tuple of (success, message_id, error_message).
     """
     business_id = business["id"]
     business_name = business.get("name", "")
@@ -913,13 +913,13 @@ def send_business_email(
 
 def process_business_email(
     business_id: int, dry_run: bool = None
-) -> Union[bool, Tuple[bool, Optional[str], Optional[str]]]:
+) -> Union[bool, tuple[bool, Optional[str], Optional[str]]]:
     """Process a single business for email sending.
     Args:
         business_id: The ID of the business to process
         dry_run: If True, don't actually send emails. If None, uses the global DRY_RUN setting.
     Returns:
-        Union[bool, Tuple[bool, Optional[str], Optional[str]]]:
+        Union[bool, tuple[bool, Optional[str], Optional[str]]]:
             Either a boolean indicating success, or a tuple with (success, message_id, error)
     """
 

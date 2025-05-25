@@ -22,6 +22,7 @@ import time
 from datetime import datetime
 from typing import Any
 
+# Use lowercase versions for Python 3.9 compatibility
 import requests
 
 # Setup logging
@@ -129,7 +130,7 @@ class HealthCheckSystem:
         """Check if Docker is running.
 
         Returns:
-            Tuple of (passed, details)
+            tuple of (passed, details)
         """
         try:
             # Run docker ps command
@@ -150,7 +151,7 @@ class HealthCheckSystem:
         """Check if database is accessible.
 
         Returns:
-            Tuple of (passed, details)
+            tuple of (passed, details)
         """
         try:
             # Try to connect to PostgreSQL
@@ -194,7 +195,7 @@ class HealthCheckSystem:
         """Check if API is accessible.
 
         Returns:
-            Tuple of (passed, details)
+            tuple of (passed, details)
         """
         try:
             # Try to connect to API
@@ -213,7 +214,7 @@ class HealthCheckSystem:
         """Check if disk space is sufficient.
 
         Returns:
-            Tuple of (passed, details)
+            tuple of (passed, details)
         """
         try:
             # Get disk usage
@@ -247,7 +248,7 @@ class HealthCheckSystem:
         """Check if memory is sufficient.
 
         Returns:
-            Tuple of (passed, details)
+            tuple of (passed, details)
         """
         try:
             # Get memory usage
@@ -318,7 +319,7 @@ class HealthCheckSystem:
         """Check if network is accessible.
 
         Returns:
-            Tuple of (passed, details)
+            tuple of (passed, details)
         """
         try:
             # Ping Google DNS

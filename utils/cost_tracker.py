@@ -6,8 +6,9 @@ import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
+# Use lowercase versions for Python 3.9 compatibility
 # Import logger
 from utils.logging_config import logger
 
@@ -137,7 +138,7 @@ def get_cost_by_service() -> dict[str, float]:
     Get the total API cost for each service for the current month.
 
     Returns:
-        Dict[str, float]: A dictionary of service names to costs in dollars
+        dict[str, float]: A dictionary of service names to costs in dollars
     """
     # Implementation would typically query a database
     # For now, we'll return mock values
@@ -157,7 +158,7 @@ def get_cost_by_operation(service: str) -> dict[str, float]:
         service: The service name
 
     Returns:
-        Dict[str, float]: A dictionary of operation names to costs in dollars
+        dict[str, float]: A dictionary of operation names to costs in dollars
     """
     # Implementation would typically query a database
     # For now, we'll return mock values based on the service
@@ -186,7 +187,7 @@ def get_daily_costs(days: int = 30) -> dict[str, float]:
         days: The number of days to get costs for
 
     Returns:
-        Dict[str, float]: A dictionary of dates to costs in dollars
+        dict[str, float]: A dictionary of dates to costs in dollars
     """
     # Implementation would typically query a database
     # For now, we'll return mock values
@@ -206,7 +207,7 @@ def check_budget_thresholds() -> dict[str, Any]:
     Check if the daily or monthly budget thresholds have been exceeded.
 
     Returns:
-        Dict[str, Any]: A dictionary with threshold status information
+        dict[str, Any]: A dictionary with threshold status information
     """
     daily_cost = get_daily_cost()
     monthly_cost = get_monthly_cost()
@@ -243,12 +244,12 @@ def check_budget_thresholds() -> dict[str, Any]:
     }
 
 
-def is_scaling_gate_active() -> Tuple[bool, str]:
+def is_scaling_gate_active() -> tuple[bool, str]:
     """
     Check if the scaling gate is currently active.
 
     Returns:
-        Tuple[bool, str]: A tuple of (active, reason)
+        tuple[bool, str]: A tuple of (active, reason)
     """
     # If scaling gate is disabled, it's never active
     if not SCALING_GATE_ENABLED:
@@ -263,7 +264,7 @@ def is_scaling_gate_active() -> Tuple[bool, str]:
     if SCALING_GATE_FILE.exists():
         try:
             with SCALING_GATE_FILE.open() as f:
-                data = json.load(f)
+                data: dict[str, Any] = json.load(f)
                 if data.get("active", False):
                     return True, data.get("reason", "Unknown reason")
         except (json.JSONDecodeError, FileNotFoundError):
@@ -289,32 +290,34 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
         return False
 
     # Create the scaling gate file if it doesn't exist
-    if not SCALING_GATE_FILE.exists():
-        data = {
-            "active": active,
-            "reason": reason,
-            "updated_at": datetime.now().isoformat(),
-            "history": [],
-        }
-    else:
+    gate_data: dict[str, Any] = {
+        "active": active,
+        "reason": reason,
+        "updated_at": datetime.now().isoformat(),
+        "history": [],
+    }
+
+    if SCALING_GATE_FILE.exists():
         try:
             with SCALING_GATE_FILE.open() as f:
-                data: Dict[str, Any] = json.load(f)
+                gate_data = json.load(f)
                 # Only add to history if the status changed
-                if data.get("active", False) != active:
-                    history_entry: Dict[str, Any] = {
+                if gate_data.get("active", False) != active:
+                    history_entry: dict[str, Any] = {
                         "timestamp": datetime.now().isoformat(),
                         "active": active,
                         "reason": reason,
                     }
-                    if "history" not in data:
-                        data["history"] = []
-                    data["history"].append(history_entry)
-                data["active"] = active
-                data["reason"] = reason
-                data["updated_at"] = datetime.now().isoformat()
+                    if "history" not in gate_data:
+                        gate_data["history"] = []
+                    if isinstance(gate_data["history"], list):
+                        gate_data["history"].append(history_entry)
+                gate_data["active"] = active
+                gate_data["reason"] = reason
+                gate_data["updated_at"] = datetime.now().isoformat()
         except (json.JSONDecodeError, FileNotFoundError):
-            data = {
+            # Reset to default if file is corrupt or missing
+            gate_data = {
                 "active": active,
                 "reason": reason,
                 "updated_at": datetime.now().isoformat(),
@@ -323,7 +326,7 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
 
     try:
         with SCALING_GATE_FILE.open("w") as f:
-            json.dump(data, f, indent=2)
+            json.dump(gate_data, f, indent=2)
         return True
     except Exception as e:
         logger.error(f"Failed to set scaling gate: {e}")
@@ -333,8 +336,8 @@ def set_scaling_gate(active: bool, reason: str) -> bool:
 def check_operation_permission(
     service: str,
     operation: str,
-    critical_operations: Optional[Dict[str, List[str]]] = None,
-) -> Tuple[bool, str]:
+    critical_operations: Optional[dict[str, list[str]]] = None,
+) -> tuple[bool, str]:
     """
     Check if an operation is permitted based on the scaling gate status.
 
@@ -344,7 +347,7 @@ def check_operation_permission(
         critical_operations: Optional dictionary of critical operations
 
     Returns:
-        Tuple[bool, str]: A tuple of (permitted, reason)
+        tuple[bool, str]: A tuple of (permitted, reason)
     """
     # If scaling gate is disabled, all operations are permitted
     if not SCALING_GATE_ENABLED:
@@ -376,7 +379,7 @@ def check_operation_permission(
 def should_allow_operation(
     service: str,
     operation: str,
-    critical_operations: Optional[Dict[str, List[str]]] = None,
+    critical_operations: Optional[dict[str, list[str]]] = None,
 ) -> bool:
     """
     Determine if an operation should be allowed based on the scaling gate status.
@@ -395,14 +398,14 @@ def should_allow_operation(
     return permitted
 
 
-def get_cost_metrics() -> List[str]:
+def get_cost_metrics() -> list[str]:
     """
     Get Prometheus metrics for API costs.
 
     Returns:
-        List[str]: A list of Prometheus metrics
+        list[str]: A list of Prometheus metrics
     """
-    metrics: List[str] = []
+    metrics: list[str] = []
 
     # Add daily cost metrics
     daily_cost = get_daily_cost()
@@ -472,7 +475,7 @@ def get_daily_costs_endpoint() -> dict[str, float]:
     Get the total API cost for each day for the last 30 days.
 
     Returns:
-        Dict[str, float]: A dictionary of dates to costs in dollars
+        dict[str, float]: A dictionary of dates to costs in dollars
     """
     return get_daily_costs(30)
 
@@ -482,7 +485,7 @@ def get_monthly_costs_endpoint() -> dict[str, float]:
     Get the total API cost for each month for the last 12 months.
 
     Returns:
-        Dict[str, float]: A dictionary of months to costs in dollars
+        dict[str, float]: A dictionary of months to costs in dollars
     """
     try:
         # Implementation would typically query a database
@@ -510,7 +513,7 @@ def get_cost_breakdown_endpoint() -> dict[str, Any]:
     Get a breakdown of API costs by service and operation.
 
     Returns:
-        Dict[str, Any]: A dictionary with cost breakdown information
+        dict[str, Any]: A dictionary with cost breakdown information
     """
     try:
         cost_by_service = get_cost_by_service()
@@ -536,7 +539,7 @@ def get_budget_status_endpoint() -> dict[str, Any]:
     Get the current budget status.
 
     Returns:
-        Dict[str, Any]: A dictionary with budget status information
+        dict[str, Any]: A dictionary with budget status information
     """
     return check_budget_thresholds()
 
@@ -546,7 +549,7 @@ def get_scaling_gate_status_endpoint() -> dict[str, Any]:
     Get the current scaling gate status.
 
     Returns:
-        Dict[str, Any]: A dictionary with scaling gate status information
+        dict[str, Any]: A dictionary with scaling gate status information
     """
     try:
         # Get the scaling gate status
@@ -555,7 +558,7 @@ def get_scaling_gate_status_endpoint() -> dict[str, Any]:
         # Read the scaling gate file for history
         if SCALING_GATE_FILE.exists():
             with SCALING_GATE_FILE.open() as f:
-                data = json.load(f)
+                data: dict[str, Any] = json.load(f)
                 history = data.get("history", [])
         else:
             history = []
@@ -580,7 +583,7 @@ def get_cost_breakdown_by_service():
     Get a breakdown of API costs by service.
 
     Returns:
-        Dict[str, float]: A dictionary of service names to costs in dollars
+        dict[str, float]: A dictionary of service names to costs in dollars
     """
     return get_cost_by_service()
 
@@ -593,7 +596,7 @@ def get_cost_breakdown_by_operation(service: str):
         service: The service name
 
     Returns:
-        Dict[str, float]: A dictionary of operation names to costs in dollars
+        dict[str, float]: A dictionary of operation names to costs in dollars
     """
     return get_cost_by_operation(service)
 
@@ -603,7 +606,7 @@ def get_scaling_gate_history():
     Get the history of scaling gate status changes.
 
     Returns:
-        List[Dict[str, Any]]: A list of scaling gate status changes
+        list[dict[str, Any]]: A list of scaling gate status changes
     """
     # Check if the scaling gate file exists
     if not SCALING_GATE_FILE.exists():
@@ -611,7 +614,7 @@ def get_scaling_gate_history():
 
     try:
         with SCALING_GATE_FILE.open() as f:
-            data = json.load(f)
+            data: dict[str, Any] = json.load(f)
             if "history" in data:
                 return data["history"]
             return []

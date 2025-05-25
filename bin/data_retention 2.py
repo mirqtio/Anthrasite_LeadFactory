@@ -34,6 +34,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional, Union
 
+# Use lowercase versions for Python 3.9 compatibility
+
 # Add parent directory to path to allow importing supabase client
 # Use pathlib for better path handling
 project_root = Path(__file__).parent.parent
@@ -406,7 +408,7 @@ class DataRetentionManager:
             limit: Maximum number of logs to return
 
         Returns:
-            List of log data
+            list of log data
         """
         try:
             # Query database

@@ -1,0 +1,53 @@
+# Task ID: 22
+# Title: Raw Data Retention Implementation
+# Status: done
+# Dependencies: 20
+# Priority: medium
+# Description: Implement raw data retention for scraped HTML and LLM interactions to meet compliance requirements
+# Details:
+Implement the following raw data retention features:
+
+1. Persist raw HTML of each scraped homepage (compressed) and store the path in the database
+2. Log LLM prompt and response JSON (for deduplication and mockup generation) in a new `llm_logs` table
+3. Ensure no data cleanup occurs for at least 90 days (document retention policy)
+4. Add documentation for the data retention policy and implementation
+
+These features will ensure compliance with data retention requirements and provide an audit trail for system operations.
+
+# Test Strategy:
+All code changes must follow the standard workflow for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. Refer to the Feature Development Workflow Template (Task #27) for the complete process.
+
+# Subtasks:
+## 1. Implement HTML Storage for Scraped Homepages [done]
+### Dependencies: None
+### Description: Create a system to compress and store raw HTML from scraped homepages and record the storage path in the database
+### Details:
+1. Implement compression algorithm for HTML content
+2. Create storage directory structure with appropriate permissions
+3. Modify scraper to save compressed HTML after each successful scrape
+4. Add database column to store file path reference
+5. Update existing code to record file paths for each scrape
+6. Implement error handling for storage failures
+
+## 2. Create LLM Logging System [done]
+### Dependencies: None
+### Description: Develop a logging system to record all LLM prompts and responses in a new database table
+### Details:
+1. Create new `llm_logs` table with appropriate schema (timestamp, user_id, prompt_text, response_json, model_version, etc.)
+2. Implement logging middleware to capture all LLM interactions
+3. Add indexing for efficient querying
+4. Ensure proper JSON serialization/deserialization
+5. Add metadata fields for deduplication purposes
+6. Implement query interface for audit purposes
+
+## 3. Implement 90-Day Retention Policy [done]
+### Dependencies: 22.1, 22.2
+### Description: Configure data retention mechanisms to ensure all raw data is preserved for at least 90 days and document the implementation
+### Details:
+1. Create retention policy configuration in system settings
+2. Implement scheduled job to identify but not delete data older than 90 days
+3. Add warning system for approaching deletion dates
+4. Create admin interface for retention policy management
+5. Write comprehensive documentation covering data retention implementation
+6. Document compliance aspects and audit procedures
+7. Add data export functionality for records prior to potential deletion

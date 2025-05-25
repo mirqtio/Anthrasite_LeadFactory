@@ -22,7 +22,9 @@ import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Any, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 import requests
 
@@ -88,7 +90,7 @@ class SupabaseUsageMonitor:
 
         return ""
 
-    def get_storage_usage(self) -> Dict[str, Any]:
+    def get_storage_usage(self) -> dict[str, Any]:
         """Get storage usage from Supabase.
 
         Returns:
@@ -211,7 +213,7 @@ class SupabaseUsageMonitor:
             logger.exception(f"Error getting storage usage: {e}")
             return {"size_mb": 0, "size_bytes": 0, "buckets": [], "percentage_used": 0}
 
-    def get_database_usage(self) -> Dict[str, Any]:
+    def get_database_usage(self) -> dict[str, Any]:
         """Get database usage from Supabase.
 
         Returns:
@@ -380,7 +382,7 @@ class SupabaseUsageMonitor:
                 "row_percentage_used": 0,
             }
 
-    def get_all_usage(self) -> Dict[str, Any]:
+    def get_all_usage(self) -> dict[str, Any]:
         """Get all usage information from Supabase.
 
         Returns:
@@ -401,7 +403,7 @@ class SupabaseUsageMonitor:
         }
 
     def save_usage_report(
-        self, usage_data: Dict[str, Any], output_file: Optional[str] = None
+        self, usage_data: dict[str, Any], output_file: Optional[str] = None
     ) -> str:
         """Save usage report to a file.
 

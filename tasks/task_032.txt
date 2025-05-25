@@ -1,0 +1,75 @@
+# Task ID: 32
+# Title: Python 3.9 Compatibility Implementation
+# Status: in_progress
+# Dependencies: None
+# Priority: high
+# Description: Systematically resolve Python 3.9 compatibility issues throughout the codebase to ensure proper CI pipeline operation
+# Details:
+This task involves implementing a comprehensive approach to fix Python 3.9 compatibility issues across the Anthrasite LeadFactory codebase. Key steps include:
+
+1. Identify and resolve type annotation issues incompatible with Python 3.9
+2. Fix module import issues and ensure proper typing imports
+3. Update mypy configuration to better handle Python 3.9 compatibility
+4. Create diagnostic and automation scripts to aid in fixing compatibility issues
+5. Document best practices for maintaining Python 3.9 compatibility
+6. Ensure CI pipeline passes with Python 3.9 environment
+
+This implementation must follow the Feature Development Workflow Template (Task #27) with a focus on maintaining high code quality while addressing ongoing CI failures.
+
+# Test Strategy:
+Testing will focus on ensuring all linting tools pass in Python 3.9 environment:
+
+1. Run mypy with Python 3.9 to verify type checking passes
+2. Run ruff, black, and flake8 to ensure code style compliance
+3. Execute all unit and integration tests with Python 3.9
+4. Verify CI pipeline passes with Python 3.9 environment
+5. Document any non-automatable issues that require ongoing attention
+
+# Subtasks:
+## 1. Analyze Python 3.9 compatibility issues [done]
+### Dependencies: None
+### Description: Identify all Python 3.9 compatibility issues in the codebase using diagnostic tools
+### Details:
+Run diagnostic scripts to identify and categorize all Python 3.9 compatibility issues. Focus on type annotation syntax differences, missing imports, and function signature mismatches. Create a comprehensive report documenting all identified issues.
+
+## 2. Create Python 3.9 compatibility fix script [done]
+### Dependencies: 32.1
+### Description: Develop and implement an automation script to fix common compatibility issues
+### Details:
+Create scripts/fix_python39_compatibility.py to automatically fix common Python 3.9 compatibility issues. Ensure it handles type annotation differences, adds necessary imports, and properly documents any non-automatable issues for manual review.
+
+## 3. Update mypy configuration [done]
+### Dependencies: 32.1
+### Description: Modify mypy.ini to properly handle Python 3.9 compatibility issues
+### Details:
+Update mypy.ini to exclude duplicate files, temporarily disable unreachable code warnings, and add appropriate ignore patterns for third-party libraries without type stubs. Ensure configuration allows CI pipeline to run successfully while maintaining high code quality standards.
+
+## 4. Fix type annotation issues [done]
+### Dependencies: 32.2, 32.3
+### Description: Systematically address type annotation issues throughout the codebase
+### Details:
+Fix type annotation syntax issues, function signature mismatches, and variable annotation problems in critical files including bin/cost_tracking.py, bin/budget_audit.py, and utils modules. Ensure consistent return types across module boundaries.
+
+## 5. Fix missing imports [done]
+### Dependencies: 32.2
+### Description: Add missing imports in all modules with undefined name errors
+### Details:
+Address all 'Name X is not defined' errors by adding appropriate imports. Focus on bin/email/sendgrid_email_sender.py and other modules with missing imports for sys, os, and typing modules.
+
+## 6. Fix None-aware operations [done]
+### Dependencies: 32.4
+### Description: Ensure proper handling of None values in method calls
+### Details:
+Fix all instances of 'None has no attribute X' errors by implementing proper None checks before method calls. Focus on datetime.isoformat() calls and other common patterns where None values need special handling.
+
+## 7. Create Python 3.9 compatibility documentation [done]
+### Dependencies: 32.4, 32.5, 32.6
+### Description: Document all compatibility issues, fixes, and best practices
+### Details:
+Create docs/python39_compatibility.md documenting all compatibility issues, fixes applied, remaining issues, and best practices for maintaining compatibility. Include sections on common patterns to avoid and recommended approaches.
+
+## 8. Run CI pipeline with Python 3.9 [pending]
+### Dependencies: 32.3, 32.4, 32.5, 32.6, 32.7
+### Description: Verify CI pipeline passes with Python 3.9 environment
+### Details:
+Run the CI pipeline in GitHub Actions with Python 3.9 environment to ensure all fixes are properly applied. Document any remaining issues and create a plan for addressing them.

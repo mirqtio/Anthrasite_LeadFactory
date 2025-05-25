@@ -1,0 +1,5 @@
+Usage: black [OPTIONS] SRC ...
+Try 'black -h' for help.
+
+Error: Invalid value for 'SRC ...': Path './backup_files/backup_20250524_061616/bin/cost_tracking' does not exist.
+Black exit code: 2

@@ -1,0 +1,2478 @@
+.tmp/test_unsubscribe:1:1: E902 No such file or directory (os error 2)
+2.py:1:1: E902 No such file or directory (os error 2)
+3.py:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/batch_completion_monitor:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/budget_gate:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/cleanup_expired_data:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/cost_tracking:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/data_retention:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/dedupe:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/email/sendgrid_email_sender:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/email_queue:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/mockup:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/score:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/scrape:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/bin/unsubscribe_handler:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/scripts/enable_ci_tests:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/scripts/generate_test_progress_report:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/scripts/generate_test_status_report:1:1: E902 No such file or directory (os error 2)
+backup_files/backup_20250524_061616/scripts/monitor_supabase_usage:1:1: E902 No such file or directory (os error 2)
+bin/unsubscribe_handler.py:42:17: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+41 | # Create templates directory if it doesn't exist
+42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
+   |                 ^^^^^^^^^^^^ PTH118
+43 | os.makedirs(templates_dir, exist_ok=True)
+   |
+
+bin/unsubscribe_handler.py:42:30: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+   |
+41 | # Create templates directory if it doesn't exist
+42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
+   |                              ^^^^^^^^^^^^^^^ PTH120
+43 | os.makedirs(templates_dir, exist_ok=True)
+   |
+
+bin/unsubscribe_handler.py:42:46: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+   |
+41 | # Create templates directory if it doesn't exist
+42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
+   |                                              ^^^^^^^^^^^^^^^ PTH120
+43 | os.makedirs(templates_dir, exist_ok=True)
+   |
+
+bin/unsubscribe_handler.py:43:1: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+41 | # Create templates directory if it doesn't exist
+42 | templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
+43 | os.makedirs(templates_dir, exist_ok=True)
+   | ^^^^^^^^^^^ PTH103
+44 |
+45 | # Create templates
+   |
+
+bin/unsubscribe_handler.py:49:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+48 | # Create unsubscribe template if it doesn't exist
+49 | unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
+   |                             ^^^^^^^^^^^^ PTH118
+50 | if not os.path.exists(unsubscribe_template_path):
+51 |     with open(unsubscribe_template_path, "w") as f:
+   |
+
+bin/unsubscribe_handler.py:50:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+48 | # Create unsubscribe template if it doesn't exist
+49 | unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
+50 | if not os.path.exists(unsubscribe_template_path):
+   |        ^^^^^^^^^^^^^^ PTH110
+51 |     with open(unsubscribe_template_path, "w") as f:
+52 |         f.write(
+   |
+
+bin/unsubscribe_handler.py:51:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+49 | unsubscribe_template_path = os.path.join(templates_dir, "unsubscribe.html")
+50 | if not os.path.exists(unsubscribe_template_path):
+51 |     with open(unsubscribe_template_path, "w") as f:
+   |          ^^^^ PTH123
+52 |         f.write(
+53 |             """
+   |
+
+bin/unsubscribe_handler.py:202:25: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+201 | # Create success template if it doesn't exist
+202 | success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
+    |                         ^^^^^^^^^^^^ PTH118
+203 | if not os.path.exists(success_template_path):
+204 |     with open(success_template_path, "w") as f:
+    |
+
+bin/unsubscribe_handler.py:203:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+201 | # Create success template if it doesn't exist
+202 | success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
+203 | if not os.path.exists(success_template_path):
+    |        ^^^^^^^^^^^^^^ PTH110
+204 |     with open(success_template_path, "w") as f:
+205 |         f.write(
+    |
+
+bin/unsubscribe_handler.py:204:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+202 | success_template_path = os.path.join(templates_dir, "unsubscribe_success.html")
+203 | if not os.path.exists(success_template_path):
+204 |     with open(success_template_path, "w") as f:
+    |          ^^^^ PTH123
+205 |         f.write(
+206 |             """
+    |
+
+create_repo_skeleton.py:58:9: T201 `print` found
+   |
+56 |     for directory in DIRS:
+57 |         Path(directory).mkdir(parents=True, exist_ok=True)
+58 |         print(f"Created directory: {directory}")
+   |         ^^^^^ T201
+59 |
+60 |     # Create stub files
+   |
+   = help: Remove `print`
+
+create_repo_skeleton.py:63:18: PTH123 `open()` should be replaced by `Path.open()`
+   |
+61 |     for file_path, content in STUBS.items():
+62 |         if not Path(file_path).exists():
+63 |             with open(file_path, "w") as f:
+   |                  ^^^^ PTH123
+64 |                 f.write(content)
+65 |             print(f"Created file: {file_path}")
+   |
+
+create_repo_skeleton.py:65:13: T201 `print` found
+   |
+63 |             with open(file_path, "w") as f:
+64 |                 f.write(content)
+65 |             print(f"Created file: {file_path}")
+   |             ^^^^^ T201
+66 |
+67 |     # Make scripts executable
+   |
+   = help: Remove `print`
+
+create_repo_skeleton.py:70:9: T201 `print` found
+   |
+68 |     for script in Path("bin").glob("*.py"):
+69 |         script.chmod(0o755)
+70 |         print(f"Made executable: {script}")
+   |         ^^^^^ T201
+   |
+   = help: Remove `print`
+
+create_repo_skeleton.py:75:5: T201 `print` found
+   |
+73 | if __name__ == "__main__":
+74 |     create_skeleton()
+75 |     print("\nRepository skeleton created successfully!")
+   |     ^^^^^ T201
+   |
+   = help: Remove `print`
+
+fix_dedupe_simple.py:11:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+ 9 |     file_path = "tests/test_dedupe_simple.py"
+10 |
+11 |     with open(file_path) as f:
+   |          ^^^^ PTH123
+12 |         lines = f.readlines()
+   |
+
+fix_dedupe_simple.py:74:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+72 |         fixed_lines.append(line)
+73 |
+74 |     with open(file_path, "w") as f:
+   |          ^^^^ PTH123
+75 |         f.writelines(fixed_lines)
+   |
+
+fix_dedupe_simple.py:77:5: T201 `print` found
+   |
+75 |         f.writelines(fixed_lines)
+76 |
+77 |     print(f"Fixed PEP8 issues in {file_path}")
+   |     ^^^^^ T201
+   |
+   = help: Remove `print`
+
+fix_mockup_unit.py:11:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+ 9 |     file_path = "tests/test_mockup_unit.py"
+10 |
+11 |     with open(file_path) as f:
+   |          ^^^^ PTH123
+12 |         content = f.read()
+   |
+
+fix_mockup_unit.py:39:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+37 |         fixed_content = fixed_content.replace(old, new)
+38 |
+39 |     with open(file_path, "w") as f:
+   |          ^^^^ PTH123
+40 |         f.write(fixed_content)
+   |
+
+fix_mockup_unit.py:42:5: T201 `print` found
+   |
+40 |         f.write(fixed_content)
+41 |
+42 |     print(f"Fixed mocks in {file_path}")
+   |     ^^^^^ T201
+   |
+   = help: Remove `print`
+
+fix_test_mockup_unit.py:17:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+15 |     file_path = "tests/test_mockup_unit.py"
+16 |
+17 |     with open(file_path) as f:
+   |          ^^^^ PTH123
+18 |         content = f.read()
+   |
+
+fix_test_mockup_unit.py:31:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+29 |     )
+30 |
+31 |     with open(file_path, "w") as f:
+   |          ^^^^ PTH123
+32 |         f.write(content)
+   |
+
+fix_test_mockup_unit.py:34:5: T201 `print` found
+   |
+32 |         f.write(content)
+33 |
+34 |     print("Fixed test_mockup_unit.py")
+   |     ^^^^^ T201
+   |
+   = help: Remove `print`
+
+fix_test_mockup_unit_completely.py:16:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+14 |     file_path = "tests/test_mockup_unit.py"
+15 |
+16 |     with open(file_path) as f:
+   |          ^^^^ PTH123
+17 |         lines = f.readlines()
+   |
+
+fix_test_mockup_unit_completely.py:42:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+40 |             fixed_lines.append(line)
+41 |
+42 |     with open(file_path, "w") as f:
+   |          ^^^^ PTH123
+43 |         f.writelines(fixed_lines)
+   |
+
+fix_test_mockup_unit_completely.py:45:5: T201 `print` found
+   |
+43 |         f.writelines(fixed_lines)
+44 |
+45 |     print("Fixed all issues in test_mockup_unit.py")
+   |     ^^^^^ T201
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:30:5: T201 `print` found
+   |
+28 |     )
+29 |
+30 |     print(f"Repository root: {repo_root}")
+   |     ^^^^^ T201
+31 |     print(f"Backup directory: {backup_root}")
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:31:5: T201 `print` found
+   |
+30 |     print(f"Repository root: {repo_root}")
+31 |     print(f"Backup directory: {backup_root}")
+   |     ^^^^^ T201
+32 |
+33 |     # Create backup directory with timestamp
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:47:5: T201 `print` found
+   |
+45 |                 duplicate_files.append(root_path / file)
+46 |
+47 |     print(f"Found {len(duplicate_files)} duplicate files to back up.")
+   |     ^^^^^ T201
+48 |
+49 |     # Move each file to the backup directory, preserving structure
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:60:13: T201 `print` found
+   |
+58 |         try:
+59 |             shutil.move(file_path, backup_path)
+60 |             print(f"Moved: {rel_path} → {backup_path.relative_to(repo_root)}")
+   |             ^^^^^ T201
+61 |         except Exception as e:
+62 |             print(f"Error moving {rel_path}: {e}")
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:62:13: T201 `print` found
+   |
+60 |             print(f"Moved: {rel_path} → {backup_path.relative_to(repo_root)}")
+61 |         except Exception as e:
+62 |             print(f"Error moving {rel_path}: {e}")
+   |             ^^^^^ T201
+63 |
+64 |     print("\nBackup complete.")
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:64:5: T201 `print` found
+   |
+62 |             print(f"Error moving {rel_path}: {e}")
+63 |
+64 |     print("\nBackup complete.")
+   |     ^^^^^ T201
+65 |     print(f"All duplicate files have been moved to: {backup_root}")
+66 |     print("To restore files if needed, copy them back from the backup directory.")
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:65:5: T201 `print` found
+   |
+64 |     print("\nBackup complete.")
+65 |     print(f"All duplicate files have been moved to: {backup_root}")
+   |     ^^^^^ T201
+66 |     print("To restore files if needed, copy them back from the backup directory.")
+   |
+   = help: Remove `print`
+
+scripts/backup_duplicate_files.py:66:5: T201 `print` found
+   |
+64 |     print("\nBackup complete.")
+65 |     print(f"All duplicate files have been moved to: {backup_root}")
+66 |     print("To restore files if needed, copy them back from the backup directory.")
+   |     ^^^^^ T201
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:25:5: T201 `print` found
+   |
+23 | def fix_formatting(project_root):
+24 |     """Fix formatting issues in the codebase."""
+25 |     print("🔧 Fixing formatting issues...")
+   |     ^^^^^ T201
+26 |
+27 |     # Fix import sorting with ruff
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:32:9: T201 `print` found
+   |
+30 |     )
+31 |     if not success:
+32 |         print(f"❌ Failed to fix imports: {output}")
+   |         ^^^^^ T201
+33 |     else:
+34 |         print("✅ Fixed imports with ruff")
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:34:9: T201 `print` found
+   |
+32 |         print(f"❌ Failed to fix imports: {output}")
+33 |     else:
+34 |         print("✅ Fixed imports with ruff")
+   |         ^^^^^ T201
+35 |
+36 |     # Format code with black
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:41:9: T201 `print` found
+   |
+39 |     )
+40 |     if not success:
+41 |         print(f"❌ Failed to format code: {output}")
+   |         ^^^^^ T201
+42 |     else:
+43 |         print("✅ Formatted code with black")
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:43:9: T201 `print` found
+   |
+41 |         print(f"❌ Failed to format code: {output}")
+42 |     else:
+43 |         print("✅ Formatted code with black")
+   |         ^^^^^ T201
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:48:5: T201 `print` found
+   |
+46 | def fix_test_imports(project_root):
+47 |     """Fix import issues in test files."""
+48 |     print("🔧 Fixing test import issues...")
+   |     ^^^^^ T201
+49 |
+50 |     test_dir = os.path.join(project_root, "tests")
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:50:16: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+48 |     print("🔧 Fixing test import issues...")
+49 |
+50 |     test_dir = os.path.join(project_root, "tests")
+   |                ^^^^^^^^^^^^ PTH118
+51 |     if not os.path.exists(test_dir):
+52 |         print("❌ Tests directory not found")
+   |
+
+scripts/ci_fix_all.py:51:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+50 |     test_dir = os.path.join(project_root, "tests")
+51 |     if not os.path.exists(test_dir):
+   |            ^^^^^^^^^^^^^^ PTH110
+52 |         print("❌ Tests directory not found")
+53 |         return
+   |
+
+scripts/ci_fix_all.py:52:9: T201 `print` found
+   |
+50 |     test_dir = os.path.join(project_root, "tests")
+51 |     if not os.path.exists(test_dir):
+52 |         print("❌ Tests directory not found")
+   |         ^^^^^ T201
+53 |         return
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:56:17: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+55 |     # Add __init__.py to tests directory if it doesn't exist
+56 |     init_file = os.path.join(test_dir, "__init__.py")
+   |                 ^^^^^^^^^^^^ PTH118
+57 |     if not os.path.exists(init_file):
+58 |         with open(init_file, "w") as f:
+   |
+
+scripts/ci_fix_all.py:57:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+55 |     # Add __init__.py to tests directory if it doesn't exist
+56 |     init_file = os.path.join(test_dir, "__init__.py")
+57 |     if not os.path.exists(init_file):
+   |            ^^^^^^^^^^^^^^ PTH110
+58 |         with open(init_file, "w") as f:
+59 |             f.write("# This file is required for pytest to discover tests correctly\n")
+   |
+
+scripts/ci_fix_all.py:58:14: PTH123 `open()` should be replaced by `Path.open()`
+   |
+56 |     init_file = os.path.join(test_dir, "__init__.py")
+57 |     if not os.path.exists(init_file):
+58 |         with open(init_file, "w") as f:
+   |              ^^^^ PTH123
+59 |             f.write("# This file is required for pytest to discover tests correctly\n")
+60 |         print(f"✅ Created {init_file}")
+   |
+
+scripts/ci_fix_all.py:60:9: T201 `print` found
+   |
+58 |         with open(init_file, "w") as f:
+59 |             f.write("# This file is required for pytest to discover tests correctly\n")
+60 |         print(f"✅ Created {init_file}")
+   |         ^^^^^ T201
+61 |
+62 |     # Fix conftest.py if it exists
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:63:21: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+62 |     # Fix conftest.py if it exists
+63 |     conftest_file = os.path.join(test_dir, "conftest.py")
+   |                     ^^^^^^^^^^^^ PTH118
+64 |     if os.path.exists(conftest_file):
+65 |         with open(conftest_file) as f:
+   |
+
+scripts/ci_fix_all.py:64:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+62 |     # Fix conftest.py if it exists
+63 |     conftest_file = os.path.join(test_dir, "conftest.py")
+64 |     if os.path.exists(conftest_file):
+   |        ^^^^^^^^^^^^^^ PTH110
+65 |         with open(conftest_file) as f:
+66 |             content = f.read()
+   |
+
+scripts/ci_fix_all.py:65:14: PTH123 `open()` should be replaced by `Path.open()`
+   |
+63 |     conftest_file = os.path.join(test_dir, "conftest.py")
+64 |     if os.path.exists(conftest_file):
+65 |         with open(conftest_file) as f:
+   |              ^^^^ PTH123
+66 |             content = f.read()
+   |
+
+scripts/ci_fix_all.py:70:18: PTH123 `open()` should be replaced by `Path.open()`
+   |
+68 |         # Add sys.path.insert if not present
+69 |         if "sys.path.insert" not in content:
+70 |             with open(conftest_file, "w") as f:
+   |                  ^^^^ PTH123
+71 |                 f.write("import os\nimport sys\n\n")
+72 |                 f.write("# Add project root to path\n")
+   |
+
+scripts/ci_fix_all.py:77:13: T201 `print` found
+   |
+75 |                 )
+76 |                 f.write(content)
+77 |             print(f"✅ Fixed {conftest_file}")
+   |             ^^^^^ T201
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:82:5: T201 `print` found
+   |
+80 | def create_env_file(project_root):
+81 |     """Create or update .env file with test values."""
+82 |     print("🔧 Creating/updating .env file for tests...")
+   |     ^^^^^ T201
+83 |
+84 |     env_file = os.path.join(project_root, ".env")
+   |
+   = help: Remove `print`
+
+scripts/ci_fix_all.py:84:16: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+82 |     print("🔧 Creating/updating .env file for tests...")
+83 |
+84 |     env_file = os.path.join(project_root, ".env")
+   |                ^^^^^^^^^^^^ PTH118
+85 |     env_example = os.path.join(project_root, ".env.example")
+   |
+
+scripts/ci_fix_all.py:85:19: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+84 |     env_file = os.path.join(project_root, ".env")
+85 |     env_example = os.path.join(project_root, ".env.example")
+   |                   ^^^^^^^^^^^^ PTH118
+86 |
+87 |     if os.path.exists(env_example) and not os.path.exists(env_file):
+   |
+
+scripts/ci_fix_all.py:87:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+85 |     env_example = os.path.join(project_root, ".env.example")
+86 |
+87 |     if os.path.exists(env_example) and not os.path.exists(env_file):
+   |        ^^^^^^^^^^^^^^ PTH110
+88 |         # Copy .env.example to .env
+89 |         with open(env_example) as src:
+   |
+
+scripts/ci_fix_all.py:87:44: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+85 |     env_example = os.path.join(project_root, ".env.example")
+86 |
+87 |     if os.path.exists(env_example) and not os.path.exists(env_file):
+   |                                            ^^^^^^^^^^^^^^ PTH110
+88 |         # Copy .env.example to .env
+89 |         with open(env_example) as src:
+   |
+
+scripts/ci_fix_all.py:89:14: PTH123 `open()` should be replaced by `Path.open()`
+   |
+87 |     if os.path.exists(env_example) and not os.path.exists(env_file):
+88 |         # Copy .env.example to .env
+89 |         with open(env_example) as src:
+   |              ^^^^ PTH123
+90 |             content = src.read()
+   |
+
+scripts/ci_fix_all.py:105:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+103 |         )
+104 |
+105 |         with open(env_file, "w") as dest:
+    |              ^^^^ PTH123
+106 |             dest.write(content)
+    |
+
+scripts/ci_fix_all.py:108:9: T201 `print` found
+    |
+106 |             dest.write(content)
+107 |
+108 |         print(f"✅ Created {env_file} with mock values")
+    |         ^^^^^ T201
+    |
+    = help: Remove `print`
+
+scripts/ci_fix_all.py:113:5: T201 `print` found
+    |
+111 | def create_missing_directories(project_root):
+112 |     """Create any missing directories required for tests."""
+113 |     print("🔧 Creating missing directories...")
+    |     ^^^^^ T201
+114 |
+115 |     # Ensure data directory exists
+    |
+    = help: Remove `print`
+
+scripts/ci_fix_all.py:116:16: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+115 |     # Ensure data directory exists
+116 |     data_dir = os.path.join(project_root, "data")
+    |                ^^^^^^^^^^^^ PTH118
+117 |     if not os.path.exists(data_dir):
+118 |         os.makedirs(data_dir)
+    |
+
+scripts/ci_fix_all.py:117:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+115 |     # Ensure data directory exists
+116 |     data_dir = os.path.join(project_root, "data")
+117 |     if not os.path.exists(data_dir):
+    |            ^^^^^^^^^^^^^^ PTH110
+118 |         os.makedirs(data_dir)
+119 |         print(f"✅ Created {data_dir}")
+    |
+
+scripts/ci_fix_all.py:118:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+116 |     data_dir = os.path.join(project_root, "data")
+117 |     if not os.path.exists(data_dir):
+118 |         os.makedirs(data_dir)
+    |         ^^^^^^^^^^^ PTH103
+119 |         print(f"✅ Created {data_dir}")
+    |
+
+scripts/ci_fix_all.py:119:9: T201 `print` found
+    |
+117 |     if not os.path.exists(data_dir):
+118 |         os.makedirs(data_dir)
+119 |         print(f"✅ Created {data_dir}")
+    |         ^^^^^ T201
+120 |
+121 |     # Ensure html_storage directory exists
+    |
+    = help: Remove `print`
+
+scripts/ci_fix_all.py:122:20: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+121 |     # Ensure html_storage directory exists
+122 |     html_storage = os.path.join(data_dir, "html_storage")
+    |                    ^^^^^^^^^^^^ PTH118
+123 |     if not os.path.exists(html_storage):
+124 |         os.makedirs(html_storage)
+    |
+
+scripts/ci_fix_all.py:123:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+121 |     # Ensure html_storage directory exists
+122 |     html_storage = os.path.join(data_dir, "html_storage")
+123 |     if not os.path.exists(html_storage):
+    |            ^^^^^^^^^^^^^^ PTH110
+124 |         os.makedirs(html_storage)
+125 |         print(f"✅ Created {html_storage}")
+    |
+
+scripts/ci_fix_all.py:124:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+122 |     html_storage = os.path.join(data_dir, "html_storage")
+123 |     if not os.path.exists(html_storage):
+124 |         os.makedirs(html_storage)
+    |         ^^^^^^^^^^^ PTH103
+125 |         print(f"✅ Created {html_storage}")
+    |
+
+scripts/ci_fix_all.py:125:9: T201 `print` found
+    |
+123 |     if not os.path.exists(html_storage):
+124 |         os.makedirs(html_storage)
+125 |         print(f"✅ Created {html_storage}")
+    |         ^^^^^ T201
+126 |
+127 |     # Ensure tasks directory exists
+    |
+    = help: Remove `print`
+
+scripts/ci_fix_all.py:128:17: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+127 |     # Ensure tasks directory exists
+128 |     tasks_dir = os.path.join(project_root, "tasks")
+    |                 ^^^^^^^^^^^^ PTH118
+129 |     if not os.path.exists(tasks_dir):
+130 |         os.makedirs(tasks_dir)
+    |
+
+scripts/ci_fix_all.py:129:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+127 |     # Ensure tasks directory exists
+128 |     tasks_dir = os.path.join(project_root, "tasks")
+129 |     if not os.path.exists(tasks_dir):
+    |            ^^^^^^^^^^^^^^ PTH110
+130 |         os.makedirs(tasks_dir)
+131 |         print(f"✅ Created {tasks_dir}")
+    |
+
+scripts/ci_fix_all.py:130:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+128 |     tasks_dir = os.path.join(project_root, "tasks")
+129 |     if not os.path.exists(tasks_dir):
+130 |         os.makedirs(tasks_dir)
+    |         ^^^^^^^^^^^ PTH103
+131 |         print(f"✅ Created {tasks_dir}")
+    |
+
+scripts/ci_fix_all.py:131:9: T201 `print` found
+    |
+129 |     if not os.path.exists(tasks_dir):
+130 |         os.makedirs(tasks_dir)
+131 |         print(f"✅ Created {tasks_dir}")
+    |         ^^^^^ T201
+    |
+    = help: Remove `print`
+
+scripts/ci_fix_all.py:137:20: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+135 |     """Main function to fix CI pipeline issues."""
+136 |     # Get the project root directory
+137 |     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    |                    ^^^^^^^^^^^^^^^ PTH120
+138 |
+139 |     # Fix formatting issues
+    |
+
+scripts/ci_fix_all.py:137:36: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+135 |     """Main function to fix CI pipeline issues."""
+136 |     # Get the project root directory
+137 |     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    |                                    ^^^^^^^^^^^^^^^ PTH120
+138 |
+139 |     # Fix formatting issues
+    |
+
+scripts/ci_fix_all.py:137:52: PTH100 `os.path.abspath()` should be replaced by `Path.resolve()`
+    |
+135 |     """Main function to fix CI pipeline issues."""
+136 |     # Get the project root directory
+137 |     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    |                                                    ^^^^^^^^^^^^^^^ PTH100
+138 |
+139 |     # Fix formatting issues
+    |
+
+scripts/ci_fix_all.py:151:5: T201 `print` found
+    |
+149 |     create_missing_directories(project_root)
+150 |
+151 |     print("\n✅ CI pipeline fixes completed!")
+    |     ^^^^^ T201
+152 |     return 0
+    |
+    = help: Remove `print`
+
+scripts/ci_format:1:1: E902 No such file or directory (os error 2)
+scripts/ci_pipeline_integration.py:34:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+32 |     handlers=[
+33 |         logging.StreamHandler(sys.stdout),
+34 |         logging.FileHandler(os.path.join("logs", "ci_pipeline_integration.log")),
+   |                             ^^^^^^^^^^^^ PTH118
+35 |     ],
+36 | )
+   |
+
+scripts/ci_pipeline_integration.py:59:35: PTH119 `os.path.basename()` should be replaced by `Path.name`
+   |
+57 |     for category in TEST_CATEGORIES.values():
+58 |         directories.append(category)
+59 |         ci_category = f"ci_tests/{os.path.basename(category)}"
+   |                                   ^^^^^^^^^^^^^^^^ PTH119
+60 |         directories.append(ci_category)
+   |
+
+scripts/ci_pipeline_integration.py:63:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+62 |     for directory in directories:
+63 |         os.makedirs(directory, exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+64 |         logger.info(f"Ensured directory exists: {directory}")
+   |
+
+scripts/ci_pipeline_integration.py:143:30: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+142 |     # Get the target directory for the category
+143 |     target_dir = f"ci_tests/{os.path.basename(source_dir)}"
+    |                              ^^^^^^^^^^^^^^^^ PTH119
+144 |
+145 |     # Run the generate_ci_tests.py script
+    |
+
+scripts/ci_pipeline_integration.py:194:30: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+193 |     # Get the target directory for the category
+194 |     target_dir = f"ci_tests/{os.path.basename(TEST_CATEGORIES.get(category, category))}"
+    |                              ^^^^^^^^^^^^^^^^ PTH119
+195 |
+196 |     # Find all test files in the target directory
+    |
+
+scripts/ci_pipeline_integration.py:198:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+196 |     # Find all test files in the target directory
+197 |     test_files = []
+198 |     if os.path.exists(target_dir):
+    |        ^^^^^^^^^^^^^^ PTH110
+199 |         for root, _, files in os.walk(target_dir):
+200 |             for file in files:
+    |
+
+scripts/ci_pipeline_integration.py:202:39: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+200 |             for file in files:
+201 |                 if file.startswith("test_") and file.endswith(".py"):
+202 |                     test_files.append(os.path.join(root, file))
+    |                                       ^^^^^^^^^^^^ PTH118
+203 |
+204 |     if not test_files:
+    |
+
+scripts/ci_pipeline_integration.py:212:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+211 |     try:
+212 |         with open(workflow_file) as f:
+    |              ^^^^ PTH123
+213 |             workflow = yaml.safe_load(f)
+214 |     except Exception as e:
+    |
+
+scripts/ci_pipeline_integration.py:230:50: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+228 |                     for test_file in test_files:
+229 |                         run_command += (
+230 |                             f"\n          # Run {os.path.basename(test_file)}\n"
+    |                                                  ^^^^^^^^^^^^^^^^ PTH119
+231 |                         )
+232 |                         run_command += f'          python {test_file} || echo "Test {test_file} failed"\n'
+    |
+
+scripts/ci_pipeline_integration.py:237:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+236 |         # Save the updated workflow file
+237 |         with open(workflow_file, "w") as f:
+    |              ^^^^ PTH123
+238 |             yaml.dump(workflow, f, default_flow_style=False)
+    |
+
+scripts/ci_pipeline_integration.py:253:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+251 |     # Check if the test status file exists
+252 |     status_file = "test_results/test_status.json"
+253 |     if not os.path.exists(status_file):
+    |            ^^^^^^^^^^^^^^ PTH110
+254 |         logger.warning("Test status file not found, generating report first")
+255 |         generate_test_status_report()
+    |
+
+scripts/ci_pipeline_integration.py:258:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+257 |     try:
+258 |         with open(status_file) as f:
+    |              ^^^^ PTH123
+259 |             test_data = json.load(f)
+    |
+
+scripts/ci_pipeline_integration.py:318:9: SIM102 Use a single `if` statement instead of nested `if` statements
+    |
+317 |           # Convert and enable tests
+318 | /         if convert_tests(category, priority):
+319 | |             if enable_tests(category, priority):
+    | |________________________________________________^ SIM102
+320 |                   update_ci_workflow(category)
+    |
+    = help: Combine `if` statements using `and`
+
+scripts/ci_pipeline_integration.py:373:13: SIM102 Use a single `if` statement instead of nested `if` statements
+    |
+372 |               # Convert and enable tests
+373 | /             if convert_tests(args.category, args.priority):
+374 | |                 if enable_tests(args.category, args.priority):
+    | |______________________________________________________________^ SIM102
+375 |                       update_ci_workflow(args.category)
+    |
+    = help: Combine `if` statements using `and`
+
+scripts/enable_ci_tests.py:39:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+37 |     handlers=[
+38 |         logging.StreamHandler(sys.stdout),
+39 |         logging.FileHandler(os.path.join("logs", "enable_ci_tests.log")),
+   |                             ^^^^^^^^^^^^ PTH118
+40 |     ],
+41 | )
+   |
+
+scripts/enable_ci_tests.py:61:40: PTH119 `os.path.basename()` should be replaced by `Path.name`
+   |
+59 |     directories = ["logs", "ci_tests", "test_results"]
+60 |     for category in TEST_CATEGORIES.values():
+61 |         directories.append(f"ci_tests/{os.path.basename(category)}")
+   |                                        ^^^^^^^^^^^^^^^^ PTH119
+62 |
+63 |     for directory in directories:
+   |
+
+scripts/enable_ci_tests.py:64:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+63 |     for directory in directories:
+64 |         os.makedirs(directory, exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+65 |         logger.info(f"Ensured directory exists: {directory}")
+   |
+
+scripts/enable_ci_tests.py:71:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+69 |     """Load the current test status from the status file."""
+70 |     status_file = "test_results/test_status.json"
+71 |     if os.path.exists(status_file):
+   |        ^^^^^^^^^^^^^^ PTH110
+72 |         try:
+73 |             with open(status_file) as f:
+   |
+
+scripts/enable_ci_tests.py:73:18: PTH123 `open()` should be replaced by `Path.open()`
+   |
+71 |     if os.path.exists(status_file):
+72 |         try:
+73 |             with open(status_file) as f:
+   |                  ^^^^ PTH123
+74 |                 return json.load(f)
+75 |         except Exception as e:
+   |
+
+scripts/enable_ci_tests.py:90:5: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+88 |     """Save the test status to the status file."""
+89 |     status_file = "test_results/test_status.json"
+90 |     os.makedirs(os.path.dirname(status_file), exist_ok=True)
+   |     ^^^^^^^^^^^ PTH103
+91 |
+92 |     # Update the last_updated timestamp
+   |
+
+scripts/enable_ci_tests.py:90:17: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+   |
+88 |     """Save the test status to the status file."""
+89 |     status_file = "test_results/test_status.json"
+90 |     os.makedirs(os.path.dirname(status_file), exist_ok=True)
+   |                 ^^^^^^^^^^^^^^^ PTH120
+91 |
+92 |     # Update the last_updated timestamp
+   |
+
+scripts/enable_ci_tests.py:96:14: PTH123 `open()` should be replaced by `Path.open()`
+   |
+95 |     try:
+96 |         with open(status_file, "w") as f:
+   |              ^^^^ PTH123
+97 |             json.dump(status, f, indent=2)
+98 |         logger.info(f"Test status saved to {status_file}")
+   |
+
+scripts/enable_ci_tests.py:109:35: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+107 |         for file in files:
+108 |             if file.startswith("test_") and file.endswith(".py"):
+109 |                 test_files.append(os.path.join(root, file))
+    |                                   ^^^^^^^^^^^^ PTH118
+110 |
+111 |     return test_files
+    |
+
+scripts/enable_ci_tests.py:117:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+115 |     """Analyze the importance of a test file based on its content."""
+116 |     try:
+117 |         with open(test_file) as f:
+    |              ^^^^ PTH123
+118 |             content = f.read()
+    |
+
+scripts/enable_ci_tests.py:171:34: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+169 |         # Determine the target file path
+170 |         rel_path = os.path.relpath(source_file, source_dir)
+171 |         target_dir = f"ci_tests/{os.path.basename(source_dir)}"
+    |                                  ^^^^^^^^^^^^^^^^ PTH119
+172 |         target_file = os.path.join(target_dir, rel_path)
+    |
+
+scripts/enable_ci_tests.py:172:23: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+170 |         rel_path = os.path.relpath(source_file, source_dir)
+171 |         target_dir = f"ci_tests/{os.path.basename(source_dir)}"
+172 |         target_file = os.path.join(target_dir, rel_path)
+    |                       ^^^^^^^^^^^^ PTH118
+173 |
+174 |         # Convert the file
+    |
+
+scripts/enable_ci_tests.py:181:17: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+179 |                 "scripts/generate_ci_tests.py",
+180 |                 "--source-dir",
+181 |                 os.path.dirname(source_file),
+    |                 ^^^^^^^^^^^^^^^ PTH120
+182 |                 "--target-dir",
+183 |                 os.path.dirname(target_file),
+    |
+
+scripts/enable_ci_tests.py:183:17: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+181 |                 os.path.dirname(source_file),
+182 |                 "--target-dir",
+183 |                 os.path.dirname(target_file),
+    |                 ^^^^^^^^^^^^^^^ PTH120
+184 |             ]
+    |
+
+scripts/enable_ci_tests.py:206:21: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+204 |     logger.info(f"Updating CI workflow with {len(converted_files)} tests")
+205 |
+206 |     workflow_path = os.path.join(".github", "workflows", "ci-tests.yml")
+    |                     ^^^^^^^^^^^^ PTH118
+207 |     os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
+    |
+
+scripts/enable_ci_tests.py:207:5: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+206 |     workflow_path = os.path.join(".github", "workflows", "ci-tests.yml")
+207 |     os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
+    |     ^^^^^^^^^^^ PTH103
+208 |
+209 |     # Create the workflow file
+    |
+
+scripts/enable_ci_tests.py:207:17: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+206 |     workflow_path = os.path.join(".github", "workflows", "ci-tests.yml")
+207 |     os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
+    |                 ^^^^^^^^^^^^^^^ PTH120
+208 |
+209 |     # Create the workflow file
+    |
+
+scripts/enable_ci_tests.py:210:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+209 |     # Create the workflow file
+210 |     with open(workflow_path, "w") as f:
+    |          ^^^^ PTH123
+211 |         f.write(
+212 |             """name: CI Tests Workflow
+    |
+
+scripts/enable_ci_tests.py:279:21: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+277 |     # Update the test status
+278 |     for test_file in converted_files:
+279 |         test_name = os.path.basename(test_file)
+    |                     ^^^^^^^^^^^^^^^^ PTH119
+280 |         category_status["tests"][test_name] = {
+281 |             "enabled": True,
+    |
+
+scripts/enable_ci_tests.py:296:5: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+295 |     report_file = "test_results/progress_report.md"
+296 |     os.makedirs(os.path.dirname(report_file), exist_ok=True)
+    |     ^^^^^^^^^^^ PTH103
+297 |
+298 |     with open(report_file, "w") as f:
+    |
+
+scripts/enable_ci_tests.py:296:17: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+295 |     report_file = "test_results/progress_report.md"
+296 |     os.makedirs(os.path.dirname(report_file), exist_ok=True)
+    |                 ^^^^^^^^^^^^^^^ PTH120
+297 |
+298 |     with open(report_file, "w") as f:
+    |
+
+scripts/enable_ci_tests.py:298:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+296 |     os.makedirs(os.path.dirname(report_file), exist_ok=True)
+297 |
+298 |     with open(report_file, "w") as f:
+    |          ^^^^ PTH123
+299 |         f.write("# Test Re-enablement Progress Report\n\n")
+300 |         f.write(f"Generated: {datetime.now().isoformat()}\n\n")
+    |
+
+scripts/fix_python39_compatibility.py:24:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+   |
+22 |   from pathlib import Path
+23 |   from re import Match, Pattern
+24 | / from typing import (
+25 | | # Use lowercase versions for Python 3.9 compatibility
+26 | |     Any,
+27 | |     Dict,
+28 | |     Final,
+29 | |     List,
+30 | |     Optional,
+31 | |     Set,
+32 | |     Tuple,
+33 | |     Union,
+34 | | )
+   | |_^ UP035
+35 |
+36 |   # Type annotation patterns to find and replace
+   |
+
+scripts/fix_python39_compatibility.py:24:1: UP035 `typing.List` is deprecated, use `list` instead
+   |
+22 |   from pathlib import Path
+23 |   from re import Match, Pattern
+24 | / from typing import (
+25 | | # Use lowercase versions for Python 3.9 compatibility
+26 | |     Any,
+27 | |     Dict,
+28 | |     Final,
+29 | |     List,
+30 | |     Optional,
+31 | |     Set,
+32 | |     Tuple,
+33 | |     Union,
+34 | | )
+   | |_^ UP035
+35 |
+36 |   # Type annotation patterns to find and replace
+   |
+
+scripts/fix_python39_compatibility.py:24:1: UP035 `typing.Set` is deprecated, use `set` instead
+   |
+22 |   from pathlib import Path
+23 |   from re import Match, Pattern
+24 | / from typing import (
+25 | | # Use lowercase versions for Python 3.9 compatibility
+26 | |     Any,
+27 | |     Dict,
+28 | |     Final,
+29 | |     List,
+30 | |     Optional,
+31 | |     Set,
+32 | |     Tuple,
+33 | |     Union,
+34 | | )
+   | |_^ UP035
+35 |
+36 |   # Type annotation patterns to find and replace
+   |
+
+scripts/fix_python39_compatibility.py:24:1: UP035 `typing.Tuple` is deprecated, use `tuple` instead
+   |
+22 |   from pathlib import Path
+23 |   from re import Match, Pattern
+24 | / from typing import (
+25 | | # Use lowercase versions for Python 3.9 compatibility
+26 | |     Any,
+27 | |     Dict,
+28 | |     Final,
+29 | |     List,
+30 | |     Optional,
+31 | |     Set,
+32 | |     Tuple,
+33 | |     Union,
+34 | | )
+   | |_^ UP035
+35 |
+36 |   # Type annotation patterns to find and replace
+   |
+
+scripts/fix_python39_compatibility.py:243:5: T201 `print` found
+    |
+241 |         return False
+242 |
+243 |     print(f"Processing {file_path}...")
+    |     ^^^^^ T201
+244 |     try:
+245 |         with open(file_path, encoding="utf-8") as f:
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:245:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+243 |     print(f"Processing {file_path}...")
+244 |     try:
+245 |         with open(file_path, encoding="utf-8") as f:
+    |              ^^^^ PTH123
+246 |             content = f.read()
+247 |     except Exception as e:
+    |
+
+scripts/fix_python39_compatibility.py:248:9: T201 `print` found
+    |
+246 |             content = f.read()
+247 |     except Exception as e:
+248 |         print(f"Error reading {file_path}: {e}")
+    |         ^^^^^ T201
+249 |         return False
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:273:18: PTH123 `open()` should be replaced by `Path.open()`
+    |
+271 |     if content != original_content:
+272 |         try:
+273 |             with open(file_path, "w", encoding="utf-8") as f:
+    |                  ^^^^ PTH123
+274 |                 f.write(content)
+275 |             print(f"✅ Fixed {file_path}")
+    |
+
+scripts/fix_python39_compatibility.py:275:13: T201 `print` found
+    |
+273 |             with open(file_path, "w", encoding="utf-8") as f:
+274 |                 f.write(content)
+275 |             print(f"✅ Fixed {file_path}")
+    |             ^^^^^ T201
+276 |             return True
+277 |         except Exception as e:
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:278:13: T201 `print` found
+    |
+276 |             return True
+277 |         except Exception as e:
+278 |             print(f"Error writing {file_path}: {e}")
+    |             ^^^^^ T201
+279 |             return False
+280 |     return False
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:300:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+298 |         for file in files:
+299 |             if file.endswith(".py"):
+300 |                 file_path = os.path.join(root, file)
+    |                             ^^^^^^^^^^^^ PTH118
+301 |                 files_processed += 1
+302 |                 if fix_file(file_path):
+    |
+
+scripts/fix_python39_compatibility.py:339:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+337 |         for file in files:
+338 |             if file.endswith(".py"):
+339 |                 file_path = os.path.join(root, file)
+    |                             ^^^^^^^^^^^^ PTH118
+340 |                 try:
+341 |                     with open(file_path, encoding="utf-8") as f:
+    |
+
+scripts/fix_python39_compatibility.py:341:26: PTH123 `open()` should be replaced by `Path.open()`
+    |
+339 |                 file_path = os.path.join(root, file)
+340 |                 try:
+341 |                     with open(file_path, encoding="utf-8") as f:
+    |                          ^^^^ PTH123
+342 |                         content = f.read()
+343 |                         for pattern in difficult_patterns:
+    |
+
+scripts/fix_python39_compatibility.py:355:19: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+354 |     # Write the list to a file
+355 |     issues_file = os.path.join(directory, "python39_non_automatable_issues.md")
+    |                   ^^^^^^^^^^^^ PTH118
+356 |     with open(issues_file, "w", encoding="utf-8") as f:
+357 |         f.writelines(non_automatable_issues)
+    |
+
+scripts/fix_python39_compatibility.py:356:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+354 |     # Write the list to a file
+355 |     issues_file = os.path.join(directory, "python39_non_automatable_issues.md")
+356 |     with open(issues_file, "w", encoding="utf-8") as f:
+    |          ^^^^ PTH123
+357 |         f.writelines(non_automatable_issues)
+    |
+
+scripts/fix_python39_compatibility.py:359:5: T201 `print` found
+    |
+357 |         f.writelines(non_automatable_issues)
+358 |
+359 |     print(f"\nCreated list of non-automatable issues at {issues_file}")
+    |     ^^^^^ T201
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:364:9: T201 `print` found
+    |
+362 | def main():
+363 |     if len(sys.argv) < 2:
+364 |         print("Usage: python fix_python39_compatibility.py <directory>")
+    |         ^^^^^ T201
+365 |         return 1
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:368:12: PTH112 `os.path.isdir()` should be replaced by `Path.is_dir()`
+    |
+367 |     directory = sys.argv[1]
+368 |     if not os.path.isdir(directory):
+    |            ^^^^^^^^^^^^^ PTH112
+369 |         print(f"Error: {directory} is not a valid directory")
+370 |         return 1
+    |
+
+scripts/fix_python39_compatibility.py:369:9: T201 `print` found
+    |
+367 |     directory = sys.argv[1]
+368 |     if not os.path.isdir(directory):
+369 |         print(f"Error: {directory} is not a valid directory")
+    |         ^^^^^ T201
+370 |         return 1
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:372:5: T201 `print` found
+    |
+370 |         return 1
+371 |
+372 |     print(f"Fixing Python 3.9 compatibility issues in {directory}...\n")
+    |     ^^^^^ T201
+373 |     files_processed, files_modified = process_directory(directory)
+374 |     print(f"\nProcessed {files_processed} Python files, modified {files_modified} files")
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:374:5: T201 `print` found
+    |
+372 |     print(f"Fixing Python 3.9 compatibility issues in {directory}...\n")
+373 |     files_processed, files_modified = process_directory(directory)
+374 |     print(f"\nProcessed {files_processed} Python files, modified {files_modified} files")
+    |     ^^^^^ T201
+375 |
+376 |     # Create list of non-automatable issues
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:379:5: T201 `print` found
+    |
+377 |     create_non_automatable_issues_list(directory)
+378 |
+379 |     print("\nRemaining tasks:")
+    |     ^^^^^ T201
+380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+381 |     print("2. Run the CI pipeline to verify the fixes")
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:380:5: T201 `print` found
+    |
+379 |     print("\nRemaining tasks:")
+380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+    |     ^^^^^ T201
+381 |     print("2. Run the CI pipeline to verify the fixes")
+382 |     print("3. Manually address remaining issues from the non-automatable issues list")
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:381:5: T201 `print` found
+    |
+379 |     print("\nRemaining tasks:")
+380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+381 |     print("2. Run the CI pipeline to verify the fixes")
+    |     ^^^^^ T201
+382 |     print("3. Manually address remaining issues from the non-automatable issues list")
+    |
+    = help: Remove `print`
+
+scripts/fix_python39_compatibility.py:382:5: T201 `print` found
+    |
+380 |     print("1. Install missing type stubs: pip install types-requests types-pytz")
+381 |     print("2. Run the CI pipeline to verify the fixes")
+382 |     print("3. Manually address remaining issues from the non-automatable issues list")
+    |     ^^^^^ T201
+383 |
+384 |     return 0
+    |
+    = help: Remove `print`
+
+scripts/fix_typing_issues.py:14:5: T201 `print` found
+   |
+12 | def process_file(file_path):
+13 |     """Process a single Python file to fix typing issues."""
+14 |     print(f"Processing {file_path}")
+   |     ^^^^^ T201
+15 |     with open(file_path) as f:
+16 |         content = f.read()
+   |
+   = help: Remove `print`
+
+scripts/fix_typing_issues.py:15:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+13 |     """Process a single Python file to fix typing issues."""
+14 |     print(f"Processing {file_path}")
+15 |     with open(file_path) as f:
+   |          ^^^^ PTH123
+16 |         content = f.read()
+   |
+
+scripts/fix_typing_issues.py:39:10: PTH123 `open()` should be replaced by `Path.open()`
+   |
+38 |     # Write back to file
+39 |     with open(file_path, "w") as f:
+   |          ^^^^ PTH123
+40 |         f.write(content)
+   |
+
+scripts/fix_typing_issues.py:67:33: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+65 |             for file in files:
+66 |                 if file.endswith(".py") and not file.endswith("_backup.py") and ".tmp" not in file:
+67 |                     file_path = os.path.join(root, file)
+   |                                 ^^^^^^^^^^^^ PTH118
+68 |                     process_file(file_path)
+   |
+
+scripts/format_all.py:48:37: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+46 |         for file in files:
+47 |             if file.endswith(".py"):
+48 |                 python_files.append(os.path.join(root, file))
+   |                                     ^^^^^^^^^^^^ PTH118
+49 |
+50 |     return python_files
+   |
+
+scripts/generate_ci_tests.py:31:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+29 |     handlers=[
+30 |         logging.StreamHandler(sys.stdout),
+31 |         logging.FileHandler(os.path.join("logs", "generate_ci_tests.log")),
+   |                             ^^^^^^^^^^^^ PTH118
+32 |     ],
+33 | )
+   |
+
+scripts/generate_ci_tests.py:41:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+39 |     directories = ["logs", "ci_tests"]
+40 |     for directory in directories:
+41 |         os.makedirs(directory, exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+42 |         logger.info(f"Ensured directory exists: {directory}")
+   |
+
+scripts/generate_ci_tests.py:56:9: N802 Function name `visit_Import` should be lowercase
+   |
+54 |         self.unittest_imports = ["import unittest", "import sys", "import os"]
+55 |
+56 |     def visit_Import(self, node):
+   |         ^^^^^^^^^^^^ N802
+57 |         """Process import statements."""
+58 |         for name in node.names:
+   |
+
+scripts/generate_ci_tests.py:63:9: N802 Function name `visit_ImportFrom` should be lowercase
+   |
+61 |         self.generic_visit(node)
+62 |
+63 |     def visit_ImportFrom(self, node):
+   |         ^^^^^^^^^^^^^^^^ N802
+64 |         """Process from-import statements."""
+65 |         if node.module != "pytest":
+   |
+
+scripts/generate_ci_tests.py:70:9: N802 Function name `visit_FunctionDef` should be lowercase
+   |
+68 |         self.generic_visit(node)
+69 |
+70 |     def visit_FunctionDef(self, node):
+   |         ^^^^^^^^^^^^^^^^^ N802
+71 |         """Process function definitions."""
+72 |         # Check if it's a test function
+   |
+
+scripts/generate_ci_tests.py:78:9: N802 Function name `visit_ClassDef` should be lowercase
+   |
+76 |         self.generic_visit(node)
+77 |
+78 |     def visit_ClassDef(self, node):
+   |         ^^^^^^^^^^^^^^ N802
+79 |         """Process class definitions."""
+80 |         # Check if it's a test class
+   |
+
+scripts/generate_ci_tests.py:85:9: N802 Function name `visit_Call` should be lowercase
+   |
+83 |         self.generic_visit(node)
+84 |
+85 |     def visit_Call(self, node):
+   |         ^^^^^^^^^^ N802
+86 |         """Process function calls to identify fixtures."""
+87 |         if isinstance(node.func, ast.Name) and node.func.id == "fixture":
+   |
+
+scripts/generate_ci_tests.py:87:9: SIM102 Use a single `if` statement instead of nested `if` statements
+   |
+85 |       def visit_Call(self, node):
+86 |           """Process function calls to identify fixtures."""
+87 | /         if isinstance(node.func, ast.Name) and node.func.id == "fixture":
+88 | |             # This is a pytest fixture
+89 | |             if hasattr(node, "parent") and isinstance(node.parent, ast.FunctionDef):
+   | |____________________________________________________________________________________^ SIM102
+90 |                   self.fixtures.add(node.parent.name)
+91 |           self.generic_visit(node)
+   |
+   = help: Combine `if` statements using `and`
+
+scripts/generate_ci_tests.py:163:22: PTH122 `os.path.splitext()` should be replaced by `Path.suffix`, `Path.stem`, and `Path.parent`
+    |
+161 |     def generate_unittest_class(self):
+162 |         """Generate a unittest test class from the parsed tests."""
+163 |         class_name = os.path.splitext(os.path.basename(self.source_file))[0]
+    |                      ^^^^^^^^^^^^^^^^ PTH122
+164 |         class_name = "".join(word.capitalize() for word in class_name.split("_"))
+165 |         if not class_name.startswith("Test"):
+    |
+
+scripts/generate_ci_tests.py:163:39: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+161 |     def generate_unittest_class(self):
+162 |         """Generate a unittest test class from the parsed tests."""
+163 |         class_name = os.path.splitext(os.path.basename(self.source_file))[0]
+    |                                       ^^^^^^^^^^^^^^^^ PTH119
+164 |         class_name = "".join(word.capitalize() for word in class_name.split("_"))
+165 |         if not class_name.startswith("Test"):
+    |
+
+scripts/generate_ci_tests.py:172:15: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+170 |             f"class {class_name}(unittest.TestCase):",
+171 |             '    """Test cases converted from pytest file: '
+172 |             + os.path.basename(self.source_file)
+    |               ^^^^^^^^^^^^^^^^ PTH119
+173 |             + '"""',
+174 |             "",
+    |
+
+scripts/generate_ci_tests.py:225:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+223 |     try:
+224 |         # Read the source file
+225 |         with open(source_file) as f:
+    |              ^^^^ PTH123
+226 |             source_code = f.read()
+    |
+
+scripts/generate_ci_tests.py:239:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+238 |         # Create the target directory if it doesn't exist
+239 |         os.makedirs(os.path.dirname(target_file), exist_ok=True)
+    |         ^^^^^^^^^^^ PTH103
+240 |
+241 |         # Write the unittest file
+    |
+
+scripts/generate_ci_tests.py:239:21: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+238 |         # Create the target directory if it doesn't exist
+239 |         os.makedirs(os.path.dirname(target_file), exist_ok=True)
+    |                     ^^^^^^^^^^^^^^^ PTH120
+240 |
+241 |         # Write the unittest file
+    |
+
+scripts/generate_ci_tests.py:242:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+241 |         # Write the unittest file
+242 |         with open(target_file, "w") as f:
+    |              ^^^^ PTH123
+243 |             f.write(unittest_code)
+    |
+
+scripts/generate_ci_tests.py:259:35: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+257 |         for file in files:
+258 |             if file.startswith("test_") and file.endswith(".py"):
+259 |                 test_files.append(os.path.join(root, file))
+    |                                   ^^^^^^^^^^^^ PTH118
+260 |
+261 |     return test_files
+    |
+
+scripts/generate_ci_tests.py:268:21: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+266 |     logger.info("Generating CI workflow file")
+267 |
+268 |     workflow_path = os.path.join(".github", "workflows", "ci-tests.yml")
+    |                     ^^^^^^^^^^^^ PTH118
+269 |     os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
+    |
+
+scripts/generate_ci_tests.py:269:5: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+268 |     workflow_path = os.path.join(".github", "workflows", "ci-tests.yml")
+269 |     os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
+    |     ^^^^^^^^^^^ PTH103
+270 |
+271 |     # Create the workflow file
+    |
+
+scripts/generate_ci_tests.py:269:17: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+268 |     workflow_path = os.path.join(".github", "workflows", "ci-tests.yml")
+269 |     os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
+    |                 ^^^^^^^^^^^^^^^ PTH120
+270 |
+271 |     # Create the workflow file
+    |
+
+scripts/generate_ci_tests.py:272:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+271 |     # Create the workflow file
+272 |     with open(workflow_path, "w") as f:
+    |          ^^^^ PTH123
+273 |         f.write(
+274 |             """name: CI Tests Workflow
+    |
+
+scripts/generate_ci_tests.py:356:27: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+354 |             # Determine the target file path
+355 |             rel_path = os.path.relpath(source_file, args.source_dir)
+356 |             target_file = os.path.join(args.target_dir, rel_path)
+    |                           ^^^^^^^^^^^^ PTH118
+357 |
+358 |             # Convert the file
+    |
+
+scripts/generate_test_progress_report.py:23:25: SyntaxError: Expected an import name
+   |
+21 | from datetime import datetime
+22 | from pathlib import Path
+23 | from typing import Any, , , Optional, , Union
+   |                         ^
+24 | # Use lowercase versions for Python 3.9 compatibility
+25 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/generate_test_progress_report.py:23:27: SyntaxError: Expected an import name
+   |
+21 | from datetime import datetime
+22 | from pathlib import Path
+23 | from typing import Any, , , Optional, , Union
+   |                           ^
+24 | # Use lowercase versions for Python 3.9 compatibility
+25 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/generate_test_progress_report.py:23:39: SyntaxError: Expected an import name
+   |
+21 | from datetime import datetime
+22 | from pathlib import Path
+23 | from typing import Any, , , Optional, , Union
+   |                                       ^
+24 | # Use lowercase versions for Python 3.9 compatibility
+25 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/generate_test_status_report.py:37:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+35 |     handlers=[
+36 |         logging.StreamHandler(sys.stdout),
+37 |         logging.FileHandler(os.path.join("logs", "test_status_report.log")),
+   |                             ^^^^^^^^^^^^ PTH118
+38 |     ],
+39 | )
+   |
+
+scripts/generate_test_status_report.py:61:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+60 |     for directory in directories:
+61 |         os.makedirs(directory, exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+62 |         logger.info(f"Ensured directory exists: {directory}")
+   |
+
+scripts/generate_test_status_report.py:73:35: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+71 |         for file in files:
+72 |             if file.startswith("test_") and file.endswith(".py"):
+73 |                 test_files.append(os.path.join(root, file))
+   |                                   ^^^^^^^^^^^^ PTH118
+74 |
+75 |     # Find all unittest files in ci_tests
+   |
+
+scripts/generate_test_status_report.py:76:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+75 |     # Find all unittest files in ci_tests
+76 |     if os.path.exists("ci_tests"):
+   |        ^^^^^^^^^^^^^^ PTH110
+77 |         for root, _, files in os.walk("ci_tests"):
+78 |             for file in files:
+   |
+
+scripts/generate_test_status_report.py:80:39: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+78 |             for file in files:
+79 |                 if file.startswith("test_") and file.endswith(".py"):
+80 |                     test_files.append(os.path.join(root, file))
+   |                                       ^^^^^^^^^^^^ PTH118
+81 |
+82 |     return test_files
+   |
+
+scripts/generate_test_status_report.py:98:14: PTH123 `open()` should be replaced by `Path.open()`
+   |
+96 |     """Analyze the importance of a test file based on its content."""
+97 |     try:
+98 |         with open(test_file) as f:
+   |              ^^^^ PTH123
+99 |             content = f.read()
+   |
+
+scripts/generate_test_status_report.py:133:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+131 |     # Check if there's a corresponding file in ci_tests
+132 |     ci_test_file = test_file.replace("tests/", "ci_tests/")
+133 |     if os.path.exists(ci_test_file):
+    |        ^^^^^^^^^^^^^^ PTH110
+134 |         return True
+    |
+
+scripts/generate_test_status_report.py:137:26: PTH207 Replace `glob` with `Path.glob` or `Path.rglob`
+    |
+136 |     # Check if it's included in any CI workflow
+137 |     for workflow_file in glob.glob(".github/workflows/*.yml"):
+    |                          ^^^^^^^^^ PTH207
+138 |         try:
+139 |             with open(workflow_file) as f:
+    |
+
+scripts/generate_test_status_report.py:139:18: PTH123 `open()` should be replaced by `Path.open()`
+    |
+137 |     for workflow_file in glob.glob(".github/workflows/*.yml"):
+138 |         try:
+139 |             with open(workflow_file) as f:
+    |                  ^^^^ PTH123
+140 |                 content = f.read()
+    |
+
+scripts/generate_test_status_report.py:143:29: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+142 |                 # Extract the test file name without path
+143 |                 test_name = os.path.basename(test_file)
+    |                             ^^^^^^^^^^^^^^^^ PTH119
+144 |
+145 |                 # Check if the test is mentioned in the workflow
+    |
+
+scripts/generate_test_status_report.py:157:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+155 |     """Count the number of test cases in a file."""
+156 |     try:
+157 |         with open(test_file) as f:
+    |              ^^^^ PTH123
+158 |             content = f.read()
+    |
+
+scripts/generate_test_status_report.py:275:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+273 |     logger.info(f"Generating markdown report to {output_file}")
+274 |
+275 |     with open(output_file, "w") as f:
+    |          ^^^^ PTH123
+276 |         f.write("# Test Status Report\n\n")
+277 |         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    |
+
+scripts/generate_test_status_report.py:365:72: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+363 | …     if recommendations:
+364 | …         f.write(
+365 | …             f"   python scripts/generate_ci_tests.py --source-dir {os.path.dirname(recommendations[0]['file'])} --target-dir ci_tes…
+    |                                                                      ^^^^^^^^^^^^^^^ PTH120
+366 | …         )
+367 | …     else:
+    |
+
+scripts/generate_test_status_report.py:365:140: PTH119 `os.path.basename()` should be replaced by `Path.name`
+    |
+363 | …
+364 | …
+365 | …e(recommendations[0]['file'])} --target-dir ci_tests/{os.path.basename(os.path.dirname(recommendations[0]['file']))}\n"
+    |                                                        ^^^^^^^^^^^^^^^^ PTH119
+366 | …
+367 | …
+    |
+
+scripts/generate_test_status_report.py:365:157: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+363 | …
+364 | …
+365 | …s[0]['file'])} --target-dir ci_tests/{os.path.basename(os.path.dirname(recommendations[0]['file']))}\n"
+    |                                                         ^^^^^^^^^^^^^^^ PTH120
+366 | …
+367 | …
+    |
+
+scripts/generate_test_status_report.py:432:23: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+431 |         # Save test data as JSON
+432 |         json_output = os.path.join("test_results", "test_status.json")
+    |                       ^^^^^^^^^^^^ PTH118
+433 |         with open(json_output, "w") as f:
+434 |             json.dump(test_data, f, indent=2)
+    |
+
+scripts/generate_test_status_report.py:433:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+431 |         # Save test data as JSON
+432 |         json_output = os.path.join("test_results", "test_status.json")
+433 |         with open(json_output, "w") as f:
+    |              ^^^^ PTH123
+434 |             json.dump(test_data, f, indent=2)
+435 |         logger.info(f"Test data saved to {json_output}")
+    |
+
+scripts/generate_test_visualizations.py:32:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+30 |     handlers=[
+31 |         logging.StreamHandler(sys.stdout),
+32 |         logging.FileHandler(os.path.join("logs", "test_visualizations.log")),
+   |                             ^^^^^^^^^^^^ PTH118
+33 |     ],
+34 | )
+   |
+
+scripts/generate_test_visualizations.py:43:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+42 |     for directory in directories:
+43 |         os.makedirs(directory, exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+44 |         logger.info(f"Ensured directory exists: {directory}")
+   |
+
+scripts/generate_test_visualizations.py:121:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+119 |     # Save to file if specified
+120 |     if output_file:
+121 |         with open(output_file, "w") as f:
+    |              ^^^^ PTH123
+122 |             f.write("\n".join(svg))
+123 |         logger.info(f"Bar chart saved to {output_file}")
+    |
+
+scripts/generate_test_visualizations.py:229:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+227 |     # Save to file if specified
+228 |     if output_file:
+229 |         with open(output_file, "w") as f:
+    |              ^^^^ PTH123
+230 |             f.write("\n".join(svg))
+231 |         logger.info(f"Pie chart saved to {output_file}")
+    |
+
+scripts/generate_test_visualizations.py:352:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+350 |     # Save to file if specified
+351 |     if output_file:
+352 |         with open(output_file, "w") as f:
+    |              ^^^^ PTH123
+353 |             f.write("\n".join(svg))
+354 |         logger.info(f"Stacked bar chart saved to {output_file}")
+    |
+
+scripts/generate_test_visualizations.py:364:5: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+363 |     # Create output directory if it doesn't exist
+364 |     os.makedirs(output_dir, exist_ok=True)
+    |     ^^^^^^^^^^^ PTH103
+365 |
+366 |     # Generate category bar chart
+    |
+
+scripts/generate_test_visualizations.py:375:21: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+373 |         category_data,
+374 |         "Test Files by Category",
+375 |         output_file=os.path.join(output_dir, "category_bar_chart.svg"),
+    |                     ^^^^^^^^^^^^ PTH118
+376 |     )
+    |
+
+scripts/generate_test_visualizations.py:387:21: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+385 |         priority_data,
+386 |         "Test Files by Priority",
+387 |         output_file=os.path.join(output_dir, "priority_pie_chart.svg"),
+    |                     ^^^^^^^^^^^^ PTH118
+388 |     )
+    |
+
+scripts/generate_test_visualizations.py:401:21: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+399 |         stacked_data,
+400 |         "Test Files Status by Category",
+401 |         output_file=os.path.join(output_dir, "category_stacked_bar_chart.svg"),
+    |                     ^^^^^^^^^^^^ PTH118
+402 |     )
+    |
+
+scripts/generate_test_visualizations.py:405:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+404 |     # Generate HTML index file
+405 |     with open(os.path.join(output_dir, "index.html"), "w") as f:
+    |          ^^^^ PTH123
+406 |         f.write(
+407 |             f"""<!DOCTYPE html>
+    |
+
+scripts/generate_test_visualizations.py:405:15: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+404 |     # Generate HTML index file
+405 |     with open(os.path.join(output_dir, "index.html"), "w") as f:
+    |               ^^^^^^^^^^^^ PTH118
+406 |         f.write(
+407 |             f"""<!DOCTYPE html>
+    |
+
+scripts/generate_test_visualizations.py:463:41: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+462 |     logger.info(
+463 |         f"HTML index file generated at {os.path.join(output_dir, 'index.html')}"
+    |                                         ^^^^^^^^^^^^ PTH118
+464 |     )
+    |
+
+scripts/generate_test_visualizations.py:489:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+488 |         # Load test data
+489 |         with open(args.input) as f:
+    |              ^^^^ PTH123
+490 |             test_data = json.load(f)
+    |
+
+scripts/migrate_to_postgres.py:15:25: SyntaxError: Expected an import name
+   |
+13 | from collections.abc import Iterable
+14 | from contextlib import contextmanager
+15 | from typing import Any, , ,
+   |                         ^
+16 | # Use lowercase versions for Python 3.9 compatibility
+17 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/migrate_to_postgres.py:15:27: SyntaxError: Expected an import name
+   |
+13 | from collections.abc import Iterable
+14 | from contextlib import contextmanager
+15 | from typing import Any, , ,
+   |                           ^
+16 | # Use lowercase versions for Python 3.9 compatibility
+17 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/migrate_to_postgres.py:15:28: W291 Trailing whitespace
+   |
+13 | from collections.abc import Iterable
+14 | from contextlib import contextmanager
+15 | from typing import Any, , ,
+   |                            ^ W291
+16 | # Use lowercase versions for Python 3.9 compatibility
+17 | # Use lowercase versions for Python 3.9 compatibility
+   |
+   = help: Remove trailing whitespace
+
+scripts/minimal_db_setup.py:48:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+47 |         # Create parent directory if it doesn't exist
+48 |         os.makedirs(os.path.dirname(db_path), exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+49 |
+50 |         # Connect to the database
+   |
+
+scripts/minimal_db_setup.py:48:21: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+   |
+47 |         # Create parent directory if it doesn't exist
+48 |         os.makedirs(os.path.dirname(db_path), exist_ok=True)
+   |                     ^^^^^^^^^^^^^^^ PTH120
+49 |
+50 |         # Connect to the database
+   |
+
+scripts/minimal_db_setup.py:334:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+333 |         # Create data directory if it doesn't exist
+334 |         os.makedirs(data_dir, exist_ok=True)
+    |         ^^^^^^^^^^^ PTH103
+335 |
+336 |         # Use provided database path or default
+    |
+
+scripts/minimal_path_fix.py:98:22: PTH123 `open()` should be replaced by `Path.open()`
+   |
+96 |                 pth_file = Path(site_dir) / "anthrasite_leadfactory.pth"
+97 |
+98 |                 with open(pth_file, "w") as f:
+   |                      ^^^^ PTH123
+99 |                     f.write(str(project_root))
+   |
+
+scripts/minimal_path_fix.py:163:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+161 | """
+162 |
+163 |         with open(conftest_path, "w") as f:
+    |              ^^^^ PTH123
+164 |             f.write(conftest_content)
+    |
+
+scripts/minimal_path_fix.py:205:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+203 | """
+204 |
+205 |         with open(pytest_ini_path, "w") as f:
+    |              ^^^^ PTH123
+206 |             f.write(pytest_ini_content)
+    |
+
+scripts/minimal_path_fix.py:267:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+265 | """
+266 |
+267 |         with open(test_file_path, "w") as f:
+    |              ^^^^ PTH123
+268 |             f.write(test_file_content)
+    |
+
+scripts/minimal_test_tracker.py:61:22: PTH123 `open()` should be replaced by `Path.open()`
+   |
+59 |         try:
+60 |             if STATUS_FILE.exists():
+61 |                 with open(STATUS_FILE) as f:
+   |                      ^^^^ PTH123
+62 |                     self.tests = json.load(f)
+63 |                 logger.info(f"Loaded test status from {STATUS_FILE}")
+   |
+
+scripts/minimal_test_tracker.py:76:18: PTH123 `open()` should be replaced by `Path.open()`
+   |
+74 |             STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
+75 |
+76 |             with open(STATUS_FILE, "w") as f:
+   |                  ^^^^ PTH123
+77 |                 json.dump(self.tests, f, indent=2)
+78 |             logger.info(f"Saved test status to {STATUS_FILE}")
+   |
+
+scripts/minimal_test_tracker.py:95:26: PTH123 `open()` should be replaced by `Path.open()`
+   |
+93 |                 try:
+94 |                     rel_path = test_file.relative_to(project_root)
+95 |                     with open(test_file) as f:
+   |                          ^^^^ PTH123
+96 |                         content = f.read()
+   |
+
+scripts/minimal_test_tracker.py:126:13: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+124 |         try:
+125 |             # Create test results directory
+126 |             os.makedirs(project_root / "test_results", exist_ok=True)
+    |             ^^^^^^^^^^^ PTH103
+127 |
+128 |             # Build pytest command
+    |
+
+scripts/minimal_test_tracker.py:173:26: PTH123 `open()` should be replaced by `Path.open()`
+    |
+171 |             if report_path.exists():
+172 |                 try:
+173 |                     with open(report_path) as f:
+    |                          ^^^^ PTH123
+174 |                         report = json.load(f)
+    |
+
+scripts/minimal_test_tracker.py:211:22: PTH123 `open()` should be replaced by `Path.open()`
+    |
+210 |             try:
+211 |                 with open(stdout_path, "w") as f:
+    |                      ^^^^ PTH123
+212 |                     f.write(result.stdout)
+213 |                 with open(stderr_path, "w") as f:
+    |
+
+scripts/minimal_test_tracker.py:213:22: PTH123 `open()` should be replaced by `Path.open()`
+    |
+211 |                 with open(stdout_path, "w") as f:
+212 |                     f.write(result.stdout)
+213 |                 with open(stderr_path, "w") as f:
+    |                      ^^^^ PTH123
+214 |                     f.write(result.stderr)
+215 |             except Exception as e:
+    |
+
+scripts/minimal_test_tracker.py:270:18: PTH123 `open()` should be replaced by `Path.open()`
+    |
+268 |             output_path.parent.mkdir(parents=True, exist_ok=True)
+269 |
+270 |             with open(output_path, "w") as f:
+    |                  ^^^^ PTH123
+271 |                 f.write(report_text)
+    |
+
+scripts/mirror_supabase_storage.py:38:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+   |
+36 |     handlers=[
+37 |         logging.StreamHandler(sys.stdout),
+38 |         logging.FileHandler(os.path.join("logs", "storage_mirroring.log")),
+   |                             ^^^^^^^^^^^^ PTH118
+39 |     ],
+40 | )
+   |
+
+scripts/mirror_supabase_storage.py:49:9: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+   |
+48 |     for directory in directories:
+49 |         os.makedirs(directory, exist_ok=True)
+   |         ^^^^^^^^^^^ PTH103
+50 |         logger.info(f"Ensured directory exists: {directory}")
+   |
+
+scripts/mirror_supabase_storage.py:58:12: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+56 |     env_file = ".env"
+57 |
+58 |     if not os.path.exists(env_file):
+   |            ^^^^^^^^^^^^^^ PTH110
+59 |         env_file = ".env.production"
+   |
+
+scripts/mirror_supabase_storage.py:61:8: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+   |
+59 |         env_file = ".env.production"
+60 |
+61 |     if os.path.exists(env_file):
+   |        ^^^^^^^^^^^^^^ PTH110
+62 |         with open(env_file) as f:
+63 |             for line in f:
+   |
+
+scripts/mirror_supabase_storage.py:62:14: PTH123 `open()` should be replaced by `Path.open()`
+   |
+61 |     if os.path.exists(env_file):
+62 |         with open(env_file) as f:
+   |              ^^^^ PTH123
+63 |             for line in f:
+64 |                 line = line.strip()
+   |
+
+scripts/mirror_supabase_storage.py:138:19: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+137 |     # Create output directory
+138 |     output_path = os.path.join(output_dir, path)
+    |                   ^^^^^^^^^^^^ PTH118
+139 |     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    |
+
+scripts/mirror_supabase_storage.py:139:5: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+137 |     # Create output directory
+138 |     output_path = os.path.join(output_dir, path)
+139 |     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    |     ^^^^^^^^^^^ PTH103
+140 |
+141 |     # Download object
+    |
+
+scripts/mirror_supabase_storage.py:139:17: PTH120 `os.path.dirname()` should be replaced by `Path.parent`
+    |
+137 |     # Create output directory
+138 |     output_path = os.path.join(output_dir, path)
+139 |     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    |                 ^^^^^^^^^^^^^^^ PTH120
+140 |
+141 |     # Download object
+    |
+
+scripts/mirror_supabase_storage.py:145:14: PTH123 `open()` should be replaced by `Path.open()`
+    |
+144 |     if content:
+145 |         with open(output_path, "wb") as f:
+    |              ^^^^ PTH123
+146 |             f.write(content)
+    |
+
+scripts/mirror_supabase_storage.py:166:18: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+165 |     # Create output directory
+166 |     bucket_dir = os.path.join(output_dir, bucket)
+    |                  ^^^^^^^^^^^^ PTH118
+167 |     os.makedirs(bucket_dir, exist_ok=True)
+    |
+
+scripts/mirror_supabase_storage.py:167:5: PTH103 `os.makedirs()` should be replaced by `Path.mkdir(parents=True)`
+    |
+165 |     # Create output directory
+166 |     bucket_dir = os.path.join(output_dir, bucket)
+167 |     os.makedirs(bucket_dir, exist_ok=True)
+    |     ^^^^^^^^^^^ PTH103
+168 |
+169 |     # Download objects in parallel
+    |
+
+scripts/mirror_supabase_storage.py:206:22: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+205 |     for bucket in buckets:
+206 |         bucket_dir = os.path.join(output_dir, bucket)
+    |                      ^^^^^^^^^^^^ PTH118
+207 |
+208 |         if not os.path.exists(bucket_dir):
+    |
+
+scripts/mirror_supabase_storage.py:208:16: PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+    |
+206 |         bucket_dir = os.path.join(output_dir, bucket)
+207 |
+208 |         if not os.path.exists(bucket_dir):
+    |                ^^^^^^^^^^^^^^ PTH110
+209 |             continue
+    |
+
+scripts/mirror_supabase_storage.py:219:29: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+217 |         for root, _, files in os.walk(bucket_dir):
+218 |             for file in files:
+219 |                 file_path = os.path.join(root, file)
+    |                             ^^^^^^^^^^^^ PTH118
+220 |                 relative_path = os.path.relpath(file_path, bucket_dir)
+    |
+
+scripts/mirror_supabase_storage.py:222:29: PTH202 `os.path.getsize` should be replaced by `Path.stat().st_size`
+    |
+220 |                 relative_path = os.path.relpath(file_path, bucket_dir)
+221 |
+222 |                 file_size = os.path.getsize(file_path)
+    |                             ^^^^^^^^^^^^^^^ PTH202
+223 |                 file_mtime = datetime.fromtimestamp(
+224 |                     os.path.getmtime(file_path)
+    |
+
+scripts/mirror_supabase_storage.py:224:21: PTH204 `os.path.getmtime` should be replaced by `Path.stat().st_mtime`
+    |
+222 |                 file_size = os.path.getsize(file_path)
+223 |                 file_mtime = datetime.fromtimestamp(
+224 |                     os.path.getmtime(file_path)
+    |                     ^^^^^^^^^^^^^^^^ PTH204
+225 |                 ).isoformat()
+    |
+
+scripts/mirror_supabase_storage.py:229:22: PTH123 `open()` should be replaced by `Path.open()`
+    |
+227 |                 # Calculate file hash
+228 |                 file_hash = hashlib.md5(usedforsecurity=False)
+229 |                 with open(file_path, "rb") as f:
+    |                      ^^^^ PTH123
+230 |                     for chunk in iter(lambda: f.read(4096), b""):
+231 |                         file_hash.update(chunk)
+    |
+
+scripts/mirror_supabase_storage.py:246:21: PTH118 `os.path.join()` should be replaced by `Path` with `/` operator
+    |
+245 |     # Write manifest to file
+246 |     manifest_file = os.path.join(output_dir, "manifest.json")
+    |                     ^^^^^^^^^^^^ PTH118
+247 |     with open(manifest_file, "w") as f:
+248 |         json.dump(manifest, f, indent=2)
+    |
+
+scripts/mirror_supabase_storage.py:247:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+245 |     # Write manifest to file
+246 |     manifest_file = os.path.join(output_dir, "manifest.json")
+247 |     with open(manifest_file, "w") as f:
+    |          ^^^^ PTH123
+248 |         json.dump(manifest, f, indent=2)
+    |
+
+scripts/mirror_supabase_storage.py:251:5: SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+    |
+250 |       # Create a compressed copy
+251 | /     with open(manifest_file, "rb") as f_in:
+252 | |         with gzip.open(f"{manifest_file}.gz", "wb") as f_out:
+    | |_____________________________________________________________^ SIM117
+253 |               shutil.copyfileobj(f_in, f_out)
+    |
+    = help: Combine `with` statements
+
+scripts/mirror_supabase_storage.py:251:10: PTH123 `open()` should be replaced by `Path.open()`
+    |
+250 |     # Create a compressed copy
+251 |     with open(manifest_file, "rb") as f_in:
+    |          ^^^^ PTH123
+252 |         with gzip.open(f"{manifest_file}.gz", "wb") as f_out:
+253 |             shutil.copyfileobj(f_in, f_out)
+    |
+
+scripts/monitor_supabase_usage.py:25:25: SyntaxError: Expected an import name
+   |
+23 | from datetime import datetime, timedelta
+24 | from pathlib import Path
+25 | from typing import Any, , , Optional, , Union
+   |                         ^
+26 | # Use lowercase versions for Python 3.9 compatibility
+27 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/monitor_supabase_usage.py:25:27: SyntaxError: Expected an import name
+   |
+23 | from datetime import datetime, timedelta
+24 | from pathlib import Path
+25 | from typing import Any, , , Optional, , Union
+   |                           ^
+26 | # Use lowercase versions for Python 3.9 compatibility
+27 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/monitor_supabase_usage.py:25:39: SyntaxError: Expected an import name
+   |
+23 | from datetime import datetime, timedelta
+24 | from pathlib import Path
+25 | from typing import Any, , , Optional, , Union
+   |                                       ^
+26 | # Use lowercase versions for Python 3.9 compatibility
+27 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+scripts/prioritize_tests:1:1: E902 No such file or directory (os error 2)
+update_phase0_status.py:9:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+  |
+7 | import logging
+8 | from pathlib import Path
+9 | from typing import Any, Dict
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ UP035
+  |
+
+update_tasks_qa_fix.py:9:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+   |
+ 7 | import logging
+ 8 | from pathlib import Path
+ 9 | from typing import Any, Dict
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ UP035
+10 |
+11 | # Configure basic logging
+   |
+
+utils/batch_tracker.py:14:25: SyntaxError: Expected an import name
+   |
+12 | from datetime import datetime, timedelta
+13 | from pathlib import Path
+14 | from typing import Any, , , Optional, , Union
+   |                         ^
+15 | # Use lowercase versions for Python 3.9 compatibility
+16 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/batch_tracker.py:14:27: SyntaxError: Expected an import name
+   |
+12 | from datetime import datetime, timedelta
+13 | from pathlib import Path
+14 | from typing import Any, , , Optional, , Union
+   |                           ^
+15 | # Use lowercase versions for Python 3.9 compatibility
+16 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/batch_tracker.py:14:39: SyntaxError: Expected an import name
+   |
+12 | from datetime import datetime, timedelta
+13 | from pathlib import Path
+14 | from typing import Any, , , Optional, , Union
+   |                                       ^
+15 | # Use lowercase versions for Python 3.9 compatibility
+16 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/cost_metrics.py:13:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+   |
+11 | from datetime import datetime
+12 | from pathlib import Path
+13 | from typing import Any, Dict
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ UP035
+14 |
+15 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/cost_tracker.py:9:25: SyntaxError: Expected an import name
+   |
+ 7 | from datetime import datetime, timedelta
+ 8 | from pathlib import Path
+ 9 | from typing import Any, , , Optional, , Union
+   |                         ^
+10 | # Use lowercase versions for Python 3.9 compatibility
+11 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/cost_tracker.py:9:27: SyntaxError: Expected an import name
+   |
+ 7 | from datetime import datetime, timedelta
+ 8 | from pathlib import Path
+ 9 | from typing import Any, , , Optional, , Union
+   |                           ^
+10 | # Use lowercase versions for Python 3.9 compatibility
+11 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/cost_tracker.py:9:39: SyntaxError: Expected an import name
+   |
+ 7 | from datetime import datetime, timedelta
+ 8 | from pathlib import Path
+ 9 | from typing import Any, , , Optional, , Union
+   |                                       ^
+10 | # Use lowercase versions for Python 3.9 compatibility
+11 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/io.py:10:25: SyntaxError: Expected an import name
+   |
+ 8 | import time
+ 9 | from pathlib import Path
+10 | from typing import Any, , , Optional, , Union
+   |                         ^
+11 | # Use lowercase versions for Python 3.9 compatibility
+12 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/io.py:10:27: SyntaxError: Expected an import name
+   |
+ 8 | import time
+ 9 | from pathlib import Path
+10 | from typing import Any, , , Optional, , Union
+   |                           ^
+11 | # Use lowercase versions for Python 3.9 compatibility
+12 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+utils/io.py:10:39: SyntaxError: Expected an import name
+   |
+ 8 | import time
+ 9 | from pathlib import Path
+10 | from typing import Any, , , Optional, , Union
+   |                                       ^
+11 | # Use lowercase versions for Python 3.9 compatibility
+12 | # Use lowercase versions for Python 3.9 compatibility
+   |
+
+Found 274 errors (1 fixed, 273 remaining).
+No fixes available (46 hidden fixes can be enabled with the `--unsafe-fixes` option).
+Ruff exit code: 1

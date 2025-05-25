@@ -21,6 +21,7 @@ import time
 from typing import Any, Optional
 
 # Use lowercase versions for Python 3.9 compatibility
+# Use lowercase versions for Python 3.9 compatibility
 import requests
 from dotenv import load_dotenv
 

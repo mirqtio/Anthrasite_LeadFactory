@@ -20,7 +20,9 @@ import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Tuple, Optional, Union
+from typing import Any, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Try to import visualization libraries, but don't fail if they're not available
 try:
@@ -37,7 +39,6 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import typing modules for type annotations
-from typing import Any, Dict, List, Optional, Union
 
 # Import test status tracker constants
 from scripts.test_status_tracker import (
@@ -59,13 +60,13 @@ class TestProgressReporter:
         self.output_dir = project_root / "test_results"
         os.makedirs(self.output_dir, exist_ok=True)
 
-    def calculate_progress_metrics(self) -> Dict[str, Any]:
+    def calculate_progress_metrics(self) -> dict[str, Any]:
         """Calculate metrics for test re-enablement progress."""
-        metrics: Dict[str, Any] = {}
+        metrics: dict[str, Any] = {}
 
         # Current status counts
-        status_counts: Dict[str, int] = defaultdict(int)
-        category_status: Dict[str, Dict[str, int]] = {}
+        status_counts: dict[str, int] = defaultdict(int)
+        category_status: dict[str, dict[str, int]] = {}
 
         for category in CATEGORIES:
             category_status[category] = defaultdict(int)
@@ -93,7 +94,7 @@ class TestProgressReporter:
 
         # Calculate progress over time
         if self.history["runs"]:
-            progress_over_time: List[Dict[str, Any]] = []
+            progress_over_time: list[dict[str, Any]] = []
 
             for run in sorted(self.history["runs"], key=lambda x: x["timestamp"]):
                 timestamp = datetime.fromisoformat(run["timestamp"])

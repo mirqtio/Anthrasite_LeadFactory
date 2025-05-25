@@ -6,6 +6,7 @@ Script to update all task and subtask statuses in the Phase 0 plan to 'completed
 import json
 import logging
 from pathlib import Path
+from typing import Any, Dict
 
 
 def update_statuses(file_path):
@@ -15,7 +16,7 @@ def update_statuses(file_path):
     # Read the JSON file
     try:
         with Path(file_path).open("r") as f:
-            data = json.load(f)
+            data: dict[str, Any] = json.load(f)
     except FileNotFoundError:
         logging.error(f"Error: File not found at {file_path}")
         return

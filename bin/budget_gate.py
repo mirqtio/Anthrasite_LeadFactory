@@ -37,6 +37,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Optional, Union
 
+# Use lowercase versions for Python 3.9 compatibility
+
 # We need to use a different approach to handle imports to satisfy ruff linting
 # First modify sys.path before any local imports
 project_root = Path(__file__).parent.parent

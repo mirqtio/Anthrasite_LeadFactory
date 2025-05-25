@@ -10,8 +10,11 @@ import re
 import sqlite3
 import sys
 import time
+from collections.abc import Iterable
 from contextlib import contextmanager
 from typing import Any
+
+# Use lowercase versions for Python 3.9 compatibility
 
 import psycopg2
 import psycopg2.extras
@@ -219,14 +222,14 @@ def postgres_connection(db_url: str):
         conn.close()
 
 
-def get_sqlite_tables(sqlite_conn) -> List[str]:
+def get_sqlite_tables(sqlite_conn) -> list[str]:
     """Get list of tables in SQLite database.
 
     Args:
         sqlite_conn: SQLite connection.
 
     Returns:
-        List of table names.
+        list of table names.
     """
     cursor = sqlite_conn.cursor()
     cursor.execute(
@@ -235,7 +238,7 @@ def get_sqlite_tables(sqlite_conn) -> List[str]:
     return [row[0] for row in cursor.fetchall()]
 
 
-def get_sqlite_table_schema(sqlite_conn, table_name: str) -> List[Tuple[str, str]]:
+def get_sqlite_table_schema(sqlite_conn, table_name: str) -> list[tuple[str, str]]:
     """Get schema of a table in SQLite database.
 
     Args:
@@ -243,7 +246,7 @@ def get_sqlite_table_schema(sqlite_conn, table_name: str) -> List[Tuple[str, str
         table_name: Name of the table.
 
     Returns:
-        List of (column_name, column_type) tuples.
+        list of (column_name, column_type) tuples.
     """
     cursor = sqlite_conn.cursor()
 
@@ -277,7 +280,7 @@ def create_postgres_tables(pg_conn):
     pg_conn.commit()
 
 
-def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
+def get_sqlite_data(sqlite_conn, table_name: str) -> list[dict[str, Any]]:
     """Get data from a table in SQLite database.
 
     Args:
@@ -285,7 +288,7 @@ def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
         table_name: Name of the table.
 
     Returns:
-        List of dictionaries representing rows.
+        list of dictionaries representing rows.
     """
     cursor = sqlite_conn.cursor()
     # Use parameterized query to avoid SQL injection
@@ -298,16 +301,17 @@ def get_sqlite_data(sqlite_conn, table_name: str) -> List[Dict[str, Any]]:
     # This is safe because we've validated the table_name above
     cursor.execute(f"SELECT * FROM {table_name}")  # nosec B608
     columns = [column[0] for column in cursor.description]
-    return [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
+    # In Python 3.9, zip() doesn't have the strict parameter
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-def insert_postgres_data(pg_conn, table_name: str, data: List[Dict[str, Any]]):
+def insert_postgres_data(pg_conn, table_name: str, data: list[dict[str, Any]]):
     """Insert data into a table in Postgres database.
 
     Args:
         pg_conn: Postgres connection.
         table_name: Name of the table.
-        data: List of dictionaries representing rows.
+        data: list of dictionaries representing rows.
     """
     if not data:
         logger.info(f"No data to insert for table {table_name}")

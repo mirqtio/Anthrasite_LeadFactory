@@ -10,7 +10,9 @@ import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -64,7 +66,7 @@ def get_cost_data() -> dict[str, Any]:
 
     try:
         with COST_TRACKER_FILE.open() as f:
-            data = json.load(f)
+            data: dict[str, Any] = json.load(f)
 
         return data
     except Exception as e:
@@ -277,7 +279,7 @@ def check_gpu_cost_threshold(
         monthly_threshold: Monthly GPU cost threshold in dollars.
 
     Returns:
-        Tuple of (exceeded, reason).
+        tuple of (exceeded, reason).
     """
     try:
         # Get cost data
@@ -314,7 +316,7 @@ def check_cost_per_lead_threshold(threshold: float = 3.0) -> tuple[bool, str]:
         threshold: Cost per lead threshold in dollars.
 
     Returns:
-        Tuple of (exceeded, reason).
+        tuple of (exceeded, reason).
     """
     try:
         # Get cost data

@@ -11,7 +11,9 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -46,7 +48,7 @@ def ensure_tracker_file_exists(tracker_file: Path = BATCH_TRACKER_FILE) -> None:
 
     if not tracker_file.exists():
         # Create initial tracker file
-        initial_data: Dict[str, Any] = {
+        initial_data: dict[str, Any] = {
             "last_batch_start": None,
             "last_batch_end": None,
             "current_batch_start": None,
@@ -63,7 +65,7 @@ def load_tracker_data() -> dict:
     ensure_tracker_file_exists()
     try:
         with BATCH_TRACKER_FILE.open() as f:
-            data = json.load(f)
+            data: dict[str, Any] = json.load(f)
         return data
     except Exception as e:
         logger.error(f"Error loading batch tracker data: {e}")
@@ -217,11 +219,11 @@ def record_batch_end() -> bool:
         return False
 
 
-def check_batch_completion() -> Tuple[bool, Optional[str]]:
+def check_batch_completion() -> tuple[bool, Optional[str]]:
     """Check if the current batch completed on time.
 
     Returns:
-        Tuple of (completed_on_time, reason).
+        tuple of (completed_on_time, reason).
     """
     try:
         data = load_tracker_data()

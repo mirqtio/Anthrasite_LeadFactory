@@ -1,0 +1,81 @@
+# Task ID: 19
+# Title: Email Deliverability Hardening
+# Status: done
+# Dependencies: 26
+# Priority: high
+# Description: Implement email deliverability improvements to reduce bounce rates, track spam complaints, and add metrics
+# Details:
+Implement the following email deliverability hardening features:
+
+1. Lower the bounce threshold to 2% (last 7 days) before any send
+2. Implement automatic IP/sub-user switching when bounce > 2%
+3. Add spam-rate tracking via SendGrid stats
+4. Add Prometheus metrics and Grafana alerts for bounce and spam rates
+5. Create BDD tests for high-bounce and spam complaint scenarios
+
+These improvements are critical for maintaining email deliverability and compliance with email sending best practices.
+
+# Test Strategy:
+All code changes must follow the standard workflow for development, testing, quality assurance, pre-commit checks, and CI verification before being considered complete. Refer to the Feature Development Workflow Template (Task #27) for the complete process that must be followed.
+
+# Subtasks:
+## 1. Lower bounce threshold to 2% for email sends [done]
+### Dependencies: None
+### Description: Modify the email sending system to check bounce rates over the last 7 days and prevent sends when the rate exceeds 2%
+### Details:
+1. Update the pre-send validation logic to query bounce rates for the last 7 days
+2. Implement a threshold check of 2% maximum bounce rate
+3. Create a blocking mechanism that prevents sends when threshold is exceeded
+4. Add appropriate error messaging for marketing users
+5. Document the new threshold in the email sending guidelines
+
+## 2. Implement automatic IP/sub-user switching mechanism [done]
+### Dependencies: 19.1
+### Description: Develop a system that automatically switches to alternative IPs or sub-users when bounce rates exceed 2%
+### Details:
+1. Create a pool of alternative IPs and sub-users in SendGrid
+2. Develop logic to automatically select the next available IP/sub-user when bounce threshold is exceeded
+3. Implement a rotation strategy that considers IP warming and reputation
+4. Add logging for IP/sub-user switches
+5. Create a recovery mechanism to return to primary IPs when bounce rates normalize
+
+## 3. Add spam-rate tracking via SendGrid stats [done]
+### Dependencies: None
+### Description: Integrate with SendGrid's statistics API to track and store spam complaint rates for all email campaigns
+### Details:
+1. Set up regular polling of SendGrid stats API for spam complaint data
+2. Create a database schema to store historical spam rate data
+3. Implement an aggregation mechanism for calculating spam rates across different time periods
+4. Add an admin dashboard view to display current and historical spam rates
+5. Document the spam rate tracking methodology for the team
+
+## 4. Add Prometheus metrics and Grafana alerts [done]
+### Dependencies: 19.1, 19.3
+### Description: Implement monitoring for bounce and spam rates using Prometheus metrics and set up Grafana alerts for threshold violations
+### Details:
+1. Define and expose Prometheus metrics for bounce rates and spam complaint rates
+2. Configure metric collection intervals and retention policies
+3. Create Grafana dashboards to visualize bounce and spam rate trends
+4. Set up alert rules for when rates approach or exceed thresholds
+5. Configure alert notifications via appropriate channels (Slack, email, PagerDuty)
+
+## 5. Create BDD tests for high-bounce and spam complaint scenarios [done]
+### Dependencies: 19.1, 19.2, 19.3, 19.4
+### Description: Develop behavior-driven development tests that validate the system's response to high bounce rates and spam complaints
+### Details:
+1. Define Gherkin scenarios for high bounce rate detection and handling
+2. Create scenarios for spam complaint tracking and alerting
+3. Implement step definitions that simulate SendGrid API responses
+4. Add scenarios for IP/sub-user switching under high bounce conditions
+5. Create end-to-end tests that verify the complete workflow from detection to alerting
+
+## 6. Configure Environment Variables and Alert Rules [done]
+### Dependencies: 19.1, 19.3, 19.4
+### Description: Set explicit environment variables and create alert rules for bounce and spam rates
+### Details:
+1. Set BOUNCE_RATE_THRESHOLD=0.02 in environment configuration
+2. Set MONTHLY_BUDGET=250 in environment configuration
+3. Create BounceHigh alert rule (warning ≥ 1%, critical ≥ 2%)
+4. Create SpamHigh alert rule (warning ≥ 0.05%, critical ≥ 0.1%)
+5. Document all environment variables and alert rules in the project documentation
+6. Ensure CI pipeline uses these environment variables for testing

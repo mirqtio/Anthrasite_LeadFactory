@@ -16,7 +16,9 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
+# Use lowercase versions for Python 3.9 compatibility
+# Use lowercase versions for Python 3.9 compatibility
 from urllib.parse import urlparse
 
 # Third-party imports
@@ -215,12 +217,12 @@ class TechStackAnalyzer:
         self.wappalyzer = Wappalyzer.latest()
         logger.info("Wappalyzer initialized successfully")
 
-    def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[Dict, Optional[str]]:
         """Analyze a website to identify technologies used.
         Args:
             url: Website URL.
         Returns:
-            Tuple of (tech_stack_data, error_message).
+            tuple of (tech_stack_data, error_message).
             If successful, error_message is None.
             If failed, tech_stack_data is an empty dict.
         """
@@ -253,7 +255,7 @@ class TechStackAnalyzer:
             # For test compatibility, we need to return a set of technologies
             # But we'll also maintain the categorized dictionary for actual use
             tech_set: set[str] = set()
-            tech_data: Dict[str, Dict[str, Any]] = {}
+            tech_data: dict[str, dict[str, Any]] = {}
             # Process the analysis results
             for tech_name, tech_info in analysis.items():
                 # Add to the set for test compatibility
@@ -269,7 +271,7 @@ class TechStackAnalyzer:
                     tech_data[category]["technologies"] = []
                 tech_data[category]["technologies"].append(tech_name)
             # Convert tech_data to the expected return type (Dict)
-            return_data: Dict[Any, Any] = {
+            return_data: dict[Any, Any] = {
                 "technologies": list(tech_set),
                 "categorized": tech_data,
             }
@@ -294,12 +296,12 @@ class PageSpeedAnalyzer:
         """
         self.api_key = api_key
 
-    def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[Dict, Optional[str]]:
         """Analyze a website's performance using PageSpeed Insights.
         Args:
             url: Website URL.
         Returns:
-            Tuple of (performance_data, error_message).
+            tuple of (performance_data, error_message).
             If successful, error_message is None.
             If failed, performance_data is an empty dict.
         """
@@ -376,12 +378,12 @@ class ScreenshotGenerator:
         """
         self.api_key = api_key
 
-    def capture_screenshot(self, url: str) -> Tuple[Optional[str], Optional[str]]:
+    def capture_screenshot(self, url: str) -> tuple[Optional[str], Optional[str]]:
         """Capture a screenshot of a website.
         Args:
             url: Website URL.
         Returns:
-            Tuple of (screenshot_url, error_message).
+            tuple of (screenshot_url, error_message).
             If successful, error_message is None.
             If failed, screenshot_url is None.
         """
@@ -436,12 +438,12 @@ class SEMrushAnalyzer:
         """
         self.api_key = api_key
 
-    def analyze_website(self, url: str) -> Tuple[Dict, Optional[str]]:
+    def analyze_website(self, url: str) -> tuple[Dict, Optional[str]]:
         """Analyze a website using SEMrush Site Audit.
         Args:
             url: Website URL.
         Returns:
-            Tuple of (audit_data, error_message).
+            tuple of (audit_data, error_message).
             If successful, error_message is None.
             If failed, audit_data is an empty dict.
         """
@@ -489,13 +491,13 @@ class SEMrushAnalyzer:
 
 def get_businesses_to_enrich(
     limit: Optional[int] = None, business_id: Optional[int] = None
-) -> List[Dict]:
+) -> list[Dict]:
     """Get list of businesses to enrich.
     Args:
         limit: Maximum number of businesses to return.
         business_id: Specific business ID to return.
     Returns:
-        List of dictionaries containing business information.
+        list of dictionaries containing business information.
     """
     try:
         with get_database_connection() as cursor:

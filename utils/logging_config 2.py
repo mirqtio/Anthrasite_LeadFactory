@@ -8,6 +8,8 @@ import logging
 import os
 from typing import Optional, Union
 
+# Use lowercase versions for Python 3.9 compatibility
+
 
 def setup_logging(
     log_level: Optional[str] = None, log_format: Optional[str] = None

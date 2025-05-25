@@ -1,0 +1,85 @@
+./conftest.py
+./bin/metrics.py
+./bin/cost_tracking.py
+./bin/__init__.py
+./bin/utils/__init__.py
+./bin/utils/string_utils.py
+./bin/batch_completion_monitor.py
+./bin/track_gpu_usage.py
+./bin/enrich_with_retention.py
+./bin/mockup.py
+./bin/budget_audit.py
+./bin/email_queue.py
+./bin/process_raw_data.py
+./bin/unsubscribe_handler.py
+./bin/health_check.py
+./bin/budget_gate.py
+./bin/data_retention.py
+./bin/email/sendgrid_email_sender.py
+./bin/scrape.py
+./bin/score.py
+./bin/cleanup_expired_data.py
+./update_phase0_status.py
+./fix_test_mockup_unit.py
+./update_tasks_qa_fix.py
+./utils/metrics.py
+./utils/batch_tracker.py
+./utils/cost_tracker.py
+./utils/logging_config.py
+./utils/io.py
+./utils/raw_data_retention.py
+./utils/__init__.py
+./utils/website_scraper.py
+./utils/llm_logger.py
+./utils/cost_metrics.py
+./utils/batch_metrics.py
+./create_repo_skeleton.py
+./backup_files/backup_20250524_061616/bin/cost_tracking 2.py
+./backup_files/backup_20250524_061616/bin/batch_completion_monitor 2.py
+./backup_files/backup_20250524_061616/bin/data_retention 2.py
+./backup_files/backup_20250524_061616/bin/budget_gate 2.py
+./backup_files/backup_20250524_061616/bin/email_queue 2.py
+./backup_files/backup_20250524_061616/bin/dedupe 2.py
+./backup_files/backup_20250524_061616/bin/mockup 2.py
+./backup_files/backup_20250524_061616/bin/score 2.py
+./backup_files/backup_20250524_061616/bin/cleanup_expired_data 2.py
+./backup_files/backup_20250524_061616/bin/unsubscribe_handler 2.py
+./backup_files/backup_20250524_061616/bin/email/sendgrid_email_sender 2.py
+./backup_files/backup_20250524_061616/bin/scrape 2.py
+./backup_files/backup_20250524_061616/scripts/enable_ci_tests 2.py
+./backup_files/backup_20250524_061616/scripts/monitor_supabase_usage 2.py
+./backup_files/backup_20250524_061616/scripts/generate_test_progress_report 2.py
+./backup_files/backup_20250524_061616/scripts/generate_test_status_report 2.py
+./fix_test_mockup_unit_completely.py
+./scripts/setup_test_environment.py
+./scripts/format_all.py
+./scripts/ci_fix_all.py
+./scripts/minimal_db_setup.py
+./scripts/minimal_test_setup.py
+./scripts/enable_ci_tests.py
+./scripts/fix_typing_issues.py
+./scripts/unittest_runner.py
+./scripts/ci_format 3.py
+./scripts/fix_python39_compatibility.py
+./scripts/generate_test_visualizations.py
+./scripts/test_status_tracker.py
+./scripts/verify_minimal_ci.py
+./scripts/install_test_tools.py
+./scripts/disable_old_ci_workflows.py
+./scripts/migrate_to_postgres.py
+./scripts/generate_test_progress_report.py
+./scripts/ci_pipeline_integration.py
+./scripts/minimal_path_fix.py
+./scripts/mirror_supabase_storage.py
+./scripts/setup_wal_archiving.py
+./scripts/generate_ci_tests.py
+./scripts/prepare_ci.py
+./scripts/monitor_supabase_usage.py
+./scripts/backup_duplicate_files.py
+./scripts/minimal_test_tools.py
+./scripts/minimal_test_tracker.py
+./scripts/generate_test_status_report.py
+./scripts/prioritize_tests 3.py
+./fix_dedupe_simple.py
+./.tmp/test_unsubscribe 3.py
+./fix_mockup_unit.py

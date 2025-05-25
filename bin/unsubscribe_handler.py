@@ -6,8 +6,10 @@ Handles unsubscribe requests for CAN-SPAM compliance.
 
 import os
 import sys
-from typing import Dict, List, Optional, Tuple, Any, Union
+from pathlib import Path
+from typing import Any, Optional, Union
 
+# Use lowercase versions for Python 3.9 compatibility
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Form, Request
@@ -15,7 +17,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # Import email queue functions
 from bin.email_queue import add_unsubscribe, is_email_unsubscribed
 
@@ -37,8 +39,8 @@ DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 app = FastAPI(title="Anthrasite Lead-Factory Unsubscribe Handler")
 
 # Create templates directory if it doesn't exist
-templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
-os.makedirs(templates_dir, exist_ok=True)
+templates_dir = Path(__file__).resolve().parent.parent / "templates"
+templates_dir.mkdir(parents=True, exist_ok=True)
 
 # Create templates
 templates = Jinja2Templates(directory=templates_dir)

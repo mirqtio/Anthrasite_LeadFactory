@@ -17,7 +17,8 @@ import logging
 import os
 import re
 import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+# Use lowercase versions for Python 3.9 compatibility
 
 import Levenshtein
 import requests
@@ -248,7 +249,7 @@ class OllamaVerifier:
             business1: First business record.
             business2: Second business record.
         Returns:
-            Tuple of (is_duplicate, confidence, reasoning).
+            tuple of (is_duplicate, confidence, reasoning).
         """
         # Prepare prompt
         prompt = self._prepare_prompt(business1, business2)
@@ -337,7 +338,7 @@ Provide your analysis:
         Args:
             response_text: Response text from Ollama.
         Returns:
-            Tuple of (is_duplicate, confidence, reasoning).
+            tuple of (is_duplicate, confidence, reasoning).
         """
         # Extract decision
         duplicate_match = re.search(
@@ -355,12 +356,12 @@ Provide your analysis:
         return is_duplicate, confidence, reasoning
 
 
-def get_potential_duplicates(limit: Optional[int] = None) -> List[Dict]:
+def get_potential_duplicates(limit: Optional[int] = None) -> list[Dict]:
     """Get list of potential duplicate pairs from the database.
     Args:
         limit: Maximum number of potential duplicate pairs to return.
     Returns:
-        List of dictionaries containing potential duplicate pairs.
+        list of dictionaries containing potential duplicate pairs.
     """
     try:
         with get_database_connection() as cursor:
@@ -476,7 +477,7 @@ def select_primary_business(business1: dict, business2: dict) -> tuple[int, int]
         business1: First business record.
         business2: Second business record.
     Returns:
-        Tuple of (primary_id, secondary_id).
+        tuple of (primary_id, secondary_id).
     """
     # Calculate completeness score for each business
     score1 = calculate_completeness_score(business1)
@@ -556,7 +557,7 @@ def process_duplicate_pair(
     matcher: LevenshteinMatcher,
     verifier: OllamaVerifier,
     is_dry_run: bool = False,
-) -> Tuple[bool, Optional[int]]:
+) -> tuple[bool, Optional[int]]:
     """Process a potential duplicate pair.
     Args:
         duplicate_pair: Potential duplicate pair record.
@@ -564,7 +565,7 @@ def process_duplicate_pair(
         verifier: OllamaVerifier instance.
         is_dry_run: If True, don't actually merge the records.
     Returns:
-        Tuple of (success, merged_business_id).
+        tuple of (success, merged_business_id).
     """
     business1_id = duplicate_pair["business1_id"]
     business2_id = duplicate_pair["business2_id"]
