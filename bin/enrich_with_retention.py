@@ -16,7 +16,9 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 # Add parent directory to path to allow importing other modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -51,13 +53,13 @@ except ImportError:
 # Define mock functions only if needed
 if not has_enrich_module:
 
-    def enrich_business(business: Dict[Any, Any], tier: int = 1) -> bool:
+    def enrich_business(business: dict[Any, Any], tier: int = 1) -> bool:
         """Mock implementation of enrich_business."""
         business_id = business.get("id", "unknown")
         logger.info(f"Mock enrichment for business {business_id}")
         return True
 
-    def fetch_business_data(business_id: Union[int, str]) -> Dict[str, Any]:
+    def fetch_business_data(business_id: Union[int, str]) -> dict[str, Any]:
         """Mock implementation of fetch_business_data."""
         # Convert business_id to int if it's a string and contains only digits
         if isinstance(business_id, str) and business_id.isdigit():
@@ -71,7 +73,7 @@ if not has_enrich_module:
         }
 
 
-def fetch_business_data_with_retention(business_id: str, **kwargs) -> Dict[str, Any]:
+def fetch_business_data_with_retention(business_id: str, **kwargs) -> dict[str, Any]:
     """Fetch business data with retention for raw HTML.
 
     Args:
@@ -105,7 +107,7 @@ def fetch_business_data_with_retention(business_id: str, **kwargs) -> Dict[str, 
     operation="gpt-4-enrichment",
     fallback_value={"status": "skipped", "reason": "budget_gate"},
 )
-def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> Dict[str, Any]:
+def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> dict[str, Any]:
     """Enrich business data using LLM with cost tracking and logging.
 
     Args:
@@ -195,7 +197,7 @@ def enrich_business_with_llm(business_data: dict[str, Any], **kwargs) -> Dict[st
         return business_data
 
 
-def enrich_business_with_retention(business_id: str, **kwargs) -> Dict[str, Any]:
+def enrich_business_with_retention(business_id: str, **kwargs) -> dict[str, Any]:
     """Enrich a business with data retention.
 
     Args:
