@@ -22,7 +22,9 @@ import time
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Optional, Tuple, TypeVar, Union, cast
+
+# Use lowercase versions for Python 3.9 compatibility
 
 import requests
 from dotenv import load_dotenv
@@ -49,7 +51,7 @@ class _EmailDBConnectionBase:
     def execute(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def fetchall(self) -> List[Any]:
+    def fetchall(self) -> list[Any]:
         return []
 
     def fetchone(self) -> Optional[Any]:
@@ -153,7 +155,7 @@ try:
 
     # For log_cost, keep using our own implementation if it doesn't exist
     if hasattr(cost_tracker_module, "log_cost"):
-        log_cost = getattr(cost_tracker_module, "log_cost")
+        log_cost = cost_tracker_module.log_cost
     # If log_cost doesn't exist in the module, we keep our own implementation
 
 except ImportError:
@@ -306,7 +308,7 @@ class SendGridEmailSender:
                 if "attachments" not in payload:
                     payload["attachments"] = []
                 # Use cast to ensure proper typing for append operation
-                attachments_list = cast(List[Dict[str, str]], payload["attachments"])
+                attachments_list = cast(list[dict[str, str]], payload["attachments"])
                 attachments_list.append(
                     {
                         "content": image_data,
@@ -594,14 +596,14 @@ def load_email_template() -> str:
 
 def get_businesses_for_email(
     limit: Optional[int] = None, business_id: Optional[int] = None, force: bool = False
-) -> List[dict]:
+) -> list[dict]:
     """Get list of businesses for email sending.
     Args:
         limit: Maximum number of businesses to return.
         business_id: Specific business ID to return.
         force: If True, include businesses that already have emails sent.
     Returns:
-        List of dictionaries containing business information.
+        list of dictionaries containing business information.
     """
     try:
         with EmailDBConnection() as cursor:
