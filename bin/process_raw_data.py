@@ -11,10 +11,13 @@ Usage:
 import argparse
 import os
 import sys
+from pathlib import Path
 from typing import Any
 
+# Use lowercase versions for Python 3.9 compatibility
+
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Import utility functions
 from utils.llm_logger import check_retention_status
@@ -52,7 +55,7 @@ def check_retention(verbose: bool = False) -> dict[str, Any]:
         verbose: Whether to print verbose output.
 
     Returns:
-        Dictionary with retention status information.
+        dictionary with retention status information.
     """
     if verbose:
         logger.info("Checking data retention status...")
