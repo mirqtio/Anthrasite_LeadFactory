@@ -18,7 +18,9 @@ import os
 import re
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
+
+# Use lowercase versions for Python 3.9 compatibility
 
 import requests
 from dotenv import load_dotenv
@@ -153,7 +155,7 @@ class GPT4oMockupGenerator:
         screenshot_url: Optional[str] = None,
         style: str = MOCKUP_STYLE,
         resolution: str = MOCKUP_RESOLUTION,
-    ) -> Tuple[Optional[str], Optional[str], Optional[Dict], Optional[str]]:
+    ) -> tuple[Optional[str], Optional[str], Optional[dict], Optional[str]]:
         """Generate a website mockup using GPT-4o.
         Args:
             business_data: Business data including tech stack, performance metrics, etc.
@@ -161,7 +163,7 @@ class GPT4oMockupGenerator:
             style: Style of mockup (modern, minimalist, etc.).
             resolution: Resolution of mockup image.
         Returns:
-            Tuple of (mockup_image_base64, mockup_html, usage_data, error_message).
+            tuple of (mockup_image_base64, mockup_html, usage_data, error_message).
         """
         if not self.api_key:
             return None, None, None, "OpenAI API key not provided"
@@ -322,7 +324,7 @@ class ClaudeMockupGenerator:
         screenshot_url: Optional[str] = None,
         style: str = MOCKUP_STYLE,
         resolution: str = MOCKUP_RESOLUTION,
-    ) -> Tuple[Optional[str], Optional[str], Optional[Dict], Optional[str]]:
+    ) -> tuple[Optional[str], Optional[str], Optional[dict], Optional[str]]:
         """Generate a website mockup using Claude.
         Args:
             business_data: Business data including tech stack, performance metrics, etc.
@@ -330,7 +332,7 @@ class ClaudeMockupGenerator:
             style: Style of mockup (modern, minimalist, etc.).
             resolution: Resolution of mockup image.
         Returns:
-            Tuple of (mockup_image_base64, mockup_html, usage_data, error_message).
+            tuple of (mockup_image_base64, mockup_html, usage_data, error_message).
         """
         if not self.api_key:
             return None, None, None, "Anthropic API key not provided"
@@ -488,7 +490,7 @@ def get_businesses_for_mockup(
     business_id: Optional[int] = None,
     tier: int = CURRENT_TIER,
     force: bool = False,
-) -> List[dict]:
+) -> list[dict]:
     """Get list of businesses for mockup generation.
     Args:
         limit: Maximum number of businesses to return.
@@ -496,7 +498,7 @@ def get_businesses_for_mockup(
         tier: Minimum tier level for mockup generation.
         force: If True, include businesses that already have mockups.
     Returns:
-        List of dictionaries containing business information.
+        list of dictionaries containing business information.
     """
     try:
         with get_database_connection() as cursor:
