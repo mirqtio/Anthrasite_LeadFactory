@@ -18,7 +18,9 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
+
+# Use lowercase versions for Python 3.9 compatibility
 
 import yaml
 from dotenv import load_dotenv
@@ -110,12 +112,12 @@ class RuleEngine:
             rules_file: Path to the YAML file containing scoring rules.
         """
         self.rules_file = rules_file
-        self.rules: Dict[str, Any] = {}
-        self.settings: Dict[str, Any] = {}
-        self.multipliers: List[Dict[str, Any]] = []
+        self.rules: dict[str, Any] = {}
+        self.settings: dict[str, Any] = {}
+        self.multipliers: list[dict[str, Any]] = []
         self.load_rules()
         # Define condition evaluators with proper type annotation
-        self.condition_evaluators: Dict[str, Callable[[Any, Dict[str, Any]], bool]] = {
+        self.condition_evaluators: dict[str, Callable[[Any, dict[str, Any]], bool]] = {
             "tech_stack_contains": self._eval_tech_stack_contains,
             "tech_stack_contains_any": self._eval_tech_stack_contains_any,
             "tech_stack_version_lt": self._eval_tech_stack_version_lt,
@@ -164,16 +166,16 @@ class RuleEngine:
             self.rules = []
             self.multipliers = []
 
-    def calculate_score(self, business_data: dict) -> Tuple[int, List[Dict]]:
+    def calculate_score(self, business_data: dict) -> tuple[int, list[dict]]:
         """Calculate score for a business based on the defined rules.
         Args:
             business_data: Business data including tech stack, performance metrics, etc.
         Returns:
-            Tuple of (final_score, applied_rules).
+            tuple of (final_score, applied_rules).
         """
         # Start with base score
         score = self.settings.get("base_score", 50)
-        applied_rules: List[Dict[str, Any]] = []
+        applied_rules: list[dict[str, Any]] = []
         # Apply each rule
         for rule in self.rules:
             # Skip if rule is not a dictionary
@@ -257,7 +259,7 @@ class RuleEngine:
         return technology in tech_stack
 
     def _eval_tech_stack_contains_any(
-        self, technologies: List[str], business_data: dict
+        self, technologies: list[str], business_data: dict
     ) -> bool:
         """Check if business tech stack contains any of the specified technologies."""
         tech_stack = self._get_tech_stack(business_data)
@@ -317,7 +319,7 @@ class RuleEngine:
         return cls > threshold
 
     def _eval_category_contains_any(
-        self, categories: List[str], business_data: dict
+        self, categories: list[str], business_data: dict
     ) -> bool:
         """Check if business category contains any of the specified categories."""
         business_category = business_data.get("category", "").lower()
@@ -329,7 +331,7 @@ class RuleEngine:
         return not has_website if value else has_website
 
     def _eval_website_contains_any(
-        self, patterns: List[str], business_data: dict
+        self, patterns: list[str], business_data: dict
     ) -> bool:
         """Check if business website contains any of the specified patterns."""
         website = business_data.get("website", "")
@@ -388,7 +390,7 @@ class RuleEngine:
         tier = business_data.get("tier", CURRENT_TIER)
         return tier == value
 
-    def _eval_vertical_in(self, verticals: List[str], business_data: dict) -> bool:
+    def _eval_vertical_in(self, verticals: list[str], business_data: dict) -> bool:
         """Check if business vertical is in the specified list."""
         vertical = business_data.get("vertical", "")
         return vertical in verticals
@@ -544,14 +546,14 @@ def get_businesses_to_score(
     limit: Optional[int] = None,
     business_id: Optional[int] = None,
     recalculate: bool = False,
-) -> List[Dict]:
+) -> list[dict]:
     """Get list of businesses to score.
     Args:
         limit: Maximum number of businesses to return.
         business_id: Specific business ID to return.
         recalculate: If True, include businesses that already have scores.
     Returns:
-        List of dictionaries containing business information.
+        list of dictionaries containing business information.
     """
     try:
         with get_database_connection() as cursor:
@@ -589,13 +591,13 @@ def get_businesses_to_score(
 
 
 def save_business_score(
-    business_id: int, score: int, applied_rules: List[Dict]
+    business_id: int, score: int, applied_rules: list[dict]
 ) -> bool:
     """Save business score to database.
     Args:
         business_id: Business ID.
         score: Calculated score.
-        applied_rules: List of applied rules.
+        applied_rules: list of applied rules.
     Returns:
         True if successful, False otherwise.
     """
