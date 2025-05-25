@@ -32,7 +32,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(os.path.join("logs", "enrich_with_retention.log")),
+        logging.FileHandler(str(Path("logs") / "enrich_with_retention.log")),
     ],
 )
 logger = logging.getLogger("enrich_with_retention")
