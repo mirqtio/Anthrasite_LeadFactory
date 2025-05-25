@@ -80,10 +80,13 @@ jobs:
 
       - name: Generate file list for linting
         run: |
-          # Generate a cleaner list of files to check, ensuring they exist
-          find . \( -name ".venv" -o -name "venv" \) -prune -o -type f -name "*.py" -print | \
-            grep -v "tests/" | grep -v ".cursor/" | grep -v ".github/workflows/" | \
-            grep -v "bin/enrich.py" | grep -v "bin/dedupe.py" | grep -v ".git/" | grep -v "archive/" > files_to_check.txt
+          # Generate a cleaner list of files to check, excluding virtual environments and tests
+          find . -type f -name "*.py" | \
+            grep -v "/venv/" | grep -v "/.venv/" | \
+            grep -v "/tests/" | grep -v "/.cursor/" | \
+            grep -v "/.git/" | grep -v "/archive/" | \
+            grep -v "/.github/workflows/" | \
+            grep -v "/bin/enrich.py" | grep -v "/bin/dedupe.py" > files_to_check.txt
 
           # Ensure each file exists and is readable
           cat files_to_check.txt | while read file; do
