@@ -54,10 +54,10 @@ class MockWebPage:
 sys.modules["wappalyzer"] = type("wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage})
 
 # Patch the track_api_cost function before importing modules that use it
-patch("utils.io.track_api_cost", mock_track_api_cost).start()
-# We need to import utils after patching to ensure the mock is applied
+patch("leadfactory.utils.io.track_api_cost", mock_track_api_cost).start()
+# We need to import leadfactory.utils after patching to ensure the mock is applied
 # This is an intentional out-of-order import for testing purposes
-import utils  # noqa: E402
+from leadfactory import utils  # noqa: E402
 
 # Apply the mock to the imported module
 utils.io.track_api_cost = mock_track_api_cost
