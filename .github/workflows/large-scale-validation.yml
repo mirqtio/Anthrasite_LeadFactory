@@ -200,10 +200,10 @@ jobs:
           # Update README.md with badge
           if grep -q "\[Large-Scale Validation\]" README.md; then
             # Replace existing badge
-            sed -i "s|\[Large-Scale Validation\]([^)]*)\!|\[Large-Scale Validation\]($BADGE_URL)\!|" README.md
+            sed -i "s|\[Large-Scale Validation\]([^)]*)\!|\[Large-Scale Validation\](${BADGE_URL})\!|" README.md
           else
             # Add new badge after existing CI badge
-            sed -i "/\[CI\]/a \\\n\!\[Large-Scale Validation\]($BADGE_URL)" README.md
+            sed -i "/\[CI\]/a \\n\!\[Large-Scale Validation\](${BADGE_URL})" README.md
           fi
 
           # Check if we need to commit changes
@@ -225,7 +225,7 @@ jobs:
         env:
           # Set Slack webhook URL from GitHub secrets with fallback to empty string
           # This prevents context access errors in the workflow
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           if [ -n "$SLACK_WEBHOOK_URL" ]; then
             # Prepare the payload

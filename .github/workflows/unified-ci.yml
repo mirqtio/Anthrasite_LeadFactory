@@ -194,7 +194,7 @@ jobs:
 
           # Create symbolic links to fix import issues
           ln -sf $(pwd)/leadfactory/utils utils
-          ln -sf $(pwd)/leadfactory/bin bin
+          # No need to create bin symlink as it's already in the root directory
 
           # Setup test database
           python scripts/minimal_db_setup.py --verbose
