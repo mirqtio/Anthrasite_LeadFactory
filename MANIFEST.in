@@ -1,0 +1,28 @@
+# Include all README files
+include README.md
+recursive-include leadfactory **/README.md
+
+# Include configuration files
+recursive-include leadfactory/config *.yaml *.yml *.json
+
+# Include templates
+recursive-include leadfactory *.html *.j2 *.template
+
+# Include other data files
+recursive-include leadfactory *.csv *.txt
+
+# Include tests
+recursive-include tests *.py *.yaml *.yml *.json
+
+# Include docs
+include docs/*.md
+include docs/*.rst
+
+# Include license
+include LICENSE
+
+# Exclude specific files
+exclude .gitignore
+exclude .pre-commit-config.yaml
+recursive-exclude tests *.pyc
+recursive-exclude leadfactory *.pyc
