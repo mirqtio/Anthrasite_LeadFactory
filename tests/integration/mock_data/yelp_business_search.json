@@ -1,0 +1,25 @@
+{
+  "businesses": [
+    {
+      "id": "example-business-1",
+      "name": "Example Business 1",
+      "url": "https://yelp.com/biz/example-business-1",
+      "review_count": 42,
+      "rating": 4.5,
+      "location": {
+        "address1": "123 Main St",
+        "city": "Exampleville",
+        "state": "NY",
+        "zip_code": "10002"
+      },
+      "phone": "+15551234567",
+      "categories": [
+        {
+          "alias": "plumbers",
+          "title": "Plumbers"
+        }
+      ]
+    }
+  ],
+  "total": 1
+}

@@ -1,0 +1,8 @@
+behave==1.2.6
+openai==1.82.0
+pandas==1.5.3
+pytest_cov==4.1.0
+pytest_json_report==1.5.0
+seaborn==0.13.2
+sendgrid==6.12.2
+setuptools==78.1.0

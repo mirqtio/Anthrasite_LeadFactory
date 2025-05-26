@@ -1,0 +1,21 @@
+{
+  "id": "chatcmpl-mock-id-123456789",
+  "object": "chat.completion",
+  "created": 1716585600,
+  "model": "gpt-4o",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Paris is the capital of France. It's known as the 'City of Light' and is famous for landmarks such as the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral. Paris is also renowned for its art, fashion, gastronomy, and culture."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 23,
+    "completion_tokens": 47,
+    "total_tokens": 70
+  }
+}

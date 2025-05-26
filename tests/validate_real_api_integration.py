@@ -20,6 +20,30 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
+# Add dotenv support to load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    # Load environment variables from .env file
+    load_dotenv()
+    print("🌱 Loaded environment variables from .env file")
+except ImportError:
+    print("⚠️ python-dotenv not installed, trying to load .env file manually")
+    try:
+        # Manually load .env file if dotenv is not installed
+        env_path = Path.cwd() / ".env"
+        if env_path.exists():
+            with open(env_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#") or "=" not in line:
+                        continue
+                    key, value = line.split("=", 1)
+                    os.environ[key] = value
+            print("🌱 Manually loaded environment variables from .env file")
+    except Exception as e:
+        print(f"⚠️ Failed to load .env file: {e}")
+
+
 # Add project root to Python path
 project_root = Path(__file__).parent.parent.absolute()
 sys.path.insert(0, str(project_root))
@@ -31,6 +55,8 @@ import requests
 class RealYelpAPI:
     def __init__(self):
         self.api_key = os.environ.get("YELP_API_KEY")
+        if not self.api_key:
+            self.api_key = os.environ.get("YELP_KEY")
         self.base_url = "https://api.yelp.com/v3"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -48,6 +74,8 @@ class RealYelpAPI:
 class RealGooglePlacesAPI:
     def __init__(self):
         self.api_key = os.environ.get("GOOGLE_API_KEY")
+        if not self.api_key:
+            self.api_key = os.environ.get("GOOGLE_KEY")
         self.base_url = "https://maps.googleapis.com/maps/api/place"
 
     def place_search(self, query: str, location: str = None, radius: int = 1000, **kwargs) -> Dict[str, Any]:
@@ -87,6 +115,8 @@ class RealOpenAIAPI:
 class RealSendGridAPI:
     def __init__(self):
         self.api_key = os.environ.get("SENDGRID_API_KEY")
+        if not self.api_key:
+            self.api_key = os.environ.get("SENDGRID_KEY")
         self.base_url = "https://api.sendgrid.com/v3"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -102,6 +132,8 @@ class RealSendGridAPI:
 class RealScreenshotOneAPI:
     def __init__(self):
         self.api_key = os.environ.get("SCREENSHOT_ONE_API_KEY")
+        if not self.api_key:
+            self.api_key = os.environ.get("SCREENSHOT_ONE_KEY")
         self.base_url = "https://api.screenshotone.com"
 
     def take_screenshot(self, url: str, **kwargs) -> bytes:
@@ -113,18 +145,23 @@ class RealScreenshotOneAPI:
 def check_api_key(api_name: str) -> bool:
     """Check if the API key for a specific API is available in environment variables."""
     key_mapping = {
-        'yelp': 'YELP_API_KEY',
-        'google': 'GOOGLE_API_KEY',
-        'openai': 'OPENAI_API_KEY',
-        'sendgrid': 'SENDGRID_API_KEY',
-        'screenshotone': 'SCREENSHOT_ONE_API_KEY',
+        'yelp': ['YELP_API_KEY', 'YELP_KEY'],
+        'google': ['GOOGLE_API_KEY', 'GOOGLE_KEY'],
+        'openai': ['OPENAI_API_KEY'],
+        'sendgrid': ['SENDGRID_API_KEY', 'SENDGRID_KEY'],
+        'screenshotone': ['SCREENSHOT_ONE_API_KEY', 'SCREENSHOT_ONE_KEY'],
     }
 
-    env_var = key_mapping.get(api_name)
-    if not env_var:
+    env_vars = key_mapping.get(api_name, [])
+    if not env_vars:
         return False
 
-    return bool(os.environ.get(env_var))
+    # Check all possible environment variable names
+    for env_var in env_vars:
+        if os.environ.get(env_var):
+            return True
+
+    return False
 
 
 def validate_yelp_api() -> Dict[str, Any]:
@@ -295,12 +332,24 @@ def validate_sendgrid_api() -> Dict[str, Any]:
             print("❌ SENDGRID_FROM_EMAIL not found in environment variables")
             return result
 
-        # Don't actually send an email, just validate the client setup
-        print("✅ SendGrid API client initialized successfully (no email sent)")
-        result["success"] = True
-        result["response_sample"] = {
-            "message": "SendGrid API client initialized successfully (no email sent)"
-        }
+        # Make an API call to get SendGrid API information
+        start_time = time.time()
+        url = f"{client.base_url}/user/profile"
+        response = requests.get(url, headers=client.headers)
+        result["latency"] = time.time() - start_time
+
+        # Check if the response is valid
+        if response.status_code == 200:
+            user_info = response.json()
+            result["success"] = True
+            result["response_sample"] = {
+                "email": user_info.get("email", "[secured]"),
+                "first_name": user_info.get("first_name", "[secured]"),
+                "last_name": user_info.get("last_name", "[secured]")
+            }
+            print(f"✅ SendGrid API test successful - authenticated as {user_info.get('email', '[secured]')}")
+        else:
+            response.raise_for_status()  # Raise error for non-200 status codes
     except Exception as e:
         result["error"] = str(e)
         print(f"❌ SendGrid API test failed with error: {e}")
@@ -326,19 +375,29 @@ def validate_screenshotone_api() -> Dict[str, Any]:
         return result
 
     try:
-        # Create a real ScreenshotOne API client
-        client = RealScreenshotOneAPI()
+        # Get the API key
+        api_key = os.environ.get("SCREENSHOT_ONE_API_KEY")
+        if not api_key:
+            api_key = os.environ.get("SCREENSHOT_ONE_KEY")
 
-        # Time the API call - but don't actually take a screenshot to avoid costs
+        # Make a real API call to get service status
         start_time = time.time()
-        # Just verify the client is properly initialized
+        url = "https://api.screenshotone.com/account/limits"
+        params = {"access_key": api_key}
+        response = requests.get(url, params=params)
         result["latency"] = time.time() - start_time
 
-        print("✅ ScreenshotOne API client initialized successfully (no screenshot taken)")
-        result["success"] = True
-        result["response_sample"] = {
-            "message": "ScreenshotOne API client initialized successfully (no screenshot taken)"
-        }
+        # Check if the response is valid
+        if response.status_code == 200:
+            limits_info = response.json()
+            result["success"] = True
+            result["response_sample"] = {
+                "usage": limits_info.get("usage", {}),
+                "limits": limits_info.get("limits", {})
+            }
+            print(f"✅ ScreenshotOne API test successful - account limits verified")
+        else:
+            response.raise_for_status()  # Raise error for non-200 status codes
     except Exception as e:
         result["error"] = str(e)
         print(f"❌ ScreenshotOne API test failed with error: {e}")
@@ -346,10 +405,75 @@ def validate_screenshotone_api() -> Dict[str, Any]:
     return result
 
 
+def validate_anthropic_api() -> Dict[str, Any]:
+    """Validate the Anthropic API integration."""
+    print("\n🔍 Testing Anthropic API integration...")
+    result = {
+        "api": "anthropic",
+        "key_available": bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "success": False,
+        "latency": 0,
+        "error": None,
+        "response_sample": None
+    }
+
+    if not result["key_available"]:
+        result["error"] = "API key not found in environment variables"
+        print("❌ Anthropic API key not found in environment variables")
+        return result
+
+    try:
+        # Get the API key
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        model = os.environ.get("ANTHROPIC_MODEL", "claude-3-opus-20240229")
+
+        # Set up headers
+        headers = {
+            "x-api-key": api_key,
+            "Content-Type": "application/json",
+            "anthropic-version": "2023-06-01"
+        }
+
+        # Prepare request data
+        data = {
+            "model": model,
+            "max_tokens": 20,
+            "messages": [
+                {"role": "user", "content": "Say hello world"}
+            ]
+        }
+
+        # Time the API call
+        start_time = time.time()
+        response = requests.post("https://api.anthropic.com/v1/messages",
+                               headers=headers,
+                               json=data)
+        result["latency"] = time.time() - start_time
+
+        # Check if the response is valid
+        if response.status_code == 200:
+            response_data = response.json()
+            result["success"] = True
+            result["response_sample"] = {
+                "content": response_data["content"][0]["text"],
+                "model": response_data["model"],
+                "tokens": response_data["usage"]["output_tokens"]
+            }
+            print(f"✅ Anthropic API test successful - response: {response_data['content'][0]['text']}")
+        else:
+            response.raise_for_status()  # Raise error for non-200 status codes
+    except Exception as e:
+        result["error"] = str(e)
+        print(f"❌ Anthropic API test failed with error: {e}")
+
+    return result
+
+
 def main():
     """Run the API validation tests."""
     parser = argparse.ArgumentParser(description="Validate real API integrations")
-    parser.add_argument("--api", type=str, choices=["yelp", "google", "openai", "sendgrid", "screenshotone"],
+    parser.add_argument("--api", type=str,
+                        choices=["yelp", "google", "openai", "sendgrid", "screenshotone", "anthropic"],
                         help="Test a specific API only")
     args = parser.parse_args()
 
@@ -359,7 +483,8 @@ def main():
         "google": validate_google_places_api,
         "openai": validate_openai_api,
         "sendgrid": validate_sendgrid_api,
-        "screenshotone": validate_screenshotone_api
+        "screenshotone": validate_screenshotone_api,
+        "anthropic": validate_anthropic_api
     }
 
     # Run tests for all APIs or a specific one

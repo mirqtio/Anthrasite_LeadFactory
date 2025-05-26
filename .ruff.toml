@@ -1,0 +1,31 @@
+# Ruff Configuration for Anthrasite Lead-Factory
+
+# Enable specific rules
+select = [
+    "F401",  # Unused imports
+    "F841",  # Unused variables
+    "B002",  # Known bugs
+]
+
+# Ignore specific rules for now
+ignore = [
+    "E501",  # Line length
+    "E722",  # Bare except
+]
+
+# Target Python version
+target-version = "py310"
+
+# Line length limit
+line-length = 100
+
+# Exclude directories
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "env",
+    "__pycache__",
+    "backup_files",
+    "tmp",
+]

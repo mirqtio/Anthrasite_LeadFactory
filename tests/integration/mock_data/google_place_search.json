@@ -1,0 +1,12 @@
+{
+  "results": [
+    {
+      "place_id": "example-place-1",
+      "name": "Example Place 1",
+      "formatted_address": "123 Main St, Exampleville, NY 10002",
+      "rating": 4.5,
+      "user_ratings_total": 42
+    }
+  ],
+  "status": "OK"
+}

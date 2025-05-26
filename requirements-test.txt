@@ -1,0 +1,17 @@
+# Testing-specific dependencies - Exact Version Pins
+# Import production dependencies
+-r requirements.txt
+
+# Testing frameworks
+pytest==7.4.0
+pytest-bdd==6.1.1
+pytest-cov==4.1.0
+pytest-xdist==3.3.1
+pytest-json-report==1.5.0
+responses==0.23.1
+behave==1.2.6
+
+# Visualization and reporting
+matplotlib==3.7.1
+pandas==1.5.3
+seaborn==0.13.2
