@@ -13,9 +13,30 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-# Import the deduplication module
-from leadfactory.pipeline import dedupe
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+print(f"Project root: {project_root}")
+print(f"sys.path: {sys.path}")
+
+# Import the deduplication module directly
+try:
+    from leadfactory.pipeline import dedupe
+    print("Successfully imported dedupe from leadfactory.pipeline")
+except ImportError as e:
+    print(f"ImportError: {e}")
+    # Try alternative import path after reorganization
+    try:
+        import leadfactory.pipeline.dedupe as dedupe
+        print("Successfully imported using alternative path")
+    except ImportError as e2:
+        print(f"Second ImportError: {e2}")
+        sys.path.insert(0, os.path.join(project_root, 'leadfactory'))
+        try:
+            import pipeline.dedupe as dedupe
+            print("Successfully imported using third approach")
+        except ImportError as e3:
+            print(f"Third ImportError: {e3}")
+            raise
 
 # Import the classes directly from the dedupe module
 OllamaVerifier = dedupe.OllamaVerifier
