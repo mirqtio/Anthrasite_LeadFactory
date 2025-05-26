@@ -137,20 +137,29 @@ jobs:
 
           # Add mock API keys - using hardcoded values for CI tests
           # Add to both GitHub Environment and .env file
+          # Support both naming conventions (with and without the _API_ part)
           echo "YELP_API_KEY=mock_yelp_key_for_ci" >> $GITHUB_ENV
+          echo "YELP_KEY=mock_yelp_key_for_ci" >> $GITHUB_ENV
           echo "YELP_API_KEY=mock_yelp_key_for_ci" >> .env
+          echo "YELP_KEY=mock_yelp_key_for_ci" >> .env
 
           echo "GOOGLE_API_KEY=mock_google_key_for_ci" >> $GITHUB_ENV
+          echo "GOOGLE_KEY=mock_google_key_for_ci" >> $GITHUB_ENV
           echo "GOOGLE_API_KEY=mock_google_key_for_ci" >> .env
+          echo "GOOGLE_KEY=mock_google_key_for_ci" >> .env
 
           echo "OPENAI_API_KEY=mock_openai_key_for_ci" >> $GITHUB_ENV
           echo "OPENAI_API_KEY=mock_openai_key_for_ci" >> .env
 
           echo "SENDGRID_API_KEY=mock_sendgrid_key_for_ci" >> $GITHUB_ENV
+          echo "SENDGRID_KEY=mock_sendgrid_key_for_ci" >> $GITHUB_ENV
           echo "SENDGRID_API_KEY=mock_sendgrid_key_for_ci" >> .env
+          echo "SENDGRID_KEY=mock_sendgrid_key_for_ci" >> .env
 
           echo "SCREENSHOTONE_API_KEY=mock_screenshot_key_for_ci" >> $GITHUB_ENV
+          echo "SCREENSHOT_ONE_KEY=mock_screenshot_key_for_ci" >> $GITHUB_ENV
           echo "SCREENSHOTONE_API_KEY=mock_screenshot_key_for_ci" >> .env
+          echo "SCREENSHOT_ONE_KEY=mock_screenshot_key_for_ci" >> .env
 
           echo "ANTHROPIC_API_KEY=sk-ant-mock01234-ci" >> $GITHUB_ENV
           echo "ANTHROPIC_API_KEY=sk-ant-mock01234-ci" >> .env
@@ -387,6 +396,8 @@ jobs:
       - name: Notify on failure
         if: failure()
         env:
+          # Set Slack webhook URL from GitHub secrets with fallback to empty string
+          # This prevents context access errors in the workflow
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
         run: |
           if [ -n "$SLACK_WEBHOOK_URL" ]; then

@@ -111,7 +111,8 @@ if not has_logger:
 # Set up logging
 logger = get_logger(__name__)
 # Load environment variables
-load_dotenv()
+# Force .env values to override system environment variables
+load_dotenv(override=True)
 # Constants
 VERTICALS_CONFIG_PATH = str(
     Path(__file__).resolve().parent.parent / "etc" / "verticals.yml"

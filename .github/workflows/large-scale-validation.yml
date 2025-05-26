@@ -223,6 +223,8 @@ jobs:
       - name: Send notification
         if: always()
         env:
+          # Set Slack webhook URL from GitHub secrets with fallback to empty string
+          # This prevents context access errors in the workflow
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
         run: |
           if [ -n "$SLACK_WEBHOOK_URL" ]; then

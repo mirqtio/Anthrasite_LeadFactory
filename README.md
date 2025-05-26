@@ -31,6 +31,71 @@ Additional components include:
 - **Cost Management** (`leadfactory.cost.*`): Budget gating, auditing, and cost tracking.
 - **Utilities** (`leadfactory.utils.*`): Metrics, logging, and other support functions.
 
+## Environment Configuration
+
+The project uses environment variables for configuration. These are managed through `.env` files:
+
+### Environment File Structure
+
+- **`.env.example`**: Template with all possible configuration options. This file is committed to the repository.
+- **`.env`**: Main configuration file for local development. Contains real or mock API keys.
+- **`.env.production`**: Production environment configuration. Used in production deployments.
+
+### Setting Up Your Environment
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and add your API keys and configuration values. Required API keys include:
+   - Yelp Fusion API (YELP_API_KEY or YELP_KEY)
+   - Google Places API (GOOGLE_API_KEY or GOOGLE_KEY)
+   - OpenAI API (OPENAI_API_KEY)
+   - SendGrid API (SENDGRID_API_KEY or SENDGRID_KEY)
+   - ScreenshotOne API (SCREENSHOT_ONE_API_KEY or SCREENSHOT_ONE_KEY) - for Tier 2+
+   - Anthropic API (ANTHROPIC_API_KEY) - optional, used as fallback
+
+3. For production deployment, create a `.env.production` file with production settings:
+   ```bash
+   cp .env.example .env.production
+   # Edit .env.production with production values
+   ```
+
+### Testing API Integrations
+
+To validate your API configuration and ensure all integrations work correctly:
+
+```bash
+python tests/validate_real_api_integration_fixed.py
+```
+
+This script will check if all required API keys are available and make test API calls to verify connectivity.
+
+### Feature Flags
+
+Key feature flags include:
+
+- `MOCKUP_ENABLED`: Set to `true` to enable mockup generation (Tier 2+)
+- `DEBUG_MODE`: Set to `true` for additional debug logging
+- `TEST_MODE`: Set to `true` to use mock data in development
+- `USE_MOCKS`: Set to `true` to skip real API calls
+
+For more details on environment configuration, see [API Integration Testing](docs/api_integration_testing.md).
+
+### Important Note on Environment Variables
+
+When using Python's `dotenv` library, system environment variables take precedence over values in `.env` files by default. If you have conflicting environment variables set in your system, they will override values in your `.env` file.
+
+In scripts that need to ensure `.env` file values are used regardless of system environment:
+
+```python
+from dotenv import load_dotenv
+# Force .env values to override system environment variables
+load_dotenv(override=True)
+```
+- **Utilities** (`leadfactory.utils.*`): Metrics, logging, and other support functions.
+
 ## Setup Instructions
 
 ### Prerequisites
