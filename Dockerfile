@@ -11,11 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements files
 COPY requirements/requirements.txt requirements/
 COPY requirements/requirements-dev.txt requirements/
-COPY config/constraints.txt config/
+COPY constraints.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements/requirements.txt -c config/constraints.txt
-RUN pip install --no-cache-dir -r requirements/requirements-dev.txt -c config/constraints.txt
+RUN pip install --no-cache-dir -r requirements/requirements.txt -c constraints.txt
+RUN pip install --no-cache-dir -r requirements/requirements-dev.txt -c constraints.txt
 
 # Copy application code
 COPY . .
