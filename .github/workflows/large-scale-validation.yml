@@ -154,7 +154,7 @@ jobs:
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          junit_files: performance_reports/*.xml
+          files: performance_reports/*.xml
           check_name: "Large-Scale Validation Test Results"
 
       - name: Generate validation dashboard
