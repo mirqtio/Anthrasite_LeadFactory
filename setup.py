@@ -7,7 +7,7 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 # Read requirements.txt
-requirements_path = Path(__file__).parent / "requirements.txt"
+requirements_path = Path(__file__).parent / "requirements" / "requirements.txt"
 with open(requirements_path, "r") as f:
     # Filter out comments and empty lines, and normalize version constraints
     install_requires = []
