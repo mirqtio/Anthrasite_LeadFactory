@@ -412,11 +412,10 @@ The project uses GitHub Actions for comprehensive continuous integration. All CI
 
 ### CI Workflows
 
-The project has three main CI workflow configurations:
+The project has two main CI workflow configurations:
 
-1. **Unified CI (`unified-ci.yml`)**: Primary CI workflow for code quality and testing
-2. **API Integration Tests (`api-integration-tests.yml`)**: API-specific integration testing
-3. **Large-Scale Validation (`large-scale-validation.yml`)**: Performance testing at scale (10,000 leads)
+1. **API Integration Tests (`api-integration-tests.yml`)**: API-specific integration testing with both mock and real APIs
+2. **Large-Scale Validation (`large-scale-validation.yml`)**: Performance testing at scale (10,000 leads)
 
 ### CI Gates and Requirements
 
@@ -489,10 +488,123 @@ gh workflow run large-scale-validation.yml --ref my-branch --field lead_count=10
 
 ### CI Configuration Files
 
-- **Unified CI**: `.github/workflows/unified-ci.yml`
 - **API Tests**: `.github/workflows/api-integration-tests.yml`
 - **Large-Scale**: `.github/workflows/large-scale-validation.yml`
 - **Coverage**: `.codecov.yml`
+
+### Environment Variable Handling in CI
+
+CI workflows require special handling of environment variables to ensure tests run correctly:
+
+#### Mock vs. Real API Keys
+
+The CI system uses a two-tier approach to API keys:
+
+1. **Mock API Keys**: Used by default in pull request builds and non-scheduled runs
+2. **Real API Keys**: Used in scheduled runs and when explicitly enabled via workflow inputs
+
+#### Configuring Environment Variables
+
+```yaml
+# Example from API Integration Tests workflow
+- name: Setup test environment and mock API keys
+  run: |
+    # Create .env file with mock keys for testing
+    cp .env.example .env
+    echo "LEADFACTORY_USE_MOCKS=1" >> .env
+
+- name: Set real API keys
+  if: ${{ github.event.inputs.use_real_apis == 'true' || github.event_name == 'schedule' }}
+  run: |
+    echo "Setting up real API keys where available"
+    echo "LEADFACTORY_USE_MOCKS=0" >> .env
+```
+
+#### GitHub Secrets
+
+Secure API keys are stored in GitHub Secrets and accessed in the workflows. When setting up these secrets, use the exact environment variable names expected by the application:
+
+- `YELP_API_KEY`
+- `GOOGLE_API_KEY`
+- `OPENAI_API_KEY`
+- `SENDGRID_API_KEY`
+- `SCREENSHOT_ONE_KEY`
+- `ANTHROPIC_API_KEY`
+- `SLACK_WEBHOOK_URL`
+
+> **Important**: The CI system uses `load_dotenv(override=True)` to ensure environment variables from `.env` files take precedence over system environment variables.
+
+### Troubleshooting Common CI Failures
+
+#### Context Access Issues
+
+You may encounter "Context access might be invalid" warnings in GitHub Actions workflows. These occur when using expressions like `${{ secrets.SOME_SECRET }}` in places where GitHub's context is restricted for security reasons.
+
+**Solution**: Use environment variables as intermediaries:
+
+```yaml
+# Instead of this (may cause warnings):
+- run: echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+
+# Use this approach:
+- name: Set up API keys
+  env:
+    API_KEY: ${{ secrets.API_KEY }}
+  run: echo "API_KEY=$API_KEY" >> .env
+```
+
+#### API Validation Failures
+
+1. **403 Forbidden errors**: Check API key permissions and verify correct scopes are enabled
+2. **Rate limiting issues**: Implement retry logic or reduce parallel testing
+3. **Timeout errors**: Adjust timeout settings in workflow configuration
+
+#### Common Solutions
+
+1. **Update API Keys**: Refresh expired or invalid API keys in GitHub Secrets
+2. **Check CI Logs**: Review detailed error messages in the CI logs
+3. **Local Validation**: Run the `validate_real_api_integration_fixed.py` script locally
+4. **Mock API Testing**: Use `LEADFACTORY_USE_MOCKS=1` to bypass real APIs for faster testing
+
+### Coverage Reports and Analysis
+
+The CI process generates code coverage reports that help identify untested code paths.
+
+#### Interpreting Coverage Reports
+
+Coverage reports provide metrics in several categories:
+
+1. **Line Coverage**: Percentage of code lines executed during tests
+2. **Branch Coverage**: Percentage of code branches (if/else) executed
+3. **Function Coverage**: Percentage of functions called during tests
+
+#### Codecov Integration
+
+Coverage reports are uploaded to Codecov for long-term tracking and visualization:
+
+1. **Coverage Trends**: Track how coverage changes over time
+2. **Coverage Gaps**: Identify files and functions with low coverage
+3. **PR Coverage**: See how pull requests impact overall coverage
+
+#### Coverage Requirements
+
+The project maintains the following coverage requirements:
+
+| Component | Minimum Coverage |
+|-----------|------------------|
+| Core pipeline | 85% |
+| Utilities | 80% |
+| Scripts | 70% |
+| Overall | 80% |
+
+#### Improving Coverage
+
+To improve coverage in areas identified as lacking:
+
+1. Add targeted unit tests for specific functions
+2. Create integration tests for complex code paths
+3. Use parameterized tests to cover multiple scenarios
+4. Add explicit tests for error handling paths
 
 ## Budget Monitoring
 
