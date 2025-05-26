@@ -286,7 +286,7 @@ jobs:
 
       - name: Archive API metrics reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-metrics-reports
           path: |
@@ -438,7 +438,7 @@ jobs:
 
       - name: Upload cost repor
         if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.use_real_apis == 'true') }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-cost-repor
           path: |
@@ -669,7 +669,7 @@ jobs:
           EOF
 
       - name: Upload weekly repor
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-weekly-repor
           path: ./weekly_repor
