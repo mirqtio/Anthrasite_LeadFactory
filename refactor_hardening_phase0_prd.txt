@@ -1,0 +1,230 @@
+# 📄 PRD: `refactor_hardening_phase0`
+
+## Title:
+
+**Lead-Factory Refactor & Hardening Phase (Phase 0.5)**
+
+## Objective:
+
+Transform the current feature-complete but unstable `Anthrasite_LeadFactory` codebase into a hardened, reliable, and CI-compliant system that aligns with the Phase 0 spec and is ready for scale testing and budget audit. The goal is to eliminate entropy from autonomous build-up: duplicate tests, redundant modules, inconsistent tooling, and dead code. This must be accomplished via structured refactor tasks with CI-gated validation and test coverage verification.
+
+---
+
+## Scope of Work
+
+### 🔹 1. Environment & Tooling Alignment
+
+**Tasks:**
+
+* Pin Python version to `3.10.x` across:
+
+  * `.python-version` or `pyenv`
+  * CI (`actions/setup-python`)
+  * Dockerfile (if used)
+* Create `requirements-dev.txt` and `requirements.txt` with:
+
+  * Exact pinned versions of: `black`, `ruff`, `bandit`, `mypy`, `pytest`, `fastapi`, `requests`, etc.
+  * Split dev-only packages (e.g. `black`, `pytest`, `bandit`) from prod
+* Confirm parity between local and CI versions by logging tool versions on every run
+* Normalize `.env.example` and verify all used keys are listed and loaded consistently via a single config module
+
+**Commit Checkpoint:**
+
+* Commit `.python-version`, updated `requirements-*.txt`, updated CI config
+* CI prints all tool versions and Python version on every run
+
+---
+
+### 🔹 2. Lint, Format, Type Check Baseline
+
+**Tasks:**
+
+* Run `black .` and commit baseline formatting
+* Configure `ruff` to enforce only:
+
+  * `F401`, `F841`, `B002` (unused imports, variables, known bugs)
+  * Ignore: `E501`, `E722`, etc. until cleanup
+* Run `mypy` in non-strict mode only on `utils/`, `bin/`, `tests/`
+* Run `bandit` in audit mode; store output, but do not block CI
+* Document any remaining `type: ignore` or lint suppressions in `lint_debt.md`
+
+**Commit Checkpoint:**
+
+* `chore: apply black & ruff minimal baseline`
+* CI passes all selected rules; warnings logged but not blocking
+
+---
+
+### 🔹 3. Dead Code, Clutter, and Legacy Artifact Cleanup
+
+**Tasks:**
+
+* Delete:
+
+  * Redundant tests (e.g., `test_dedupe_new.py`, `test_mockup 3.py`, `test_unsubscribe 3.py`)
+  * Patch or fix scripts (e.g., `fix_test_mockup_unit.py`, `fix_dedupe_simple.py`)
+  * Backup files (e.g., `tasks.json.bak`)
+* Remove:
+
+  * All commented-out code
+  * All `print()` statements in production logic
+  * All unused test files, legacy `tmp/` scripts
+* Audit for and resolve all TODO/FIXME/placeholder logic
+
+**Commit Checkpoint:**
+
+* `refactor: remove legacy, temp, and commented code`
+* CI passes baseline; no new lint warnings introduced
+
+---
+
+### 🔹 4. Test Suite Consolidation & Validation
+
+**Tasks:**
+
+* Consolidate test modules:
+
+  * Collapse `test_dedupe*.py` into one definitive test
+  * Collapse duplicate helper tests under `tests/utils/`
+* Ensure that all pipeline stages have:
+
+  * At least one unit test
+  * At least one BDD test (enabled and not skipped)
+  * At least one integration test with mock/fake API calls
+* Complete or remove skipped BDD scenarios (e.g., scoring)
+* Fix or remove all `@pytest.mark.skip`, `pass`, and partial tests
+
+**Commit Checkpoint:**
+
+* `test: consolidate and enable complete pipeline tests`
+* CI passes unit + BDD tests; skipped count = 0
+
+---
+
+### 🔹 5. Integration Testing with Real API Surfaces
+
+**Tasks:**
+
+* Create optional integration tests (gated with env flag or mock fallback) for:
+
+  * Yelp Fusion
+  * Google Places
+  * ScreenshotOne
+  * OpenAI (GPT-4o)
+  * SendGrid
+* Capture:
+
+  * API response time
+  * Token usage or API cost where applicable
+* Enable one real call test per stage; default to mocks for CI
+
+**Commit Checkpoint:**
+
+* `test: add real API integration validation (CI uses mocks)`
+* CI logs simulated costs, time, and live mode toggles
+
+---
+
+### 🔹 6. Structural Refactor of Module Layout & Utilities
+
+**Tasks:**
+
+* Restructure codebase to collapse:
+
+  * `bin/` pipeline scripts into a `leadfactory/pipeline/` module
+  * `utils/`, `bin/utils/`, and `metrics.py` into `leadfactory/utils/`
+  * `cost_tracker.py`, `budget_gate.py`, and related logic into `leadfactory/cost/`
+* Normalize imports:
+
+  * Eliminate all `sys.path.insert()` usage
+  * Use relative or package imports (`from leadfactory.utils.io import ...`)
+* Move all configuration loading to a single `leadfactory/config.py`
+
+**Commit Checkpoint:**
+
+* `refactor: restructure modules to leadfactory/ package layout`
+* CI runs and imports must succeed; path hacks removed
+
+---
+
+### 🔹 7. Logging, Observability, and Failover Logic Validation
+
+**Tasks:**
+
+* Replace all remaining `print()` or `basicConfig()` calls with unified logger
+* Verify `PrometheusExporter` exposes:
+
+  * CPU usage
+  * cost\_per\_lead
+  * bounce/spam rate
+  * batch completion time
+* Simulate:
+
+  * Pipeline batch failure → ensure alert flag
+  * Cost overrun → ensure budget gate activates
+* Ensure `metrics/` and `cost_tracker/` are unified and covered by tests
+
+**Commit Checkpoint:**
+
+* `obs: validate logging, metrics, and fallback coverage`
+* CI logs metrics; manual batch fail triggers alert
+
+---
+
+### 🔹 8. Dependency Audit & CI Optimization
+
+**Tasks:**
+
+* Remove unused dependencies:
+
+  * `SQLAlchemy`, `pytest-mock`, others not imported in code
+* Add missing ones (e.g., `python-Levenshtein`)
+* Run `pip-audit` or `safety` and document any known CVEs
+* Finalize separate `requirements-dev.txt` vs `requirements.txt`
+* Add GitHub Dependabot config (if not present) for dependency monitoring
+
+**Commit Checkpoint:**
+
+* `chore: prune, pin, and audit dependencies`
+* CI runs audit; no known vulnerabilities; unused packages removed
+
+---
+
+### 🔹 9. Final Validation & CI Hardening
+
+**Tasks:**
+
+* Promote CI from warning mode to blocking:
+
+  * All tests must pass
+  * All lint/black/mypy/bandit errors must be zero
+* Generate final coverage report
+* Confirm that 10,000-lead full run will:
+
+  * Respect cost thresholds
+  * Alert on failure
+  * Retain logs and metrics for all pipeline stages
+
+**Commit Checkpoint:**
+
+* `ci: enforce hard CI gates; phase0 hardened`
+* CI green; metrics confirm system health
+
+---
+
+## Constraints
+
+* No feature additions
+* No speculative refactors outside documented audit findings
+* Refactor must not break working CLI scripts or pipeline stages
+* Each stage must end in a commit and CI pass before proceeding
+
+---
+
+## Deliverables
+
+* Clean, tested, and CI-hardened LeadFactory repo
+* `lint_debt.md` tracking postponed rule enforcement
+* `refactor_hardening_phase0.yaml` auto-generated via Claude breakdown
+* CI logs confirming toolchain versions, metrics, and alert coverage
+* Final `README.md` updated to reflect Python version, CI targets, and test status
