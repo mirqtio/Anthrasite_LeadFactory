@@ -26,20 +26,20 @@ on:
     paths:
       - 'leadfactory/pipeline/**'
       - 'tests/integration/**'
-      - 'requirements*.txt'
+      - 'requirements/requirements*.txt'
       - '.github/workflows/api-integration-tests.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'leadfactory/pipeline/**'
       - 'tests/integration/**'
-      - 'requirements*.txt'
+      - 'requirements/requirements*.txt'
       - '.github/workflows/api-integration-tests.yml'
 
 jobs:
   api-tests:
     name: API Integration Tests
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.10']
@@ -80,10 +80,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f constraints.txt ]; then
-            if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt -c constraints.txt; fi
+          if [ -f config/constraints.txt ]; then
+            if [ -f requirements/requirements-test.txt ]; then pip install -r requirements/requirements-test.txt -c config/constraints.txt; fi
           else
-            if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
+            if [ -f requirements/requirements-test.txt ]; then pip install -r requirements/requirements-test.txt; fi
           fi
 
       - name: Setup test environmen
@@ -178,9 +178,25 @@ jobs:
 
       - name: Set real API keys
         if: ${{ github.event.inputs.use_real_apis == 'true' || github.event_name == 'schedule' }}
+        env:
+          # Set API keys from GitHub secrets with fallback for mocks
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY || 'mock_yelp_key_for_ci' }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || 'mock_google_key_for_ci' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'mock_openai_key_for_ci' }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY || 'mock_sendgrid_key_for_ci' }}
+          SCREENSHOTONE_API_KEY: ${{ secrets.SCREENSHOTONE_API_KEY || 'mock_screenshot_key_for_ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-mock01234-ci' }}
         run: |
           echo "Setting up real API keys where available"
           echo "LEADFACTORY_USE_MOCKS=0" >> .env
+
+          # Add real API keys from environment variables
+          echo "YELP_API_KEY=$YELP_API_KEY" >> .env
+          echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
+          echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
+          echo "SENDGRID_API_KEY=$SENDGRID_API_KEY" >> .env
+          echo "SCREENSHOT_ONE_API_KEY=$SCREENSHOT_ONE_API_KEY" >> .env
+          echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
 
           # Masked output helper function
           mask_api_key() {
@@ -235,13 +251,6 @@ jobs:
           if [ -n "$ANTHROPIC_API_KEY" ]; then
             mask_api_key "ANTHROPIC_API_KEY" "$ANTHROPIC_API_KEY"
           fi
-        env:
-          YELP_API_KEY: ${{ secrets.YELP_API_KEY || 'mock_yelp_key_for_ci' }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || 'mock_google_key_for_ci' }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'mock_openai_key_for_ci' }}
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY || 'mock_sendgrid_key_for_ci' }}
-          SCREENSHOTONE_API_KEY: ${{ secrets.SCREENSHOTONE_API_KEY || 'mock_screenshot_key_for_ci' }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-mock01234-ci' }}
 
       - name: Run API integration tests
         id: api_tests
@@ -458,10 +467,10 @@ jobs:
 
   # Cron-only weekly report generation
   weekly-report:
-    name: Generate Weekly API Usage Repor
+    name: Generate Weekly API Usage Report
     needs: api-tests
     if: ${{ github.event_name == 'schedule' }}
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
     steps:
       - name: Download all metrics
         uses: actions/download-artifact@v3
