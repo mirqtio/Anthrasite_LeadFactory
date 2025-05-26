@@ -8,7 +8,7 @@ black==24.3.0
 flake8==6.0.0
 isort==5.12.0
 mypy==1.5.1
-bandit==1.7.5
+bandit==1.8.3
 
 # Security auditing
 pip-audit==2.9.0
