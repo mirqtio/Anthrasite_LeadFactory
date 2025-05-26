@@ -13,7 +13,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Add project root to path so we can import properly
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+project_root = str(Path(__file__).resolve().parent.parent.parent)
+sys.path.insert(0, project_root)
+
+# Set up logging for import diagnostics
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 try:
     import Levenshtein
@@ -27,6 +32,8 @@ except ImportError:
 
 # Import from the original location if available
 try:
+    # Import using absolute path to ensure it works in all environments including CI
+    logger.info(f"Attempting to import from bin.dedupe, project root: {project_root}")
     from bin.dedupe import (
         LevenshteinMatcher,
         OllamaVerifier,
