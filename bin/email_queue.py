@@ -214,7 +214,7 @@ load_dotenv()
 DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_EMAILS", "5"))
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.com")
+SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.io")
 SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
 DAILY_EMAIL_LIMIT = int(os.getenv("DAILY_EMAIL_LIMIT", "50"))
 BOUNCE_RATE_THRESHOLD = float(
@@ -877,8 +877,7 @@ def generate_email_content(business: dict, template: str) -> tuple[str, str, str
     # Add CAN-SPAM compliant footer with physical address and unsubscribe instructions
     text_content += "\n---\n"
     text_content += f"This email was sent to {template_vars['to_email']}\n"
-    text_content += "If you'd prefer not to receive these emails, you can unsubscribe at the following link:\n"
-    text_content += f"{template_vars['unsubscribe_link']}\n\n"
+    text_content += "If you'd prefer not to receive these emails, you can <a href='{template_vars['unsubscribe_link']}'>unsubscribe</a>.\n\n"
     text_content += "Anthrasite Web Services\n"
     text_content += "PO Box 12345\n"
     text_content += "San Francisco, CA 94107\n\n"

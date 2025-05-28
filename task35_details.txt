@@ -1,0 +1,34 @@
+Title: Full E2E Pipeline Execution and Resolution Loop
+
+Description: Execute the complete end-to-end BDD test with real API keys, mockup generation, and email delivery using EMAIL_OVERRIDE. Re-run the preflight validation first. If anything fails, create fixup tasks and retry until success.
+
+Details:
+1. Load '.env.e2e' and verify EMAIL_OVERRIDE and real API keys are present
+2. Run 'bin/e2e_validate_config.py' from previous task
+   - If it fails, abort and create a new task titled "Fix E2E Preflight Failure: <summary>"
+3. If preflight passes, run the full BDD scenario:
+   - End-to-end lead processed and email sent
+   - Validate:
+     - Screenshot and mockup created
+     - Email sent via SendGrid (response 202)
+     - DB contains new 'emails' row
+4. Write summary to 'e2e_summary.md' with:
+   - Lead ID
+   - Screenshot/mockup paths
+   - SendGrid message ID
+   - API costs
+5. If the test fails:
+   - Write error log
+   - Auto-create task titled "Fix E2E Test Failure: <summary>"
+   - Retry once the fix task is complete
+6. Only complete this task when:
+   - Preflight passes
+   - BDD test passes
+   - Email is verifiably delivered to EMAIL_OVERRIDE
+   - 'e2e_summary.md' is present and complete
+
+Test Strategy:
+- All components must pass preflight first
+- BDD must assert complete success path
+- Email must arrive in inbox
+- Summary log must show all expected output

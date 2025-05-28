@@ -21,8 +21,8 @@ from typing import Any, Dict, List, Optional, Union
 logger = logging.getLogger(__name__)
 
 # Configure with defaults from environment variables
-ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "alerts@anthrasite.com")
-ALERT_EMAIL_FROM = os.getenv("ALERT_EMAIL_FROM", "leadfactory@anthrasite.com")
+ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "alerts@anthrasite.io")
+ALERT_EMAIL_FROM = os.getenv("ALERT_EMAIL_FROM", "leadfactory@anthrasite.io")
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.sendgrid.net")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "apikey")

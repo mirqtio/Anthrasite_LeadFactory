@@ -1,0 +1,38 @@
+{
+  "environment_issues": {
+    "missing_api_key": {
+      "pattern": "Missing required variable: (?P<key>.+)",
+      "resolution": "Add the missing variable to your .env.e2e file",
+      "category": "environment_issue"
+    },
+    "invalid_api_key": {
+      "pattern": "(?P<key>.+) has invalid format: '(?P<value>.+)'",
+      "resolution": "Update the API key with a valid format",
+      "category": "environment_issue"
+    }
+  },
+  "api_issues": {
+    "api_timeout": {
+      "pattern": "Timeout connecting to (?P<api>.+) API",
+      "resolution": "Check your internet connection or API endpoint status",
+      "category": "network_issue"
+    },
+    "api_unauthorized": {
+      "pattern": "(?P<api>.+) API returned 401 Unauthorized",
+      "resolution": "Verify your API key is correct and not expired",
+      "category": "api_failure"
+    }
+  },
+  "database_issues": {
+    "connection_error": {
+      "pattern": "Could not connect to database: (?P<error>.+)",
+      "resolution": "Verify your DATABASE_URL and ensure the database is running",
+      "category": "database_issue"
+    },
+    "schema_error": {
+      "pattern": "Table '(?P<table>.+)' does not exist",
+      "resolution": "Run database migrations to create the required tables",
+      "category": "database_issue"
+    }
+  }
+}

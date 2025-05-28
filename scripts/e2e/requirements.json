@@ -1,0 +1,51 @@
+{
+  "test_coverage": {
+    "required_stages": [
+      "preflight",
+      "scrape",
+      "screenshot",
+      "mockup",
+      "personalize",
+      "render",
+      "email"
+    ],
+    "critical_stages": [
+      "preflight",
+      "scrape",
+      "email"
+    ],
+    "minimum_success_rate": 90.0
+  },
+  "performance": {
+    "max_duration_seconds": {
+      "total": 900,
+      "preflight": 60,
+      "scrape": 300,
+      "screenshot": 120,
+      "mockup": 180,
+      "personalize": 60,
+      "render": 60,
+      "email": 60
+    },
+    "max_retry_count": 2
+  },
+  "result_validation": {
+    "required_outputs": {
+      "scrape": [
+        "data/scraped_*.json"
+      ],
+      "screenshot": [
+        "screenshots/*.png"
+      ],
+      "mockup": [
+        "mockups/*.png"
+      ],
+      "render": [
+        "emails/*.html"
+      ],
+      "email": [
+        "sent_emails.json"
+      ]
+    }
+  }
+}

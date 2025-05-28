@@ -1,0 +1,23 @@
+Title: E2E Preflight Check for Environment, APIs, DB, and Pipeline
+
+Description: Validate that all parts of the system are ready for a real E2E run using the full pipeline with real APIs. The check should cover configuration, connectivity, schemas, test inputs, and dry runs of all pipeline stages.
+
+Details:
+1. Create 'bin/e2e_validate_config.py'
+2. Check '.env.e2e' for required variables: DATABASE_URL, all API keys, EMAIL_OVERRIDE, MOCKUP_ENABLED, E2E_MODE
+3. Validate DB schema and data
+4. Call each real API once:
+   - Yelp: business search
+   - ScreenshotOne: capture public URL
+   - OpenAI: generate a mockup
+   - SendGrid: send sandbox or overridden email and confirm 202
+5. Run pipeline scripts '01_scrape.py' to '06_email_queue.py' on a test lead
+6. Confirm files written (screenshots, mockups), DB updated, email queued and sent
+7. Log results to 'logs/e2e_preflight.log' with PASS/FAIL per step
+8. Exit nonzero if any step fails
+
+Test Strategy:
+- Confirm API calls succeed and outputs are valid
+- Confirm DB state reflects successful pipeline run
+- Confirm email is logged and accepted by SendGrid
+- Validate presence of 'logs/e2e_preflight.log' with PASS entries for each section

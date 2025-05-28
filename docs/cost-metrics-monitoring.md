@@ -50,7 +50,7 @@ The `etc/gpu-usage-tracker.service` file provides a systemd service definition f
 - `GPU_COST_DAILY_THRESHOLD`: Daily GPU cost threshold in dollars (default: `25.0`)
 - `GPU_COST_MONTHLY_THRESHOLD`: Monthly GPU cost threshold in dollars (default: `100.0`)
 - `GPU_USAGE_CHECK_INTERVAL_SECONDS`: Interval for checking GPU usage in seconds (default: `3600` for 1 hour)
-- `ALERT_EMAIL_TO`: Email address to send alerts to (default: `alerts@anthrasite.com`)
+- `ALERT_EMAIL_TO`: Email address to send alerts to (default: `alerts@anthrasite.io`)
 
 ## Installation
 

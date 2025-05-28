@@ -42,7 +42,7 @@ SEMRUSH_API_KEY = get_env("SEMRUSH_KEY")
 
 # Email configuration
 SENDGRID_API_KEY = get_env("SENDGRID_KEY")
-SENDGRID_FROM_EMAIL = get_env("SENDGRID_FROM_EMAIL", "outreach@anthrasite.com")
+SENDGRID_FROM_EMAIL = get_env("SENDGRID_FROM_EMAIL", "outreach@anthrasite.io")
 SENDGRID_FROM_NAME = get_env("SENDGRID_FROM_NAME", "Anthrasite Lead Factory")
 SENDGRID_SHARED_IP_POOL = get_env("SENDGRID_SHARED_IP_POOL", "shared")
 SENDGRID_DEDICATED_IP_POOL = get_env("SENDGRID_DEDICATED_IP_POOL", "dedicated")
@@ -106,8 +106,8 @@ BUDGET_GATE_OVERRIDE = get_boolean_env("BUDGET_GATE_OVERRIDE", False)
 # ==================
 # Alerts
 # ==================
-ALERT_EMAIL_TO = get_env("ALERT_EMAIL_TO", "alerts@anthrasite.com")
-ALERT_EMAIL_FROM = get_env("ALERT_EMAIL_FROM", "leadfactory@anthrasite.com")
+ALERT_EMAIL_TO = get_env("ALERT_EMAIL_TO", "alerts@anthrasite.io")
+ALERT_EMAIL_FROM = get_env("ALERT_EMAIL_FROM", "leadfactory@anthrasite.io")
 SMTP_SERVER = get_env("SMTP_SERVER", "smtp.sendgrid.net")
 SMTP_PORT = get_int_env("SMTP_PORT", 587)
 SMTP_USERNAME = get_env("SMTP_USERNAME", "apikey")

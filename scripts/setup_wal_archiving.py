@@ -159,17 +159,33 @@ def create_wal_g_config():
 
     # Load environment variables
     env_vars = {}
-    env_file_path = ".env"
-    if not Path(env_file_path).exists():
-        env_file_path = ".env.production"
+    env_files = [".env", ".env.production"]
 
-    if Path(env_file_path).exists():
-        with Path(env_file_path).open() as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    key, value = line.split("=", 1)
-                    env_vars[key.strip()] = value.strip().strip("\"'")
+    # Try to load environment variables from available .env files
+    # First file found takes precedence
+    env_file_loaded = False
+    for env_file_path in env_files:
+        if Path(env_file_path).exists():
+            logger.info(f"Loading environment from {env_file_path}")
+            with Path(env_file_path).open() as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        try:
+                            key, value = line.split("=", 1)
+                            # Only set if not already set from a previous file
+                            if key.strip() not in env_vars:
+                                env_vars[key.strip()] = value.strip().strip("\"'")
+                        except ValueError:
+                            continue
+            env_file_loaded = True
+            break  # Stop after first file found
+
+    if not env_file_loaded:
+        logger.warning("No .env file found. Using default values.")
+        logger.info(
+            "Please create a .env file based on .env.example for custom configuration."
+        )
 
     # Get storage configuration
     storage_type = env_vars.get("WAL_STORAGE_TYPE", "fs")

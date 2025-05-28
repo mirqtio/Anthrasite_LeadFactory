@@ -30,7 +30,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Anthrasite",
-    author_email="info@anthrasite.com",
+    author_email="info@anthrasite.io",
     url="https://github.com/mirqtio/Anthrasite_LeadFactory",
     packages=find_packages(),
     include_package_data=True,

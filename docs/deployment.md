@@ -217,7 +217,7 @@ else
     docker-compose up -d
 
     # Send alert
-    echo "Primary server down. Standby activated at $(date)" | mail -s "ALERT: Lead-Factory Failover Activated" alerts@anthrasite.com
+    echo "Primary server down. Standby activated at $(date)" | mail -s "ALERT: Lead-Factory Failover Activated" alerts@anthrasite.io
   fi
 fi
 EOF
@@ -294,5 +294,5 @@ python bin/switch_ip_pool.py --bounce-rate 2.5
 ### Support Contacts
 
 For urgent issues, contact:
-- Technical Support: support@anthrasite.com
-- On-Call Engineer: oncall@anthrasite.com
+- Technical Support: support@anthrasite.io
+- On-Call Engineer: oncall@anthrasite.io

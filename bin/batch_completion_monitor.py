@@ -55,8 +55,8 @@ logger: Any = get_logger(__name__)
 CHECK_INTERVAL = int(
     os.getenv("BATCH_COMPLETION_CHECK_INTERVAL_SECONDS", "300")
 )  # 5 minutes
-ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "alerts@anthrasite.com")
-ALERT_EMAIL_FROM = os.getenv("ALERT_EMAIL_FROM", "leadfactory@anthrasite.com")
+ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "alerts@anthrasite.io")
+ALERT_EMAIL_FROM = os.getenv("ALERT_EMAIL_FROM", "leadfactory@anthrasite.io")
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.sendgrid.net")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "apikey")

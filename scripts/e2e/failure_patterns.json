@@ -1,0 +1,143 @@
+[
+  {
+    "pattern_id": "ENV001",
+    "name": "Missing Environment Variable",
+    "description": "An environment variable required by the pipeline is missing",
+    "regex_pattern": "Missing required variable: (?P<variable>\\w+)",
+    "category": "environment",
+    "stages": ["preflight"],
+    "resolution_steps": [
+      "Check .env.e2e file for the missing variable",
+      "Add the variable to .env.e2e with the appropriate value",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": true,
+    "resolution_script": "scripts/e2e/resolutions/fix_missing_env_var.py",
+    "match_count": 0,
+    "last_match_time": null
+  },
+  {
+    "pattern_id": "ENV002",
+    "name": "Invalid API Key Format",
+    "description": "An API key has an invalid format",
+    "regex_pattern": "(?P<key>\\w+) has invalid format: '(?P<value>.+)'",
+    "category": "environment",
+    "stages": ["preflight"],
+    "resolution_steps": [
+      "Check the format of the API key in .env.e2e",
+      "Update the API key with a valid format",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": false,
+    "resolution_script": null,
+    "match_count": 0,
+    "last_match_time": null
+  },
+  {
+    "pattern_id": "DB001",
+    "name": "Database Connection Failed",
+    "description": "Failed to connect to the database",
+    "regex_pattern": "(?:Could not connect to database|Connection refused|Database connection failed): (?P<error>.+)",
+    "category": "database",
+    "stages": ["preflight", "scrape"],
+    "resolution_steps": [
+      "Check that the database is running",
+      "Verify DATABASE_URL in .env.e2e",
+      "Ensure network connectivity to the database",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": false,
+    "resolution_script": null,
+    "match_count": 0,
+    "last_match_time": null
+  },
+  {
+    "pattern_id": "DB002",
+    "name": "Missing Database Table",
+    "description": "A required database table is missing",
+    "regex_pattern": "(?:Table|Relation) ['\"]?(?P<table>\\\\w+)['\"]? does not exist",
+    "category": "database",
+    "stages": ["preflight", "scrape", "email"],
+    "resolution_steps": [
+      "Run database migrations to create the missing table",
+      "Check database schema setup script",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": false,
+    "resolution_script": null,
+    "match_count": 0,
+    "last_match_time": null
+  },
+  {
+    "pattern_id": "API001",
+    "name": "API Authentication Failed",
+    "description": "Authentication to an external API failed",
+    "regex_pattern": "(?P<api>\\w+) API (?:returned|failed with) (?:status code )?(?:401|403|Unauthorized|Authentication failed)",
+    "category": "api",
+    "stages": ["preflight", "scrape", "screenshot", "mockup", "email"],
+    "resolution_steps": [
+      "Check API key in .env.e2e",
+      "Verify API key is valid and not expired",
+      "Update API key if necessary",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": false,
+    "resolution_script": null,
+    "match_count": 0,
+    "last_match_time": null
+  },
+  {
+    "pattern_id": "API002",
+    "name": "API Rate Limit Exceeded",
+    "description": "Rate limit exceeded for an external API",
+    "regex_pattern": "(?P<api>\\w+) API (?:returned|failed with) (?:status code )?(?:429|Too Many Requests|Rate limit exceeded)",
+    "category": "api",
+    "stages": ["scrape", "screenshot", "mockup", "email"],
+    "resolution_steps": [
+      "Wait for rate limit to reset",
+      "Reduce request frequency",
+      "Consider upgrading API plan",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": false,
+    "resolution_script": null,
+    "match_count": 0,
+    "last_match_time": null
+  },
+  {
+    "pattern_id": "NET001",
+    "name": "Network Timeout",
+    "description": "A network request timed out",
+    "regex_pattern": "(?:Timeout|timed out|Connection timed out|Read timed out) (?:connecting to|while connecting to|during request to) (?P<endpoint>.+)",
+    "category": "network",
+    "stages": ["scrape", "screenshot", "mockup", "email"],
+    "resolution_steps": [
+      "Check network connectivity",
+      "Verify the endpoint is available",
+      "Consider increasing timeout values",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": false,
+    "resolution_script": null,
+    "match_count": 0,
+    "last_match_time": null
+  },
+  {
+    "pattern_id": "IO001",
+    "name": "File IO Error",
+    "description": "Failed to read or write a file",
+    "regex_pattern": "(?:No such file or directory|Permission denied|Cannot (?:read|write) file): (?P<path>.+)",
+    "category": "io",
+    "stages": ["scrape", "screenshot", "mockup", "personalize", "render", "email"],
+    "resolution_steps": [
+      "Check that the directory exists",
+      "Verify file permissions",
+      "Create parent directories if needed",
+      "Re-run the pipeline"
+    ],
+    "auto_resolvable": true,
+    "resolution_script": "scripts/e2e/resolutions/fix_io_error.py",
+    "match_count": 0,
+    "last_match_time": null
+  }
+]

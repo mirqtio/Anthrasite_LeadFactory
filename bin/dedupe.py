@@ -67,6 +67,13 @@ def _testing_track_cost(service, operation, cost_cents, tier=1, business_id=None
 
 
 # Try to import real implementations first
+# Add DatabaseConnection class that tests are expecting to patch
+class DatabaseConnection(_TestingDatabaseConnection):
+    """Database connection class that the tests expect to patch.
+    This is a simple wrapper around _TestingDatabaseConnection.
+    """
+    pass
+
 # Instead of defining local functions with the same names, we use adapter functions
 # This avoids name conflicts while providing the same functionality
 def get_database_connection(db_path=None):

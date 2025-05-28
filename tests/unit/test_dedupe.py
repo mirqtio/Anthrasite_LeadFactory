@@ -18,7 +18,14 @@ sys.path.insert(0, project_root)
 print(f"Project root: {project_root}")
 print(f"sys.path: {sys.path}")
 
-# Import the deduplication module directly
+# Force import bin.dedupe first so patching works correctly
+try:
+    import bin.dedupe
+    print("Successfully imported bin.dedupe")
+except ImportError as e:
+    print(f"ImportError for bin.dedupe: {e}")
+
+# Import the deduplication module
 try:
     from leadfactory.pipeline import dedupe
     print("Successfully imported dedupe from leadfactory.pipeline")

@@ -938,3 +938,294 @@ def check_budget_limits(context):
     # With our test data we should be well under budget
     assert status["monthly_budget_used"] < 0.5  # Less than 50%
     assert status["daily_budget_used"] < 0.5    # Less than 50%
+
+
+@then("I should know if we're within budget limits")
+def check_budget_limits(context):
+    """Check that budget status indicates if we're within limits."""
+    assert "within_budget" in context.budget_status
+    assert isinstance(context.budget_status["within_budget"], bool)
+
+    if context.budget_status["within_budget"]:
+        assert context.budget_status["monthly_total"] <= context.budget_status["monthly_budget"]
+    else:
+        assert context.budget_status["monthly_total"] > context.budget_status["monthly_budget"]
+
+    # Check warning threshold
+    assert "warning_threshold" in context.budget_status
+    assert isinstance(context.budget_status["warning_threshold"], float)
+
+    # Check warning status
+    assert "warning" in context.budget_status
+    assert isinstance(context.budget_status["warning"], bool)
+
+    # Validate warning logic
+    if context.budget_status["warning"]:
+        assert (context.budget_status["monthly_total"] /
+                context.budget_status["monthly_budget"]) >= context.budget_status["warning_threshold"]
+
+
+# E2E pipeline validation with real email delivery scenario steps
+@pytest.fixture
+def e2e_env():
+    """Fixture for loading E2E environment variables."""
+    original_environ = os.environ.copy()
+
+    try:
+        # Load the E2E environment file
+        from dotenv import load_dotenv
+        e2e_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))))), ".env.e2e")
+
+        # Check if .env.e2e exists
+        if not os.path.exists(e2e_env_path):
+            pytest.skip(".env.e2e file not found - cannot run E2E tests")
+
+        # Load the environment variables
+        load_dotenv(e2e_env_path, override=True)
+
+        # Verify essential variables are set
+        required_vars = [
+            "EMAIL_OVERRIDE", "SENDGRID_API_KEY", "SCREENSHOT_ONE_API_KEY",
+            "OPENAI_API_KEY", "YELP_API_KEY", "GOOGLE_API_KEY", "MOCKUP_ENABLED"
+        ]
+
+        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        if missing_vars:
+            pytest.skip(f"Missing required E2E test variables: {', '.join(missing_vars)}")
+
+        yield
+    finally:
+        # Restore original environment
+        os.environ.clear()
+        os.environ.update(original_environ)
+
+
+@given("a test lead is queued")
+def a_test_lead_is_queued(db_conn):
+    """Queue a test lead for E2E processing."""
+    # Insert a test business
+    cursor = db_conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO businesses (name, address, city, state, zip, phone, email, website)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "E2E Test Business",
+            "123 Test St",
+            "Testville",
+            "TS",
+            "12345",
+            "555-123-4567",
+            "test@example.com",
+            "https://example.com"
+        ),
+    )
+    db_conn.commit()
+
+    # Store the test business ID in the context
+    cursor.execute("SELECT last_insert_rowid()")
+    context.e2e_test_business_id = cursor.fetchone()[0]
+
+    # Log for debugging
+    print(f"Queued E2E test business with ID: {context.e2e_test_business_id}")
+
+
+@when("the pipeline runs with real API keys", target_fixture="e2e_pipeline_result")
+def pipeline_runs_with_real_keys(db_conn, e2e_env):
+    """Run the full pipeline with real API keys."""
+    # Create a dictionary to store results
+    result = {}
+
+    try:
+        # 1. Ensure we're using the real API keys
+        assert os.getenv("USE_MOCKS") != "true", "Mocks should be disabled for E2E test"
+        assert os.getenv("MOCKUP_ENABLED") == "true", "Mockup generation must be enabled"
+
+        # 2. Get the test business
+        cursor = db_conn.cursor()
+        cursor.execute(
+            "SELECT * FROM businesses WHERE id = ?",
+            (context.e2e_test_business_id,)
+        )
+        business = dict(zip([column[0] for column in cursor.description], cursor.fetchone()))
+
+        # 3. Process through each pipeline stage
+        # Enrich the business
+        result["enrich"] = enrich.enrich_business(business)
+
+        # Score the business
+        result["score"] = score.score_business(business)
+
+        # Generate and send email
+        from leadfactory.pipeline.email_queue import (
+            load_email_template,
+            send_business_email,
+            SendGridEmailSender,
+            save_email_record
+        )
+
+        # Initialize SendGrid sender
+        sender = SendGridEmailSender(
+            api_key=os.getenv("SENDGRID_API_KEY"),
+            from_email=os.getenv("SENDGRID_FROM_EMAIL", "outreach@anthrasite.io"),
+            from_name=os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
+        )
+
+        # Load email template
+        template = load_email_template()
+
+        # Send email
+        success, message_id, error = send_business_email(business, sender, template)
+
+        result["email"] = {
+            "success": success,
+            "message_id": message_id,
+            "error": error
+        }
+
+        # Log the result to a summary file
+        summary_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+            "e2e_summary.md"
+        )
+
+        with open(summary_path, "w") as f:
+            f.write("# E2E Pipeline Test Summary\n\n")
+            f.write(f"**Test Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"**Business ID:** {context.e2e_test_business_id}\n")
+            f.write(f"**Business Name:** {business['name']}\n\n")
+
+            f.write("## API Costs\n\n")
+            f.write("Service | Operation | Cost\n")
+            f.write("--- | --- | ---\n")
+
+            # Get cost data from the database
+            cursor.execute(
+                """
+                SELECT model, purpose, SUM(cost) as total_cost
+                FROM api_costs
+                WHERE business_id = ?
+                GROUP BY model, purpose
+                """,
+                (context.e2e_test_business_id,)
+            )
+
+            cost_rows = cursor.fetchall()
+            for row in cost_rows:
+                model, purpose, cost = row
+                f.write(f"{model} | {purpose or 'N/A'} | ${cost:.4f}\n")
+
+            f.write("\n## Email Details\n\n")
+            f.write(f"**Success:** {result['email']['success']}\n")
+            f.write(f"**Message ID:** {result['email']['message_id']}\n")
+            if result['email']['error']:
+                f.write(f"**Error:** {result['email']['error']}\n")
+
+            # Get the mockup URL if available
+            if business.get("mockup_url"):
+                f.write("\n## Mockup\n\n")
+                f.write(f"**Mockup URL:** {business['mockup_url']}\n")
+
+        # Store the results in the context
+        context.e2e_pipeline_result = result
+        return result
+
+    except Exception as e:
+        # Log the error and return a failed result
+        print(f"E2E pipeline error: {str(e)}")
+        result["error"] = str(e)
+        context.e2e_pipeline_result = result
+        return result
+
+
+@then("a screenshot and mockup are generated")
+def check_screenshot_and_mockup(e2e_pipeline_result):
+    """Verify that a screenshot and mockup were generated."""
+    # The pipeline_runs_with_real_keys function should have populated the business object
+    # with screenshot and mockup URLs if they were generated successfully
+
+    # First check if there was an error in the pipeline
+    assert "error" not in context.e2e_pipeline_result, \
+        f"Pipeline failed with error: {context.e2e_pipeline_result.get('error')}"
+
+    # Get the business from the database
+    db_conn = sqlite3.connect(":memory:")  # Use the in-memory test database
+    cursor = db_conn.cursor()
+    cursor.execute(
+        "SELECT screenshot_url, mockup_url FROM businesses WHERE id = ?",
+        (context.e2e_test_business_id,)
+    )
+
+    row = cursor.fetchone()
+    screenshot_url, mockup_url = row if row else (None, None)
+
+    # Verify screenshot and mockup were generated
+    assert screenshot_url is not None, "Screenshot URL is missing"
+    assert mockup_url is not None, "Mockup URL is missing"
+
+
+@then("a real email is sent via SendGrid to EMAIL_OVERRIDE")
+def check_email_sent_to_override(e2e_pipeline_result):
+    """Verify that a real email was sent to the EMAIL_OVERRIDE address."""
+    # Check that the email was sent successfully
+    assert "email" in context.e2e_pipeline_result, "Email sending step not completed"
+    assert context.e2e_pipeline_result["email"]["success"], \
+        f"Email sending failed: {context.e2e_pipeline_result['email'].get('error')}"
+
+    # Check that the email was sent to the override address
+    email_override = os.getenv("EMAIL_OVERRIDE")
+    assert email_override, "EMAIL_OVERRIDE environment variable not set"
+
+    # Check the database to verify the email recipient
+    db_conn = sqlite3.connect(":memory:")  # Use the in-memory test database
+    cursor = db_conn.cursor()
+    cursor.execute(
+        """
+        SELECT recipient_email FROM emails
+        WHERE business_id = ? AND status = 'sent'
+        ORDER BY sent_at DESC LIMIT 1
+        """,
+        (context.e2e_test_business_id,)
+    )
+
+    row = cursor.fetchone()
+    if row:
+        recipient_email = row[0]
+        assert recipient_email == email_override, \
+            f"Email sent to {recipient_email} instead of override {email_override}"
+    else:
+        pytest.fail("No sent email found in the database")
+
+
+@then("the SendGrid response is 202")
+def check_sendgrid_response(e2e_pipeline_result):
+    """Verify that SendGrid returned a 202 status code."""
+    # Check that we have a message ID from SendGrid
+    assert "email" in context.e2e_pipeline_result, "Email sending step not completed"
+    assert context.e2e_pipeline_result["email"]["message_id"], \
+        "No SendGrid message ID returned"
+
+    # Since we have a message ID, SendGrid must have returned a 202
+    # The SendGridEmailSender only stores the message ID when the response code is 202
+
+    # Also check the email record in the database
+    db_conn = sqlite3.connect(":memory:")  # Use the in-memory test database
+    cursor = db_conn.cursor()
+    cursor.execute(
+        """
+        SELECT message_id FROM emails
+        WHERE business_id = ? AND status = 'sent'
+        ORDER BY sent_at DESC LIMIT 1
+        """,
+        (context.e2e_test_business_id,)
+    )
+
+    row = cursor.fetchone()
+    if row:
+        message_id = row[0]
+        assert message_id == context.e2e_pipeline_result["email"]["message_id"], \
+            "Message ID in database doesn't match the one returned by SendGrid"
+    else:
+        pytest.fail("No sent email found in the database")

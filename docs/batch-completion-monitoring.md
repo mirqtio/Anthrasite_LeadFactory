@@ -46,8 +46,8 @@ The `etc/batch-completion-monitor.service` file provides a systemd service defin
 - `BATCH_COMPLETION_DEADLINE_HOUR`: Hour of the day (0-23) when batches must be completed (default: `5` for 5:00 AM)
 - `BATCH_COMPLETION_TIMEZONE`: Timezone for the deadline (default: `America/New_York`)
 - `BATCH_COMPLETION_CHECK_INTERVAL_SECONDS`: Interval for checking batch completion status (default: `300` for 5 minutes)
-- `ALERT_EMAIL_TO`: Email address to send alerts to (default: `alerts@anthrasite.com`)
-- `ALERT_EMAIL_FROM`: Email address to send alerts from (default: `leadfactory@anthrasite.com`)
+- `ALERT_EMAIL_TO`: Email address to send alerts to (default: `alerts@anthrasite.io`)
+- `ALERT_EMAIL_FROM`: Email address to send alerts from (default: `leadfactory@anthrasite.io`)
 - `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`: SMTP configuration for sending alert emails
 
 ## Installation

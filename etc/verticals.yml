@@ -17,6 +17,11 @@ verticals:
     yelp_alias: veterinarians
     google_alias: veterinary_care
 
+  - name: Pizza
+    description: Pizza restaurants and pizzerias
+    yelp_alias: pizza
+    google_alias: meal_takeaway,restaurant
+
 # Category search parameters
 search_params:
   yelp:

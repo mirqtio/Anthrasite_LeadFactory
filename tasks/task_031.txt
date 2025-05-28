@@ -1,6 +1,6 @@
 # Task ID: 31
 # Title: Task #31: CI Pipeline Test Re-enablement Strategy
-# Status: pending
+# Status: deferred
 # Dependencies: None
 # Priority: high
 # Description: Create a comprehensive plan to incrementally re-enable 107 disabled tests in the CI pipeline, resolving issues methodically while maintaining a green build throughout the process.
@@ -69,64 +69,3 @@ The success of this task will be verified through the following approach:
    - Run the complete test suite in the CI pipeline for 5 consecutive builds to ensure stability
    - Verify that the 7 tests that should be skipped are properly marked and documented
    - Conduct a retrospective meeting to discuss lessons learned and improvements for future test management
-
-# Subtasks:
-## 1. Analyze and categorize disabled tests [pending]
-### Dependencies: None
-### Description: Review all 107 disabled tests and categorize them by failure type (environment issues, import problems, timing issues, etc.). Create a prioritized list based on complexity and dependencies.
-### Details:
-Create a spreadsheet with columns for test name, failure type, priority, complexity (1-5), dependencies, and purpose. Review CI logs and test code to determine failure reasons. Group tests into categories: environment setup issues, timing/async problems, dependency conflicts, data inconsistencies, and infrastructure limitations. Assign priority based on test importance and fix complexity.
-
-## 2. Set up local CI mirror environment [pending]
-### Dependencies: 31.1
-### Description: Create a local environment that accurately mirrors the CI pipeline configuration for safely testing fixes without affecting the main pipeline.
-### Details:
-Use Docker to replicate the CI environment locally. Configure the same test runners, environment variables, and dependencies as the CI pipeline. Create scripts to run specific test categories in isolation. Ensure the environment can be easily reset to a clean state between test runs.
-
-## 3. Develop test status tracking tool [pending]
-### Dependencies: 31.1
-### Description: Implement a tool to track the status of all disabled tests (disabled/enabled/passing/failing) and measure CI pipeline performance impact.
-### Details:
-Create a Node.js script that parses test results and maintains a JSON database of test statuses. Include functionality to generate reports showing progress over time. Implement metrics for test run duration, memory usage, and other performance indicators. Create a simple web dashboard to visualize progress.
-
-## 4. Fix and re-enable core utility tests [pending]
-### Dependencies: 31.2, 31.3
-### Description: Address and re-enable the first category of tests: core utility tests that have minimal dependencies and are foundational to the application.
-### Details:
-From the categorized list, identify all core utility tests. For each test: 1) Reproduce the failure locally, 2) Implement the fix, 3) Verify locally, 4) Create a feature branch, 5) Re-enable the test, 6) Run the full test suite to check for regressions, 7) Commit with detailed documentation. Focus on fixing common patterns rather than one-off solutions.
-
-## 5. Fix and re-enable business logic tests [pending]
-### Dependencies: 31.4
-### Description: Address and re-enable business logic tests that depend on core utilities but have minimal external dependencies.
-### Details:
-Following the same process as subtask 4, focus on business logic tests. Pay special attention to tests that may be failing due to changes in business requirements rather than code issues. Update test expectations if necessary. Group fixes by common patterns to increase efficiency.
-
-## 6. Fix and re-enable integration tests [pending]
-### Dependencies: 31.5
-### Description: Address and re-enable integration tests that involve multiple components and external dependencies.
-### Details:
-Focus on integration tests, which typically have more complex failure patterns. For timing issues, implement more robust waiting mechanisms. For environment issues, ensure consistent setup and teardown. Document any tests requiring infrastructure changes separately. Group fixes by subsystem to maintain focus.
-
-## 7. Develop automated test fix patterns [pending]
-### Dependencies: 31.4, 31.5, 31.6
-### Description: Create automated solutions for common test failure patterns identified during the manual fixing process.
-### Details:
-Analyze the fixes applied so far and identify recurring patterns. Develop scripts or utilities to automatically apply these fixes to remaining tests. Common patterns might include: updating import paths, adding proper async/await handling, standardizing mock data, or adding retry logic for flaky tests. Create documentation for each pattern.
-
-## 8. Evaluate and document tests that should remain disabled [pending]
-### Dependencies: 31.1
-### Description: Review the 7 tests that should remain skipped and ensure they are properly marked with clear documentation explaining why they should not run in CI.
-### Details:
-For each test that should remain disabled: 1) Verify it's properly marked to be skipped, 2) Add inline comments explaining why it's skipped, 3) Document any future conditions that might allow it to be re-enabled, 4) Ensure skip reasons are included in test reports. Create a separate document listing all permanently skipped tests with justifications.
-
-## 9. Create comprehensive test stability documentation [pending]
-### Dependencies: 31.4, 31.5, 31.6, 31.7, 31.8
-### Description: Document all patterns of failures encountered and their solutions for future reference, along with guidelines to prevent similar issues.
-### Details:
-Create a markdown document in the repository that includes: 1) Common failure patterns and their solutions, 2) Best practices for writing stable tests, 3) Environment setup requirements, 4) Known limitations and workarounds, 5) Troubleshooting guide for test failures. Include code examples for each pattern.
-
-## 10. Implement ongoing test stability monitoring [pending]
-### Dependencies: 31.3, 31.9
-### Description: Set up automated monitoring and alerting to detect when tests become unstable or start failing intermittently.
-### Details:
-Extend the test status tracking tool to identify tests that pass inconsistently. Implement alerts for tests that fail after previously passing consistently. Create weekly reports showing test stability metrics. Set up a process for regularly reviewing and addressing unstable tests before they need to be disabled.

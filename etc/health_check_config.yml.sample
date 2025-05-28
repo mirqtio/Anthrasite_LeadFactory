@@ -19,5 +19,5 @@ health_check:
 
   # Notification settings
   notify:
-    email: alerts@anthrasite.com
+    email: alerts@anthrasite.io
     slack_webhook: https://hooks.slack.com/services/XXXX/YYYY/ZZZZ

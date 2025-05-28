@@ -92,4 +92,4 @@ A Grafana dashboard is available for monitoring email deliverability metrics in 
 - Historical trends for both metrics
 - Alert status and history
 
-Access the dashboard at: `https://grafana.anthrasite.com/dashboards/email-deliverability`
+Access the dashboard at: `https://grafana.anthrasite.io/dashboards/email-deliverability`

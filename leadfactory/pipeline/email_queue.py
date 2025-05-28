@@ -56,9 +56,7 @@ EmailDBConnection: Any = None
 
 # Try to import the real database connection class
 try:
-    from leadfactory.utils.io import DatabaseConnection
-
-    EmailDBConnection = DatabaseConnection  # Use the real one if available
+    from leadfactory.utils.e2e_db_connector import db_connection as EmailDBConnection
 except ImportError:
     EmailDBConnection = _EmailDBConnectionBase  # Use our base class if import fails
 
@@ -93,75 +91,35 @@ logger = get_logger(__name__)
 # Global flag for dry run mode
 DRY_RUN = False
 
-
-def is_valid_email(email: str) -> bool:
-    """Validate email address format.
-
-    Args:
-        email: Email address to validate
-
-    Returns:
-        bool: True if email is valid, False otherwise
-    """
-    # Basic email validation pattern
-    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    return bool(re.match(pattern, email))
+# SendGrid configuration - will be loaded dynamically
+SENDGRID_API_KEY = None
+SENDGRID_FROM_EMAIL = None
+SENDGRID_FROM_NAME = None
+SENDGRID_IP_POOL_NAMES = None
+SENDGRID_SUBUSER_NAMES = None
 
 
-# Define the log_cost function at the module level to ensure it's available
-# This avoids attribute errors when checking for its existence
-def log_cost(
-    service: str,
-    operation: str,
-    cost_dollars: float,
-    tier: int = 1,
-    business_id: Optional[int] = None,
-) -> None:
-    """Dummy implementation of log_cost for when the real one is not available."""
-    pass
+def load_sendgrid_config():
+    """Load SendGrid configuration from environment variables"""
+    global SENDGRID_API_KEY, SENDGRID_FROM_EMAIL, SENDGRID_FROM_NAME
+    global SENDGRID_IP_POOL_NAMES, SENDGRID_SUBUSER_NAMES
 
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+    SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.io")
+    SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
 
-# Import cost tracker functions with a more direct approach for Python 3.9 compatibility
-# Always define our own versions first, then try to import the real ones
+    # IP pool configuration
+    ip_pool_names = os.getenv("SENDGRID_IP_POOL_NAMES", "primary,secondary,tertiary")
+    SENDGRID_IP_POOL_NAMES = [name.strip() for name in ip_pool_names.split(",")]
 
+    # Subuser configuration
+    subuser_names = os.getenv("SENDGRID_SUBUSER_NAMES", "primary,secondary,tertiary")
+    SENDGRID_SUBUSER_NAMES = [name.strip() for name in subuser_names.split(",")]
 
-# Our dummy implementations
-def get_daily_cost(service: Optional[str] = None) -> float:
-    return 0.0
-
-
-def get_monthly_cost(service: Optional[str] = None) -> float:
-    return 0.0
-
-
-# Try to import the real implementations without risking attribute errors
-try:
-    # Import the module itself first
-    from leadfactory.cost import cost_tracker as cost_tracker_module
-
-    # Use getattr with fallbacks to safely access attributes
-    # This avoids the "no attribute" errors that can happen with direct imports
-    get_daily_cost = getattr(cost_tracker_module, "get_daily_cost", get_daily_cost)
-    get_monthly_cost = getattr(
-        cost_tracker_module, "get_monthly_cost", get_monthly_cost
-    )
-
-    # For log_cost, keep using our own implementation if it doesn't exist
-    if hasattr(cost_tracker_module, "log_cost"):
-        log_cost = cost_tracker_module.log_cost
-    # If log_cost doesn't exist in the module, we keep our own implementation
-
-except ImportError:
-    # If the module import fails entirely, we keep using our own implementations
-    # This will happen during testing or if the module isn't available
-    pass
 
 # Constants
 DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_EMAILS", "5"))
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.com")
-SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
 DAILY_EMAIL_LIMIT = int(os.getenv("DAILY_EMAIL_LIMIT", "50"))
 BOUNCE_RATE_THRESHOLD = float(
     os.getenv("BOUNCE_RATE_THRESHOLD", "0.02")
@@ -172,13 +130,7 @@ SPAM_RATE_THRESHOLD = float(
 COST_PER_EMAIL = float(os.getenv("COST_PER_EMAIL", "0.10"))  # $0.10 per email
 MONTHLY_BUDGET = float(os.getenv("MONTHLY_BUDGET", "250"))  # $250 monthly budget
 
-# SendGrid IP/Sub-user configuration
-SENDGRID_IP_POOL_NAMES = os.getenv(
-    "SENDGRID_IP_POOL_NAMES", "primary,secondary,tertiary"
-).split(",")
-SENDGRID_SUBUSER_NAMES = os.getenv(
-    "SENDGRID_SUBUSER_NAMES", "primary,secondary,tertiary"
-).split(",")
+# Current IP pool and subuser indices
 CURRENT_IP_POOL_INDEX = int(os.getenv("CURRENT_IP_POOL_INDEX", "0"))
 CURRENT_SUBUSER_INDEX = int(os.getenv("CURRENT_SUBUSER_INDEX", "0"))
 EMAIL_TEMPLATE_PATH = (
@@ -222,11 +174,9 @@ class SendGridEmailSender:
         to_name: str,
         subject: str,
         html_content: str,
-        text_content: str,
-        mockup_image_url: Optional[str] = None,
-        mockup_html: Optional[str] = None,
+        attachments: list[dict] = [],
         is_dry_run: bool = False,
-    ) -> tuple[bool, Optional[str], Optional[str]]:
+    ) -> Optional[str]:
         """Send an email via SendGrid.
 
         Args:
@@ -234,126 +184,91 @@ class SendGridEmailSender:
             to_name: Recipient name.
             subject: Email subject.
             html_content: HTML content of the email.
-            text_content: Plain text content of the email.
-            mockup_image_url: URL to mockup image (optional).
-            mockup_html: HTML code for mockup (optional).
+            attachments: List of attachments to include.
             is_dry_run: If True, don't actually send the email.
 
         Returns:
-            tuple of (success, message_id, error_message).
+            Message ID if successful, None otherwise.
         """
         if is_dry_run:
             logger.info(f"Dry run: would send email to {to_email}")
-            return True, "dry-run-message-id", None
+            return f"dry-run-{int(time.time())}"
 
-        # Validate inputs
-        if not is_valid_email(to_email):
-            error_msg = f"Invalid email address: {to_email}"
+        if not self.api_key:
+            error_msg = "SendGrid API key not found in environment variables"
             logger.error(error_msg)
-            return False, None, error_msg
+            return None
 
-        if not all([subject, html_content, text_content]):
+        if not all([subject, html_content]):
             error_msg = "Missing required email content"
             logger.error(error_msg)
-            return False, None, error_msg
+            return None
 
-        # Define unsubscribe tracking parameters
-        # We'll use the unsubscribe handler that we'll implement later
-        unsubscribe_url = "https://app.anthrasite.com/unsubscribe"
-
-        # Build the email payload for SendGrid
+        # Prepare the email payload
         payload = {
             "personalizations": [
                 {
                     "to": [{"email": to_email, "name": to_name}],
                     "subject": subject,
-                    "custom_args": {"email": to_email},  # For tracking
                 }
             ],
             "from": {"email": self.from_email, "name": self.from_name},
             "reply_to": {"email": self.from_email, "name": self.from_name},
             "content": [
-                {"type": "text/plain", "value": text_content},
+                {"type": "text/plain", "value": html_content},
                 {"type": "text/html", "value": html_content},
             ],
             "tracking_settings": {
-                "click_tracking": {"enable": True, "enable_text": True},
+                "click_tracking": {"enable": True, "enable_text": False},
                 "open_tracking": {"enable": True},
-                "subscription_tracking": {
-                    "enable": True,
-                    "substitution_tag": "{unsubscribe}",
-                    "url": unsubscribe_url,
-                    "html": f'<a href="{unsubscribe_url}?email={to_email}">Unsubscribe</a>',
-                    "text": f"Unsubscribe: {unsubscribe_url}?email={to_email}",
-                },
+                "subscription_tracking": {"enable": True},
             },
             "mail_settings": {
                 "bypass_list_management": {"enable": False},
-                "footer": {"enable": True},
-                "sandbox_mode": {"enable": is_dry_run},
+                "footer": {"enable": False},
+                "sandbox_mode": {"enable": False},
             },
         }
-
-        # Add IP pool if specified
-        if self.ip_pool:
-            payload["ip_pool_name"] = self.ip_pool
 
         # Add a category for tracking
         payload["categories"] = ["lead-generation"]
 
-        # Add mockup attachment if provided
-        if mockup_image_url:
-            try:
-                # Download the mockup image
-                response = requests.get(mockup_image_url, timeout=DEFAULT_TIMEOUT)
-                if response.status_code == 200:
-                    # Encode the image as base64
-                    image_content = base64.b64encode(response.content).decode()
-                    # Add as attachment
-                    if "attachments" not in payload:
-                        payload["attachments"] = []
-                    payload["attachments"].append(
-                        {
-                            "content": image_content,
-                            "type": "image/png",
-                            "filename": "website-mockup.png",
-                            "disposition": "attachment",
-                        }
-                    )
-            except Exception as e:
-                logger.warning(f"Failed to attach mockup image: {e}")
+        # Add attachments
+        if attachments:
+            if "attachments" not in payload:
+                payload["attachments"] = []
+            payload["attachments"].extend(attachments)
 
         # Send the email via SendGrid API
         try:
-            url = f"{self.base_url}/mail/send"
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
 
-            # Add subuser to headers if specified
-            headers = self.headers.copy()
-            if self.subuser:
-                headers["On-Behalf-Of"] = self.subuser
-
-            # Send the request to SendGrid
             response = requests.post(
-                url, headers=headers, json=payload, timeout=DEFAULT_TIMEOUT
+                "https://api.sendgrid.com/v3/mail/send",
+                headers=headers,
+                json=payload,
+                timeout=DEFAULT_TIMEOUT,
             )
 
-            # Check for success
-            if response.status_code in (200, 201, 202):
-                # Extract message ID from headers
-                message_id = response.headers.get("X-Message-Id")
-                logger.info(f"Email sent successfully to {to_email} (ID: {message_id})")
-                return True, message_id, None
+            if response.status_code == 202:
+                # Extract message ID from response headers
+                message_id = response.headers.get("X-Message-Id", "")
+                logger.info(f"Email sent successfully to {to_email}")
+                return message_id
             else:
-                # Handle error
-                error_msg = (
-                    f"Failed to send email: {response.status_code} - {response.text}"
-                )
-                logger.error(error_msg)
-                return False, None, error_msg
+                error_msg = f"{response.status_code} - {response.text}"
+                logger.error(f"Failed to send email: {error_msg}")
+                return None
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Network error sending email: {str(e)}")
+            return None
         except Exception as e:
-            error_msg = f"Error sending email: {str(e)}"
-            logger.exception(error_msg)
-            return False, None, error_msg
+            logger.error(f"Unexpected error sending email: {str(e)}")
+            return None
 
     def get_bounce_rate(
         self, days: int = 7, ip_pool: str = None, subuser: str = None
@@ -540,6 +455,69 @@ class SendGridEmailSender:
             return 0
 
 
+def is_valid_email(email: str) -> bool:
+    """Validate email address format.
+
+    Args:
+        email: Email address to validate
+
+    Returns:
+        bool: True if email is valid, False otherwise
+    """
+    # Basic email validation pattern
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    return bool(re.match(pattern, email))
+
+
+# Define the log_cost function at the module level to ensure it's available
+# This avoids attribute errors when checking for its existence
+def log_cost(
+    service: str,
+    operation: str,
+    cost_dollars: float,
+    tier: int = 1,
+    business_id: Optional[int] = None,
+) -> None:
+    """Dummy implementation of log_cost for when the real one is not available."""
+    pass
+
+
+# Import cost tracker functions with a more direct approach for Python 3.9 compatibility
+# Always define our own versions first, then try to import the real ones
+
+
+# Our dummy implementations
+def get_daily_cost(service: Optional[str] = None) -> float:
+    return 0.0
+
+
+def get_monthly_cost(service: Optional[str] = None) -> float:
+    return 0.0
+
+
+# Try to import the real implementations without risking attribute errors
+try:
+    # Import the module itself first
+    from leadfactory.cost import cost_tracker as cost_tracker_module
+
+    # Use getattr with fallbacks to safely access attributes
+    # This avoids the "no attribute" errors that can happen with direct imports
+    get_daily_cost = getattr(cost_tracker_module, "get_daily_cost", get_daily_cost)
+    get_monthly_cost = getattr(
+        cost_tracker_module, "get_monthly_cost", get_monthly_cost
+    )
+
+    # For log_cost, keep using our own implementation if it doesn't exist
+    if hasattr(cost_tracker_module, "log_cost"):
+        log_cost = cost_tracker_module.log_cost
+    # If log_cost doesn't exist in the module, we keep our own implementation
+
+except ImportError:
+    # If the module import fails entirely, we keep using our own implementations
+    # This will happen during testing or if the module isn't available
+    pass
+
+
 def load_email_template() -> str:
     """Load email template from file.
 
@@ -615,16 +593,18 @@ def get_businesses_for_email(
     try:
         # Connect to the database
         with EmailDBConnection() as conn:
-            # Build the query
+            cursor = conn.cursor()
+            # Build the query - join with assets table to get mockup URLs
             query = """
-            SELECT b.id, b.name, b.email, b.phone, b.address, b.city, b.state, b.zip_code,
-                   b.website, b.mockup_url, b.contact_name, b.score, b.notes
+            SELECT b.id, b.name, b.email, b.phone, b.address, b.city, b.state, b.zip,
+                   b.website, a.url as mockup_url, '' as contact_name, 0 as score, '' as notes
             FROM businesses b
             LEFT JOIN emails e ON b.id = e.business_id
+            LEFT JOIN assets a ON b.id = a.business_id AND a.asset_type = 'mockup'
             WHERE b.email IS NOT NULL
               AND b.email != ''
-              AND b.mockup_url IS NOT NULL
-              AND b.mockup_url != ''
+              AND a.url IS NOT NULL
+              AND a.url != ''
             """
 
             # Add filters
@@ -635,21 +615,22 @@ def get_businesses_for_email(
 
             if business_id is not None:
                 # Filter by business ID
-                query += " AND b.id = ?"
+                query += " AND b.id = %s"
                 params.append(business_id)
 
-            # Order by score (highest first) and limit
-            query += " ORDER BY b.score DESC"
+            # Order by ID and limit
+            query += " ORDER BY b.id"
             if limit is not None:
-                query += " LIMIT ?"
+                query += " LIMIT %s"
                 params.append(limit)
 
             # Execute the query
-            conn.execute(query, params)
-            rows = conn.fetchall()
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
 
-            # Convert to list of dictionaries
-            businesses = [dict(row) for row in rows]
+            # Convert to list of dictionaries - get column names
+            column_names = [desc[0] for desc in cursor.description]
+            businesses = [dict(zip(column_names, row)) for row in rows]
             logger.info(f"Found {len(businesses)} businesses for email sending")
             return businesses
     except Exception as e:
@@ -658,26 +639,32 @@ def get_businesses_for_email(
 
 
 def is_email_unsubscribed(email: str) -> bool:
-    """Check if an email address has unsubscribed.
+    """Check if an email address is unsubscribed.
 
     Args:
         email: Email address to check.
 
     Returns:
-        True if the email has unsubscribed, False otherwise.
+        True if the email is unsubscribed, False otherwise.
     """
     try:
-        # Connect to the database
         with EmailDBConnection() as conn:
+            cursor = conn.cursor()
             # Check if the email is in the unsubscribe table
-            conn.execute(
-                "SELECT id FROM unsubscribes WHERE email = ? LIMIT 1", [email.lower()]
+            cursor.execute(
+                "SELECT id FROM unsubscribes WHERE email = %s LIMIT 1", [email.lower()]
             )
-            result = conn.fetchone()
+            result = cursor.fetchone()
             return result is not None
     except Exception as e:
-        logger.exception(f"Error checking unsubscribe status: {str(e)}")
-        return False
+        # If unsubscribes table doesn't exist, assume email is not unsubscribed
+        if "does not exist" in str(e):
+            logger.debug(
+                f"Unsubscribes table does not exist, assuming {email} is not unsubscribed"
+            )
+            return False
+        logger.exception(f"Error checking unsubscribe status for {email}: {str(e)}")
+        return False  # Default to not unsubscribed if there's an error
 
 
 def add_unsubscribe(
@@ -692,41 +679,86 @@ def add_unsubscribe(
         email: Email address to unsubscribe.
         reason: Optional reason for unsubscribing.
         ip_address: Optional IP address of the user.
-        user_agent: Optional user agent of the user.
+        user_agent: Optional user agent string.
 
     Returns:
         True if successful, False otherwise.
     """
     try:
-        # Validate the email
-        if not is_valid_email(email):
-            logger.error(f"Invalid email address for unsubscribe: {email}")
-            return False
-
-        # Normalize the email
-        email = email.lower()
-
         # Connect to the database
         with EmailDBConnection() as conn:
+            cursor = conn.cursor()
             # Check if already unsubscribed
-            conn.execute("SELECT id FROM unsubscribes WHERE email = ?", [email])
-            if conn.fetchone() is not None:
+            cursor.execute("SELECT id FROM unsubscribes WHERE email = %s", [email])
+            if cursor.fetchone() is not None:
                 logger.info(f"Email already unsubscribed: {email}")
                 return True
 
-            # Add to unsubscribe list
-            conn.execute(
+            cursor.execute(
                 """
                 INSERT INTO unsubscribes (email, reason, ip_address, user_agent, created_at)
-                VALUES (?, ?, ?, ?, datetime('now'))
+                VALUES (%s, %s, %s, %s, NOW())
                 """,
                 [email, reason or "", ip_address or "", user_agent or ""],
             )
             conn.commit()
-            logger.info(f"Added to unsubscribe list: {email}")
+            logger.info(f"Added unsubscribe for email: {email}")
             return True
     except Exception as e:
-        logger.exception(f"Error adding unsubscribe: {str(e)}")
+        logger.exception(f"Error adding unsubscribe for {email}: {str(e)}")
+        return False
+
+
+def log_email_sent(
+    business_id: int,
+    recipient_email: str,
+    recipient_name: str,
+    subject: str,
+    message_id: str,
+    status: str = "sent",
+    error_message: Optional[str] = None,
+) -> bool:
+    """Log an email that was sent.
+
+    Args:
+        business_id: ID of the business the email was sent for.
+        recipient_email: Email address the email was sent to.
+        recipient_name: Name of the recipient.
+        subject: Subject line of the email.
+        message_id: Unique message ID from the email provider.
+        status: Status of the email (sent, failed, etc.).
+        error_message: Optional error message if the email failed.
+
+    Returns:
+        True if successful, False otherwise.
+    """
+    try:
+        with EmailDBConnection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO emails (
+                    business_id, recipient_email, recipient_name, subject,
+                    message_id, status, error_message, sent_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                """,
+                [
+                    business_id,
+                    recipient_email,
+                    recipient_name,
+                    subject,
+                    message_id,
+                    status,
+                    error_message,
+                ],
+            )
+            conn.commit()
+            logger.info(
+                f"Logged email sent to {recipient_email} for business {business_id}"
+            )
+            return True
+    except Exception as e:
+        logger.exception(f"Error logging email: {str(e)}")
         return False
 
 
@@ -756,22 +788,20 @@ def save_email_record(
     try:
         # Connect to the database
         with EmailDBConnection() as conn:
-            # Insert the email record
-            conn.execute(
+            cursor = conn.cursor()
+            # Insert the email record - match actual table structure
+            cursor.execute(
                 """
                 INSERT INTO emails (
-                    business_id, recipient_email, recipient_name, subject,
-                    message_id, status, error_message, sent_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                    business_id, to_email, template, status, sendgrid_message_id, sent_at
+                ) VALUES (%s, %s, %s, %s, %s, NOW())
                 """,
                 [
                     business_id,
                     to_email,
-                    to_name,
-                    subject,
-                    message_id or "",
+                    f"{subject} (to: {to_name})",  # Store subject and name in template field
                     status,
-                    error_message or "",
+                    message_id or "",
                 ],
             )
             conn.commit()
@@ -797,44 +827,94 @@ def generate_email_content(business: dict, template: str) -> tuple[str, str, str
         business_name = business["name"]
         contact_name = business.get("contact_name") or "Owner"
         business_type = business.get("business_type") or "business"
+        business_website = (
+            business.get("website") or business.get("url") or "your website"
+        )
+        business_email = business.get("email") or business.get("contact_email") or ""
+
+        # Get sender information from environment
+        sender_name = os.getenv("SENDGRID_FROM_NAME", "Charlie Irwin")
+        sender_email = os.getenv("SENDGRID_FROM_EMAIL", "charlie@anthrasite.io")
+        sender_phone = os.getenv("SENDER_PHONE", "(555) 123-4567")
 
         # Generate subject line
-        subject = f"Website proposal for {business_name}"
+        subject = f"Free Website Mockup for {business_name}"
 
         # Apply template variables
         html_content = template
-        html_content = html_content.replace(
-            "{{business_name}}", html.escape(business_name)
-        )
-        html_content = html_content.replace("{{name}}", html.escape(contact_name))
-        html_content = html_content.replace(
-            "{{business_type}}", html.escape(business_type)
+
+        # Replace all template variables
+        replacements = {
+            "{{business_name}}": html.escape(business_name),
+            "{{contact_name}}": html.escape(contact_name),
+            "{{business_category}}": html.escape(business_type),
+            "{{business_website}}": html.escape(business_website),
+            "{{sender_name}}": html.escape(sender_name),
+            "{{sender_email}}": html.escape(sender_email),
+            "{{sender_phone}}": html.escape(sender_phone),
+            "{{to_email}}": html.escape(business_email),
+            "{{unsubscribe_link}}": f"https://app.anthrasite.io/unsubscribe?email={business_email}",
+        }
+
+        # Apply all replacements
+        for placeholder, value in replacements.items():
+            html_content = html_content.replace(placeholder, value)
+
+        # Handle the improvements section (replace Handlebars with static content)
+        improvements_html = """
+                <li>Modern, mobile-responsive design that looks great on all devices</li>
+                <li>Improved search engine optimization (SEO) to help customers find you</li>
+                <li>Clear calls-to-action to convert visitors into customers</li>
+                <li>Professional branding that builds trust with potential clients</li>
+                <li>Fast loading speeds for better user experience</li>
+        """
+
+        # Replace the Handlebars improvements section
+        improvements_pattern = r"{{#each improvements}}.*?{{/each}}"
+        html_content = re.sub(
+            improvements_pattern, improvements_html, html_content, flags=re.DOTALL
         )
 
         # Generate plain text version
         text_content = f"""
-        Hello {contact_name},
+Hello {contact_name},
 
-        We noticed that {business_name} doesn't have a modern website that showcases your business effectively.
+I noticed your website at {business_website} and wanted to reach out with some ideas for improvement.
 
-        We've created a free mockup of what your website could look like. No strings attached, just a demonstration of what we can do for you.
+Our team at Anthrasite Web Services specializes in helping {business_type} businesses like yours improve their online presence and attract more customers through modern, conversion-focused website design.
 
-        Our services include:
-        - Professional website design
-        - Mobile optimization
-        - SEO to help customers find you
-        - Easy content management
+Here's a custom mockup we've created showing how your website could look:
+[Website Mockup for {business_name}]
 
-        Check out your free mockup attached to this email.
+Key improvements we're suggesting:
+• Modern, mobile-responsive design that looks great on all devices
+• Improved search engine optimization (SEO) to help customers find you
+• Clear calls-to-action to convert visitors into customers
+• Professional branding that builds trust with potential clients
+• Fast loading speeds for better user experience
 
-        If you're interested in learning more, reply to this email or call us at (555) 123-4567.
+These improvements could help your business:
+• Attract more visitors through better search engine visibility
+• Convert more visitors into customers with clear calls-to-action
+• Create a more professional impression of your business
+• Provide a better experience for mobile users
 
-        Best regards,
-        The Anthrasite Team
+I'd love to discuss these ideas with you. Would you be available for a quick 15-minute call this week?
 
-        ---
-        This is a one-time email. If you wish to unsubscribe, please visit: https://app.anthrasite.com/unsubscribe?email={business['email']}
-        Anthrasite Web Services, 123 Tech Way, San Francisco, CA 94107
+Schedule a Free Consultation: https://calendly.com/anthrasite/website-consultation
+
+Best regards,
+{sender_name}
+Anthrasite Web Services
+{sender_email}
+{sender_phone}
+
+---
+This email was sent to {business_email}. If you'd prefer not to receive these emails, you can unsubscribe: https://app.anthrasite.io/unsubscribe?email={business_email}
+Anthrasite Web Services
+PO Box 12345
+San Francisco, CA 94107
+ 2025 Anthrasite Web Services. All rights reserved.
         """
 
         return subject, html_content, text_content
@@ -853,73 +933,190 @@ def send_business_email(
     email_sender: SendGridEmailSender,
     template: str,
     is_dry_run: bool = False,
-) -> tuple[bool, Optional[str], Optional[str]]:
-    """Send email for a business.
+):
+    """Send an email for a business.
 
     Args:
-        business: Business data.
-        email_sender: SendGridEmailSender instance.
-        template: Email template.
-        is_dry_run: If True, don't actually send the email.
-
-    Returns:
-        tuple of (success, message_id, error_message).
+        business: Business dictionary with contact information.
+        email_sender: SendGrid email sender instance.
+        template: Email template content.
+        is_dry_run: If True, don't actually send emails.
     """
     try:
-        # Extract business data
-        business_id = business["id"]
-        to_email = business["email"]
-        to_name = (
-            business.get("contact_name") or business.get("name") or "Business Owner"
-        )
-        mockup_url = business.get("mockup_url")
+        # Check if SendGrid API should be skipped
+        skip_sendgrid = os.getenv("SKIP_SENDGRID_API", "false").lower() == "true"
 
-        # Check if the email has unsubscribed
-        if is_email_unsubscribed(to_email):
-            error_msg = f"Email {to_email} has unsubscribed"
-            logger.warning(error_msg)
-            # Save as failed email record
-            save_email_record(
-                business_id, to_email, to_name, "[UNSUBSCRIBED]", None, "unsubscribed"
+        # Get recipient email (with override if set)
+        recipient_email = business.get("email", "")
+        if not recipient_email:
+            logger.warning(f"No email address for business {business.get('id')}")
+            return False
+
+        # Apply email override if set
+        email_override = os.getenv("EMAIL_OVERRIDE")
+        original_email = recipient_email
+        if email_override:
+            logger.info(
+                f"EMAIL_OVERRIDE active: Redirecting email from {original_email} to {email_override}"
             )
-            return False, None, error_msg
+            recipient_email = email_override
 
-        # Generate email content
+        # Check if email is unsubscribed
+        if is_email_unsubscribed(recipient_email):
+            logger.info(f"Email {recipient_email} is unsubscribed, skipping")
+            return False
+
+        # Generate personalized email content from template
         subject, html_content, text_content = generate_email_content(business, template)
 
-        # Log the cost
+        # Get mockup file path from assets table
+        mockup_path = None
         try:
-            log_cost("email", "send", COST_PER_EMAIL, business_id=business_id)
+            from leadfactory.utils.e2e_db_connector import db_connection
+
+            with db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    SELECT file_path FROM assets
+                    WHERE business_id = %s AND asset_type = 'mockup'
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                """,
+                    (business["id"],),
+                )
+                result = cursor.fetchone()
+                if result:
+                    mockup_path = result[0]
+                    logger.info(
+                        f"Found mockup for business {business['id']}: {mockup_path}"
+                    )
+                else:
+                    logger.info(
+                        f"No mockup found in assets for business {business['id']}"
+                    )
         except Exception as e:
-            logger.warning(f"Error logging email cost: {e}")
+            logger.warning(f"Failed to query mockup from assets table: {str(e)}")
+
+        if is_dry_run:
+            logger.info(f"Dry run: would send email to {recipient_email}")
+            # Save email record even in dry run
+            save_email_record(
+                business_id=business["id"],
+                to_email=original_email,
+                to_name=business.get("name", "Unknown Business"),
+                subject=subject,
+                message_id="dry-run-" + str(business["id"]),
+                status="sent",
+            )
+            return True
+        elif skip_sendgrid:
+            logger.info(
+                f"SKIP_SENDGRID_API enabled: simulating email send to {recipient_email}"
+            )
+            # Save email record for simulation
+            save_email_record(
+                business_id=business["id"],
+                to_email=original_email,
+                to_name=business.get("name", "Unknown Business"),
+                subject=subject,
+                message_id="simulated-" + str(business["id"]),
+                status="sent",
+            )
+            return True
+
+        # Prepare attachments
+        attachments = []
+        if mockup_path and os.path.exists(mockup_path):
+            try:
+                # Read the mockup file
+                with open(mockup_path, "rb") as f:
+                    mockup_data = f.read()
+                # Create embedded attachment with Content-ID
+                import base64
+
+                encoded_content = base64.b64encode(mockup_data).decode()
+                attachment = {
+                    "content": encoded_content,
+                    "filename": "website-mockup.png",
+                    "type": "image/png",
+                    "disposition": "inline",
+                    "content_id": "website-mockup.png",
+                }
+                attachments.append(attachment)
+                logger.info(f"Embedded mockup image for business {business['id']}")
+            except Exception as e:
+                logger.error(f"Failed to read mockup file {mockup_path}: {str(e)}")
+                raise Exception(f"Cannot send email without real mockup: {e}")
+        else:
+            # No real mockup available - cannot send email
+            logger.error(f"No real mockup file found for business {business['id']}")
+            logger.error(
+                f"Cannot send email without real mockup - failing email delivery"
+            )
+            raise Exception(
+                f"Email delivery requires real mockup, but none found for business {business['id']}"
+            )
 
         # Send the email
-        success, message_id, error_message = email_sender.send_email(
-            to_email=to_email,
-            to_name=to_name,
-            subject=subject,
-            html_content=html_content,
-            text_content=text_content,
-            mockup_image_url=mockup_url,
-            is_dry_run=is_dry_run,
-        )
+        try:
+            message_id = email_sender.send_email(
+                to_email=recipient_email,
+                to_name=business.get("name", "Unknown Business"),
+                subject=subject,
+                html_content=html_content,  # Use processed HTML content
+                attachments=attachments,
+            )
 
-        # Save the email record
-        status = "sent" if success else "failed"
-        save_email_record(
-            business_id, to_email, to_name, subject, message_id, status, error_message
-        )
+            if message_id:
+                logger.info(f"Email sent successfully with message ID: {message_id}")
+                # Save successful email record
+                save_email_record(
+                    business_id=business["id"],
+                    to_email=original_email,
+                    to_name=business.get("name", "Unknown Business"),
+                    subject=subject,
+                    message_id=message_id,
+                    status="sent",
+                )
+                return True
+            else:
+                logger.error("Failed to send email: No message ID returned")
+                # Save failed email record
+                save_email_record(
+                    business_id=business["id"],
+                    to_email=original_email,
+                    to_name=business.get("name", "Unknown Business"),
+                    subject=subject,
+                    message_id=None,
+                    status="failed",
+                    error_message="No message ID returned",
+                )
+                return False
 
-        return success, message_id, error_message
+        except Exception as e:
+            error_msg = f"Failed to send email: {str(e)}"
+            logger.error(error_msg)
+            # Save failed email record
+            save_email_record(
+                business_id=business["id"],
+                to_email=original_email,
+                to_name=business.get("name", "Unknown Business"),
+                subject=subject,
+                message_id=None,
+                status="failed",
+                error_message=str(e),
+            )
+            return False
+
     except Exception as e:
-        error_msg = f"Error sending business email: {str(e)}"
-        logger.exception(error_msg)
-        return False, None, error_msg
+        logger.exception(
+            f"Error sending email for business {business.get('id')}: {str(e)}"
+        )
+        return False
 
 
-def process_business_email(
-    business_id: int, dry_run: bool = None
-) -> Union[bool, tuple[bool, Optional[str], Optional[str]]]:
+def process_business_email(business_id: int, dry_run: bool = None) -> bool:
     """Process a single business for email sending.
 
     Args:
@@ -927,8 +1124,7 @@ def process_business_email(
         dry_run: If True, don't actually send emails. If None, uses the global DRY_RUN setting.
 
     Returns:
-        Union[bool, tuple[bool, Optional[str], Optional[str]]]:
-            Either a boolean indicating success, or a tuple with (success, message_id, error)
+        bool: True if successful, False otherwise.
     """
     # Use global dry run flag if not specified
     is_dry_run = DRY_RUN if dry_run is None else dry_run
@@ -950,65 +1146,12 @@ def process_business_email(
             logger.error("Failed to load email template")
             return False
 
-        # Check for required environment variables
-        if not SENDGRID_API_KEY:
-            logger.error("SendGrid API key not found in environment variables")
-            return False
-
         # Create SendGrid sender
-        # Use current IP pool and subuser if available
-        ip_pool = (
-            SENDGRID_IP_POOL_NAMES[CURRENT_IP_POOL_INDEX]
-            if SENDGRID_IP_POOL_NAMES
-            else None
-        )
-        subuser = (
-            SENDGRID_SUBUSER_NAMES[CURRENT_SUBUSER_INDEX]
-            if SENDGRID_SUBUSER_NAMES
-            else None
-        )
-
         sender = SendGridEmailSender(
             api_key=SENDGRID_API_KEY,
             from_email=SENDGRID_FROM_EMAIL,
             from_name=SENDGRID_FROM_NAME,
-            ip_pool=ip_pool,
-            subuser=subuser,
         )
-
-        # Check SendGrid health
-        if not is_dry_run:
-            # Check bounce rate
-            bounce_rate = sender.get_bounce_rate(ip_pool=ip_pool, subuser=subuser)
-            if bounce_rate > BOUNCE_RATE_THRESHOLD:
-                logger.error(
-                    f"Bounce rate too high: {bounce_rate:.2%} > {BOUNCE_RATE_THRESHOLD:.2%}"
-                )
-                return False
-
-            # Check spam complaint rate
-            spam_rate = sender.get_spam_rate(ip_pool=ip_pool, subuser=subuser)
-            if spam_rate > SPAM_RATE_THRESHOLD:
-                logger.error(
-                    f"Spam complaint rate too high: {spam_rate:.4%} > {SPAM_RATE_THRESHOLD:.4%}"
-                )
-                return False
-
-            # Check daily email limit
-            daily_sent = sender.get_daily_sent_count()
-            if daily_sent >= DAILY_EMAIL_LIMIT:
-                logger.error(
-                    f"Daily email limit reached: {daily_sent} >= {DAILY_EMAIL_LIMIT}"
-                )
-                return False
-
-            # Check monthly budget
-            monthly_cost = get_monthly_cost("email")
-            if monthly_cost >= MONTHLY_BUDGET:
-                logger.error(
-                    f"Monthly budget exceeded: ${monthly_cost:.2f} >= ${MONTHLY_BUDGET:.2f}"
-                )
-                return False
 
         # Send the email
         result = send_business_email(business, sender, template, is_dry_run)
@@ -1039,6 +1182,18 @@ def main() -> int:
     # Set the global dry run flag
     global DRY_RUN
     DRY_RUN = args.dry_run
+
+    # Load production test environment early if needed
+    from leadfactory.utils.e2e_db_connector import (
+        is_production_test_mode,
+        load_production_test_env,
+    )
+
+    if is_production_test_mode():
+        load_production_test_env()
+
+    # Load SendGrid configuration after environment is loaded
+    load_sendgrid_config()
 
     # Log the start of the process
     logger.info("Starting email queue processing")
@@ -1143,9 +1298,7 @@ def main() -> int:
             logger.info(f"Processing business {business_id}: {business_name}")
 
             # Send the email
-            success, message_id, error_message = send_business_email(
-                business, sender, template, DRY_RUN
-            )
+            success = send_business_email(business, sender, template, DRY_RUN)
 
             if success:
                 total_sent += 1
@@ -1155,7 +1308,7 @@ def main() -> int:
             else:
                 total_failed += 1
                 logger.error(
-                    f"Failed to send email to {business_name} <{business_email}>: {error_message}"
+                    f"Failed to send email to {business_name} <{business_email}>"
                 )
 
             # Sleep to avoid hitting rate limits

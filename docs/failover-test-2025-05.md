@@ -6,8 +6,8 @@ This document records the results of a controlled failover test conducted on May
 
 ## Test Configuration
 
-- **Primary Server**: leadfactory-primary.anthrasite.com
-- **Backup Server**: leadfactory-backup.anthrasite.com
+- **Primary Server**: leadfactory-primary.anthrasite.io
+- **Backup Server**: leadfactory-backup.anthrasite.io
 - **Health Check Threshold**: 2 failures (as configured in `.env.production`)
 - **Health Check Interval**: 300 seconds (5 minutes)
 - **Test Duration**: 60 minutes
@@ -45,11 +45,11 @@ This document records the results of a controlled failover test conducted on May
 
 | Step | Expected Result | Actual Result | Status |
 |------|-----------------|---------------|--------|
-| Stop Docker on primary | Health check failure | Health check failed within 5 minutes | ✅ |
-| Consecutive failures | Trigger failover after 2 failures | Failover triggered after 2 failures (10 minutes) | ✅ |
-| Backup activation | Backup server takes over operations | Backup server activated within 2 minutes of trigger | ✅ |
-| Alert notifications | Email and Slack alerts sent | Alerts received on both channels | ✅ |
-| Pipeline continuity | Nightly batch continues on backup | Batch completed successfully on backup | ✅ |
+| Stop Docker on primary | Health check failure | Health check failed within 5 minutes |
+| Consecutive failures | Trigger failover after 2 failures | Failover triggered after 2 failures (10 minutes) |
+| Backup activation | Backup server takes over operations | Backup server activated within 2 minutes of trigger |
+| Alert notifications | Email and Slack alerts sent | Alerts received on both channels |
+| Pipeline continuity | Nightly batch continues on backup | Batch completed successfully on backup |
 
 ### Metrics During Failover
 

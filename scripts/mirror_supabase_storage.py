@@ -53,21 +53,35 @@ def ensure_directories():
 def load_environment():
     """Load environment variables from .env file."""
     env_vars = {}
-    env_file = ".env"
+    env_files = [".env", ".env.production"]
 
-    if not os.path.exists(env_file):
-        env_file = ".env.production"
+    # Try to load environment variables from available .env files
+    # First file found takes precedence
+    for env_file in env_files:
+        if os.path.exists(env_file):
+            print(f"Loading environment from {env_file}")
+            with open(env_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        try:
+                            key, value = line.split("=", 1)
+                            # Only set if not already set from a previous file
+                            if key.strip() not in env_vars:
+                                env_vars[key.strip()] = value.strip().strip("\"'")
+                        except ValueError:
+                            continue
+            break  # Stop after first file found
 
-    if os.path.exists(env_file):
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    try:
-                        key, value = line.split("=", 1)
-                        env_vars[key.strip()] = value.strip().strip("\"'")
-                    except ValueError:
-                        continue
+    # Check for required variables
+    required_vars = ["SUPABASE_URL", "SUPABASE_KEY", "SUPABASE_SERVICE_KEY"]
+    missing_vars = [var for var in required_vars if var not in env_vars]
+
+    if missing_vars:
+        print(
+            f"ERROR: Missing required environment variables: {', '.join(missing_vars)}"
+        )
+        print("Please create a .env file based on .env.example")
 
     return env_vars
 

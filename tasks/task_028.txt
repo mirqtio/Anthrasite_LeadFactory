@@ -1,6 +1,6 @@
 # Task ID: 28
 # Title: Task #28: Web Interface for HTML and LLM Logs Browsing
-# Status: pending
+# Status: deferred
 # Dependencies: None
 # Priority: medium
 # Description: Implement a user-friendly web interface that allows users to browse, search, filter, and export stored HTML and LLM logs, enhancing the raw data retention features by providing easy access to historical data.

@@ -1,0 +1,17 @@
+Title: Provision Local Postgres Database for Full E2E Test
+
+Description: Set up a real PostgreSQL instance for running a persistent, schema-accurate, E2E test pipeline. This includes creating the database, applying schema, seeding initial data, and confirming connectivity.
+
+Details:
+1. Start a Dockerized Postgres 14 instance on port 5432
+2. Create a 'leadfactory' database if not present
+3. Apply schema from 'db/migrations/2025-05-19_init.sql'
+4. Seed 'zip_queue' and 'verticals' from 'etc/zips.csv' and 'etc/verticals.yml'
+5. Set 'DATABASE_URL' in '.env.e2e' and verify it is correctly loaded by the config system
+6. Confirm the 'businesses', 'emails', 'llm_logs', and 'zip_queue' tables exist and match expected structure
+
+Test Strategy:
+- Use "psql $DATABASE_URL -c '\dt'" to confirm schema
+- Verify presence of at least one test ZIP in 'zip_queue'
+- Confirm schema columns exist using test SELECTs
+- Confirm successful connection via Python using psycopg2

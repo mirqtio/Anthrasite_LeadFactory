@@ -1,6 +1,6 @@
 # Task ID: 29
 # Title: Task #29: Advanced Analytics for Lead Generation Optimization
-# Status: pending
+# Status: deferred
 # Dependencies: None
 # Priority: medium
 # Description: Implement advanced analytics capabilities that leverage machine learning to optimize lead generation by analyzing lead quality, conversion rates, and ROI, providing actionable insights through predictive models and automated reporting.

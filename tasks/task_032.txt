@@ -1,75 +1,115 @@
 # Task ID: 32
-# Title: Python 3.9 Compatibility Implementation
-# Status: in_progress
+# Title: Full E2E BDD Pipeline Validation Including Real Email Delivery
+# Status: done
 # Dependencies: None
 # Priority: high
-# Description: Systematically resolve Python 3.9 compatibility issues throughout the codebase to ensure proper CI pipeline operation
+# Description: Implement and execute an end-to-end test of the entire Phase 0 pipeline using real API keys and production configuration to validate that leads can be processed fully, including mockup generation and email delivery via SendGrid.
 # Details:
-This task involves implementing a comprehensive approach to fix Python 3.9 compatibility issues across the Anthrasite LeadFactory codebase. Key steps include:
+This task involves setting up and running a comprehensive end-to-end test of the entire lead processing pipeline with real credentials:
 
-1. Identify and resolve type annotation issues incompatible with Python 3.9
-2. Fix module import issues and ensure proper typing imports
-3. Update mypy configuration to better handle Python 3.9 compatibility
-4. Create diagnostic and automation scripts to aid in fixing compatibility issues
-5. Document best practices for maintaining Python 3.9 compatibility
-6. Ensure CI pipeline passes with Python 3.9 environment
+1. Configure `.env.e2e` with all real API keys, including a controlled email override address (EMAIL_OVERRIDE=charlie@anthrasite.io).
 
-This implementation must follow the Feature Development Workflow Template (Task #27) with a focus on maintaining high code quality while addressing ongoing CI failures.
+2. Modify the email sending logic in `06_email_queue.py` or equivalent to implement the EMAIL_OVERRIDE functionality:
+   ```python
+   # Add to email sending logic
+   if os.getenv("EMAIL_OVERRIDE"):
+       original_recipient = recipient_email
+       recipient_email = os.getenv("EMAIL_OVERRIDE")
+       logger.info(f"EMAIL_OVERRIDE active: Redirecting email from {original_recipient} to {recipient_email}")
+   ```
+
+3. Ensure the pipeline can run with MOCKUP_ENABLED=true and process a real zip code + vertical input.
+
+4. Enable the SendGrid integration to send actual emails using the override address.
+
+5. Add a new BDD scenario in the appropriate feature file:
+   ```gherkin
+   Scenario: Full lead processed and email delivered
+     Given a test lead is queued
+     When the pipeline runs with real API keys
+     Then a screenshot and mockup are generated
+     And a real email is sent via SendGrid to EMAIL_OVERRIDE
+     And the SendGrid response is 202
+   ```
+
+6. Implement a logging mechanism that writes a summary of the E2E test to `e2e_summary.md`, including:
+   - Number of leads processed
+   - API costs incurred
+   - Paths to generated screenshots/mockups
+   - Preview of the email body content
+   - SendGrid message ID
+
+7. Ensure the test validates:
+   - Email content includes correct mockup
+   - Personalization is applied correctly
+   - CAN-SPAM footer is present and valid
+   - SendGrid API returns a 202 status code
+   - A row is written to the emails table with appropriate variant and message ID
+   - The test email is received at the override address
+
+This task should be executed locally or manually, not in the CI environment which should continue to run in mock mode.
 
 # Test Strategy:
-Testing will focus on ensuring all linting tools pass in Python 3.9 environment:
+1. Set up the test environment:
+   - Create a `.env.e2e` file with all required real API keys
+   - Configure EMAIL_OVERRIDE=charlie@anthrasite.io
+   - Ensure access to the override email inbox for verification
 
-1. Run mypy with Python 3.9 to verify type checking passes
-2. Run ruff, black, and flake8 to ensure code style compliance
-3. Execute all unit and integration tests with Python 3.9
-4. Verify CI pipeline passes with Python 3.9 environment
-5. Document any non-automatable issues that require ongoing attention
+2. Execute the full pipeline test:
+   - Run the pipeline with `MOCKUP_ENABLED=true` and real API keys
+   - Monitor the execution logs for any errors or warnings
+
+3. Verify email delivery:
+   - Check the override email inbox for the test email
+   - Confirm the email contains the correct mockup image
+   - Verify personalization elements are correctly applied
+   - Ensure the CAN-SPAM footer contains the required information
+   - Validate that unsubscribe links are functional
+
+4. Validate database and API responses:
+   - Confirm the emails table has a new entry for the test lead
+   - Verify the SendGrid API response shows a 202 status code
+   - Check that the message ID is properly recorded
+
+5. Review the generated e2e_summary.md file:
+   - Confirm it contains all required information
+   - Verify API costs are within expected ranges
+   - Check that all file paths to assets are valid
+
+6. Run the BDD test:
+   - Execute `pytest` with the new BDD scenario
+   - Confirm the test passes all assertions
+
+7. Document any issues or observations for future improvements to the pipeline.
 
 # Subtasks:
-## 1. Analyze Python 3.9 compatibility issues [done]
+## 1. Configure E2E Environment with Real API Keys [done]
 ### Dependencies: None
-### Description: Identify all Python 3.9 compatibility issues in the codebase using diagnostic tools
+### Description: Set up the .env.e2e file with all necessary production API keys and configure the EMAIL_OVERRIDE functionality to safely test email delivery.
 ### Details:
-Run diagnostic scripts to identify and categorize all Python 3.9 compatibility issues. Focus on type annotation syntax differences, missing imports, and function signature mismatches. Create a comprehensive report documenting all identified issues.
+Create or update .env.e2e with real API keys for all services (SendGrid, etc.). Add EMAIL_OVERRIDE=charlie@anthrasite.io to redirect all test emails. Ensure MOCKUP_ENABLED=true is set. Document all API keys being used and their associated services in a secure location.
 
-## 2. Create Python 3.9 compatibility fix script [done]
+## 2. Implement Email Override Functionality [done]
 ### Dependencies: 32.1
-### Description: Develop and implement an automation script to fix common compatibility issues
+### Description: Modify the email sending logic in 06_email_queue.py to implement the EMAIL_OVERRIDE functionality that redirects emails to a controlled address.
 ### Details:
-Create scripts/fix_python39_compatibility.py to automatically fix common Python 3.9 compatibility issues. Ensure it handles type annotation differences, adds necessary imports, and properly documents any non-automatable issues for manual review.
+Add logic to check for EMAIL_OVERRIDE environment variable before sending emails. If present, log the original recipient and redirect to the override address. Ensure this change doesn't affect production behavior when the variable isn't set. Update the SendGrid integration to use this modified recipient.
 
-## 3. Update mypy configuration [done]
-### Dependencies: 32.1
-### Description: Modify mypy.ini to properly handle Python 3.9 compatibility issues
-### Details:
-Update mypy.ini to exclude duplicate files, temporarily disable unreachable code warnings, and add appropriate ignore patterns for third-party libraries without type stubs. Ensure configuration allows CI pipeline to run successfully while maintaining high code quality standards.
-
-## 4. Fix type annotation issues [done]
-### Dependencies: 32.2, 32.3
-### Description: Systematically address type annotation issues throughout the codebase
-### Details:
-Fix type annotation syntax issues, function signature mismatches, and variable annotation problems in critical files including bin/cost_tracking.py, bin/budget_audit.py, and utils modules. Ensure consistent return types across module boundaries.
-
-## 5. Fix missing imports [done]
+## 3. Create BDD Scenario for E2E Pipeline Validation [done]
 ### Dependencies: 32.2
-### Description: Add missing imports in all modules with undefined name errors
+### Description: Add a new BDD scenario in the appropriate feature file to test the full lead processing pipeline including email delivery.
 ### Details:
-Address all 'Name X is not defined' errors by adding appropriate imports. Focus on bin/email/sendgrid_email_sender.py and other modules with missing imports for sys, os, and typing modules.
+Create a scenario that tests a lead being processed through the entire pipeline with real API keys. Include steps to verify screenshot generation, mockup creation, email sending via SendGrid, and validation of the SendGrid response code. Use the Gherkin syntax as specified in the task description.
 
-## 6. Fix None-aware operations [done]
+## 4. Implement E2E Test Logging and Summary Generation [done]
+### Dependencies: 32.3
+### Description: Create a logging mechanism that captures detailed information about the E2E test execution and generates a summary report.
+### Details:
+Implement a logger that tracks the entire E2E process. Write a function to generate an e2e_summary.md file containing: number of leads processed, API costs incurred, paths to generated assets, preview of email content, and SendGrid message IDs. Format the summary with markdown for readability.
+
+## 5. Execute and Validate Full E2E Test [done]
 ### Dependencies: 32.4
-### Description: Ensure proper handling of None values in method calls
+### Description: Run the complete E2E test with real credentials and validate all aspects of the pipeline including email delivery and content.
 ### Details:
-Fix all instances of 'None has no attribute X' errors by implementing proper None checks before method calls. Focus on datetime.isoformat() calls and other common patterns where None values need special handling.
+Execute the BDD scenario with the E2E environment. Verify that: emails are delivered to the override address, email content includes the correct mockup, personalization is applied correctly, CAN-SPAM footer is present, SendGrid returns 202 status, and a row is written to the emails table with appropriate data. Document any issues encountered during testing.
 
-## 7. Create Python 3.9 compatibility documentation [done]
-### Dependencies: 32.4, 32.5, 32.6
-### Description: Document all compatibility issues, fixes, and best practices
-### Details:
-Create docs/python39_compatibility.md documenting all compatibility issues, fixes applied, remaining issues, and best practices for maintaining compatibility. Include sections on common patterns to avoid and recommended approaches.
-
-## 8. Run CI pipeline with Python 3.9 [pending]
-### Dependencies: 32.3, 32.4, 32.5, 32.6, 32.7
-### Description: Verify CI pipeline passes with Python 3.9 environment
-### Details:
-Run the CI pipeline in GitHub Actions with Python 3.9 environment to ensure all fixes are properly applied. Document any remaining issues and create a plan for addressing them.

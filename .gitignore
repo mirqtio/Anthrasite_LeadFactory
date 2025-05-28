@@ -31,10 +31,18 @@ wheels/
 .installed.cfg
 *.egg
 
+# E2E testing
+/logs/*
+!/logs/.gitkeep
+e2e_summary.md
+
 # Virtual environments
 .env
 .env.real_test
 .env.production
+.env.e2e
+.env.prod_test
+.env.*.bak.*
 !.env.example
 .venv/
 venv/
@@ -89,3 +97,8 @@ tests/results/
 
 # Local environment files
 .python-version
+
+# Sensitive files and large execution histories
+execution_history.json
+*.bak
+sample_*.env

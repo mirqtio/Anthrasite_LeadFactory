@@ -60,7 +60,7 @@ SCREENSHOT_ONE_KEY=your_screenshotone_api_key_here
 
 # SendGrid Email API
 SENDGRID_KEY=your_sendgrid_api_key_here
-SENDGRID_FROM_EMAIL=outreach@anthrasite.com
+SENDGRID_FROM_EMAIL=outreach@anthrasite.io
 
 # OpenAI API
 OPENAI_API_KEY=your_openai_api_key_here

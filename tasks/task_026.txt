@@ -38,3 +38,4 @@ Modify the CI pipeline configuration to run 'pre-commit run --all-files' as part
 ### Description: Create documentation for developers on using pre-commit hooks
 ### Details:
 Create comprehensive documentation explaining how developers should work with the pre-commit hooks. Include instructions for installation, usage, troubleshooting common issues, and how to temporarily bypass hooks if necessary. Explain the purpose of each hook and the standards they enforce. Add this documentation to the project's developer guide or README. Reference the Feature Development Workflow Template (Task #27) to explain how pre-commit hooks fit into the overall development process.
+

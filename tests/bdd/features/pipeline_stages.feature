@@ -50,3 +50,11 @@ Feature: Pipeline Stages
     And I should see the cost breakdown by model
     And I should see the cost breakdown by purpose
     And I should know if we're within budget limits
+
+  @e2e @real_api
+  Scenario: Full lead processed and email delivered
+    Given a test lead is queued
+    When the pipeline runs with real API keys
+    Then a screenshot and mockup are generated
+    And a real email is sent via SendGrid to EMAIL_OVERRIDE
+    And the SendGrid response is 202

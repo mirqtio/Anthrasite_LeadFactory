@@ -58,3 +58,4 @@ All code changes must follow the standard Feature Development Workflow Template 
 3. Modify existing tests to work with Postgres instead of SQLite
 4. Update CI pipeline to spin up Postgres service for testing
 5. Create database migration guide for existing installations
+
