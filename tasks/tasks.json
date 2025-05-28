@@ -159,7 +159,7 @@
       "id": 4,
       "title": "Replace Legacy bin/ Scripts with CLI Wrappers",
       "description": "Consolidate execution logic and remove old scripts",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "type": "refactor",
       "created_at": "2025-05-28T09:00:00Z",
@@ -173,7 +173,7 @@
           "description": "Research and select an appropriate CLI framework for modernizing bin/ scripts",
           "dependencies": [],
           "details": "Compare options like argparse, click, typer, or docopt based on project needs. Consider factors like ease of use, documentation quality, maintenance status, and compatibility with existing codebase. Create a decision document with pros/cons of each option and final recommendation.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -183,7 +183,7 @@
             1
           ],
           "details": "Review all bin/ scripts to identify patterns, duplicate code, and common operations. Document shared functionality like argument parsing, logging, error handling, configuration loading, and API interactions. Create a design for a common utilities module that can be reused across all scripts.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -194,7 +194,7 @@
             2
           ],
           "details": "Develop a shared library that implements the common functionality identified in subtask 2 using the CLI framework selected in subtask 1. Include standardized argument parsing, error handling, logging, and other shared operations. Create unit tests for the library to ensure reliability.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -204,7 +204,7 @@
             3
           ],
           "details": "Systematically refactor each bin/ script to use the new common library while maintaining existing functionality. Ensure consistent argument handling, help text, and error reporting across all scripts. Add appropriate type hints and docstrings. Implement unit tests for each refactored script.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -214,7 +214,7 @@
             4
           ],
           "details": "Update user documentation to reflect any changes in script usage. Create regression tests to verify that refactored scripts maintain backward compatibility with existing workflows. Test edge cases and error conditions. Collect feedback from team members who regularly use these scripts to ensure no functionality was lost.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -288,7 +288,7 @@
       "id": 6,
       "title": "Enable Disabled Tests and Resolve Failures",
       "description": "Identify and fix disabled tests, ensuring CI passes",
-      "status": "in-progress",
+      "status": "done",
       "priority": "high",
       "type": "bug",
       "created_at": "2025-05-28T09:00:00Z",
@@ -332,7 +332,7 @@
             3
           ],
           "details": "Submit pull requests with test fixes to trigger CI pipeline. Monitor test runs in the CI environment to verify fixes. Address any environment-specific issues that appear only in CI. Run multiple CI builds to check for consistency and eliminate flakiness. Document any remaining issues that couldn't be resolved. Update the test inventory with the status of each fixed test.",
-          "status": "in-progress"
+          "status": "done"
         }
       ]
     },
@@ -353,7 +353,7 @@
       "id": 8,
       "title": "Add Unit and Integration Tests for Bounce Handling Logic",
       "description": "Simulate bounce scenarios and verify system responses",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "test",
       "created_at": "2025-05-28T09:00:00Z",
@@ -367,7 +367,7 @@
           "description": "Create comprehensive unit tests for the bounce handling functionality",
           "dependencies": [],
           "details": "Implement unit tests that cover the core bounce handling logic, including test cases for different bounce scenarios, edge cases, and error conditions. Ensure tests are isolated and don't depend on external services. Include mocking of dependencies and verification of expected behaviors.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -377,7 +377,7 @@
             1
           ],
           "details": "Develop a mechanism to simulate incoming webhook notifications from email service providers (ESP). This should include the ability to generate properly formatted webhook payloads with various bounce information. The simulation should be configurable to test different ESP formats and response scenarios.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -388,7 +388,7 @@
             2
           ],
           "details": "Test how the system handles different bounce categories (hard bounces, soft bounces, complaints, etc.). Verify that each type is properly identified, logged, and processed according to business rules. Include tests for unusual or malformed bounce notifications.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -398,7 +398,7 @@
             3
           ],
           "details": "Validate that the system correctly tracks bounce rates and applies appropriate thresholds. Test scenarios where bounce rates approach and exceed configured thresholds, and verify that the correct actions are triggered (notifications, sending pauses, etc.). Include tests for threshold resets and recovery scenarios.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -406,7 +406,7 @@
       "id": 9,
       "title": "Improve Error Propagation and Partial Failure Handling",
       "description": "Ensure failures are logged without breaking the batch process",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "improvement",
       "created_at": "2025-05-28T09:00:00Z",
@@ -420,7 +420,7 @@
           "description": "Create a standardized error propagation mechanism across the pipeline",
           "dependencies": [],
           "details": "Design and implement a consistent error type hierarchy that can carry contextual information. Define error interfaces that allow errors to propagate through pipeline stages while maintaining their original context. Include error categorization (e.g., transient vs. permanent, user error vs. system error).",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -430,7 +430,7 @@
             1
           ],
           "details": "Create mechanisms to isolate failures to specific pipeline segments. Implement fallback strategies for non-critical failures. Design data structures to track which parts of a job succeeded and which failed. Ensure downstream stages can operate with partial data when appropriate.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -440,7 +440,7 @@
             1
           ],
           "details": "Implement structured logging for errors with consistent fields. Add context-aware logging that captures the state at the time of failure. Create log correlation IDs to track errors across distributed components. Ensure logs include actionable information for troubleshooting.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -450,7 +450,7 @@
             3
           ],
           "details": "Build an error aggregation mechanism to collect errors across pipeline runs. Implement error categorization and frequency analysis. Create dashboards or reports to visualize error patterns. Design alerting thresholds for different error categories.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -461,7 +461,7 @@
             2
           ],
           "details": "Design configurable retry policies with exponential backoff. Implement circuit breakers to prevent cascading failures during retry attempts. Create mechanisms to identify which errors are retryable. Add monitoring for retry attempts and success rates.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

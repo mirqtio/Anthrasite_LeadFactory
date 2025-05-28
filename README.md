@@ -172,9 +172,40 @@ See `.env.example` for the complete list of configuration options.
 
 ## Usage
 
-### Running Individual Pipeline Stages
+### Modern CLI Interface (Recommended)
 
-Each pipeline stage can be run independently:
+The project now includes a modern CLI interface that replaces the legacy bin/ scripts:
+
+```bash
+# Get help for all commands
+python3 -m leadfactory.cli.main --help
+
+# Pipeline operations
+python3 -m leadfactory.cli.main pipeline scrape --limit 5
+python3 -m leadfactory.cli.main pipeline enrich --limit 10
+python3 -m leadfactory.cli.main pipeline dedupe --limit 100
+python3 -m leadfactory.cli.main pipeline email --limit 5
+
+# Administrative operations
+python3 -m leadfactory.cli.main admin setup-db
+python3 -m leadfactory.cli.main admin migrate
+python3 -m leadfactory.cli.main admin backup
+
+# Development operations
+python3 -m leadfactory.cli.main dev test
+python3 -m leadfactory.cli.main dev lint
+python3 -m leadfactory.cli.main dev format
+
+# Global options
+python3 -m leadfactory.cli.main --verbose pipeline scrape --limit 5
+python3 -m leadfactory.cli.main --dry-run pipeline email --limit 10
+```
+
+For detailed migration information, see [CLI Migration Guide](docs/cli-migration-guide.md).
+
+### Legacy Scripts (Deprecated)
+
+The legacy bin/ scripts are still available but deprecated:
 
 ```bash
 # Scrape leads (limit to 5 for testing)
@@ -612,4 +643,4 @@ The pipeline includes cost tracking for all API calls and operations. A budget a
 
 ## License
 
-Proprietary - Anthrasite, Inc. © 2025
+Proprietary - Anthrasite, Inc. 2025
