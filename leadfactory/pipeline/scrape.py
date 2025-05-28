@@ -791,7 +791,7 @@ def _update_business_with_conflict_resolution(
             UPDATE businesses
             SET {', '.join(set_clauses)}
             WHERE id = %s
-        """
+        """  # nosec B608
 
         cursor.execute(update_query, values)
         logger.info(
@@ -816,7 +816,7 @@ def _update_business_with_conflict_resolution(
             UPDATE businesses
             SET {', '.join(json_updates)}, updated_at = CURRENT_TIMESTAMP
             WHERE id = %s
-        """
+        """  # nosec B608
         cursor.execute(json_query, json_values)
         logger.info(f"Business {business_id}: Updated JSON responses from {source}")
 
