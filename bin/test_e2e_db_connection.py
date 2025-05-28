@@ -82,7 +82,7 @@ def test_connection():
 
         # Check table counts
         for table in required_tables:
-            cursor.execute(f"SELECT COUNT(*) FROM {table}")
+            cursor.execute(f"SELECT COUNT(*) FROM {table}")  # nosec B608
             count = cursor.fetchone()[0]
             logger.info(f"Table {table}: {count} rows")
 
