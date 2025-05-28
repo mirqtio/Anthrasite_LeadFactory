@@ -262,3 +262,380 @@ def validate_schema() -> bool:
     except Exception as e:
         logger.error(f"Schema validation error: {e}")
         return False
+
+
+# ===== DEDUPLICATION FUNCTIONS =====
+
+
+def get_potential_duplicate_pairs(limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    """
+    Get potential duplicate business pairs from the database.
+
+    Args:
+        limit: Maximum number of pairs to return
+
+    Returns:
+        List of potential duplicate pairs
+    """
+    query = """
+    WITH business_pairs AS (
+        SELECT
+            b1.id AS business1_id,
+            b2.id AS business2_id,
+            b1.name AS business1_name,
+            b2.name AS business2_name,
+            b1.phone AS business1_phone,
+            b2.phone AS business2_phone,
+            b1.email AS business1_email,
+            b2.email AS business2_email,
+            b1.website AS business1_website,
+            b2.website AS business2_website,
+            b1.address AS business1_address,
+            b2.address AS business2_address,
+            b1.city AS business1_city,
+            b2.city AS business2_city,
+            b1.state AS business1_state,
+            b2.state AS business2_state,
+            b1.zip AS business1_zip,
+            b2.zip AS business2_zip,
+            -- Calculate similarity score
+            GREATEST(
+                CASE WHEN b1.phone IS NOT NULL AND b1.phone = b2.phone THEN 1.0 ELSE 0 END,
+                CASE WHEN b1.email IS NOT NULL AND b1.email = b2.email THEN 1.0 ELSE 0 END,
+                CASE WHEN b1.website IS NOT NULL AND b1.website = b2.website THEN 0.9 ELSE 0 END,
+                CASE WHEN b1.name IS NOT NULL AND b2.name IS NOT NULL
+                     AND levenshtein(LOWER(b1.name), LOWER(b2.name)) / GREATEST(LENGTH(b1.name), LENGTH(b2.name))::float < 0.3
+                     THEN 0.8 ELSE 0 END
+            ) AS similarity_score
+        FROM businesses b1
+        INNER JOIN businesses b2 ON b1.id < b2.id
+        WHERE
+            -- Not already processed
+            NOT EXISTS (
+                SELECT 1 FROM dedupe_log dl
+                WHERE (dl.primary_id = b1.id AND dl.secondary_id = b2.id)
+                   OR (dl.primary_id = b2.id AND dl.secondary_id = b1.id)
+            )
+            -- Not in review queue
+            AND NOT EXISTS (
+                SELECT 1 FROM review_queue rq
+                WHERE (rq.business1_id = b1.id AND rq.business2_id = b2.id)
+                   OR (rq.business1_id = b2.id AND rq.business2_id = b1.id)
+            )
+            -- At least one matching criteria
+            AND (
+                (b1.phone IS NOT NULL AND b1.phone = b2.phone)
+                OR (b1.email IS NOT NULL AND b1.email = b2.email)
+                OR (b1.website IS NOT NULL AND b1.website = b2.website)
+                OR (b1.name IS NOT NULL AND b2.name IS NOT NULL
+                    AND levenshtein(LOWER(b1.name), LOWER(b2.name)) / GREATEST(LENGTH(b1.name), LENGTH(b2.name))::float < 0.3)
+            )
+    )
+    SELECT * FROM business_pairs
+    WHERE similarity_score > 0.5
+    ORDER BY similarity_score DESC
+    """
+
+    if limit:
+        query += f" LIMIT {limit}"
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute(query)
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    except Exception as e:
+        logger.error(f"Error getting potential duplicates: {e}")
+        return []
+
+
+def get_business_details(business_id: int) -> Optional[Dict[str, Any]]:
+    """
+    Get detailed business information including JSON responses.
+
+    Args:
+        business_id: ID of the business
+
+    Returns:
+        Business details or None if not found
+    """
+    query = """
+    SELECT
+        id, name, phone, email, website, address, city, state, zip,
+        category, vertical_id, source, created_at, updated_at,
+        google_response, yelp_response, manual_response
+    FROM businesses
+    WHERE id = %s
+    """
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute(query, (business_id,))
+            row = cursor.fetchone()
+            if row:
+                columns = [desc[0] for desc in cursor.description]
+                return dict(zip(columns, row))
+            return None
+    except Exception as e:
+        logger.error(f"Error getting business details: {e}")
+        return None
+
+
+def merge_business_records(primary_id: int, secondary_id: int) -> bool:
+    """
+    Merge two business records in the database.
+
+    Args:
+        primary_id: ID of the business to keep
+        secondary_id: ID of the business to merge and delete
+
+    Returns:
+        True if successful, False otherwise
+    """
+    merge_queries = [
+        # Update emails to point to primary business
+        "UPDATE emails SET business_id = %s WHERE business_id = %s",
+        # Update assets to point to primary business
+        "UPDATE assets SET business_id = %s WHERE business_id = %s",
+        # Log the merge operation
+        "INSERT INTO dedupe_log (primary_id, secondary_id) VALUES (%s, %s)",
+        # Delete the secondary business
+        "DELETE FROM businesses WHERE id = %s",
+    ]
+
+    try:
+        with db_transaction() as conn:
+            cursor = conn.cursor()
+
+            # Execute merge operations
+            cursor.execute(merge_queries[0], (primary_id, secondary_id))
+            cursor.execute(merge_queries[1], (primary_id, secondary_id))
+            cursor.execute(merge_queries[2], (primary_id, secondary_id))
+            cursor.execute(merge_queries[3], (secondary_id,))
+
+            logger.info(
+                f"Successfully merged business {secondary_id} into {primary_id}"
+            )
+            return True
+
+    except Exception as e:
+        logger.error(f"Error merging businesses: {e}")
+        return False
+
+
+def update_business_fields(business_id: int, updates: Dict[str, Any]) -> bool:
+    """
+    Update specific fields of a business record.
+
+    Args:
+        business_id: ID of the business to update
+        updates: Dictionary of field names and values to update
+
+    Returns:
+        True if successful, False otherwise
+    """
+    if not updates:
+        return True
+
+    # Build UPDATE query dynamically
+    set_clauses = []
+    values = []
+
+    for field, value in updates.items():
+        set_clauses.append(f"{field} = %s")
+        values.append(value)
+
+    values.append(business_id)
+
+    query = f"""
+    UPDATE businesses
+    SET {', '.join(set_clauses)}, updated_at = NOW()
+    WHERE id = %s
+    """
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute(query, values)
+            return cursor.rowcount > 0
+    except Exception as e:
+        logger.error(f"Error updating business fields: {e}")
+        return False
+
+
+def add_to_review_queue(
+    business1_id: int,
+    business2_id: int,
+    reason: str,
+    similarity_score: float = None,
+    details: str = None,
+) -> int:
+    """
+    Add a potential duplicate pair to the manual review queue.
+
+    Args:
+        business1_id: First business ID
+        business2_id: Second business ID
+        reason: Reason for manual review
+        similarity_score: Calculated similarity score (optional)
+        details: Additional details in JSON format (optional)
+
+    Returns:
+        Review queue ID if successful, None otherwise
+    """
+    query = """
+    INSERT INTO dedupe_review_queue (business1_id, business2_id, reason, similarity_score, details, status, created_at)
+    VALUES (%s, %s, %s, %s, %s, 'pending', NOW())
+    RETURNING id
+    """
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute(
+                query, (business1_id, business2_id, reason, similarity_score, details)
+            )
+            result = cursor.fetchone()
+            return result[0] if result else None
+    except Exception as e:
+        logger.error(f"Error adding to review queue: {e}")
+        return None
+
+
+def get_review_queue_items(
+    status: str = None, limit: int = 100
+) -> List[Dict[str, Any]]:
+    """
+    Get items from the review queue.
+
+    Args:
+        status: Filter by status (pending, resolved, deferred)
+        limit: Maximum number of items to return
+
+    Returns:
+        List of review queue items
+    """
+    query = """
+    SELECT id, business1_id, business2_id, reason, similarity_score,
+           details, status, created_at, updated_at
+    FROM dedupe_review_queue
+    """
+
+    params = []
+    if status:
+        query += " WHERE status = %s"
+        params.append(status)
+
+    query += " ORDER BY created_at DESC LIMIT %s"
+    params.append(limit)
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute(query, params)
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    except Exception as e:
+        logger.error(f"Error getting review queue items: {e}")
+        return []
+
+
+def update_review_status(review_id: int, status: str, resolution: str = None) -> bool:
+    """
+    Update the status of a review queue item.
+
+    Args:
+        review_id: ID of the review item
+        status: New status (resolved, deferred, etc.)
+        resolution: Resolution details in JSON format
+
+    Returns:
+        True if successful, False otherwise
+    """
+    query = """
+    UPDATE dedupe_review_queue
+    SET status = %s, resolution = %s, updated_at = NOW()
+    WHERE id = %s
+    """
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute(query, (status, resolution, review_id))
+            return cursor.rowcount > 0
+    except Exception as e:
+        logger.error(f"Error updating review status: {e}")
+        return False
+
+
+def check_dedupe_tables_exist() -> bool:
+    """
+    Check if dedupe-related tables exist in the database.
+
+    Returns:
+        True if all tables exist, False otherwise
+    """
+    required_tables = ["dedupe_log", "dedupe_review_queue"]
+
+    try:
+        with db_cursor() as cursor:
+            for table in required_tables:
+                cursor.execute(
+                    "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name=%s);",
+                    (table,),
+                )
+                if not cursor.fetchone()[0]:
+                    logger.warning(f"Dedupe table missing: {table}")
+                    return False
+        return True
+    except Exception as e:
+        logger.error(f"Error checking dedupe tables: {e}")
+        return False
+
+
+def create_dedupe_tables() -> bool:
+    """
+    Create dedupe-related tables if they don't exist.
+
+    Returns:
+        True if successful, False otherwise
+    """
+    create_statements = [
+        """
+        CREATE TABLE IF NOT EXISTS dedupe_log (
+            id SERIAL PRIMARY KEY,
+            primary_id INTEGER NOT NULL REFERENCES businesses(id),
+            secondary_id INTEGER NOT NULL,
+            merge_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS dedupe_review_queue (
+            id SERIAL PRIMARY KEY,
+            business1_id INTEGER NOT NULL REFERENCES businesses(id),
+            business2_id INTEGER NOT NULL REFERENCES businesses(id),
+            reason TEXT NOT NULL,
+            similarity_score FLOAT,
+            details TEXT,
+            status VARCHAR(50) NOT NULL DEFAULT 'pending',
+            resolution TEXT,
+            reviewed_by VARCHAR(255),
+            reviewed_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_dedupe_log_primary_id ON dedupe_log(primary_id)",
+        "CREATE INDEX IF NOT EXISTS idx_dedupe_log_secondary_id ON dedupe_log(secondary_id)",
+        "CREATE INDEX IF NOT EXISTS idx_dedupe_review_queue_business1 ON dedupe_review_queue(business1_id)",
+        "CREATE INDEX IF NOT EXISTS idx_dedupe_review_queue_business2 ON dedupe_review_queue(business2_id)",
+        "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch",
+    ]
+
+    try:
+        with db_transaction() as conn:
+            cursor = conn.cursor()
+            for statement in create_statements:
+                cursor.execute(statement)
+            logger.info("Successfully created dedupe tables")
+            return True
+    except Exception as e:
+        logger.error(f"Error creating dedupe tables: {e}")
+        return False

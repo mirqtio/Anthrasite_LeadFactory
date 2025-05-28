@@ -67,7 +67,7 @@ EmailDBConnection: Any = None
 
 # Try to import the real database connection class
 try:
-    from utils.io import DatabaseConnection
+    from leadfactory.utils.e2e_db_connector import db_connection as DatabaseConnection
 
     EmailDBConnection = DatabaseConnection  # Use the real one if available
 except ImportError:

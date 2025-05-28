@@ -6,6 +6,9 @@ import json
 import sqlite3
 from datetime import datetime
 
+# Import the unified connector for backward compatibility
+from leadfactory.utils.e2e_db_connector import db_connection as DatabaseConnection
+
 
 # Mock implementation for testing
 def read_file(path):
@@ -52,12 +55,14 @@ def track_api_cost(db_conn, api_name, endpoint, cost, model=None, purpose=None):
     cursor = db_conn.execute(
         """
     INSERT INTO api_costs (api_name, endpoint, cost, timestamp, model, purpose)
-    VALUES (?, ?, ?, datetime('now'), ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?)
     """,
-        (api_name, endpoint, cost, model, purpose),
+        (api_name, endpoint, cost, datetime.now().isoformat(), model, purpose),
     )
 
     db_conn.commit()
-
-    # Return the ID of the inserted record
     return cursor.lastrowid
+
+
+# Re-export for backward compatibility
+__all__ = ["DatabaseConnection", "read_file", "write_file", "track_api_cost"]

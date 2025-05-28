@@ -137,6 +137,9 @@ def get_config() -> Dict[str, Any]:
 # Import all settings after defining the helper functions
 from leadfactory.config.settings import *
 
+# Import dedupe_config module
+from . import dedupe_config
+
 # List of exported symbols
 __all__ = [
     "load_config",
@@ -145,6 +148,7 @@ __all__ = [
     "get_boolean_env",
     "get_int_env",
     "get_float_env",
+    "dedupe_config",
     # Settings will be added dynamically below
 ]
 

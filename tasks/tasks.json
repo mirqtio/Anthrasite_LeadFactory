@@ -4,7 +4,7 @@
       "id": 1,
       "title": "Implement Scoring Rule Evaluation Engine",
       "description": "Full implementation of YAML-driven scoring, including tests and CI verification",
-      "status": "in-progress",
+      "status": "done",
       "priority": "high",
       "type": "feature",
       "created_at": "2025-05-28T09:00:00Z",
@@ -60,7 +60,7 @@
             4
           ],
           "details": "Configure CI pipeline to run tests automatically on code changes. Create user documentation explaining the YAML configuration format, available rule types, and scoring dimension setup. Write developer documentation covering the architecture, extension points, and contribution guidelines. Include examples of common use cases and configuration patterns. Add performance guidelines and optimization tips.",
-          "status": "in-progress"
+          "status": "done"
         }
       ]
     },
@@ -81,7 +81,7 @@
       "id": 3,
       "title": "Finalize Dedupe Integration with Unified Postgres Connector",
       "description": "Remove legacy references and ensure proper duplicate handling",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "feature",
       "created_at": "2025-05-28T09:00:00Z",
@@ -95,7 +95,7 @@
           "description": "Identify and remove outdated deduplication code from the codebase",
           "dependencies": [],
           "details": "Analyze the existing codebase to identify all legacy deduplication functions, methods, and modules. Create a comprehensive inventory of code to be removed. Ensure proper documentation of removed functionality. Verify that removal doesn't break existing dependencies. Update relevant documentation to reflect changes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -105,7 +105,7 @@
             1
           ],
           "details": "Extend the existing Postgres connector to support deduplication operations. Implement database queries and functions for identifying duplicate records. Create interfaces for deduplication operations that align with connector architecture. Add configuration options for deduplication settings. Write unit tests to verify connector integration.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -115,7 +115,7 @@
             2
           ],
           "details": "Design conflict resolution strategies for different data scenarios. Implement rule-based resolution for automatic conflict handling. Create user interfaces for manual conflict resolution when needed. Develop transaction management to ensure data integrity during resolution. Test with various conflict scenarios to ensure robustness.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -126,7 +126,7 @@
             3
           ],
           "details": "Create backup mechanisms before deduplication operations. Implement transaction rollback capabilities for failed operations. Design audit trails for tracking all deduplication actions. Develop recovery procedures for restoring data if needed. Test data preservation under various failure scenarios.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -138,7 +138,7 @@
             4
           ],
           "details": "Extend logging framework to capture detailed deduplication events. Implement structured logging for deduplication operations. Create log analysis tools for monitoring deduplication performance. Add configurable verbosity levels for different environments. Ensure logs contain sufficient information for troubleshooting.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -151,7 +151,7 @@
             5
           ],
           "details": "Profile deduplication operations to identify performance bottlenecks. Implement batch processing for handling large datasets efficiently. Optimize database queries with proper indexing strategies. Add caching mechanisms to improve repeated operations. Develop performance testing suite to validate optimizations with large datasets.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -222,7 +222,7 @@
       "id": 5,
       "title": "Refactor PipelineValidator to Check Actual Stages",
       "description": "Update validation logic and add tests",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "refactor",
       "created_at": "2025-05-28T09:00:00Z",
@@ -236,7 +236,7 @@
           "description": "Analyze and document the specific validation requirements for each pipeline stage",
           "dependencies": [],
           "details": "Identify all pipeline stages and their specific validation needs. Document required resources, permissions, and dependencies for each stage. Create a comprehensive mapping between stages and their validation requirements. Include edge cases and special conditions that need validation.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -246,7 +246,7 @@
             1
           ],
           "details": "Develop validation logic for API keys, database connections, file permissions, and other resource types. Create modular validation functions that can be composed for different stages. Implement parameter validation for each rule type. Ensure validation rules are extensible for future requirements.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -257,7 +257,7 @@
             2
           ],
           "details": "Implement logic to verify that prerequisites for each stage are met. Create a dependency graph representation for validation sequencing. Add checks for circular dependencies. Develop a mechanism to validate cross-stage resource availability.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -268,7 +268,7 @@
             3
           ],
           "details": "Design a structured error format with error codes, messages, and remediation steps. Implement context-aware error messages that reference specific validation failures. Add severity levels to validation errors. Create a logging system for validation errors that facilitates debugging.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -280,7 +280,7 @@
             4
           ],
           "details": "Develop unit tests for individual validation rules. Create integration tests for the complete validation process. Implement test cases for edge cases and error conditions. Add performance tests to ensure validation efficiency. Create documentation for test scenarios and expected outcomes.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -288,7 +288,7 @@
       "id": 6,
       "title": "Enable Disabled Tests and Resolve Failures",
       "description": "Identify and fix disabled tests, ensuring CI passes",
-      "status": "pending",
+      "status": "in-progress",
       "priority": "high",
       "type": "bug",
       "created_at": "2025-05-28T09:00:00Z",
@@ -302,7 +302,7 @@
           "description": "Create a comprehensive inventory of all failing tests across the codebase",
           "dependencies": [],
           "details": "Identify all failing tests in the codebase. Document each test's location, purpose, and current failure pattern. Categorize tests by component or functionality. Create a spreadsheet or tracking document with test names, file locations, and failure frequency. Prioritize tests based on importance and impact on the CI pipeline.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -312,7 +312,7 @@
             1
           ],
           "details": "For each failing test, reproduce the failure locally. Use debugging tools to identify the exact point of failure. Determine if failures are due to code bugs, environment issues, race conditions, or test implementation problems. Group tests by common failure patterns. Document findings for each test including stack traces, error messages, and potential causes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -322,7 +322,7 @@
             2
           ],
           "details": "Address each failing test based on the root cause analysis. Update test code for implementation issues. Fix application code for actual bugs. Refactor flaky tests to make them more reliable. Add better error handling and logging to tests. Ensure tests run consistently in local environment before committing changes. Create separate branches for different categories of fixes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -332,7 +332,7 @@
             3
           ],
           "details": "Submit pull requests with test fixes to trigger CI pipeline. Monitor test runs in the CI environment to verify fixes. Address any environment-specific issues that appear only in CI. Run multiple CI builds to check for consistency and eliminate flakiness. Document any remaining issues that couldn't be resolved. Update the test inventory with the status of each fixed test.",
-          "status": "pending"
+          "status": "in-progress"
         }
       ]
     },

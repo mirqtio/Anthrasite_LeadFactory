@@ -10,6 +10,9 @@ import os
 import time
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union, cast
+import json
+from datetime import datetime
+from pathlib import Path
 
 # Type variables for decorator return typing
 F = TypeVar('F', bound=Callable[..., Any])
@@ -185,32 +188,67 @@ class APITestConfig:
 
     @classmethod
     def save_config(cls, filepath: Optional[str] = None) -> str:
-        """Save the current configuration to a JSON file.
-
-        Args:
-            filepath: Path to save the configuration (default: metrics/config_YYYYMMDD.json)
-
-        Returns:
-            Path to the saved configuration file
-        """
+        """Save the current configuration to a JSON file."""
         config = cls.get_config()
-
         if filepath is None:
-            metrics_dir = Path(cls.metrics_directory())
-            metrics_dir.mkdir(parents=True, exist_ok=True)
-
-            # Use current date in filename
-            import datetime
-            date_str = datetime.datetime.now().strftime('%Y%m%d')
-            filepath = metrics_dir / f"api_test_config_{date_str}.json"
-
-        # Ensure directory exists
-        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filepath = f"api_test_config_{timestamp}.json"
 
         with open(filepath, 'w') as f:
-            json.dump(config, f, indent=2)
+            json.dump(config, f, indent=2, default=str)
 
-        return str(filepath)
+        return filepath
+
+    @staticmethod
+    def get_api_keys() -> Dict[str, Optional[str]]:
+        """
+        Get API keys from environment variables.
+
+        Returns:
+            Dict[str, Optional[str]]: Dictionary of API keys
+        """
+        return {
+            "yelp": os.environ.get("YELP_API_KEY"),
+            "google": os.environ.get("GOOGLE_API_KEY"),
+            "openai": os.environ.get("OPENAI_API_KEY"),
+            "sendgrid": os.environ.get("SENDGRID_API_KEY"),
+            "screenshotone": os.environ.get("SCREENSHOTONE_API_KEY"),
+            "anthropic": os.environ.get("ANTHROPIC_API_KEY"),
+        }
+
+    @staticmethod
+    def check_api_key(api_name: str) -> bool:
+        """
+        Check if a specific API key is available in the environment.
+
+        Args:
+            api_name: The name of the API to check
+
+        Returns:
+            bool: True if the API key is available
+        """
+        api_keys = APITestConfig.get_api_keys()
+        return bool(api_keys.get(api_name.lower()))
+
+    @staticmethod
+    def should_use_real_api(api_name: str) -> bool:
+        """
+        Determine if a specific API should use real calls based on:
+        1. Global setting for using real APIs
+        2. Specific API being enabled for testing
+        3. API key being available
+
+        Args:
+            api_name: The name of the API to check
+
+        Returns:
+            bool: True if real API calls should be used
+        """
+        return (
+            use_real_apis() and
+            should_test_api(api_name) and
+            APITestConfig.check_api_key(api_name)
+        )
 
 
 # Helper functions for backward compatibility
@@ -289,58 +327,3 @@ def api_call_metrics(api_name: str, endpoint: str = "default") -> Callable[[F], 
             return result
         return cast(F, wrapper)
     return decorator
-
-
-class APITestConfig:
-    """Configuration class for API tests with helpers for real/mock decisions."""
-
-    @staticmethod
-    def get_api_keys() -> Dict[str, Optional[str]]:
-        """
-        Get API keys from environment variables.
-
-        Returns:
-            Dict[str, Optional[str]]: Dictionary of API keys
-        """
-        return {
-            "yelp": os.environ.get("YELP_API_KEY"),
-            "google": os.environ.get("GOOGLE_API_KEY"),
-            "openai": os.environ.get("OPENAI_API_KEY"),
-            "sendgrid": os.environ.get("SENDGRID_API_KEY"),
-            "screenshotone": os.environ.get("SCREENSHOTONE_API_KEY"),
-            "anthropic": os.environ.get("ANTHROPIC_API_KEY"),
-        }
-
-    @staticmethod
-    def check_api_key(api_name: str) -> bool:
-        """
-        Check if a specific API key is available in the environment.
-
-        Args:
-            api_name: The name of the API to check
-
-        Returns:
-            bool: True if the API key is available
-        """
-        api_keys = APITestConfig.get_api_keys()
-        return bool(api_keys.get(api_name.lower()))
-
-    @staticmethod
-    def should_use_real_api(api_name: str) -> bool:
-        """
-        Determine if a specific API should use real calls based on:
-        1. Global setting for using real APIs
-        2. Specific API being enabled for testing
-        3. API key being available
-
-        Args:
-            api_name: The name of the API to check
-
-        Returns:
-            bool: True if real API calls should be used
-        """
-        return (
-            use_real_apis() and
-            should_test_api(api_name) and
-            APITestConfig.check_api_key(api_name)
-        )

@@ -11,14 +11,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Add the project root to the Python path
-project_root = str(Path(__file__).parent.parent)
-sys.path.insert(0, project_root)
-# Add the bin directory to the Python path
-bin_dir = os.path.join(project_root, "bin")
-if bin_dir not in sys.path:
-    sys.path.insert(0, bin_dir)
-
 
 # Create a MagicMock object instead of a regular function
 mock_track_api_cost = MagicMock(return_value=True)
@@ -65,7 +57,6 @@ if 'leadfactory.utils.io' not in sys.modules:
 sys.modules['leadfactory.utils.io'].track_api_cost = mock_track_api_cost
 
 # Try importing using relative imports for the CI environment
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     from leadfactory import utils  # noqa: E402
     # Apply the mock to the imported module
@@ -163,7 +154,7 @@ def run_mockup_generation(
         # Patch the DatabaseConnection to use our test connection
         with (
             patch("bin.mockup.DatabaseConnection") as mock_db_conn,
-            patch("utils.io.DatabaseConnection") as io_db_conn,
+            patch("leadfactory.utils.e2e_db_connector.db_connection") as io_db_conn,
         ):
             # Configure the mocks to use our in-memory cursor
             mock_db_conn.return_value.__enter__.return_value = cursor
@@ -181,6 +172,4 @@ def run_mockup_generation(
             return result, conn, cursor
     except Exception as e:
         conn.rollback()
-        cursor.close()
-        conn.close()
         raise e

@@ -16,14 +16,14 @@ from urllib.parse import urlparse
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Import database utilities
-from utils.io import DatabaseConnection
-
+# Import database utilities using unified connector
 # Import logging configuration
 from utils.logging_config import get_logger
 
 # Import raw data retention utilities
 from utils.raw_data_retention import fetch_website_html, store_html
+
+from leadfactory.utils.e2e_db_connector import db_connection as DatabaseConnection
 
 # Set up logging
 logger = get_logger(__name__)

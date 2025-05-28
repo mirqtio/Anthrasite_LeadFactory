@@ -442,7 +442,7 @@ def setup_environment(monkeypatch):
     with (
         patch("utils.io.save_business") as mock_save_business,
         patch("utils.io.mark_zip_done") as mock_mark_zip_done,
-        patch("utils.io.DatabaseConnection") as mock_db_connection,
+        patch("leadfactory.utils.e2e_db_connector.db_connection") as mock_db_connection,
         patch("utils.io.get_active_zip_codes") as mock_get_active_zips,
         patch("utils.io.get_verticals") as mock_get_verticals,
     ):

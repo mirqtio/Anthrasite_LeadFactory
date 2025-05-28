@@ -1,0 +1,131 @@
+# Deduplication Logging Configuration
+# This file configures the enhanced logging system for deduplication operations
+
+logging:
+  # Log level for dedupe operations (DEBUG, INFO, WARNING, ERROR)
+  level: INFO
+
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  # Enable structured logging (JSON format)
+  structured: true
+
+  # Log file settings
+  file:
+    enabled: true
+    path: "logs/dedupe.log"
+    max_size_mb: 100
+    backup_count: 5
+
+  # Console logging
+  console:
+    enabled: true
+    colored: true
+
+  # Performance logging
+  performance:
+    enabled: true
+    # Log operations that take longer than this threshold (seconds)
+    slow_operation_threshold: 5.0
+    # Include memory usage in performance logs
+    include_memory_usage: true
+
+  # Batch progress logging
+  batch_progress:
+    enabled: true
+    # Log progress every N records
+    interval: 10
+    # Include rate calculations
+    include_rate: true
+
+  # Conflict logging
+  conflicts:
+    enabled: true
+    # Log all field conflicts
+    log_all_fields: true
+    # Include conflict resolution details
+    include_resolution: true
+
+  # Error logging
+  errors:
+    enabled: true
+    # Include stack traces
+    include_stack_trace: true
+    # Log error context (surrounding operations)
+    include_context: true
+
+# Metrics collection
+metrics:
+  enabled: true
+
+  # Metrics to collect
+  collect:
+    - merge_count
+    - merge_success_rate
+    - conflict_count
+    - operation_duration
+    - duplicate_detection_rate
+    - error_rate
+
+  # Export settings
+  export:
+    # Export metrics to file
+    file:
+      enabled: true
+      path: "metrics/dedupe_metrics.json"
+      interval_seconds: 300  # Export every 5 minutes
+
+    # Export to monitoring system (future enhancement)
+    monitoring:
+      enabled: false
+      endpoint: null
+
+# Log analysis settings
+analysis:
+  # Enable automatic log analysis
+  auto_analyze: true
+
+  # Analysis frequency (daily, hourly, after_batch)
+  frequency: "after_batch"
+
+  # Generate reports
+  reports:
+    enabled: true
+    output_dir: "reports/dedupe"
+    formats: ["json", "html", "text"]
+
+  # Alerts
+  alerts:
+    enabled: true
+    # Alert thresholds
+    thresholds:
+      error_rate: 0.1  # Alert if error rate > 10%
+      merge_failure_rate: 0.2  # Alert if merge failure rate > 20%
+      slow_operation_count: 10  # Alert if > 10 slow operations
+
+# Log retention
+retention:
+  # Keep logs for this many days
+  days: 30
+
+  # Archive old logs
+  archive:
+    enabled: true
+    path: "archive/dedupe_logs"
+    compress: true
+
+# Debug settings
+debug:
+  # Enable debug mode (verbose logging)
+  enabled: false
+
+  # Log SQL queries
+  log_sql: false
+
+  # Log API calls
+  log_api_calls: false
+
+  # Save intermediate states
+  save_states: false
+  state_dir: "debug/dedupe_states"

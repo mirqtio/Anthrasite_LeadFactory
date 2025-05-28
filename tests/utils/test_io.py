@@ -79,7 +79,7 @@ def test_database_connection_with_existing_db(temp_db_path):
 
 def test_track_api_cost():
     """Test tracking API costs."""
-    with patch("utils.io.DatabaseConnection") as mock_db_class:
+    with patch("leadfactory.utils.e2e_db_connector.db_connection") as mock_db_class:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_db_class.return_value.__enter__.return_value = mock_conn

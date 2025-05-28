@@ -94,7 +94,7 @@ def mock_db():
     conn.commit()
 
     # Mock DatabaseConnection to use in-memory database
-    with patch("utils.io.DatabaseConnection") as mock:
+    with patch("leadfactory.utils.e2e_db_connector.db_connection") as mock:
         db_mock = MagicMock()
         db_mock.__enter__.return_value = cursor
         mock.return_value = db_mock

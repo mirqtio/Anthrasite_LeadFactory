@@ -5,17 +5,10 @@ This package contains utility modules used throughout the LeadFactory applicatio
 including I/O operations, configuration management, logging, and metrics.
 """
 
-# These imports will be uncommented as modules are migrated
-# from leadfactory.utils import batch_metrics
-# from leadfactory.utils import batch_tracker
-# from leadfactory.utils import logging_config
-# from leadfactory.utils import metrics
-# from leadfactory.utils import website_scraper
+# Import available utility modules
+from . import e2e_db_connector, metrics
 
 __all__ = [
-    # 'batch_metrics',
-    # 'batch_tracker',
-    # 'logging_config',
-    # 'metrics',
-    # 'website_scraper',
+    "e2e_db_connector",
+    "metrics",
 ]

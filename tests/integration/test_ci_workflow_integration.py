@@ -3,6 +3,7 @@ import unittest
 import tempfile
 import json
 import subprocess
+import os
 from unittest import mock
 import yaml
 
@@ -32,11 +33,13 @@ class TestCIWorkflowIntegration(unittest.TestCase):
             workflow = yaml.safe_load(f)
 
         # Check for required workflow structure
-        self.assertIn('on', workflow, "Workflow missing 'on' section")
+        # Handle YAML quirk where 'on' is parsed as boolean True
+        has_on_section = 'on' in workflow or True in workflow
+        self.assertTrue(has_on_section, "Workflow missing 'on' section")
         self.assertIn('jobs', workflow, "Workflow missing 'jobs' section")
 
         # Verify workflow triggers
-        triggers = workflow.get('on', {})
+        triggers = workflow.get('on') or workflow.get(True, {})
         self.assertIn('workflow_dispatch', triggers,
                      "Workflow should support manual triggering via workflow_dispatch")
         self.assertIn('schedule', triggers,
@@ -113,7 +116,9 @@ class TestCIWorkflowIntegration(unittest.TestCase):
             unified_workflow = yaml.safe_load(f)
 
         # Get input parameters from large-scale validation workflow
-        lsv_inputs = lsv_workflow.get('on', {}).get('workflow_dispatch', {}).get('inputs', {})
+        # Handle YAML quirk where 'on' is parsed as boolean True
+        on_section = lsv_workflow.get('on') or lsv_workflow.get(True)
+        lsv_inputs = on_section.get('workflow_dispatch', {}).get('inputs', {}) if on_section else {}
         lsv_input_names = set(lsv_inputs.keys())
 
         # Find trigger job in unified workflow

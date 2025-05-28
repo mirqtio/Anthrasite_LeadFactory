@@ -1,0 +1,312 @@
+"""
+Manual review interface for deduplication conflicts.
+
+This module provides functionality for handling manual review of
+conflicts that cannot be automatically resolved.
+"""
+
+import json
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+from leadfactory.utils.e2e_db_connector import (
+    add_to_review_queue,
+    db_cursor,
+    get_review_queue_items,
+    update_review_status,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class ManualReviewManager:
+    """Manages manual review processes for deduplication conflicts."""
+
+    def __init__(self):
+        """Initialize the manual review manager."""
+        self.pending_reviews = []
+
+    def create_review_request(
+        self,
+        primary_id: int,
+        secondary_id: int,
+        conflicts: List[Dict[str, Any]],
+        conflict_report: Dict[str, Any],
+    ) -> Optional[int]:
+        """
+        Create a manual review request for conflicting records.
+
+        Args:
+            primary_id: ID of the primary business
+            secondary_id: ID of the secondary business
+            conflicts: List of conflicts requiring review
+            conflict_report: Full conflict report
+
+        Returns:
+            Review request ID or None if failed
+        """
+        review_data = {
+            "primary_id": primary_id,
+            "secondary_id": secondary_id,
+            "conflicts": conflicts,
+            "conflict_report": conflict_report,
+            "created_at": datetime.now().isoformat(),
+            "status": "pending",
+        }
+
+        # Add to review queue with detailed information
+        reason = f"Manual review required for {len(conflicts)} conflicts"
+        details = json.dumps(review_data)
+
+        try:
+            review_id = add_to_review_queue(
+                primary_id, secondary_id, reason=reason, details=details
+            )
+            logger.info(f"Created manual review request {review_id}")
+            return review_id
+        except Exception as e:
+            logger.error(f"Failed to create review request: {e}")
+            return None
+
+    def get_pending_reviews(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Get pending manual review requests.
+
+        Args:
+            limit: Maximum number of reviews to retrieve
+
+        Returns:
+            List of pending review requests
+        """
+        try:
+            reviews = get_review_queue_items(status="pending", limit=limit)
+
+            # Parse the details JSON for each review
+            for review in reviews:
+                if review.get("details"):
+                    try:
+                        review["parsed_details"] = json.loads(review["details"])
+                    except json.JSONDecodeError:
+                        review["parsed_details"] = {}
+
+            return reviews
+        except Exception as e:
+            logger.error(f"Failed to get pending reviews: {e}")
+            return []
+
+    def format_review_for_display(self, review: Dict[str, Any]) -> str:
+        """
+        Format a review request for human-readable display.
+
+        Args:
+            review: Review request data
+
+        Returns:
+            Formatted string for display
+        """
+        output = []
+        output.append(f"Review ID: {review.get('id', 'N/A')}")
+        output.append(f"Primary Business ID: {review.get('business1_id', 'N/A')}")
+        output.append(f"Secondary Business ID: {review.get('business2_id', 'N/A')}")
+        output.append(f"Reason: {review.get('reason', 'N/A')}")
+        output.append(f"Created: {review.get('created_at', 'N/A')}")
+        output.append("")
+
+        # Display conflicts if available
+        details = review.get("parsed_details", {})
+        conflicts = details.get("conflicts", [])
+
+        if conflicts:
+            output.append("Conflicts:")
+            output.append("-" * 50)
+            for conflict in conflicts:
+                output.append(f"Field: {conflict['field']}")
+                output.append(f"  Primary value: {conflict['primary_value']}")
+                output.append(f"  Secondary value: {conflict['secondary_value']}")
+                output.append(
+                    f"  Conflict type: {conflict['type'].value if hasattr(conflict['type'], 'value') else conflict['type']}"
+                )
+                output.append("")
+
+        return "\n".join(output)
+
+    def resolve_review(
+        self, review_id: int, resolutions: Dict[str, Any], merge_decision: str
+    ) -> bool:
+        """
+        Resolve a manual review with user decisions.
+
+        Args:
+            review_id: ID of the review to resolve
+            resolutions: Dictionary of field resolutions
+            merge_decision: 'merge', 'keep_separate', or 'defer'
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Update review status
+            resolution_data = {
+                "resolutions": resolutions,
+                "merge_decision": merge_decision,
+                "resolved_at": datetime.now().isoformat(),
+            }
+
+            status = "resolved" if merge_decision != "defer" else "deferred"
+
+            success = update_review_status(
+                review_id, status=status, resolution=json.dumps(resolution_data)
+            )
+
+            if success:
+                logger.info(
+                    f"Resolved review {review_id} with decision: {merge_decision}"
+                )
+            else:
+                logger.error(f"Failed to update review {review_id} status")
+
+            return success
+
+        except Exception as e:
+            logger.error(f"Failed to resolve review {review_id}: {e}")
+            return False
+
+    def get_review_statistics(self) -> Dict[str, Any]:
+        """
+        Get statistics about manual reviews.
+
+        Returns:
+            Dictionary of review statistics
+        """
+        try:
+            with db_cursor() as cursor:
+                # Get counts by status
+                cursor.execute(
+                    """
+                    SELECT status, COUNT(*) as count
+                    FROM dedupe_review_queue
+                    GROUP BY status
+                """
+                )
+                status_counts = dict(cursor.fetchall())
+
+                # Get average resolution time
+                cursor.execute(
+                    """
+                    SELECT AVG(EXTRACT(EPOCH FROM (updated_at - created_at))) as avg_seconds
+                    FROM dedupe_review_queue
+                    WHERE status = 'resolved'
+                """
+                )
+                result = cursor.fetchone()
+                avg_resolution_time = result[0] if result and result[0] else 0
+
+                # Get conflict type distribution
+                cursor.execute(
+                    """
+                    SELECT reason, COUNT(*) as count
+                    FROM dedupe_review_queue
+                    GROUP BY reason
+                    ORDER BY count DESC
+                    LIMIT 10
+                """
+                )
+                top_reasons = cursor.fetchall()
+
+                return {
+                    "status_counts": status_counts,
+                    "avg_resolution_time_seconds": avg_resolution_time,
+                    "avg_resolution_time_readable": self._format_duration(
+                        avg_resolution_time
+                    ),
+                    "top_reasons": [
+                        {"reason": r[0], "count": r[1]} for r in top_reasons
+                    ],
+                }
+
+        except Exception as e:
+            logger.error(f"Failed to get review statistics: {e}")
+            return {}
+
+    def _format_duration(self, seconds: float) -> str:
+        """Format duration in seconds to human-readable string."""
+        if seconds < 60:
+            return f"{seconds:.0f} seconds"
+        elif seconds < 3600:
+            return f"{seconds/60:.1f} minutes"
+        elif seconds < 86400:
+            return f"{seconds/3600:.1f} hours"
+        else:
+            return f"{seconds/86400:.1f} days"
+
+
+def interactive_review_session():
+    """
+    Run an interactive manual review session.
+
+    This is a simple CLI interface for reviewing conflicts.
+    """
+    manager = ManualReviewManager()
+
+    print("Manual Review Session")
+    print("=" * 50)
+
+    # Get pending reviews
+    reviews = manager.get_pending_reviews(limit=5)
+
+    if not reviews:
+        print("No pending reviews found.")
+        return
+
+    print(f"Found {len(reviews)} pending reviews.\n")
+
+    for review in reviews:
+        print(manager.format_review_for_display(review))
+        print("=" * 50)
+
+        # Get user decision
+        print("\nOptions:")
+        print("1. Merge businesses")
+        print("2. Keep separate")
+        print("3. Defer decision")
+        print("4. Skip to next")
+        print("5. Exit session")
+
+        choice = input("\nEnter your choice (1-5): ").strip()
+
+        if choice == "5":
+            print("Exiting review session.")
+            break
+        elif choice == "4":
+            continue
+        elif choice in ["1", "2", "3"]:
+            merge_decision = {"1": "merge", "2": "keep_separate", "3": "defer"}[choice]
+
+            # For now, we'll use empty resolutions
+            # In a real implementation, we'd collect field-by-field decisions
+            resolutions = {}
+
+            success = manager.resolve_review(review["id"], resolutions, merge_decision)
+
+            if success:
+                print(f"✓ Review resolved: {merge_decision}")
+            else:
+                print("✗ Failed to resolve review")
+
+        print("\n" + "=" * 50 + "\n")
+
+    # Show statistics
+    stats = manager.get_review_statistics()
+    print("\nReview Statistics:")
+    print(f"Pending: {stats.get('status_counts', {}).get('pending', 0)}")
+    print(f"Resolved: {stats.get('status_counts', {}).get('resolved', 0)}")
+    print(f"Deferred: {stats.get('status_counts', {}).get('deferred', 0)}")
+    print(
+        f"Average resolution time: {stats.get('avg_resolution_time_readable', 'N/A')}"
+    )
+
+
+if __name__ == "__main__":
+    # Run interactive review session if called directly
+    interactive_review_session()

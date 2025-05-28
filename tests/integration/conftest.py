@@ -8,7 +8,6 @@ control test behavior.
 
 import os
 import sys
-import json
 from pathlib import Path
 from typing import Dict, Optional, List, Any
 from datetime import datetime
@@ -16,11 +15,6 @@ from datetime import datetime
 import pytest
 from _pytest.config import Config
 from _pytest.terminal import TerminalReporter
-
-# Add the project root to the Python path if not already added
-project_root = str(Path(__file__).parent.parent.parent)
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
 
 # Import project modules
 # Handle missing metrics module gracefully
@@ -270,6 +264,7 @@ def metrics_report(api_metrics_logger):
                         "stats": api_metrics_logger.get_api_stats(api)
                     }
 
+                import json
                 json.dump(report_data, f, indent=2)
 
         elif format == "csv":
@@ -429,6 +424,7 @@ def metrics_report(api_metrics_logger):
                 # Fall back to JSON if visualization libraries are not available
                 report_path = output_dir / f"api_metrics_report_{timestamp}.json"
                 with open(report_path, "w") as f:
+                    import json
                     json.dump(api_metrics_logger.get_summary(), f, indent=2)
         else:
             raise ValueError(f"Unsupported report format: {format}")
@@ -497,6 +493,12 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus, conf
                 terminalreporter.write_line(f"Report generation failed: {str(e)}")
 
 
-# Note: api_metrics_logger is now imported from api_metrics_fixture.py
-# This is kept here for backward compatibility, but implementation has moved
-# to the dedicated module for better organization and reuse
+# TEMPORARILY DISABLED: sys.path modifications to test package imports
+# Add project root to Python path for integration tests
+# project_root = Path(__file__).parent.parent.parent
+# if str(project_root) not in sys.path:
+#     sys.path.insert(0, str(project_root))
+
+# Set up test environment variables
+os.environ.setdefault("TEST_MODE", "True")
+os.environ.setdefault("MOCK_EXTERNAL_APIS", "True")

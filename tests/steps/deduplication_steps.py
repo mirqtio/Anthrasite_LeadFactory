@@ -271,7 +271,7 @@ def run_deduplication(mock_db, mock_llm):
     """Run the deduplication process."""
     conn, cursor = mock_db
     # Mock the database connection
-    with patch("utils.io.DatabaseConnection") as mock_db_conn:
+    with patch("leadfactory.utils.e2e_db_connector.db_connection") as mock_db_conn:
         mock_db_conn.return_value.__enter__.return_value = cursor
         # Run the deduplication process
         dedupe.find_exact_duplicates()
@@ -284,7 +284,7 @@ def run_deduplication_fuzzy(mock_db, mock_llm):
     """Run the deduplication process with fuzzy matching."""
     conn, cursor = mock_db
     # Mock the database connection
-    with patch("utils.io.DatabaseConnection") as mock_db_conn:
+    with patch("leadfactory.utils.e2e_db_connector.db_connection") as mock_db_conn:
         mock_db_conn.return_value.__enter__.return_value = cursor
         # Run the deduplication process with fuzzy matching
         dedupe.find_fuzzy_duplicates()

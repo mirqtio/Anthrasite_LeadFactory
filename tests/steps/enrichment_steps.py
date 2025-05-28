@@ -200,7 +200,7 @@ def run_enrichment(mock_db, mock_apis):
     """Run the enrichment process."""
     conn, cursor = mock_db
     # Mock the database connection
-    with patch("utils.io.DatabaseConnection") as mock_db_conn:
+    with patch("leadfactory.utils.e2e_db_connector.db_connection") as mock_db_conn:
         mock_db_conn.return_value.__enter__.return_value = cursor
         # Get the first business
         cursor.execute("SELECT * FROM businesses LIMIT 1")
@@ -218,7 +218,7 @@ def run_enrichment_prioritized(mock_db, mock_apis):
     conn, cursor = mock_db
     # Mock the database connection
     with (
-        patch("utils.io.DatabaseConnection") as mock_db_conn,
+        patch("leadfactory.utils.e2e_db_connector.db_connection") as mock_db_conn,
         patch("bin.enrich.get_businesses_to_enrich") as mock_get_businesses,
     ):
         mock_db_conn.return_value.__enter__.return_value = cursor

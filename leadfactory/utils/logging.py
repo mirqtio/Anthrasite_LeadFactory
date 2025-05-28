@@ -63,8 +63,33 @@ class JsonFormatter(logging.Formatter):
         }
 
         # Include any extra fields from the log record
-        if hasattr(record, "extra"):
-            log_data.update(record.extra)
+        # Python logging adds extra fields directly to the record object
+        for key, value in record.__dict__.items():
+            if key not in [
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "getMessage",
+                "request_id",
+            ]:
+                log_data[key] = value
 
         # Add exception info if present
         if record.exc_info:

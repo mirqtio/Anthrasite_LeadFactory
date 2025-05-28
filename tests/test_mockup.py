@@ -21,7 +21,7 @@ from bin.mockup import generate_business_mockup
 
 # Import the mock from conftest
 from conftest import mock_track_api_cost
-from utils.io import DatabaseConnection
+from leadfactory.utils.e2e_db_connector import db_connection as DatabaseConnection
 
 # Register scenarios from the feature file
 pytest_bdd.scenarios("features/mockup.feature")

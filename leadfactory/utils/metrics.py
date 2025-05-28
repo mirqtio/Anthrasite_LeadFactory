@@ -15,7 +15,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import psutil
 
 # Import our unified logging system
-from leadfactory.utils.logging import get_logger
+from .logging import get_logger
 
 # Set up logging
 logger = get_logger(__name__)
@@ -262,6 +262,18 @@ else:
         "Failure rate of pipeline operations",
         ["operation", "stage"],
     )
+
+
+def initialize_metrics():
+    """
+    Initialize metrics tracking.
+
+    This function sets up the metrics collection system. Currently a no-op
+    as metrics are initialized when the module is imported, but provided
+    for compatibility with existing test code.
+    """
+    logger.info("Metrics system initialized")
+    return True
 
 
 def start_metrics_server(port: int = 9090) -> bool:

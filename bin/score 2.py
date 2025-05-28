@@ -70,7 +70,9 @@ def get_database_connection(db_path=None):
     """Return appropriate DatabaseConnection implementation based on environment."""
     try:
         # Try to import the real implementation
-        from utils.io import DatabaseConnection
+        from leadfactory.utils.e2e_db_connector import (
+            db_connection as DatabaseConnection,
+        )
 
         return DatabaseConnection(db_path)
     except ImportError:
