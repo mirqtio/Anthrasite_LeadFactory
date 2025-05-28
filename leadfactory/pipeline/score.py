@@ -11,6 +11,9 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+# Import the new scoring engine
+from leadfactory.scoring import ScoringEngine
+
 # Import the unified logging system
 from leadfactory.utils.logging import LogContext, get_logger, log_execution_time
 
@@ -30,6 +33,9 @@ logger = get_logger(__name__)
 class RuleEngine:
     """
     Rule engine for business scoring.
+
+    This class now acts as a wrapper around the new ScoringEngine
+    to maintain backward compatibility.
     """
 
     def __init__(self, rules=None):
@@ -37,11 +43,22 @@ class RuleEngine:
         Initialize the rule engine.
 
         Args:
-            rules: List of scoring rules.
+            rules: List of scoring rules (ignored, uses YAML config).
         """
-        self.rules = rules or []
         self.logger = get_logger(__name__ + ".RuleEngine")
-        self.logger.info(f"Initialized rule engine with {len(self.rules)} rules")
+
+        # Initialize the new scoring engine
+        self.scoring_engine = ScoringEngine()
+        try:
+            self.scoring_engine.load_rules()
+            stats = self.scoring_engine.get_rule_statistics()
+            self.logger.info(
+                f"Initialized rule engine with {stats['total_rules']} rules "
+                f"and {stats['total_multipliers']} multipliers"
+            )
+        except Exception as e:
+            self.logger.error(f"Failed to initialize scoring engine: {e}")
+            raise
 
     def evaluate(self, business: Dict[str, Any]) -> int:
         """
@@ -59,33 +76,20 @@ class RuleEngine:
         with LogContext(
             self.logger, business_id=business_id, business_name=business_name
         ):
-            self.logger.debug(
-                f"Evaluating business {business_name} against {len(self.rules)} rules",
-                extra={"operation": "rule_evaluation"},
-            )
-
-            total_score = 0
-            rule_results = {}
-
             try:
-                for i, rule in enumerate(self.rules):
-                    # Implementation to be migrated from bin/score 2.py
-                    # For now, just a placeholder
-                    rule_score = 10  # Placeholder score
-                    rule_name = f"rule_{i}"
-                    rule_results[rule_name] = rule_score
-                    total_score += rule_score
-
-                    self.logger.debug(
-                        f"Rule {rule_name} evaluation: {rule_score} points",
-                        extra={"rule": rule_name, "score": rule_score},
-                    )
+                # Use the new scoring engine
+                result = self.scoring_engine.score_business(business)
 
                 self.logger.info(
-                    f"Business {business_name} scored {total_score} points",
-                    extra={"total_score": total_score, "rule_results": rule_results},
+                    f"Business {business_name} scored {result['score']} points",
+                    extra={
+                        "total_score": result["score"],
+                        "adjustments": len(result["adjustments"]),
+                        "multiplier": result["final_multiplier"],
+                    },
                 )
-                return total_score
+
+                return result["score"]
 
             except Exception as e:
                 self.logger.error(

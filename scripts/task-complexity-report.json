@@ -1,22 +1,14 @@
 {
   "meta": {
-    "generatedAt": "2025-05-27T09:56:44.781Z",
-    "tasksAnalyzed": 7,
-    "totalTasks": 18,
-    "analysisCount": 12,
+    "generatedAt": "2025-05-28T09:24:57.198Z",
+    "tasksAnalyzed": 8,
+    "totalTasks": 10,
+    "analysisCount": 24,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
-    "usedResearch": false
+    "usedResearch": true
   },
   "complexityAnalysis": [
-    {
-      "taskId": 6,
-      "taskTitle": "Implement Real API Integration Tests",
-      "complexityScore": 7,
-      "recommendedSubtasks": 5,
-      "expansionPrompt": "Break down the implementation of real API integration tests into specific subtasks, including creating test fixtures for each external API (Yelp, Google Places, ScreenshotOne, OpenAI, SendGrid), implementing environment flag controls, creating mock fallbacks, adding metrics collection, and setting up CI configuration.",
-      "reasoning": "This task involves multiple external APIs, requires both mock and real implementations, includes environment configuration, metrics collection, and CI integration. The complexity comes from managing different API behaviors and ensuring proper fallbacks."
-    },
     {
       "taskId": 7,
       "taskTitle": "Restructure Module Layout and Utilities",
@@ -24,30 +16,6 @@
       "recommendedSubtasks": 6,
       "expansionPrompt": "Divide the module restructuring task into concrete subtasks: creating the new package structure, refactoring imports throughout the codebase, centralizing configuration loading, creating proper __init__.py files, updating entry points, and creating package installation files.",
       "reasoning": "This is a high-complexity task as it touches the entire codebase structure and requires careful coordination to avoid breaking functionality. Refactoring imports and ensuring everything works after restructuring requires thorough testing and attention to detail."
-    },
-    {
-      "taskId": 8,
-      "taskTitle": "Enhance Logging, Observability, and Failover Logic",
-      "complexityScore": 7,
-      "recommendedSubtasks": 4,
-      "expansionPrompt": "Break down the logging and observability enhancements into specific subtasks: implementing the unified logging system, setting up metrics collection and Prometheus integration, creating failure simulation tests, and implementing structured logging for all pipeline stages.",
-      "reasoning": "This task requires implementing a unified logging system across the codebase, setting up metrics collection, and creating failure simulation tests. The complexity comes from ensuring consistent logging across all components and properly testing failure scenarios."
-    },
-    {
-      "taskId": 9,
-      "taskTitle": "Audit and Optimize Dependencies",
-      "complexityScore": 5,
-      "recommendedSubtasks": 3,
-      "expansionPrompt": "Divide the dependency audit task into specific subtasks: analyzing and removing unused dependencies, adding missing dependencies, running security audits, and finalizing requirements files for different environments.",
-      "reasoning": "This task is moderately complex as it requires analyzing the entire codebase for dependency usage, running security audits, and ensuring all necessary dependencies are properly documented. However, the work is fairly straightforward and follows established patterns."
-    },
-    {
-      "taskId": 10,
-      "taskTitle": "Implement CI Hardening and Final Validation",
-      "complexityScore": 6,
-      "recommendedSubtasks": 4,
-      "expansionPrompt": "Break down the CI hardening task into specific subtasks: updating CI configuration to make all checks blocking, implementing test coverage reporting, creating large-scale validation tests, and documenting CI gates and requirements.",
-      "reasoning": "This task involves configuring CI pipelines, implementing coverage reporting, and creating validation tests for large-scale runs. The complexity comes from ensuring all checks are properly configured and that the system behaves correctly at scale."
     },
     {
       "taskId": 28,
@@ -104,6 +72,134 @@
       "recommendedSubtasks": 5,
       "expansionPrompt": "Break down the E2E Pipeline Execution and Resolution Loop implementation into 5 subtasks covering automated execution framework, failure detection and classification, resolution workflow, reporting and documentation, and continuous improvement mechanisms. For each subtask, provide specific implementation details, integration requirements, and success criteria to create a self-improving system.",
       "reasoning": "This task involves building a sophisticated execution and resolution framework that not only runs E2E tests but also detects, classifies, and helps resolve failures automatically. The complexity stems from creating an intelligent system that can categorize issues, track historical failures, generate appropriate tickets, and implement a continuous improvement loop. It requires integration with multiple systems (databases, ticketing, notification) and development of advanced failure analysis capabilities."
+    },
+    {
+      "taskId": 1,
+      "taskTitle": "Implement Scoring Rule Evaluation Engine",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the implementation of the YAML-driven scoring rule evaluation engine into specific subtasks covering: YAML parsing, rule evaluation logic, scoring dimensions implementation, weighted calculations, test suite development, CI integration, and documentation.",
+      "reasoning": "This task involves creating a complex evaluation engine with multiple components including YAML parsing, rule evaluation, weighted scoring across dimensions, and comprehensive testing. The high complexity comes from the need to handle various scoring dimensions, implement weighted calculations, and ensure robust test coverage."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Finalize Dedupe Integration with Unified Postgres Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Divide the deduplication integration task into subtasks covering: legacy code removal, Postgres connector integration, conflict resolution implementation, data preservation mechanisms, logging enhancements, and performance optimization.",
+      "reasoning": "This task requires significant database work with complex deduplication logic, conflict resolution, and data preservation across sources. Performance optimization for large datasets adds complexity, as does the need to ensure proper integration with the existing Postgres connector."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Replace Legacy bin/ Scripts with CLI Wrappers",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the bin/ scripts modernization into subtasks covering: CLI framework selection, common functionality identification, wrapper implementation, documentation updates, and backward compatibility testing.",
+      "reasoning": "This refactoring task involves modernizing multiple scripts while maintaining functionality. The complexity comes from ensuring backward compatibility, consolidating common functionality, and implementing proper argument parsing across all scripts."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Refactor PipelineValidator to Check Actual Stages",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Divide the PipelineValidator refactoring into subtasks covering: stage requirement analysis, validation rule implementation, dependency checking, error reporting enhancement, and test coverage development.",
+      "reasoning": "This refactoring requires deep understanding of the pipeline architecture to implement stage-specific validation. The complexity stems from handling various validation scenarios (API keys, database connections, file permissions) and implementing proper error reporting."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Enable Disabled Tests and Resolve Failures",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the test fixing process into subtasks covering: test audit and inventory, failure analysis, fix implementation, and CI verification.",
+      "reasoning": "This task involves debugging and fixing multiple test failures across the codebase. The complexity comes from identifying root causes of various failures and ensuring all tests pass consistently in the CI environment."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Add Unit and Integration Tests for Bounce Handling Logic",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Divide the bounce handling test implementation into subtasks covering: unit test development, webhook simulation, bounce type testing, and threshold verification.",
+      "reasoning": "This testing task requires simulating various bounce scenarios and verifying system responses. The complexity is moderate as it focuses on testing existing functionality rather than implementing new features."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Improve Error Propagation and Partial Failure Handling",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the error handling improvement into subtasks covering: error propagation mechanism, partial failure handling, logging enhancement, error aggregation, and retry implementation.",
+      "reasoning": "This improvement task involves complex error handling across multiple pipeline stages. The complexity comes from implementing graceful partial failure handling, detailed contextual logging, and retry mechanisms for transient failures."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Add Test for Preflight Sequence",
+      "complexityScore": 4,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Divide the preflight sequence testing into subtasks covering: individual check testing, failure scenario simulation, and integration test development.",
+      "reasoning": "This testing task is relatively straightforward, focusing on creating tests for existing preflight validation functionality. The complexity is lower as it primarily involves test creation rather than new feature development."
+    },
+    {
+      "taskId": "1",
+      "taskTitle": "Implement Scoring Rule Evaluation Engine",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on implement scoring rule evaluation engine.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": "3",
+      "taskTitle": "Finalize Dedupe Integration with Unified Postgres Connector",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on finalize dedupe integration with unified postgres connector.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": "4",
+      "taskTitle": "Replace Legacy bin/ Scripts with CLI Wrappers",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on replace legacy bin/ scripts with cli wrappers.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": "5",
+      "taskTitle": "Refactor PipelineValidator to Check Actual Stages",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on refactor pipelinevalidator to check actual stages.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": "6",
+      "taskTitle": "Enable Disabled Tests and Resolve Failures",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on enable disabled tests and resolve failures.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": "8",
+      "taskTitle": "Add Unit and Integration Tests for Bounce Handling Logic",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on add unit and integration tests for bounce handling logic.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": "9",
+      "taskTitle": "Improve Error Propagation and Partial Failure Handling",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on improve error propagation and partial failure handling.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": "10",
+      "taskTitle": "Add Test for Preflight Sequence",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on add test for preflight sequence.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
     }
   ]
 }

@@ -8,7 +8,7 @@ email creation, and campaign management for Anthrasite LeadFactory.
 __version__ = "0.1.0"
 
 # Import key modules to expose at the package level
-from leadfactory import cost, pipeline, utils
+from leadfactory import cost, pipeline, scoring, utils
 
 # Configuration
 from leadfactory.config import get_config, load_config
@@ -22,6 +22,7 @@ __all__ = [
     "pipeline",
     "utils",
     "cost",
+    "scoring",
     "get_config",
     "load_config",
 ]

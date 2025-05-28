@@ -92,7 +92,7 @@ jobs:
           cat files_to_check.txt | while read file; do
             if [ ! -f "$file" ]; then
               echo "Warning: File does not exist: $file"
-              # Remove non-existent files from the lis
+              # Remove non-existent files from the list
               grep -v "$file" files_to_check.txt > files_to_check.txt.tmp
               mv files_to_check.txt.tmp files_to_check.txt
             fi
@@ -259,9 +259,114 @@ jobs:
           fail_ci_if_error: false  # Don't fail on codecov errors
           verbose: true
 
+  test-scoring-engine:
+    name: Scoring Engine Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-xdist pyyaml pydantic
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Setup test environment
+        run: |
+          # Create necessary directories
+          mkdir -p logs
+          mkdir -p etc
+
+          # Create .env file with test values if needed
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          fi
+
+      - name: Validate scoring configuration
+        run: |
+          echo "Validating scoring rules configuration..."
+          python -c """
+          from leadfactory.scoring import ScoringRulesParser
+          try:
+              parser = ScoringRulesParser('etc/scoring_rules.yml')
+              config = parser.load_and_validate()
+              print('\u2713 Scoring configuration is valid')
+              print(f'  - {len(config.rules)} rules loaded')
+              print(f'  - {len(config.multipliers)} multipliers loaded')
+          except Exception as e:
+              print(f'\u2717 Configuration error: {e}')
+              exit(1)
+          """
+
+      - name: Run scoring engine unit tests
+        run: |
+          echo "Running scoring engine tests..."
+          pytest tests/unit/test_scoring_engine.py -v --cov=leadfactory.scoring --cov-report=term-missing --cov-report=xml:coverage-scoring.xml
+
+      - name: Run scoring integration tests
+        run: |
+          echo "Running scoring integration tests..."
+          # Create integration test if it doesn't exist
+          if [ -f tests/integration/test_scoring_integration.py ]; then
+            pytest tests/integration/test_scoring_integration.py -v
+          else
+            echo "No integration tests found, skipping..."
+          fi
+
+      - name: Test scoring engine performance
+        run: |
+          echo "Testing scoring engine performance..."
+          python -c """
+          import time
+          from leadfactory.scoring import ScoringEngine
+
+          # Initialize engine
+          engine = ScoringEngine('etc/scoring_rules.yml')
+          engine.load_rules()
+
+          # Create test businesses
+          businesses = [
+              {
+                  'id': i,
+                  'name': f'Business {i}',
+                  'tech_stack': ['React', 'Node.js'] if i % 2 == 0 else ['Vue', 'Python'],
+                  'vertical': 'SaaS' if i % 3 == 0 else 'FinTech',
+                  'employee_count': i * 10
+              }
+              for i in range(1, 101)
+          ]
+
+          # Time the scoring
+          start = time.time()
+          results = [engine.score_business(b) for b in businesses]
+          elapsed = time.time() - start
+
+          print(f'\u2713 Scored {len(businesses)} businesses in {elapsed:.2f} seconds')
+          print(f'  - Average time per business: {elapsed/len(businesses)*1000:.2f}ms')
+          print(f"  - Score range: {min(r['score'] for r in results)} - {max(r['score'] for r in results)}")
+          """
+
+      - name: Publish scoring engine coverage
+        uses: codecov/codecov-action@v3
+        continue-on-error: true
+        with:
+          file: ./coverage-scoring.xml
+          flags: scoring
+          fail_ci_if_error: false
+          verbose: true
+
   build-docker:
     name: Build Docker Image
-    needs: test-core
+    needs: [test-core, test-scoring-engine]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -281,12 +386,13 @@ jobs:
 
   trigger-large-scale-validation:
     name: Trigger Large-Scale Validation
-    needs: [test-core, build-docker]
+    needs: [test-core, test-scoring-engine, build-docker]
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       needs.test-core.result == 'success' &&
+      needs.test-scoring-engine.result == 'success' &&
       needs.build-docker.result == 'success'
     steps:
       - name: Trigger large-scale validation workflow
@@ -310,14 +416,14 @@ jobs:
 
   notify:
     name: Notify on Completion
-    needs: [pre-commit, lint, test-core, build-docker]
+    needs: [pre-commit, lint, test-core, test-scoring-engine, build-docker]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Check build status
         id: check
         run: |
-          if [ "${{ needs.pre-commit.result }}" == "success" ] && [ "${{ needs.lint.result }}" == "success" ] && [ "${{ needs.test-core.result }}" == "success" ] && [ "${{ needs.build-docker.result }}" == "success" ]; then
+          if [ "${{ needs.pre-commit.result }}" == "success" ] && [ "${{ needs.lint.result }}" == "success" ] && [ "${{ needs.test-core.result }}" == "success" ] && [ "${{ needs.test-scoring-engine.result }}" == "success" ] && [ "${{ needs.build-docker.result }}" == "success" ]; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failure" >> $GITHUB_OUTPUT

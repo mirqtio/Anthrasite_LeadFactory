@@ -1,0 +1,32 @@
+[
+  {
+    "id": 26,
+    "title": "Pre-commit Static Analysis Setup",
+    "description": "Add pre-commit hooks for ruff, bandit, and black to enforce code quality standards",
+    "priority": "high"
+  },
+  {
+    "id": 27,
+    "title": "Feature Development Workflow Template",
+    "description": "Standard workflow for developing, testing, and committing each feature",
+    "priority": "high"
+  },
+  {
+    "id": 32,
+    "title": "Full E2E BDD Pipeline Validation Including Real Email Delivery",
+    "description": "Implement and execute an end-to-end test of the entire Phase 0 pipeline using real API keys and production configuration to validate that leads can be processed fully, including mockup generation and email delivery via SendGrid.",
+    "priority": "high"
+  },
+  {
+    "id": 33,
+    "title": "Provision Local Postgres Database for Full E2E Test",
+    "description": "Set up a real PostgreSQL instance for running a persistent, schema-accurate, E2E test pipeline that includes creating the database, applying schema, seeding initial data, and confirming connectivity.",
+    "priority": "high"
+  },
+  {
+    "id": 34,
+    "title": "E2E Preflight Check for Environment, APIs, DB, and Pipeline",
+    "description": "Develop and implement an automated preflight check system that validates all required components (environment variables, API connections, database access, and pipeline services) are properly configured and operational before running E2E tests.",
+    "priority": "high"
+  }
+]

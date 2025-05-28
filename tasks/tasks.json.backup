@@ -1,0 +1,124 @@
+{
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Implement Scoring Rule Evaluation Engine",
+      "description": "Full implementation of YAML-driven scoring, including tests and CI verification",
+      "status": "pending",
+      "priority": "high",
+      "type": "feature",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Implement a comprehensive scoring rule evaluation engine that:\n- Reads scoring rules from YAML configuration files\n- Evaluates businesses against defined scoring criteria\n- Supports multiple scoring dimensions (quality, engagement, conversion potential)\n- Provides weighted scoring calculations\n- Includes comprehensive unit tests\n- Ensures CI pipeline verification passes\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for rule parsing and evaluation logic\n2. Integration tests with sample business data\n3. Performance tests for large datasets\n4. CI pipeline must pass all tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "2",
+      "title": "Automate IP/Subuser Rotation for Bounce Thresholds",
+      "description": "Automate IP rotation based on bounce rates, with tests",
+      "status": "deferred",
+      "priority": "medium",
+      "type": "feature",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Implement automatic IP and subuser rotation when bounce thresholds are exceeded:\n- Monitor bounce rates per IP/subuser\n- Define configurable bounce rate thresholds\n- Automatically rotate to next available IP/subuser when threshold exceeded\n- Implement cooldown periods for rotated IPs\n- Add comprehensive logging and alerting\n- Include unit and integration tests\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for threshold monitoring logic\n2. Integration tests with SendGrid API\n3. Simulate bounce scenarios and verify rotation\n4. Test alerting mechanisms\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "3",
+      "title": "Finalize Dedupe Integration with Unified Postgres Connector",
+      "description": "Remove legacy references and ensure proper duplicate handling",
+      "status": "pending",
+      "priority": "high",
+      "type": "feature",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Complete the deduplication integration:\n- Remove all legacy dedupe code references\n- Ensure unified Postgres connector handles all deduplication\n- Implement proper conflict resolution for duplicate businesses\n- Preserve data from multiple sources during deduplication\n- Add comprehensive logging for dedupe operations\n- Include performance optimizations for large datasets\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for dedupe logic\n2. Integration tests with real duplicate scenarios\n3. Performance tests with large datasets\n4. Verify data preservation during merges\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "4",
+      "title": "Replace Legacy bin/ Scripts with CLI Wrappers",
+      "description": "Consolidate execution logic and remove old scripts",
+      "status": "pending",
+      "priority": "medium",
+      "type": "refactor",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Modernize script execution:\n- Create CLI wrappers for all bin/ scripts\n- Consolidate common functionality into shared modules\n- Remove deprecated bin/ scripts\n- Update documentation to reference new CLI commands\n- Ensure backward compatibility where needed\n- Add proper argument parsing and validation\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for CLI commands\n2. Integration tests for each wrapper\n3. Verify all functionality is preserved\n4. Test backward compatibility\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "5",
+      "title": "Refactor PipelineValidator to Check Actual Stages",
+      "description": "Update validation logic and add tests",
+      "status": "pending",
+      "priority": "high",
+      "type": "refactor",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Refactor the pipeline validator to validate actual pipeline stages:\n- Check each pipeline stage's requirements before execution\n- Validate API keys, database connections, file permissions\n- Ensure all dependencies are met for each stage\n- Add stage-specific validation rules\n- Implement proper error reporting\n- Add comprehensive test coverage\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for each validation check\n2. Integration tests with full pipeline\n3. Test failure scenarios and error handling\n4. Verify all stages are properly validated\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "6",
+      "title": "Enable Disabled Tests and Resolve Failures",
+      "description": "Identify and fix disabled tests, ensuring CI passes",
+      "status": "pending",
+      "priority": "high",
+      "type": "bug",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Re-enable and fix all disabled tests:\n- Audit all test files for disabled/skipped tests\n- Identify root causes of test failures\n- Fix underlying issues causing test failures\n- Re-enable all tests\n- Ensure CI pipeline passes with all tests enabled\n- Add documentation for any complex fixes\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Run full test suite locally\n2. Fix each failing test\n3. Verify CI pipeline passes\n4. Monitor for flaky tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "7",
+      "title": "Finalize Supabase PNG Upload Integration",
+      "description": "Ensure mockup images upload correctly with error handling",
+      "status": "deferred",
+      "priority": "medium",
+      "type": "feature",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Complete Supabase integration for PNG uploads:\n- Implement reliable PNG upload to Supabase storage\n- Add proper error handling and retry logic\n- Ensure mockup images are correctly linked to businesses\n- Implement CDN URL generation for uploaded images\n- Add cleanup for orphaned images\n- Include comprehensive error logging\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for upload logic\n2. Integration tests with Supabase\n3. Test error scenarios and retries\n4. Verify CDN URL generation\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "8",
+      "title": "Add Unit and Integration Tests for Bounce Handling Logic",
+      "description": "Simulate bounce scenarios and verify system responses",
+      "status": "pending",
+      "priority": "high",
+      "type": "test",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Implement comprehensive bounce handling tests:\n- Unit tests for bounce detection logic\n- Integration tests with SendGrid webhooks\n- Simulate various bounce types (hard, soft, block)\n- Test bounce threshold calculations\n- Verify proper email status updates\n- Test alerting and reporting mechanisms\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Mock SendGrid webhook payloads\n2. Test all bounce types\n3. Verify database updates\n4. Test threshold triggers\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "9",
+      "title": "Improve Error Propagation and Partial Failure Handling",
+      "description": "Ensure failures are logged without breaking the batch process",
+      "status": "pending",
+      "priority": "high",
+      "type": "improvement",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Enhance error handling across the pipeline:\n- Implement proper error propagation between pipeline stages\n- Handle partial failures gracefully\n- Continue processing valid items when some fail\n- Add detailed error logging with context\n- Implement error aggregation and reporting\n- Add retry mechanisms for transient failures\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for error handling logic\n2. Integration tests with failure scenarios\n3. Test partial batch processing\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    },
+    {
+      "id": "10",
+      "title": "Add Test for Preflight Sequence",
+      "description": "Write tests for the preflight check functionality",
+      "status": "pending",
+      "priority": "medium",
+      "type": "test",
+      "created_at": "2025-05-28T09:00:00Z",
+      "dependencies": [],
+      "details": "Create comprehensive tests for preflight checks:\n- Test all preflight validation steps\n- Mock various failure scenarios\n- Verify proper error messages\n- Test environment variable validation\n- Test API connectivity checks\n- Test database connection validation\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
+      "test_strategy": "1. Unit tests for each preflight check\n2. Integration tests for full sequence\n3. Test various failure modes\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+    }
+  ]
+}
