@@ -1,4 +1,4 @@
-task-master show 32task-master show 32task-master show 32task-master show 32task-master show 32FROM python:3.10-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
