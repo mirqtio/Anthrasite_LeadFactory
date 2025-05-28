@@ -180,12 +180,13 @@ jobs:
         if: ${{ github.event.inputs.use_real_apis == 'true' || github.event_name == 'schedule' }}
         env:
           # Set API keys from GitHub secrets with fallback for mocks
-          YELP_API_KEY: ${{ secrets.YELP_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-          SCREENSHOTONE_API_KEY: ${{ secrets.SCREENSHOTONE_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # This prevents context access errors in the workflow
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY || '' }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || '' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY || '' }}
+          SCREENSHOTONE_API_KEY: ${{ secrets.SCREENSHOTONE_API_KEY || '' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || '' }}
         run: |
           echo "Setting up real API keys where available"
           echo "LEADFACTORY_USE_MOCKS=0" >> .env
@@ -407,7 +408,7 @@ jobs:
         env:
           # Set Slack webhook URL from GitHub secrets with fallback to empty string
           # This prevents context access errors in the workflow
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
         run: |
           if [ -n "$SLACK_WEBHOOK_URL" ]; then
             # Create payload file
