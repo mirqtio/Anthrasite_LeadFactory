@@ -27,7 +27,7 @@ logger = logging.getLogger("e2e_db_test")
 Path("logs").mkdir(exist_ok=True)
 
 # Database connection string from docker setup
-CONNECTION_STRING = "postgresql://postgres:postgres@localhost:5432/leadfactory"
+CONNECTION_STRING = "postgresql://postgres:postgres@localhost:5432/leadfactory"  # pragma: allowlist secret
 
 
 def test_connection():
@@ -53,7 +53,7 @@ def test_connection():
             "assets",
         ]
         for table in tables:
-            cursor.execute(f"SELECT COUNT(*) FROM {table}")
+            cursor.execute(f"SELECT COUNT(*) FROM {table}")  # nosec B608
             count = cursor.fetchone()[0]
             logger.info(f"Table {table}: {count} rows")
 

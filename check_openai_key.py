@@ -37,7 +37,7 @@ def test_openai_key(api_key):
     }
 
     try:
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, json=data, timeout=30)
 
         if response.status_code == 200:
             result = response.json()

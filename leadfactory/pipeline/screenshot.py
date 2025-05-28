@@ -5,6 +5,7 @@ Screenshot generation module for the lead factory pipeline.
 import argparse
 import logging
 import os
+import tempfile
 from typing import Optional
 
 from leadfactory.utils.e2e_db_connector import db_connection
@@ -83,7 +84,7 @@ def generate_business_screenshot(business: dict) -> bool:
     logger.info(f"Generating screenshot for {business_name} ({website})")
 
     # Create screenshots directory if it doesn't exist
-    screenshot_dir = "/tmp/screenshots"
+    screenshot_dir = tempfile.mkdtemp(prefix="screenshots_")  # nosec B108
     os.makedirs(screenshot_dir, exist_ok=True)
 
     screenshot_filename = f"screenshot_{business_id}.png"
