@@ -45,7 +45,7 @@ class TestDbVerifier(unittest.TestCase):
         # Create a test environment file
         env_content = """
 # Database configuration for testing
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma: allowlist secret
 """
         self.env_file = create_test_env_file(env_content)
 
@@ -57,7 +57,8 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
         """Test loading database URL from environment file"""
         verifier = DbVerifier(env_file=self.env_file)
         self.assertEqual(
-            verifier.db_url, "postgresql://postgres:postgres@localhost:5433/leadfactory"
+            verifier.db_url,
+            "postgresql://postgres:postgres@localhost:5433/leadfactory",  # pragma: allowlist secret
         )
 
     @patch("psycopg2.connect")
@@ -81,7 +82,7 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
 
         # Verify the connection was made with the correct URL
         mock_connect.assert_called_once_with(
-            "postgresql://postgres:postgres@localhost:5433/leadfactory"
+            "postgresql://postgres:postgres@localhost:5433/leadfactory"  # pragma: allowlist secret
         )
 
     @patch("psycopg2.connect")

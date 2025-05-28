@@ -58,7 +58,7 @@ python scripts/manage_e2e_db.py validate
 The database connection string is automatically added to the `.env.e2e` file:
 
 ```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/leadfactory  # pragma: allowlist secret
 ```
 
 ### Docker Container

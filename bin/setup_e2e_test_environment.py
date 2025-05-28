@@ -136,7 +136,7 @@ def update_env_file():
 
     # Required variables for E2E testing
     required_vars = {
-        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5433/leadfactory",
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5433/leadfactory",  # pragma: allowlist secret
         "E2E_MODE": "true",
         "MOCKUP_ENABLED": "true",
         "DEBUG_MODE": "true",
@@ -177,7 +177,7 @@ def verify_connection():
 
 def show_summary():
     """Show a summary of the E2E test environment setup"""
-    connection_string = "postgresql://postgres:postgres@localhost:5433/leadfactory"
+    connection_string = "postgresql://postgres:postgres@localhost:5433/leadfactory"  # pragma: allowlist secret
 
     print("\n" + "=" * 80)
     print(" E2E TEST ENVIRONMENT SETUP SUMMARY ".center(80, "="))

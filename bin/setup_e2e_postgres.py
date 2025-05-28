@@ -294,7 +294,7 @@ def update_env_file():
     logger.info("Updating .env.e2e file with database connection string...")
 
     # Create the connection string
-    connection_string = "postgresql://postgres:postgres@localhost:5433/leadfactory"
+    connection_string = "postgresql://postgres:postgres@localhost:5433/leadfactory"  # pragma: allowlist secret
 
     # Create .env.e2e if it doesn't exist
     if not ENV_FILE.exists():

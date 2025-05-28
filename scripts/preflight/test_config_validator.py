@@ -49,7 +49,7 @@ E2E_MODE=true
 MOCKUP_ENABLED=true
 
 # Database configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma: allowlist secret
 
 # API keys
 OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz123456
@@ -103,7 +103,7 @@ ENVIRONMENT=e2e_testing
 DEBUG_MODE=true
 
 # Database configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma: allowlist secret
 
 # Email configuration
 EMAIL_FROM=test@example.com
@@ -197,7 +197,7 @@ E2E_MODE=true
 MOCKUP_ENABLED=true
 
 # Database configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma: allowlist secret
 
 # Only OpenAI API key (required even in mockup mode)
 OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz123456

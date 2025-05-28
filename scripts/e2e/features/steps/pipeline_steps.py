@@ -49,7 +49,7 @@ def step_valid_api_keys(context):
 
     context.env_file = NamedTemporaryFile(delete=False, mode="w+")
     context.env_file.write(
-        "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory\n"
+        "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory\n"  # pragma: allowlist secret
     )
     context.env_file.write("OPENAI_API_KEY=sk-test123456\n")
     context.env_file.write("GOOGLE_MAPS_API_KEY=test-api-key\n")
@@ -146,7 +146,7 @@ def step_missing_environment_variable(context, variable_name):
 
     context.env_file = NamedTemporaryFile(delete=False, mode="w+")
     context.env_file.write(
-        "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory\n"
+        "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory\n"  # pragma: allowlist secret
     )
     context.env_file.write("OPENAI_API_KEY=sk-test123456\n")
     context.env_file.write("GOOGLE_MAPS_API_KEY=test-api-key\n")

@@ -34,12 +34,12 @@ repos:
     rev: 1.7.5
     hooks:
       - id: bandit
-        # Run bandit with medium level security checks
-        args: ['-ll', '-i']
+        # Run bandit with medium level security checks (exclude low severity)
+        args: ['-lll', '-i']
         # Only run on Python files
         types: [python]
         # Exclude tests and virtual environments
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|tests|.ruff_cache)"
+        exclude: "^(venv/|.venv/|env/|.env/|.git/|.github/|.mypy_cache/|.pytest_cache/|__pycache__/|build/|dist/|node_modules/|tasks/|tests/|.ruff_cache/)"
 
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0

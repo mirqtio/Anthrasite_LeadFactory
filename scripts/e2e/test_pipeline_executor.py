@@ -37,7 +37,7 @@ class TestPipelineExecutor(unittest.TestCase):
         self.env_file = self.temp_path / ".env.e2e.test"
         with open(self.env_file, "w") as f:
             f.write(
-                "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory\n"
+                "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory\n"  # pragma: allowlist secret
             )
             f.write("OPENAI_API_KEY=sk-test123456\n")
             f.write("GOOGLE_MAPS_API_KEY=test-api-key\n")

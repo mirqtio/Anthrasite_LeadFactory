@@ -234,7 +234,7 @@ APP_URL=http://localhost:3000
 DEBUG=true
 
 # Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma: allowlist secret
 DB_HOST=localhost
 DB_PORT=5433
 DB_USER=postgres

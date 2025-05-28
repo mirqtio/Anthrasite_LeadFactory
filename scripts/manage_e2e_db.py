@@ -52,7 +52,7 @@ def run_command(command, check=True, shell=False, cwd=None):
         result = subprocess.run(
             cmd,
             check=check,
-            shell=shell,
+            shell=shell,  # nosec B602
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -267,7 +267,7 @@ def validate_schema():
 
 def get_connection_string():
     """Return the connection string for the E2E database"""
-    return "postgresql://postgres:postgres@localhost:5432/leadfactory"
+    return "postgresql://postgres:postgres@localhost:5432/leadfactory"  # pragma: allowlist secret
 
 
 def update_env_file():

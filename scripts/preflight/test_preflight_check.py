@@ -95,7 +95,7 @@ class TestPreflightCheck(unittest.TestCase):
 # Test environment file for preflight check
 E2E_MODE=true
 MOCKUP_ENABLED=false
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma: allowlist secret
 OPENAI_API_KEY=sk-test-key
 GOOGLE_MAPS_API_KEY=test-maps-key
 SENDGRID_API_KEY=test-sendgrid-key

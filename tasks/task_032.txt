@@ -112,4 +112,3 @@ Implement a logger that tracks the entire E2E process. Write a function to gener
 ### Description: Run the complete E2E test with real credentials and validate all aspects of the pipeline including email delivery and content.
 ### Details:
 Execute the BDD scenario with the E2E environment. Verify that: emails are delivered to the override address, email content includes the correct mockup, personalization is applied correctly, CAN-SPAM footer is present, SendGrid returns 202 status, and a row is written to the emails table with appropriate data. Document any issues encountered during testing.
-

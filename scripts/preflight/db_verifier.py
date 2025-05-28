@@ -324,7 +324,7 @@ class DbVerifier:
 # ----------------------------------
 
 # Database Connection
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma: allowlist secret
 DB_HOST=localhost
 DB_PORT=5433
 DB_USER=postgres
