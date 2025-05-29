@@ -469,7 +469,7 @@
       "id": 10,
       "title": "Add Test for Preflight Sequence",
       "description": "Write tests for the preflight check functionality",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "type": "test",
       "created_at": "2025-05-28T09:00:00Z",
@@ -483,7 +483,7 @@
           "description": "Create unit tests for each individual preflight check to verify they function correctly in isolation",
           "dependencies": [],
           "details": "Identify all preflight checks in the system, create test cases for each check covering both pass and fail conditions, ensure proper error messages are displayed for failed checks, and verify that each check correctly validates its specific requirement",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -493,7 +493,7 @@
             1
           ],
           "details": "Create test cases for common failure scenarios, test edge cases like partial failures, simulate network issues, resource constraints, and permission problems, verify error handling and recovery mechanisms work as expected",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -504,7 +504,7 @@
             2
           ],
           "details": "Develop tests that run the complete preflight sequence from start to finish, verify correct execution order of checks, test that the overall pass/fail determination is accurate, and ensure proper logging and reporting of the sequence results",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
