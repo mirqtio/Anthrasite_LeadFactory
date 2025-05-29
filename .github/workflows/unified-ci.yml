@@ -296,7 +296,20 @@ jobs:
         run: |
           # Create necessary directories
           mkdir -p logs
-          mkdir -p etc
+
+          # Check if scoring rules file exists
+          echo "Checking for scoring configuration..."
+          if [ -f etc/scoring_rules.yml ]; then
+            echo "Found etc/scoring_rules.yml"
+            ls -la etc/scoring_rules.yml
+          else
+            echo "etc/scoring_rules.yml not found"
+            echo "Repository contents:"
+            find . -name "scoring_rules.yml" -type f
+            echo "etc directory contents:"
+            ls -la etc/ 2>/dev/null || echo "etc directory does not exist"
+            exit 1
+          fi
 
           # Create .env file with test values if needed
           if [ -f .env.example ]; then
@@ -306,18 +319,13 @@ jobs:
       - name: Validate scoring configuration
         run: |
           echo "Validating scoring rules configuration..."
-          python -c """
-          from leadfactory.scoring import ScoringRulesParser
-          try:
-              parser = ScoringRulesParser('etc/scoring_rules.yml')
-              config = parser.load_and_validate()
-              print('\u2713 Scoring configuration is valid')
-              print(f'  - {len(config.rules)} rules loaded')
-              print(f'  - {len(config.multipliers)} multipliers loaded')
-          except Exception as e:
-              print(f'\u2717 Configuration error: {e}')
-              exit(1)
-          """
+          echo "Current working directory: $(pwd)"
+          echo "Python path: $(which python)"
+          echo "Checking file existence..."
+          ls -la etc/scoring_rules.yml
+
+          # Run the validation script
+          python scripts/validate_scoring_config.py
 
       - name: Run scoring engine unit tests
         run: |
@@ -362,7 +370,7 @@ jobs:
           results = [engine.score_business(b) for b in businesses]
           elapsed = time.time() - start
 
-          print(f'\u2713 Scored {len(businesses)} businesses in {elapsed:.2f} seconds')
+          print(f'Scored {len(businesses)} businesses in {elapsed:.2f} seconds')
           print(f'  - Average time per business: {elapsed/len(businesses)*1000:.2f}ms')
           print(f"  - Score range: {min(r['score'] for r in results)} - {max(r['score'] for r in results)}")
           """
