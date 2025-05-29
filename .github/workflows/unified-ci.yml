@@ -365,7 +365,7 @@ jobs:
       - name: Test scoring engine performance
         run: |
           echo "Testing scoring engine performance..."
-          python -c """
+          python -c "
           import time
           from leadfactory.scoring import ScoringEngine
 
@@ -377,7 +377,7 @@ jobs:
           businesses = [
               {
                   'id': i,
-                  'name': f'Business {i}',
+                  'name': 'Business ' + str(i),
                   'tech_stack': ['React', 'Node.js'] if i % 2 == 0 else ['Vue', 'Python'],
                   'vertical': 'SaaS' if i % 3 == 0 else 'FinTech',
                   'employee_count': i * 10
@@ -390,10 +390,10 @@ jobs:
           results = [engine.score_business(b) for b in businesses]
           elapsed = time.time() - start
 
-          print(f'Scored {len(businesses)} businesses in {elapsed:.2f} seconds')
-          print(f'  - Average time per business: {elapsed/len(businesses)*1000:.2f}ms')
-          print(f"  - Score range: {min(r['score'] for r in results)} - {max(r['score'] for r in results)}")
-          """
+          print('Scored {} businesses in {:.2f} seconds'.format(len(businesses), elapsed))
+          print('  - Average time per business: {:.2f}ms'.format(elapsed/len(businesses)*1000))
+          print('  - Score range: {} - {}'.format(min(r['score'] for r in results), max(r['score'] for r in results)))
+          "
 
       - name: Publish scoring engine coverage
         uses: codecov/codecov-action@v3
