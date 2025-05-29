@@ -183,6 +183,9 @@ jobs:
 
           # Install the leadfactory package in development mode
           pip install -e .
+          # Verify package installation
+          python -c "import leadfactory; print('leadfactory package installed successfully')"
+          python -c "from leadfactory.scoring import ScoringRulesParser; print('ScoringRulesParser import successful')"
 
       - name: Setup test environment
         run: |
@@ -291,6 +294,9 @@ jobs:
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           # Install the leadfactory package in development mode
           pip install -e .
+          # Verify package installation
+          python -c "import leadfactory; print('leadfactory package installed successfully')"
+          python -c "from leadfactory.scoring import ScoringRulesParser; print('ScoringRulesParser import successful')"
 
       - name: Setup test environment
         run: |
