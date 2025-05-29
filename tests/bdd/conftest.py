@@ -10,22 +10,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Add the project root to the Python path
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, project_root)
-
-# Find leadfactory directory and add to path
-leadfactory_dir = project_root
-if leadfactory_dir not in sys.path:
-    sys.path.insert(0, leadfactory_dir)
-
-# Add mock modules directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "mock_modules"))
-
-# Import mock modules before any tests are loaded
-# This ensures imports in test files will work correctly
-from tests.bdd.mock_modules import *
-
 # Set environment variables for testing
 os.environ['TEST_MODE'] = 'True'
 os.environ['MOCK_EXTERNAL_APIS'] = 'True'

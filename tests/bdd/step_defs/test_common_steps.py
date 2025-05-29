@@ -12,6 +12,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from pytest_bdd import given, when, then, parsers, scenarios
+# Import common step definitions
+from tests.bdd.step_defs.common_step_definitions import *
 
 # Import the feature file scenarios directly
 # This is critical for pytest-bdd to properly discover step definitions

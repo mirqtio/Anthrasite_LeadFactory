@@ -4,26 +4,23 @@ Step definitions for the scraping scenario.
 
 import os
 # Import shared step definitions
-from tests.bdd.step_defs.shared_steps import initialize_database, context
 
 import sys
 # Import shared step definitions
-from tests.bdd.step_defs.shared_steps import initialize_database, context
 
 import sqlite3
 # Import shared step definitions
-from tests.bdd.step_defs.shared_steps import initialize_database, context
 
 from unittest.mock import MagicMock, patch
 
 import pytest
 # Import shared step definitions
-from tests.bdd.step_defs.shared_steps import initialize_database, context
 
 from pytest_bdd import given, when, then, parsers
+# Import common step definitions
+from tests.bdd.step_defs.common_step_definitions import *
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 # Import mock modules and common step definitions
 from tests.bdd.mock_modules import *

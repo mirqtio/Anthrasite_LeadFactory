@@ -24,8 +24,7 @@ from urllib.parse import urlparse
 # Third-party imports
 import requests
 from dotenv import load_dotenv
-from wappalyzer import Wappalyzer, WebPage
-
+import wappalyzer
 # Add project root to path to allow importing local 'utils' modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -213,63 +212,52 @@ class TechStackAnalyzer:
 
     def __init__(self):
         """Initialize the tech stack analyzer."""
-        # Initialize the Wappalyzer instance
-        self.wappalyzer = Wappalyzer.latest()
+        # Initialize the Wappalyzer instance - new API doesn't need initialization
         logger.info("Wappalyzer initialized successfully")
 
     def analyze_website(self, url: str) -> tuple[dict, Optional[str]]:
-        """Analyze a website to identify technologies used.
-        Args:
-            url: Website URL.
-        Returns:
-            tuple of (tech_stack_data, error_message).
-            If successful, error_message is None.
-            If failed, tech_stack_data is an empty dict.
         """
-        if not url:
-            return {}, "No URL provided"
-        # Ensure URL has a scheme
-        if not url.startswith(("http://", "https://")):
-            url = f"https://{url}"
-        # Always proceed with the new API
-        # No need to check for initialization with the new API structure
-        pass
+        Analyze a website's technology stack using Wappalyzer.
+
+        Args:
+            url: The URL to analyze
+
+        Returns:
+            A tuple containing:
+            - A dictionary with technology information
+            - An optional error message
+        """
         try:
-            # Fetch the website content
-            response = requests.get(
-                url,
-                headers={
-                    "User-Agent": (
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/91.0.4472.124 Safari/537.36"
-                    )
-                },
-                timeout=30,
-            )
-            response.raise_for_status()
-            # Create a WebPage instance with the response content
-            webpage = WebPage.new_from_url(url)
-            # Analyze the webpage using Wappalyzer
-            analysis = self.wappalyzer.analyze_with_categories(webpage)
+            logger.info(f"Analyzing tech stack for: {url}")
+
+            # Use the new wappalyzer.analyze() API
+            analysis = wappalyzer.analyze(url)
+
             # For test compatibility, we need to return a set of technologies
             # But we'll also maintain the categorized dictionary for actual use
             tech_set: set[str] = set()
             tech_data: dict[str, dict[str, Any]] = {}
+
             # Process the analysis results
-            for tech_name, tech_info in analysis.items():
-                # Add to the set for test compatibility
-                tech_set.add(tech_name)
-                # Get the categories
-                categories = tech_info.get("categories", ["Other"])
-                category = categories[0] if categories else "Other"
-                # Add to our categorized tech_data dict
-                if category not in tech_data:
-                    tech_data[category] = {"technologies": []}
-                # Make sure we're working with lists, not dictionaries
-                if "technologies" not in tech_data[category]:
-                    tech_data[category]["technologies"] = []
-                tech_data[category]["technologies"].append(tech_name)
+            if isinstance(analysis, dict):
+                for tech_name, tech_info in analysis.items():
+                    # Add to the set for test compatibility
+                    tech_set.add(tech_name)
+                    # Store detailed information
+                    if isinstance(tech_info, dict):
+                        tech_data[tech_name] = tech_info
+                    else:
+                        tech_data[tech_name] = {"name": tech_name}
+            elif isinstance(analysis, list):
+                # Handle case where analysis returns a list
+                for tech in analysis:
+                    if isinstance(tech, str):
+                        tech_set.add(tech)
+                        tech_data[tech] = {"name": tech}
+                    elif isinstance(tech, dict) and "name" in tech:
+                        tech_name = tech["name"]
+                        tech_set.add(tech_name)
+                        tech_data[tech_name] = tech
             # Convert tech_data to the expected return type (dict)
             return_data: dict[Any, Any] = {
                 "technologies": list(tech_set),

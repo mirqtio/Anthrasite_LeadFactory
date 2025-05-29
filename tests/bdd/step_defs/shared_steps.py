@@ -5,11 +5,6 @@ These steps are imported by all test files.
 import sqlite3
 from pytest_bdd import given, when, then, parsers
 
-# Add project root to path
-import os
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
-
 # Import the global context from conftest.py
 from tests.bdd.conftest import global_context as context
 
