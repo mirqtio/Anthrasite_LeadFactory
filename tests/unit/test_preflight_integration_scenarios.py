@@ -6,26 +6,28 @@ working together, edge cases, and real-world failure conditions.
 """
 
 import os
-import pytest
-import tempfile
-from unittest.mock import patch, MagicMock
-from pathlib import Path
 
 # Add the project root to the path
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from scripts.preflight.pipeline_validator import (
-    PipelineValidator,
     DatabaseConnectionRule,
-    ModuleImportRule,
-    FileAccessRule,
     EnvironmentVariableRule,
+    FileAccessRule,
+    ModuleImportRule,
     NetworkConnectivityRule,
+    PipelineValidator,
     ValidationError,
-    ValidationSeverity,
     ValidationErrorCode,
-    ValidationLogger
+    ValidationLogger,
+    ValidationSeverity,
 )
 
 
@@ -47,11 +49,11 @@ class TestPipelineValidatorIntegration:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
-                with patch('os.access', return_value=True):  # Mock file access
+                with patch("os.access", return_value=True):  # Mock file access
                     result = validator.validate()
 
         # Should have minimal issues when all dependencies are satisfied
@@ -85,7 +87,7 @@ class TestPipelineValidatorIntegration:
         }
 
         with patch.dict(os.environ, env_vars, clear=True):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -107,7 +109,7 @@ class TestPipelineValidatorIntegration:
         }
 
         with patch.dict(os.environ, env_vars, clear=True):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -125,7 +127,7 @@ class TestPipelineValidatorIntegration:
         validator = PipelineValidator()
 
         # Create temporary files for testing
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False) as email_template:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as email_template:
             email_template.write("<html><body>Test template</body></html>")
             email_template_path = email_template.name
 
@@ -137,11 +139,11 @@ class TestPipelineValidatorIntegration:
             }
 
             with patch.dict(os.environ, env_vars):
-                with patch('psycopg2.connect') as mock_connect:
+                with patch("psycopg2.connect") as mock_connect:
                     mock_conn = MagicMock()
                     mock_connect.return_value = mock_conn
 
-                    with patch('os.access', return_value=True):  # Mock file access
+                    with patch("os.access", return_value=True):  # Mock file access
                         result = validator.validate()
 
             # Should have minimal critical issues when files exist
@@ -161,7 +163,7 @@ class TestPipelineValidatorIntegration:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -183,7 +185,7 @@ class TestPipelineValidatorIntegration:
             "stage3": ["stage1"]  # Creates a cycle
         }
 
-        with patch.object(validator, 'STAGE_DEPENDENCIES', circular_deps):
+        with patch.object(validator, "STAGE_DEPENDENCIES", circular_deps):
             issues = validator.validate_dependencies(["stage1", "stage2", "stage3"])
 
         # Should detect circular dependency
@@ -199,7 +201,7 @@ class TestPipelineValidatorIntegration:
             "existing_stage": ["missing_stage"]
         }
 
-        with patch.object(validator, 'STAGE_DEPENDENCIES', mock_deps):
+        with patch.object(validator, "STAGE_DEPENDENCIES", mock_deps):
             issues = validator.validate_dependencies(["existing_stage"])
 
         # Should detect missing dependency
@@ -221,11 +223,11 @@ class TestPipelineValidatorIntegration:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
-                with patch('os.access', return_value=True):  # Mock file access
+                with patch("os.access", return_value=True):  # Mock file access
                     result = validator.validate()
 
         # With all environment variables set and mocked file access,
@@ -315,7 +317,7 @@ class TestEdgeCasesAndErrorHandling:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect', side_effect=Exception("Invalid connection string")):
+            with patch("psycopg2.connect", side_effect=Exception("Invalid connection string")):
                 result = validator.validate()
 
         # Should have database connection issues
@@ -335,7 +337,7 @@ class TestEdgeCasesAndErrorHandling:
 
     def test_validation_with_permission_errors(self):
         """Test file validation with permission errors."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             tmp.write("test content")
             tmp_path = tmp.name
 
@@ -343,7 +345,7 @@ class TestEdgeCasesAndErrorHandling:
             rule = FileAccessRule(tmp_path, "write")
 
             # Mock permission denied
-            with patch('os.access', return_value=False):
+            with patch("os.access", return_value=False):
                 issues = rule.validate({})
 
             assert len(issues) == 1
@@ -435,7 +437,7 @@ class TestRealWorldScenarios:
         }
 
         with patch.dict(os.environ, dev_env, clear=True):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -461,11 +463,11 @@ class TestRealWorldScenarios:
         }
 
         with patch.dict(os.environ, prod_env):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
-                with patch('os.access', return_value=True):  # Mock file access
+                with patch("os.access", return_value=True):  # Mock file access
                     result = validator.validate()
 
         # Production environment should have minimal issues
@@ -484,7 +486,7 @@ class TestRealWorldScenarios:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 

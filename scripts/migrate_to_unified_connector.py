@@ -39,7 +39,7 @@ TEST_FILES_TO_UPDATE = [
 def update_imports_in_file(filepath):
     """Update imports in a single file."""
     try:
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             content = f.read()
 
         original_content = content
@@ -61,24 +61,20 @@ def update_imports_in_file(filepath):
         if content != original_content:
             with open(filepath, "w") as f:
                 f.write(content)
-            print(f"✓ Updated: {filepath}")
             return True
         else:
-            print(f"  No changes needed: {filepath}")
             return False
 
     except FileNotFoundError:
-        print(f"✗ File not found: {filepath}")
         return False
-    except Exception as e:
-        print(f"✗ Error updating {filepath}: {e}")
+    except Exception:
         return False
 
 
 def update_test_patches(filepath):
     """Update patch statements in test files."""
     try:
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             content = f.read()
 
         original_content = content
@@ -100,52 +96,36 @@ def update_test_patches(filepath):
         if content != original_content:
             with open(filepath, "w") as f:
                 f.write(content)
-            print(f"✓ Updated test patches: {filepath}")
             return True
         else:
-            print(f"  No test patches to update: {filepath}")
             return False
 
     except FileNotFoundError:
-        print(f"✗ File not found: {filepath}")
         return False
-    except Exception as e:
-        print(f"✗ Error updating {filepath}: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run the migration."""
-    print("Starting migration to unified Postgres connector...")
-    print("=" * 60)
 
     # Get project root
     project_root = Path(__file__).parent.parent
     os.chdir(project_root)
 
     # Update regular files
-    print("\nUpdating imports in source files:")
-    print("-" * 40)
     updated_count = 0
     for filepath in FILES_TO_UPDATE:
         if update_imports_in_file(filepath):
             updated_count += 1
 
     # Update test files
-    print("\nUpdating patch statements in test files:")
-    print("-" * 40)
     test_updated_count = 0
     for filepath in TEST_FILES_TO_UPDATE:
         if update_test_patches(filepath):
             test_updated_count += 1
 
-    print("\n" + "=" * 60)
-    print(f"Migration complete!")
-    print(f"Updated {updated_count} source files")
-    print(f"Updated {test_updated_count} test files")
-
     # Create a simple DatabaseConnection wrapper in utils/io/__init__.py for backward compatibility
-    print("\nCreating backward compatibility wrapper...")
     wrapper_content = '''"""
 IO utility functions for Anthrasite LeadFactory.
 """
@@ -219,9 +199,8 @@ __all__ = ['DatabaseConnection', 'read_file', 'write_file', 'track_api_cost']
     try:
         with open("utils/io/__init__.py", "w") as f:
             f.write(wrapper_content)
-        print("✓ Created backward compatibility wrapper in utils/io/__init__.py")
-    except Exception as e:
-        print(f"✗ Error creating wrapper: {e}")
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Pipeline Component Validator
 
@@ -6,19 +5,20 @@ This module verifies that all pipeline services and components are properly
 configured and operational before running E2E tests.
 """
 
-import os
-import re
+import importlib.util
 import json
 import logging
+import os
+import re
 import subprocess
-import requests
-import importlib.util
-from dotenv import load_dotenv
-from typing import List, Dict, Tuple, Optional, Any
-from pathlib import Path
-from enum import Enum
-from dataclasses import dataclass, field
 import uuid
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import requests
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(
@@ -83,8 +83,8 @@ class ValidationError:
     severity: ValidationSeverity
     component: str
     message: str
-    context: Dict[str, Any] = field(default_factory=dict)
-    remediation_steps: List[str] = field(default_factory=list)
+    context: dict[str, Any] = field(default_factory=dict)
+    remediation_steps: list[str] = field(default_factory=list)
 
     def __str__(self) -> str:
         """Human-readable error message."""
@@ -98,7 +98,7 @@ class ValidationError:
         icon = severity_icon.get(self.severity, "•")
         return f"{icon} [{self.error_code.value}] {self.component}: {self.message}"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert error to dictionary for JSON serialization."""
         return {
             "error_code": self.error_code.value,
@@ -130,7 +130,7 @@ class ValidationErrorBuilder:
         )
 
     @staticmethod
-    def api_key_missing(component: str, api_keys: List[str]) -> ValidationError:
+    def api_key_missing(component: str, api_keys: list[str]) -> ValidationError:
         """Create error for missing API keys with enhanced context."""
         keys_str = ", ".join(api_keys)
         return ValidationError(
@@ -209,7 +209,7 @@ class ValidationErrorBuilder:
         )
 
     @staticmethod
-    def dependency_circular(component: str, cycle: List[str]) -> ValidationError:
+    def dependency_circular(component: str, cycle: list[str]) -> ValidationError:
         """Create error for circular dependency detection."""
         cycle_str = " -> ".join(cycle + [cycle[0]])  # Show complete cycle
         return ValidationError(
@@ -233,12 +233,12 @@ class ValidationErrorBuilder:
         )
 
     @staticmethod
-    def circular_dependency(component: str, cycle: List[str]) -> ValidationError:
+    def circular_dependency(component: str, cycle: list[str]) -> ValidationError:
         """Create error for circular dependency (legacy method)."""
         return ValidationErrorBuilder.dependency_circular(component, cycle)
 
     @staticmethod
-    def dependency_missing(component: str, missing_deps: List[str]) -> ValidationError:
+    def dependency_missing(component: str, missing_deps: list[str]) -> ValidationError:
         """Create error for missing dependencies with enhanced context."""
         if not missing_deps:
             # Handle case where the stage itself doesn't exist
@@ -373,7 +373,7 @@ class ValidationRule:
         self.name = name
         self.description = description
 
-    def validate(self, context: Dict[str, Any]) -> List[ValidationError]:
+    def validate(self, context: dict[str, Any]) -> list[ValidationError]:
         """Validate the rule and return list of validation errors."""
         raise NotImplementedError("Subclasses must implement validate method")
 
@@ -384,7 +384,7 @@ class DatabaseConnectionRule(ValidationRule):
     def __init__(self):
         super().__init__("database_connection", "Database connectivity check")
 
-    def validate(self, context: Dict[str, Any]) -> List[ValidationError]:
+    def validate(self, context: dict[str, Any]) -> list[ValidationError]:
         """Validate database connection."""
         issues = []
 
@@ -427,7 +427,7 @@ class ModuleImportRule(ValidationRule):
             f"module_import_{module_path}", f"Import check for {module_path}"
         )
 
-    def validate(self, context: Dict[str, Any]) -> List[ValidationError]:
+    def validate(self, context: dict[str, Any]) -> list[ValidationError]:
         """Validate module import."""
         issues = []
 
@@ -463,7 +463,7 @@ class FileAccessRule(ValidationRule):
         self.access_type = access_type
         super().__init__(f"file_access_{path}", f"File access check for {path}")
 
-    def validate(self, context: Dict[str, Any]) -> List[ValidationError]:
+    def validate(self, context: dict[str, Any]) -> list[ValidationError]:
         """Validate file access."""
         issues = []
 
@@ -495,7 +495,7 @@ class EnvironmentVariableRule(ValidationRule):
             f"env_var_{var_name}", f"Environment variable check for {var_name}"
         )
 
-    def validate(self, context: Dict[str, Any]) -> List[ValidationError]:
+    def validate(self, context: dict[str, Any]) -> list[ValidationError]:
         """Validate environment variable."""
         issues = []
 
@@ -521,7 +521,7 @@ class NetworkConnectivityRule(ValidationRule):
         self.timeout = timeout
         super().__init__(f"network_{url}", f"Network connectivity check for {url}")
 
-    def validate(self, context: Dict[str, Any]) -> List[ValidationError]:
+    def validate(self, context: dict[str, Any]) -> list[ValidationError]:
         """Validate network connectivity."""
         issues = []
 
@@ -537,7 +537,7 @@ class NetworkConnectivityRule(ValidationRule):
                     )
                 )
                 return issues
-        except Exception as e:
+        except Exception:
             issues.append(
                 ValidationErrorBuilder.service_unavailable(
                     self.url, "service", self.url
@@ -552,9 +552,9 @@ class PipelineValidationResult:
     def __init__(
         self,
         success: bool,
-        components_verified: List[str],
-        components_failed: List[str],
-        issues: List[ValidationError],
+        components_verified: list[str],
+        components_failed: list[str],
+        issues: list[ValidationError],
     ):
         self.success = success
         self.components_verified = components_verified
@@ -604,7 +604,7 @@ class PipelineValidationResult:
 
         return result
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert result to dictionary for JSON serialization."""
         return {
             "success": self.success,
@@ -632,7 +632,7 @@ class PipelineValidationResult:
             },
         }
 
-    def get_errors_by_component(self) -> Dict[str, List[ValidationError]]:
+    def get_errors_by_component(self) -> dict[str, list[ValidationError]]:
         """Group errors by component for easier analysis."""
         errors_by_component = {}
         for error in self.issues:
@@ -641,7 +641,7 @@ class PipelineValidationResult:
             errors_by_component[error.component].append(error)
         return errors_by_component
 
-    def get_errors_by_severity(self) -> Dict[ValidationSeverity, List[ValidationError]]:
+    def get_errors_by_severity(self) -> dict[ValidationSeverity, list[ValidationError]]:
         """Group errors by severity level."""
         errors_by_severity = {severity: [] for severity in ValidationSeverity}
         for error in self.issues:
@@ -758,7 +758,7 @@ class PipelineValidator:
         # Load validation rules after dependencies are defined
         self.validation_rules = self._load_validation_rules()
 
-    def _load_validation_rules(self) -> Dict[str, List[ValidationRule]]:
+    def _load_validation_rules(self) -> dict[str, list[ValidationRule]]:
         """Load validation rules from configuration."""
         rules = {}
 
@@ -794,9 +794,7 @@ class PipelineValidator:
                                 "SENDGRID_FROM_EMAIL", required=True
                             )
                         )
-                    elif resource == "email_templates":
-                        rules[stage].append(FileAccessRule("etc/email_template.html"))
-                    elif resource == "templates":
+                    elif resource == "email_templates" or resource == "templates":
                         rules[stage].append(FileAccessRule("etc/email_template.html"))
                     # Add more resource-specific rules as needed
 
@@ -809,14 +807,7 @@ class PipelineValidator:
                 for resource in self.RESOURCE_DEPENDENCIES[module]:
                     if resource == "database":
                         rules[module].append(DatabaseConnectionRule())
-                    elif resource == "api_keys":
-                        rules[module].append(
-                            EnvironmentVariableRule("YELP_API_KEY", required=True)
-                        )
-                        rules[module].append(
-                            EnvironmentVariableRule("GOOGLE_API_KEY", required=True)
-                        )
-                    elif resource == "enrichment_apis":
+                    elif resource == "api_keys" or resource == "enrichment_apis":
                         rules[module].append(
                             EnvironmentVariableRule("YELP_API_KEY", required=True)
                         )
@@ -840,8 +831,8 @@ class PipelineValidator:
         return rules
 
     def validate_dependencies(
-        self, stages: Optional[List[str]] = None
-    ) -> List[ValidationError]:
+        self, stages: Optional[list[str]] = None
+    ) -> list[ValidationError]:
         """Validate all pipeline dependencies including stage dependencies and circular dependency detection.
 
         Args:
@@ -910,8 +901,8 @@ class PipelineValidator:
         return issues
 
     def _detect_circular_dependencies(
-        self, components: List[str]
-    ) -> Dict[str, List[str]]:
+        self, components: list[str]
+    ) -> dict[str, list[str]]:
         """Detect circular dependencies in the stage dependency graph.
 
         Returns:
@@ -944,7 +935,7 @@ class PipelineValidator:
 
         return cycles
 
-    def _get_dependency_order(self, stages: List[str]) -> Optional[List[str]]:
+    def _get_dependency_order(self, stages: list[str]) -> Optional[list[str]]:
         """Get the correct order to execute stages based on dependencies.
 
         Args:
@@ -954,7 +945,7 @@ class PipelineValidator:
             Ordered list of stages, or None if circular dependencies exist
         """
         # Topological sort using Kahn's algorithm
-        in_degree = {stage: 0 for stage in stages}
+        in_degree = dict.fromkeys(stages, 0)
         graph = {stage: [] for stage in stages}
 
         # Build the graph and calculate in-degrees
@@ -988,8 +979,8 @@ class PipelineValidator:
             return None  # Circular dependencies exist
 
     def validate_resource_dependencies(
-        self, stages: List[str]
-    ) -> List[ValidationError]:
+        self, stages: list[str]
+    ) -> list[ValidationError]:
         """Validate that all required resources are available for a stage.
 
         Args:
@@ -1008,7 +999,7 @@ class PipelineValidator:
 
         return issues
 
-    def _check_resource_availability(self, resource: str) -> List[ValidationError]:
+    def _check_resource_availability(self, resource: str) -> list[ValidationError]:
         """
         Check if a specific resource is available.
 
@@ -1065,7 +1056,7 @@ class PipelineValidator:
                     rule_issues = rule.validate({})
                     if rule_issues:
                         issues.extend(rule_issues)
-                except Exception as e:
+                except Exception:
                     issues.append(
                         ValidationErrorBuilder.file_not_found(config_file, config_file)
                     )
@@ -1099,7 +1090,7 @@ class PipelineValidator:
                     rule_issues = rule.validate({})
                     if rule_issues:
                         issues.extend(rule_issues)
-                except Exception as e:
+                except Exception:
                     issues.append(
                         ValidationErrorBuilder.file_not_found(
                             template_file, template_file
@@ -1162,7 +1153,7 @@ class PipelineValidator:
         """
         logger.info("Starting pipeline validation...")
 
-        issues: List[ValidationError] = []
+        issues: list[ValidationError] = []
         components_verified = []
         components_failed = []
 
@@ -1238,8 +1229,8 @@ class PipelineValidator:
         return result
 
     def _verify_component(
-        self, component: str, rules: List[ValidationRule]
-    ) -> List[ValidationError]:
+        self, component: str, rules: list[ValidationRule]
+    ) -> list[ValidationError]:
         """Verify a single pipeline component.
 
         Args:
@@ -1276,4 +1267,3 @@ if __name__ == "__main__":
     # Example usage
     validator = PipelineValidator()
     result = validator.validate()
-    print(result)

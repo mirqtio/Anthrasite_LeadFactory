@@ -6,25 +6,27 @@ they function correctly under various conditions including pass/fail scenarios.
 """
 
 import os
-import pytest
-import tempfile
-from unittest.mock import patch, MagicMock
-from pathlib import Path
 
 # Add the project root to the path
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from scripts.preflight.pipeline_validator import (
     DatabaseConnectionRule,
-    ModuleImportRule,
-    FileAccessRule,
     EnvironmentVariableRule,
+    FileAccessRule,
+    ModuleImportRule,
     NetworkConnectivityRule,
     ValidationError,
-    ValidationSeverity,
+    ValidationErrorBuilder,
     ValidationErrorCode,
-    ValidationErrorBuilder
+    ValidationSeverity,
 )
 
 
@@ -42,9 +44,9 @@ class TestDatabaseConnectionRule:
         assert issues[0].error_code == ValidationErrorCode.ENV_VAR_MISSING
         assert issues[0].severity == ValidationSeverity.ERROR
         assert "DATABASE_URL" in issues[0].message
-        assert "database" == issues[0].component
+        assert issues[0].component == "database"
 
-    @patch('psycopg2.connect')
+    @patch("psycopg2.connect")
     def test_database_connection_rule_success(self, mock_connect):
         """Test successful database connection."""
         mock_conn = MagicMock()
@@ -59,7 +61,7 @@ class TestDatabaseConnectionRule:
         mock_connect.assert_called_once_with("postgresql://test:test@localhost/test")
         mock_conn.close.assert_called_once()
 
-    @patch('psycopg2.connect')
+    @patch("psycopg2.connect")
     def test_database_connection_rule_connection_failed(self, mock_connect):
         """Test database connection failure."""
         mock_connect.side_effect = Exception("Connection refused")
@@ -73,14 +75,14 @@ class TestDatabaseConnectionRule:
         assert issues[0].error_code == ValidationErrorCode.DATABASE_CONNECTION_FAILED
         assert issues[0].severity == ValidationSeverity.CRITICAL
         assert "Connection refused" in issues[0].message
-        assert "database" == issues[0].component
+        assert issues[0].component == "database"
 
     def test_database_connection_rule_psycopg2_not_installed(self):
         """Test when psycopg2 is not installed."""
         rule = DatabaseConnectionRule()
 
         with patch.dict(os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}):
-            with patch('builtins.__import__', side_effect=ImportError("No module named 'psycopg2'")):
+            with patch("builtins.__import__", side_effect=ImportError("No module named 'psycopg2'")):
                 issues = rule.validate({})
 
         assert len(issues) == 1
@@ -112,7 +114,7 @@ class TestModuleImportRule:
     def test_module_import_rule_module_with_syntax_error(self):
         """Test importing a module with syntax errors."""
         # Create a temporary Python file with syntax error
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as tmp:
             tmp.write("invalid python syntax $$$ @@@")
             tmp_path = tmp.name
 
@@ -122,7 +124,7 @@ class TestModuleImportRule:
 
             # Add the directory to Python path temporarily
             tmp_dir = os.path.dirname(tmp_path)
-            with patch('sys.path', [tmp_dir] + sys.path):
+            with patch("sys.path", [tmp_dir] + sys.path):
                 rule = ModuleImportRule(module_name)
                 issues = rule.validate({})
 
@@ -146,7 +148,7 @@ class TestFileAccessRule:
 
     def test_file_access_rule_existing_file_read(self):
         """Test read access to an existing file."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             tmp.write("test content")
             tmp_path = tmp.name
 
@@ -170,7 +172,7 @@ class TestFileAccessRule:
 
     def test_file_access_rule_write_access(self):
         """Test write access to a file."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             tmp.write("test content")
             tmp_path = tmp.name
 
@@ -190,10 +192,10 @@ class TestFileAccessRule:
 
             assert len(issues) == 0
 
-    @patch('os.access')
+    @patch("os.access")
     def test_file_access_rule_permission_denied_read(self, mock_access):
         """Test read access denied scenario."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             tmp.write("test content")
             tmp_path = tmp.name
 
@@ -210,10 +212,10 @@ class TestFileAccessRule:
         finally:
             os.unlink(tmp_path)
 
-    @patch('os.access')
+    @patch("os.access")
     def test_file_access_rule_permission_denied_write(self, mock_access):
         """Test write access denied scenario."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             tmp.write("test content")
             tmp_path = tmp.name
 
@@ -308,7 +310,7 @@ class TestEnvironmentVariableRule:
 class TestNetworkConnectivityRule:
     """Test NetworkConnectivityRule in isolation."""
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_success(self, mock_get):
         """Test successful network connectivity."""
         mock_response = MagicMock()
@@ -321,7 +323,7 @@ class TestNetworkConnectivityRule:
         assert len(issues) == 0
         mock_get.assert_called_once_with("http://example.com", timeout=5)
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_http_error(self, mock_get):
         """Test network connectivity with HTTP error status."""
         mock_response = MagicMock()
@@ -336,7 +338,7 @@ class TestNetworkConnectivityRule:
         assert issues[0].severity == ValidationSeverity.ERROR
         assert "example.com" in issues[0].message
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_connection_error(self, mock_get):
         """Test network connectivity with connection error."""
         mock_get.side_effect = ConnectionError("Connection failed")
@@ -349,7 +351,7 @@ class TestNetworkConnectivityRule:
         assert issues[0].severity == ValidationSeverity.ERROR
         assert "unreachable.example.com" in issues[0].message
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_timeout(self, mock_get):
         """Test network connectivity with timeout."""
         import requests
@@ -363,7 +365,7 @@ class TestNetworkConnectivityRule:
         assert issues[0].severity == ValidationSeverity.ERROR
         assert "slow.example.com" in issues[0].message
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_custom_timeout(self, mock_get):
         """Test network connectivity with custom timeout value."""
         mock_response = MagicMock()
@@ -376,7 +378,7 @@ class TestNetworkConnectivityRule:
         assert len(issues) == 0
         mock_get.assert_called_once_with("http://example.com", timeout=10)
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_https_url(self, mock_get):
         """Test network connectivity with HTTPS URL."""
         mock_response = MagicMock()
@@ -389,7 +391,7 @@ class TestNetworkConnectivityRule:
         assert len(issues) == 0
         mock_get.assert_called_once_with("https://secure.example.com", timeout=5)
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_redirect_success(self, mock_get):
         """Test network connectivity with redirect (3xx status)."""
         mock_response = MagicMock()

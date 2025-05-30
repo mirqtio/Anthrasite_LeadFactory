@@ -7,8 +7,8 @@ with real API keys, including email delivery to a controlled address.
 """
 
 import os
-import sys
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -17,10 +17,6 @@ def check_env_file():
     """Check if .env.e2e file exists and has required variables."""
     env_file = Path(__file__).resolve().parent.parent / ".env.e2e"
     if not env_file.exists():
-        print("ERROR: .env.e2e file not found.")
-        print(
-            "Please create this file with your real API keys and EMAIL_OVERRIDE setting."
-        )
         return False
 
     # Read file and check for key variables
@@ -34,7 +30,7 @@ def check_env_file():
         "MOCKUP_ENABLED",
     ]
 
-    with open(env_file, "r") as f:
+    with open(env_file) as f:
         content = f.read()
 
     missing_vars = []
@@ -42,13 +38,7 @@ def check_env_file():
         if f"{var}=" not in content:
             missing_vars.append(var)
 
-    if missing_vars:
-        print(
-            f"ERROR: Missing required variables in .env.e2e: {', '.join(missing_vars)}"
-        )
-        return False
-
-    return True
+    return not missing_vars
 
 
 def run_e2e_test():
@@ -71,11 +61,6 @@ def run_e2e_test():
     if summary_file.exists():
         summary_file.unlink()
 
-    print("===== Running E2E Test with Real API Keys =====")
-    print("This test will use real API keys and send an actual email.")
-    print(f"All emails will be redirected to the EMAIL_OVERRIDE address.")
-    print(f"Logs will be saved to: {log_file}")
-    print("Starting test in 3 seconds...")
     time.sleep(3)
 
     # Load environment variables from .env.e2e first to ensure they're available
@@ -99,45 +84,30 @@ def run_e2e_test():
     ]
 
     try:
-        print(f"\nExecuting: {' '.join(cmd)}\n")
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         # Print the output
-        print("\n===== Test Output =====")
-        print(result.stdout)
 
         if result.stderr:
-            print("\n===== Test Errors =====")
-            print(result.stderr)
+            pass
 
         # Check if the summary file was created
         if summary_file.exists():
-            print("\n===== E2E Summary =====")
-            with open(summary_file, "r") as f:
-                print(f.read())
+            with open(summary_file):
+                pass
         else:
-            print("\nWARNING: e2e_summary.md file was not created.")
+            pass
 
         # Always check the logs for verification
-        print(f"\n===== IMPORTANT: Review the complete logs at {log_file} =====")
-        print(
-            "These logs are critical for verifying test success and diagnosing any issues."
-        )
-        print(
-            "Remember to check all external service responses and confirm email delivery."
-        )
 
         if result.returncode != 0:
-            print("\n❌ E2E test FAILED. Please review the logs for details.")
+            pass
         else:
-            print(
-                "\n✅ E2E test PASSED. Please verify email delivery and check logs to confirm."
-            )
+            pass
 
         # Return the exit code
         return result.returncode
-    except Exception as e:
-        print(f"ERROR: Failed to run E2E test: {str(e)}")
+    except Exception:
         return 1
 
 

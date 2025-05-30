@@ -2,10 +2,10 @@
 Parameterized tests for the email functionality.
 """
 
-import os
-import sys
 import json
+import os
 import sqlite3
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -371,8 +371,8 @@ def test_email_queue_processing(setup_email_queue):
     sent_count = cursor.fetchone()[0]
 
     # For the mixed_status_emails test case, we only verify what was processed in this run
-    test_id = setup_email_queue.get('test_id', '')
-    if test_id == 'mixed_status_emails':
+    test_id = setup_email_queue.get("test_id", "")
+    if test_id == "mixed_status_emails":
         # For mixed_status_emails, verify we processed the correct number
         assert result["success"] == expected_success, \
             f"Expected to process {expected_success} emails successfully, got {result['success']}"
@@ -386,7 +386,7 @@ def test_email_queue_processing(setup_email_queue):
     error_count = cursor.fetchone()[0]
 
     # For mixed_status_emails test, we only care about errors generated in this run
-    if test_id == 'mixed_status_emails':
+    if test_id == "mixed_status_emails":
         # For mixed_status_emails, verify we processed the correct number
         assert result["failed"] == expected_failure, \
             f"Expected to have {expected_failure} failed emails, got {result['failed']}"

@@ -5,18 +5,28 @@ Tests retry logic, circuit breakers, and monitoring functionality.
 """
 
 import asyncio
+import contextlib
 import time
 import unittest
-from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
 
-from leadfactory.pipeline.retry_mechanisms import (
-    RetryConfig, CircuitBreakerConfig, CircuitBreaker, RetryManager,
-    RetryMonitor, with_retry, with_async_retry, CircuitBreakerState,
-    retry_monitor
-)
 from leadfactory.pipeline.error_handling import (
-    PipelineError, RetryStrategy, ErrorCategory, ErrorSeverity
+    ErrorCategory,
+    ErrorSeverity,
+    PipelineError,
+    RetryStrategy,
+)
+from leadfactory.pipeline.retry_mechanisms import (
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitBreakerState,
+    RetryConfig,
+    RetryManager,
+    RetryMonitor,
+    retry_monitor,
+    with_async_retry,
+    with_retry,
 )
 
 
@@ -254,10 +264,8 @@ class TestRetryManager(unittest.TestCase):
 
         # Trigger circuit breaker opening
         for _ in range(2):  # failure_threshold = 2
-            try:
+            with contextlib.suppress(ConnectionError):
                 self.retry_manager.execute_with_retry(mock_func)
-            except ConnectionError:
-                pass
 
         # Circuit should be open, next call should be rejected
         with self.assertRaises(Exception) as context:
@@ -266,7 +274,7 @@ class TestRetryManager(unittest.TestCase):
         self.assertIn("Circuit breaker is open", str(context.exception))
         self.assertGreater(self.retry_manager.retry_stats["circuit_breaker_rejections"], 0)
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_retry_timing(self, mock_sleep):
         """Test that retry delays are applied correctly."""
         mock_func = Mock(side_effect=[ConnectionError("Error"), "success"])
@@ -477,7 +485,6 @@ if __name__ == "__main__":
         decorator_test = TestRetryDecorators()
         await decorator_test.test_async_retry_decorator()
 
-        print("Async tests completed successfully")
 
     # Run sync tests
     unittest.main(verbosity=2, exit=False)

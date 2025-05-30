@@ -10,10 +10,10 @@ This script sets up the complete E2E testing environment:
 5. Updates the .env.e2e file with necessary configuration
 """
 
-import os
-import sys
 import logging
+import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -45,8 +45,7 @@ def run_command(cmd_list, check=True, log_output=True):
         result = subprocess.run(
             cmd_list,
             check=check,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
 
@@ -177,21 +176,6 @@ def verify_connection():
 
 def show_summary():
     """Show a summary of the E2E test environment setup"""
-    connection_string = "postgresql://postgres:postgres@localhost:5433/leadfactory"  # pragma: allowlist secret
-
-    print("\n" + "=" * 80)
-    print(" E2E TEST ENVIRONMENT SETUP SUMMARY ".center(80, "="))
-    print("=" * 80)
-    print(f"  Database URL:         {connection_string}")
-    print(f"  Environment File:     {ENV_FILE}")
-    print(f"  Docker Container:     leadfactory_e2e_db")
-    print(f"  Port:                 5433")
-    print("\nThe E2E test environment is now ready for use.")
-    print("To run E2E tests, use the following command:")
-    print("\n  python bin/run_e2e_test.py")
-    print("\nTo stop the database container:")
-    print("\n  python bin/setup_e2e_postgres.py stop")
-    print("=" * 80 + "\n")
 
 
 def main():

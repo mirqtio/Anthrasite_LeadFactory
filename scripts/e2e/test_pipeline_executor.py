@@ -3,13 +3,13 @@
 Unit tests for the E2E Pipeline Execution and Resolution Loop
 """
 
+import json
 import os
 import sys
-import json
-import unittest
 import tempfile
-from unittest.mock import patch, MagicMock
+import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -17,10 +17,10 @@ if project_root not in sys.path:
     sys.path.append(str(project_root))
 
 from scripts.e2e.pipeline_executor import (
-    PipelineExecutor,
-    PipelineStage,
     ExecutionStatus,
     FailureCategory,
+    PipelineExecutor,
+    PipelineStage,
 )
 
 

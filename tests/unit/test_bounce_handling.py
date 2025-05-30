@@ -6,10 +6,11 @@ This module tests various bounce scenarios, rate calculations, and system
 responses to ensure accurate simulation and verification of bounce handling.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import modules with fallback for testing
 try:
@@ -47,7 +48,7 @@ class TestBounceHandling:
             from_name="Test Sender"
         )
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_calculation_with_valid_data(self, mock_requests_get):
         """Test bounce rate calculation with valid SendGrid response data."""
         # Arrange
@@ -78,7 +79,7 @@ class TestBounceHandling:
         assert bounce_rate == 0.05  # 5 bounces out of 100 requests = 5%
         mock_requests_get.assert_called_once()
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_with_zero_requests(self, mock_requests_get):
         """Test bounce rate calculation when there are zero requests."""
         # Arrange
@@ -108,7 +109,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_with_empty_response(self, mock_requests_get):
         """Test bounce rate calculation with empty response from SendGrid."""
         # Arrange
@@ -123,7 +124,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_with_api_error(self, mock_requests_get):
         """Test bounce rate calculation when SendGrid API returns an error."""
         # Arrange
@@ -138,7 +139,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_with_network_timeout(self, mock_requests_get):
         """Test bounce rate calculation when network request times out."""
         # Arrange
@@ -150,7 +151,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_with_ip_pool_filter(self, mock_requests_get):
         """Test bounce rate calculation with IP pool filter."""
         # Arrange
@@ -185,7 +186,7 @@ class TestBounceHandling:
         assert "ip_pool_name" in call_args[1]["params"]
         assert call_args[1]["params"]["ip_pool_name"] == "primary"
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_with_subuser_filter(self, mock_requests_get):
         """Test bounce rate calculation with subuser filter."""
         # Arrange
@@ -219,7 +220,7 @@ class TestBounceHandling:
         call_args = mock_requests_get.call_args
         assert "subusers/secondary/stats" in call_args[0][0]
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_spam_rate_calculation_with_valid_data(self, mock_requests_get):
         """Test spam rate calculation with valid SendGrid response data."""
         # Arrange
@@ -249,7 +250,7 @@ class TestBounceHandling:
         # Assert
         assert spam_rate == 0.002  # 2 spam reports out of 1000 requests = 0.2%
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_date_range_calculation(self, mock_requests_get):
         """Test bounce rate calculation with specific date range."""
         # Arrange
@@ -287,7 +288,7 @@ class TestBounceHandling:
         assert "start_date" in params
         assert "end_date" in params
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_high_bounce_rate_detection(self, mock_requests_get):
         """Test detection of high bounce rates that exceed thresholds."""
         # Arrange - High bounce rate scenario
@@ -318,7 +319,7 @@ class TestBounceHandling:
         assert bounce_rate == 0.15  # 15% bounce rate
         assert bounce_rate > 0.10  # Above typical warning threshold
 
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_aggregation_multiple_days(self, mock_requests_get):
         """Test bounce rate calculation aggregated across multiple days."""
         # Arrange - Multiple days of data
@@ -381,7 +382,7 @@ class TestBounceHandling:
         (1, 10, 0.10),      # Small volume
         (100, 1000, 0.10),  # Large volume
     ])
-    @patch('leadfactory.pipeline.email_queue.requests.get')
+    @patch("leadfactory.pipeline.email_queue.requests.get")
     def test_bounce_rate_calculations(self, mock_requests_get, bounce_count, request_count, expected_rate):
         """Test bounce rate calculations with various scenarios."""
         # Arrange

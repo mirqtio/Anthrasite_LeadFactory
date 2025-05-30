@@ -7,13 +7,13 @@ ensuring it correctly validates API connectivity with proper
 authentication while handling various error conditions.
 """
 
+import logging
 import os
 import sys
-import logging
 import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -304,9 +304,6 @@ MOCKUP_ENABLED=true
 
 def main():
     """Run all tests"""
-    print("\n" + "=" * 80)
-    print(" API TESTER TESTS ".center(80, "="))
-    print("=" * 80 + "\n")
 
     # Run tests
     unittest.main(argv=["first-arg-is-ignored"], exit=False)

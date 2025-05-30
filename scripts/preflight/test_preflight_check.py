@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test E2E Preflight Check System
 
@@ -7,16 +6,16 @@ Unit tests for the preflight_check.py module.
 """
 
 import os
-import unittest
 import tempfile
-from unittest.mock import patch, MagicMock
+import unittest
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
-from scripts.preflight.preflight_check import PreflightCheck, PreflightCheckResult
-from scripts.preflight.config_validator import ValidationResult
 from scripts.preflight.api_tester import ApiTestResult
+from scripts.preflight.config_validator import ValidationResult
 from scripts.preflight.db_verifier import DbVerificationResult
 from scripts.preflight.pipeline_validator import PipelineValidationResult
+from scripts.preflight.preflight_check import PreflightCheck, PreflightCheckResult
 
 
 class TestPreflightCheckResult(unittest.TestCase):
@@ -272,7 +271,7 @@ NOTIFICATION_SERVICE_URL=http://localhost:8004
             self.assertTrue(os.path.exists(report_file))
 
             # Read the file and check content
-            with open(report_file, "r") as f:
+            with open(report_file) as f:
                 content = f.read()
 
             # Check for key components in the report
@@ -308,8 +307,4 @@ NOTIFICATION_SERVICE_URL=http://localhost:8004
 
 if __name__ == "__main__":
     # Add header and footer to test output
-    print("=" * 80)
-    print("=" * 25 + " PREFLIGHT CHECK TESTS " + "=" * 25)
-    print("=" * 80)
     unittest.main(verbosity=2)
-    print("=" * 80)

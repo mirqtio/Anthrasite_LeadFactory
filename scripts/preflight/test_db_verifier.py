@@ -7,20 +7,20 @@ ensuring it correctly validates database connectivity, schema,
 and sample data while handling various error conditions.
 """
 
+import logging
 import os
 import sys
-import logging
 import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import the database verifier
-from scripts.preflight.db_verifier import DbVerifier, DbVerificationResult
+from scripts.preflight.db_verifier import DbVerificationResult, DbVerifier
 
 # Set up logging
 logging.basicConfig(
@@ -477,9 +477,6 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5433/leadfactory  # pragma
 
 def main():
     """Run all tests"""
-    print("\n" + "=" * 80)
-    print(" DATABASE VERIFIER TESTS ".center(80, "="))
-    print("=" * 80 + "\n")
 
     # Run tests
     unittest.main(argv=["first-arg-is-ignored"], exit=False)

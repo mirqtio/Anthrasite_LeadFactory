@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test Pipeline Component Validator
 
 Unit tests for the pipeline_validator.py module.
 """
 
-import os
 import json
-import unittest
-import tempfile
+import os
 import subprocess
+import tempfile
+import unittest
+from unittest.mock import MagicMock, mock_open, patch
+
 import requests
-from unittest.mock import patch, MagicMock, mock_open
 
 from scripts.preflight.pipeline_validator import (
-    PipelineValidator,
     PipelineValidationResult,
+    PipelineValidator,
 )
 
 
@@ -322,7 +322,7 @@ NOTIFICATION_SERVICE_URL=http://localhost:8004
             self.assertTrue(os.path.exists(output_file))
 
             # Read the file and check content
-            with open(output_file, "r") as f:
+            with open(output_file) as f:
                 content = f.read()
 
             # Check for key components in the sample config
@@ -352,8 +352,4 @@ NOTIFICATION_SERVICE_URL=http://localhost:8004
 
 if __name__ == "__main__":
     # Add header and footer to test output
-    print("=" * 80)
-    print("=" * 25 + " PIPELINE VALIDATOR TESTS " + "=" * 25)
-    print("=" * 80)
     unittest.main(verbosity=2)
-    print("=" * 80)

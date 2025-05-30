@@ -6,16 +6,17 @@ It determines whether to use real APIs or mocks based on environment variables
 and command-line options set in conftest.py.
 """
 
+import contextlib
+import json
 import os
 import time
-from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union, cast
-import json
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union, cast
 
 # Type variables for decorator return typing
-F = TypeVar('F', bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Any])
 
 # Initialize the environment flags
 _USE_REAL_APIS = os.environ.get("LEADFACTORY_USE_REAL_APIS", "0") == "1"
@@ -25,28 +26,28 @@ _API_FLAGS = {
 
 # Define supported APIs and their description
 SUPPORTED_APIS = {
-    'yelp': 'Yelp Fusion API for business discovery',
-    'google': 'Google Places API for location data',
-    'openai': 'OpenAI API for GPT models',
-    'sendgrid': 'SendGrid API for email delivery',
-    'screenshotone': 'ScreenshotOne API for website captures',
-    'anthropic': 'Anthropic API for Claude models',
-    'mapbox': 'Mapbox API for mapping services',
-    'stripe': 'Stripe API for payment processing',
-    'twilio': 'Twilio API for SMS and voice'
+    "yelp": "Yelp Fusion API for business discovery",
+    "google": "Google Places API for location data",
+    "openai": "OpenAI API for GPT models",
+    "sendgrid": "SendGrid API for email delivery",
+    "screenshotone": "ScreenshotOne API for website captures",
+    "anthropic": "Anthropic API for Claude models",
+    "mapbox": "Mapbox API for mapping services",
+    "stripe": "Stripe API for payment processing",
+    "twilio": "Twilio API for SMS and voice"
 }
 
 # Define endpoints for each API for better metrics grouping
 API_ENDPOINTS = {
-    'yelp': ['business_search', 'business_details', 'business_reviews'],
-    'google': ['places_search', 'place_details', 'place_photos'],
-    'openai': ['chat_completion', 'embedding', 'moderation'],
-    'sendgrid': ['send_email', 'validate_email'],
-    'screenshotone': ['take_screenshot', 'pdf_generation'],
-    'anthropic': ['message_create', 'message_stream'],
-    'mapbox': ['geocoding', 'directions'],
-    'stripe': ['create_charge', 'create_customer'],
-    'twilio': ['send_sms', 'verify_phone']
+    "yelp": ["business_search", "business_details", "business_reviews"],
+    "google": ["places_search", "place_details", "place_photos"],
+    "openai": ["chat_completion", "embedding", "moderation"],
+    "sendgrid": ["send_email", "validate_email"],
+    "screenshotone": ["take_screenshot", "pdf_generation"],
+    "anthropic": ["message_create", "message_stream"],
+    "mapbox": ["geocoding", "directions"],
+    "stripe": ["create_charge", "create_customer"],
+    "twilio": ["send_sms", "verify_phone"]
 }
 
 class APITestConfig:
@@ -57,33 +58,33 @@ class APITestConfig:
     """
 
     # Cache for configuration to avoid repeated environment lookups
-    _config_cache: Dict[str, Any] = {}
+    _config_cache: dict[str, Any] = {}
 
     @classmethod
-    def get_config(cls) -> Dict[str, Any]:
+    def get_config(cls) -> dict[str, Any]:
         """Get the complete API test configuration."""
         if cls._config_cache:
             return cls._config_cache
 
         # Base configuration
         config = {
-            'use_real_apis': cls.use_real_apis(),
-            'apis_to_test': cls.apis_to_test(),
-            'metrics': {
-                'enabled': cls.metrics_enabled(),
-                'log_to_file': cls.should_log_to_file(),
-                'log_to_prometheus': cls.should_log_to_prometheus(),
-                'directory': cls.metrics_directory()
+            "use_real_apis": cls.use_real_apis(),
+            "apis_to_test": cls.apis_to_test(),
+            "metrics": {
+                "enabled": cls.metrics_enabled(),
+                "log_to_file": cls.should_log_to_file(),
+                "log_to_prometheus": cls.should_log_to_prometheus(),
+                "directory": cls.metrics_directory()
             }
         }
 
         # Add API-specific configurations
-        config['api_configs'] = {}
-        for api in SUPPORTED_APIS.keys():
-            config['api_configs'][api] = {
-                'enabled': cls.should_test_api(api),
-                'throttling': cls.get_api_throttling(api),
-                'endpoints': cls.get_api_endpoints(api)
+        config["api_configs"] = {}
+        for api in SUPPORTED_APIS:
+            config["api_configs"][api] = {
+                "enabled": cls.should_test_api(api),
+                "throttling": cls.get_api_throttling(api),
+                "endpoints": cls.get_api_endpoints(api)
             }
 
         cls._config_cache = config
@@ -95,7 +96,7 @@ class APITestConfig:
         return os.environ.get("LEADFACTORY_USE_REAL_APIS", "0").lower() in ("1", "true", "yes")
 
     @staticmethod
-    def apis_to_test() -> List[str]:
+    def apis_to_test() -> list[str]:
         """Get the list of APIs to test with real credentials."""
         apis_env = os.environ.get("LEADFACTORY_TEST_APIS", "all")
 
@@ -104,7 +105,7 @@ class APITestConfig:
         elif apis_env.lower() == "none":
             return []
         else:
-            return [api.strip().lower() for api in apis_env.split(',') if api.strip()]
+            return [api.strip().lower() for api in apis_env.split(",") if api.strip()]
 
     @classmethod
     def should_test_api(cls, api_name: str) -> bool:
@@ -150,39 +151,35 @@ class APITestConfig:
         return os.environ.get("METRICS_DIR", "metrics")
 
     @staticmethod
-    def get_api_throttling(api_name: str) -> Dict[str, Any]:
+    def get_api_throttling(api_name: str) -> dict[str, Any]:
         """Get throttling configuration for an API."""
         throttling = {
-            'enabled': False,
-            'requests_per_minute': 60,
-            'requests_per_day': 1000
+            "enabled": False,
+            "requests_per_minute": 60,
+            "requests_per_day": 1000
         }
 
         # Check if throttling is enabled for this API
         throttle_env = f"LEADFACTORY_THROTTLE_{api_name.upper()}_API"
         if os.environ.get(throttle_env, "0").lower() in ("1", "true", "yes"):
-            throttling['enabled'] = True
+            throttling["enabled"] = True
 
             # Get specific throttling parameters if set
             rpm_env = f"LEADFACTORY_{api_name.upper()}_RPM"
             rpd_env = f"LEADFACTORY_{api_name.upper()}_RPD"
 
             if rpm_env in os.environ:
-                try:
-                    throttling['requests_per_minute'] = int(os.environ[rpm_env])
-                except ValueError:
-                    pass
+                with contextlib.suppress(ValueError):
+                    throttling["requests_per_minute"] = int(os.environ[rpm_env])
 
             if rpd_env in os.environ:
-                try:
-                    throttling['requests_per_day'] = int(os.environ[rpd_env])
-                except ValueError:
-                    pass
+                with contextlib.suppress(ValueError):
+                    throttling["requests_per_day"] = int(os.environ[rpd_env])
 
         return throttling
 
     @staticmethod
-    def get_api_endpoints(api_name: str) -> List[str]:
+    def get_api_endpoints(api_name: str) -> list[str]:
         """Get the list of endpoints for an API."""
         return API_ENDPOINTS.get(api_name, [])
 
@@ -194,13 +191,13 @@ class APITestConfig:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filepath = f"api_test_config_{timestamp}.json"
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(config, f, indent=2, default=str)
 
         return filepath
 
     @staticmethod
-    def get_api_keys() -> Dict[str, Optional[str]]:
+    def get_api_keys() -> dict[str, Optional[str]]:
         """
         Get API keys from environment variables.
 
@@ -291,7 +288,7 @@ def api_call_metrics(api_name: str, endpoint: str = "default") -> Callable[[F], 
                 return func(*args, **kwargs)
 
             # Extract metrics_logger from kwargs if available
-            metrics_logger = kwargs.pop('metrics_logger', None)
+            metrics_logger = kwargs.pop("metrics_logger", None)
 
             # Measure latency
             start_time = time.time()

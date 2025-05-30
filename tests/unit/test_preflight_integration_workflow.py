@@ -6,22 +6,27 @@ This test suite focuses on testing the integration workflow and coordination
 between preflight components without relying on actual validation logic.
 """
 
-import unittest
-from unittest.mock import Mock, MagicMock, patch, call
+import logging
 import os
 import sys
-import logging
-from pathlib import Path
+import unittest
 from dataclasses import dataclass, field
-from typing import Dict, Any, List
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, call, patch
 
 # Add the project root to the Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from scripts.preflight.pipeline_validator import ValidationLogger, ValidationError, ValidationSeverity, ValidationErrorCode
+    from scripts.preflight.pipeline_validator import (
+        ValidationError,
+        ValidationErrorCode,
+        ValidationLogger,
+        ValidationSeverity,
+    )
 except ImportError:
     # Create mock classes if imports fail
     class ValidationSeverity(Enum):
@@ -43,8 +48,8 @@ except ImportError:
         severity: ValidationSeverity
         component: str
         message: str
-        context: Dict[str, Any] = field(default_factory=dict)
-        remediation_steps: List[str] = field(default_factory=list)
+        context: dict[str, Any] = field(default_factory=dict)
+        remediation_steps: list[str] = field(default_factory=list)
 
         def __str__(self):
             return f"[{self.error_code.value}] {self.component}: {self.message}"
@@ -54,7 +59,7 @@ except ImportError:
             self.validation_session_id = "test-session-123"
             self.error_count = 0
             self.warning_count = 0
-            self.logger = logging.getLogger('test_logger')
+            self.logger = logging.getLogger("test_logger")
 
         def log_validation_start(self, component):
             self.logger.info(f"Starting validation for component: {component}")
@@ -73,12 +78,12 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         self.test_env = {
-            'DATABASE_URL': 'postgresql://test:test@localhost:5432/testdb',
-            'YELP_API_KEY': 'test_yelp_key',
-            'GOOGLE_API_KEY': 'test_google_key',
-            'SCREENSHOTONE_API_KEY': 'test_screenshot_key',
-            'SENDGRID_API_KEY': 'test_sendgrid_key',
-            'SENDGRID_FROM_EMAIL': 'test@example.com'
+            "DATABASE_URL": "postgresql://test:test@localhost:5432/testdb",
+            "YELP_API_KEY": "test_yelp_key",
+            "GOOGLE_API_KEY": "test_google_key",
+            "SCREENSHOTONE_API_KEY": "test_screenshot_key",
+            "SENDGRID_API_KEY": "test_sendgrid_key",
+            "SENDGRID_FROM_EMAIL": "test@example.com"
         }
 
     def test_validation_logger_workflow(self):
@@ -426,7 +431,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
         return len(all_errors) == 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Set up logging for tests
     logging.basicConfig(level=logging.INFO)
 

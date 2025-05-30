@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 E2E Preflight Check System
 
@@ -8,20 +7,24 @@ configuration, API connectivity, database access, and pipeline services before
 running E2E tests.
 """
 
-import os
-import sys
 import argparse
 import logging
+import os
+import sys
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Any, Dict, List, Optional, Tuple
+
 from dotenv import load_dotenv
+
+from scripts.preflight.api_tester import ApiTester
 
 # Import preflight check components
 from scripts.preflight.config_validator import ConfigValidator
-from scripts.preflight.api_tester import ApiTester
 from scripts.preflight.db_verifier import DbVerifier
-from scripts.preflight.pipeline_validator import PipelineValidator
-from scripts.preflight.pipeline_validator import PipelineValidationResult
+from scripts.preflight.pipeline_validator import (
+    PipelineValidationResult,
+    PipelineValidator,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -43,7 +46,7 @@ class PreflightCheckResult:
         self.success = False
         self.issues = []
 
-    def complete(self, success: bool, issues: List[str]):
+    def complete(self, success: bool, issues: list[str]):
         """Complete the preflight check result."""
         self.end_time = datetime.now()
         self.success = success
@@ -376,7 +379,7 @@ def generate_sample_env_files():
             "sample_db.env",
             "sample_pipeline.env",
         ]:
-            with open(sample_file, "r") as component_file:
+            with open(sample_file) as component_file:
                 f.write(f"\n# From {sample_file}\n")
                 f.write(component_file.read())
                 f.write("\n")

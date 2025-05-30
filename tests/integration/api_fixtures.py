@@ -41,7 +41,7 @@ def yelp_api(api_metrics_logger):
                     }
 
                 @api_call_metrics("yelp", "business_search")
-                def business_search(self, term: str, location: str, **kwargs) -> Dict[str, Any]:
+                def business_search(self, term: str, location: str, **kwargs) -> dict[str, Any]:
                     """Search for businesses on Yelp."""
                     url = f"{self.base_url}/businesses/search"
                     params = {"term": term, "location": location, **kwargs}
@@ -50,7 +50,7 @@ def yelp_api(api_metrics_logger):
                     return response.json()
 
                 @api_call_metrics("yelp", "business_details")
-                def business_details(self, business_id: str) -> Dict[str, Any]:
+                def business_details(self, business_id: str) -> dict[str, Any]:
                     """Get details for a specific business on Yelp."""
                     url = f"{self.base_url}/businesses/{business_id}"
                     response = requests.get(url, headers=self.headers)
@@ -58,17 +58,17 @@ def yelp_api(api_metrics_logger):
                     return response.json()
 
             return RealYelpAPI()
-        except (ImportError, Exception) as e:
-            print(f"Warning: Falling back to mock Yelp API due to error: {e}")
+        except (ImportError, Exception):
+            pass
 
     # Use mock implementation
     mock_yelp = MagicMock()
 
     # Set up mock business_search method
-    def mock_business_search(term: str, location: str, **kwargs) -> Dict[str, Any]:
+    def mock_business_search(term: str, location: str, **kwargs) -> dict[str, Any]:
         mock_file = MOCK_DATA_DIR / "yelp_business_search.json"
         if mock_file.exists():
-            with open(mock_file, "r") as f:
+            with open(mock_file) as f:
                 return json.load(f)
         return {
             "businesses": [
@@ -87,10 +87,10 @@ def yelp_api(api_metrics_logger):
         }
 
     # Set up mock business_details method
-    def mock_business_details(business_id: str) -> Dict[str, Any]:
+    def mock_business_details(business_id: str) -> dict[str, Any]:
         mock_file = MOCK_DATA_DIR / f"yelp_business_{business_id}.json"
         if mock_file.exists():
-            with open(mock_file, "r") as f:
+            with open(mock_file) as f:
                 return json.load(f)
         return {
             "id": business_id,
@@ -128,7 +128,7 @@ def google_places_api(api_metrics_logger):
                     self.base_url = "https://maps.googleapis.com/maps/api/place"
 
                 @api_call_metrics("google", "place_search")
-                def place_search(self, query: str, **kwargs) -> Dict[str, Any]:
+                def place_search(self, query: str, **kwargs) -> dict[str, Any]:
                     """Search for places using Google Places API."""
                     url = f"{self.base_url}/textsearch/json"
                     params = {"query": query, "key": self.api_key, **kwargs}
@@ -137,7 +137,7 @@ def google_places_api(api_metrics_logger):
                     return response.json()
 
                 @api_call_metrics("google", "place_details")
-                def place_details(self, place_id: str) -> Dict[str, Any]:
+                def place_details(self, place_id: str) -> dict[str, Any]:
                     """Get details for a specific place using Google Places API."""
                     url = f"{self.base_url}/details/json"
                     params = {"place_id": place_id, "key": self.api_key, "fields": "name,formatted_address,formatted_phone_number,website,url,rating,user_ratings_total,opening_hours"}
@@ -146,17 +146,17 @@ def google_places_api(api_metrics_logger):
                     return response.json()
 
             return RealGooglePlacesAPI()
-        except (ImportError, Exception) as e:
-            print(f"Warning: Falling back to mock Google Places API due to error: {e}")
+        except (ImportError, Exception):
+            pass
 
     # Use mock implementation
     mock_google = MagicMock()
 
     # Set up mock place_search method
-    def mock_place_search(query: str, **kwargs) -> Dict[str, Any]:
+    def mock_place_search(query: str, **kwargs) -> dict[str, Any]:
         mock_file = MOCK_DATA_DIR / "google_place_search.json"
         if mock_file.exists():
-            with open(mock_file, "r") as f:
+            with open(mock_file) as f:
                 return json.load(f)
         return {
             "results": [
@@ -172,10 +172,10 @@ def google_places_api(api_metrics_logger):
         }
 
     # Set up mock place_details method
-    def mock_place_details(place_id: str) -> Dict[str, Any]:
+    def mock_place_details(place_id: str) -> dict[str, Any]:
         mock_file = MOCK_DATA_DIR / f"google_place_{place_id}.json"
         if mock_file.exists():
-            with open(mock_file, "r") as f:
+            with open(mock_file) as f:
                 return json.load(f)
         return {
             "result": {
@@ -224,7 +224,7 @@ def openai_api(api_metrics_logger):
                     self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
                 @api_call_metrics("openai", "chat_completion")
-                def chat_completion(self, messages: List[Dict[str, str]], model: str = "gpt-4o", **kwargs) -> Dict[str, Any]:
+                def chat_completion(self, messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs) -> dict[str, Any]:
                     """Generate a chat completion using OpenAI API."""
                     response = self.client.chat.completions.create(
                         model=model,
@@ -235,17 +235,17 @@ def openai_api(api_metrics_logger):
                     return response.model_dump()
 
             return RealOpenAIAPI()
-        except (ImportError, Exception) as e:
-            print(f"Warning: Falling back to mock OpenAI API due to error: {e}")
+        except (ImportError, Exception):
+            pass
 
     # Use mock implementation
     mock_openai = MagicMock()
 
     # Set up mock chat_completion method
-    def mock_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-4o", **kwargs) -> Dict[str, Any]:
+    def mock_chat_completion(messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs) -> dict[str, Any]:
         mock_file = MOCK_DATA_DIR / "openai_chat_completion.json"
         if mock_file.exists():
-            with open(mock_file, "r") as f:
+            with open(mock_file) as f:
                 return json.load(f)
 
         # Extract the last user message for the mock response
@@ -288,14 +288,14 @@ def sendgrid_api(api_metrics_logger):
         # Import the real client
         try:
             import sendgrid
-            from sendgrid.helpers.mail import Mail, Email, To, Content
+            from sendgrid.helpers.mail import Content, Email, Mail, To
 
             class RealSendGridAPI:
                 def __init__(self):
                     self.client = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
 
                 @api_call_metrics("sendgrid", "send_email")
-                def send_email(self, from_email: str, to_email: str, subject: str, content: str, **kwargs) -> Dict[str, Any]:
+                def send_email(self, from_email: str, to_email: str, subject: str, content: str, **kwargs) -> dict[str, Any]:
                     """Send an email using SendGrid API."""
                     message = Mail(
                         from_email=Email(from_email),
@@ -312,14 +312,14 @@ def sendgrid_api(api_metrics_logger):
                     }
 
             return RealSendGridAPI()
-        except (ImportError, Exception) as e:
-            print(f"Warning: Falling back to mock SendGrid API due to error: {e}")
+        except (ImportError, Exception):
+            pass
 
     # Use mock implementation
     mock_sendgrid = MagicMock()
 
     # Set up mock send_email method
-    def mock_send_email(from_email: str, to_email: str, subject: str, content: str, **kwargs) -> Dict[str, Any]:
+    def mock_send_email(from_email: str, to_email: str, subject: str, content: str, **kwargs) -> dict[str, Any]:
         return {
             "status_code": 202,  # Standard successful response from SendGrid
             "body": "",
@@ -369,8 +369,8 @@ def screenshotone_api(api_metrics_logger):
                     return response.content
 
             return RealScreenshotOneAPI()
-        except (ImportError, Exception) as e:
-            print(f"Warning: Falling back to mock ScreenshotOne API due to error: {e}")
+        except (ImportError, Exception):
+            pass
 
     # Use mock implementation
     mock_screenshotone = MagicMock()
@@ -434,5 +434,3 @@ def setup_mock_data_dir():
         # Create marker file
         with open(MOCK_DATA_DIR / "example_created.txt", "w") as f:
             f.write("Example mock data files created on 2024-05-25")
-
-        print(f"Created example mock data files in {MOCK_DATA_DIR}")

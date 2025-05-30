@@ -3,10 +3,12 @@ Shared step definitions for BDD tests.
 These steps are imported by all test files.
 """
 import sqlite3
-from pytest_bdd import given, when, then, parsers
+
+from pytest_bdd import given, parsers, then, when
 
 # Import the global context from conftest.py
 from tests.bdd.conftest import global_context as context
+
 
 @given("the database is initialized")
 def initialize_database(db_conn):
@@ -21,6 +23,6 @@ def initialize_database(db_conn):
     context.clear()
 
     # Mark that we've initialized the database
-    context['database_initialized'] = True
+    context["database_initialized"] = True
 
     return db_conn

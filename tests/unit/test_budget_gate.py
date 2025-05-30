@@ -3,8 +3,8 @@ Unit tests for the budget_gate module.
 """
 
 import os
-import sys
 import sqlite3
+import sys
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 

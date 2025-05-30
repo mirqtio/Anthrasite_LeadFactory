@@ -6,18 +6,18 @@ verifying proper execution order, accurate pass/fail determination, and comprehe
 logging and reporting without relying on actual external dependencies.
 """
 
-import unittest
-from unittest.mock import patch, MagicMock, call
 import os
 import tempfile
+import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, call, patch
 
 from scripts.preflight.pipeline_validator import (
     PipelineValidator,
-    ValidationLogger,
     ValidationError,
+    ValidationErrorCode,
+    ValidationLogger,
     ValidationSeverity,
-    ValidationErrorCode
 )
 
 
@@ -27,19 +27,19 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         self.test_env = {
-            'DATABASE_URL': 'postgresql://test:test@localhost:5432/testdb',
-            'YELP_API_KEY': 'test_yelp_key',
-            'GOOGLE_API_KEY': 'test_google_key',
-            'SCREENSHOTONE_API_KEY': 'test_screenshot_key',
-            'SENDGRID_API_KEY': 'test_sendgrid_key',
-            'SENDGRID_FROM_EMAIL': 'test@example.com'
+            "DATABASE_URL": "postgresql://test:test@localhost:5432/testdb",
+            "YELP_API_KEY": "test_yelp_key",
+            "GOOGLE_API_KEY": "test_google_key",
+            "SCREENSHOTONE_API_KEY": "test_screenshot_key",
+            "SENDGRID_API_KEY": "test_sendgrid_key",
+            "SENDGRID_FROM_EMAIL": "test@example.com"
         }
 
         # Create temporary directory and files
         self.temp_dir = tempfile.mkdtemp()
-        self.email_template = os.path.join(self.temp_dir, 'email_template.html')
-        with open(self.email_template, 'w') as f:
-            f.write('<html><body>Test template</body></html>')
+        self.email_template = os.path.join(self.temp_dir, "email_template.html")
+        with open(self.email_template, "w") as f:
+            f.write("<html><body>Test template</body></html>")
 
     def tearDown(self):
         """Clean up test environment."""
@@ -52,7 +52,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         logger = ValidationLogger()
 
         # Test the complete workflow sequence
-        components = ['database', 'environment', 'files', 'network', 'modules']
+        components = ["database", "environment", "files", "network", "modules"]
 
         # Simulate starting validation for each component
         for component in components:
@@ -95,8 +95,8 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
             ValidationSeverity.CRITICAL,
             "test_module",
             "Module could not be imported",
-            context={'module_name': 'test_module', 'import_path': '/test/path'},
-            remediation_steps=['Install module', 'Check path']
+            context={"module_name": "test_module", "import_path": "/test/path"},
+            remediation_steps=["Install module", "Check path"]
         )
 
         # Test error string representation
@@ -107,10 +107,10 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
 
         # Test error dictionary representation
         error_dict = error.to_dict()
-        self.assertEqual(error_dict['error_code'], 'MOD_001')
-        self.assertEqual(error_dict['severity'], 'critical')
-        self.assertEqual(error_dict['component'], 'test_module')
-        self.assertEqual(len(error_dict['remediation_steps']), 2)
+        self.assertEqual(error_dict["error_code"], "MOD_001")
+        self.assertEqual(error_dict["severity"], "critical")
+        self.assertEqual(error_dict["component"], "test_module")
+        self.assertEqual(len(error_dict["remediation_steps"]), 2)
 
     def test_preflight_logger_complete_workflow(self):
         """Test the complete ValidationLogger workflow from start to finish."""
@@ -118,11 +118,11 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
 
         # Test complete workflow sequence
         test_components = [
-            ('database', True),
-            ('environment', False),
-            ('files', True),
-            ('network', False),
-            ('modules', True)
+            ("database", True),
+            ("environment", False),
+            ("files", True),
+            ("network", False),
+            ("modules", True)
         ]
 
         # Process each component
@@ -204,21 +204,21 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
 
         # Simulate mixed success/failure scenario
         validation_results = [
-            ('database', True, None),
-            ('environment', False, ValidationError(
+            ("database", True, None),
+            ("environment", False, ValidationError(
                 ValidationErrorCode.ENV_VAR_MISSING,
                 ValidationSeverity.WARNING,
                 "environment",
                 "Non-critical variable missing"
             )),
-            ('files', True, None),
-            ('network', False, ValidationError(
+            ("files", True, None),
+            ("network", False, ValidationError(
                 ValidationErrorCode.NETWORK_UNREACHABLE,
                 ValidationSeverity.ERROR,
                 "network",
                 "External service unreachable"
             )),
-            ('modules', True, None)
+            ("modules", True, None)
         ]
 
         # Process validation results
@@ -246,12 +246,12 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
 
         # Define expected execution order
         expected_order = [
-            'dependencies',
-            'environment',
-            'database',
-            'files',
-            'modules',
-            'network'
+            "dependencies",
+            "environment",
+            "database",
+            "files",
+            "modules",
+            "network"
         ]
 
         # Track actual execution order
@@ -279,20 +279,20 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
 
         # Simulate a scenario where early validations fail but processing continues
         components_with_results = [
-            ('critical_component', False, ValidationError(
+            ("critical_component", False, ValidationError(
                 ValidationErrorCode.DATABASE_CONNECTION_FAILED,
                 ValidationSeverity.CRITICAL,
                 "critical_component",
                 "Critical failure occurred"
             )),
-            ('secondary_component', True, None),
-            ('tertiary_component', False, ValidationError(
+            ("secondary_component", True, None),
+            ("tertiary_component", False, ValidationError(
                 ValidationErrorCode.FILE_NOT_FOUND,
                 ValidationSeverity.ERROR,
                 "tertiary_component",
                 "Secondary failure occurred"
             )),
-            ('final_component', True, None)
+            ("final_component", True, None)
         ]
 
         # Process all components despite failures
@@ -320,13 +320,13 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
 
         # Test all major validation categories
         validation_categories = [
-            'database_connectivity',
-            'environment_variables',
-            'file_access_permissions',
-            'network_connectivity',
-            'module_imports',
-            'dependency_resolution',
-            'configuration_validation'
+            "database_connectivity",
+            "environment_variables",
+            "file_access_permissions",
+            "network_connectivity",
+            "module_imports",
+            "dependency_resolution",
+            "configuration_validation"
         ]
 
         # Process each category
@@ -345,5 +345,5 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

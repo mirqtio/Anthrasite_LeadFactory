@@ -3,6 +3,7 @@ Unit tests for the dedupe module focusing on core functionality.
 Consolidated from multiple test files into a single comprehensive module.
 """
 
+import contextlib
 import os
 import sqlite3
 import sys
@@ -15,34 +16,23 @@ import pytest
 # Add project root to path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
-print(f"Project root: {project_root}")
-print(f"sys.path: {sys.path}")
 
 # Force import bin.dedupe first so patching works correctly
-try:
+with contextlib.suppress(ImportError):
     import bin.dedupe
-    print("Successfully imported bin.dedupe")
-except ImportError as e:
-    print(f"ImportError for bin.dedupe: {e}")
 
 # Import the deduplication module
 try:
     from leadfactory.pipeline import dedupe
-    print("Successfully imported dedupe from leadfactory.pipeline")
-except ImportError as e:
-    print(f"ImportError: {e}")
+except ImportError:
     # Try alternative import path after reorganization
     try:
         import leadfactory.pipeline.dedupe as dedupe
-        print("Successfully imported using alternative path")
-    except ImportError as e2:
-        print(f"Second ImportError: {e2}")
-        sys.path.insert(0, os.path.join(project_root, 'leadfactory'))
+    except ImportError:
+        sys.path.insert(0, os.path.join(project_root, "leadfactory"))
         try:
             import pipeline.dedupe as dedupe
-            print("Successfully imported using third approach")
-        except ImportError as e3:
-            print(f"Third ImportError: {e3}")
+        except ImportError:
             raise
 
 # Import the classes directly from the dedupe module

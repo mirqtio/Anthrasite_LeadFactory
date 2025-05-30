@@ -18,7 +18,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 # Add dotenv support to load environment variables from .env file
 try:
@@ -26,23 +26,20 @@ try:
     # Load environment variables from .env file with override=True to force .env values
     # to take precedence over system environment variables
     load_dotenv(override=True)
-    print("🌱 Loaded environment variables from .env file (with override=True)")
 except ImportError:
-    print("⚠️ python-dotenv not installed, trying to load .env file manually")
     try:
         # Manually load .env file if dotenv is not installed
         env_path = Path.cwd() / ".env"
         if env_path.exists():
-            with open(env_path, "r") as f:
+            with open(env_path) as f:
                 for line in f:
                     line = line.strip()
                     if not line or line.startswith("#") or "=" not in line:
                         continue
                     key, value = line.split("=", 1)
                     os.environ[key] = value
-            print("🌱 Manually loaded environment variables from .env file")
-    except Exception as e:
-        print(f"⚠️ Failed to load .env file: {e}")
+    except Exception:
+        pass
 
 
 # Add project root to Python path
@@ -65,7 +62,7 @@ class RealYelpAPI:
             "Accept": "application/json",
         }
 
-    def business_search(self, term: str, location: str, **kwargs) -> Dict[str, Any]:
+    def business_search(self, term: str, location: str, **kwargs) -> dict[str, Any]:
         """Search for businesses on Yelp."""
         url = f"{self.base_url}/businesses/search"
         params = {"term": term, "location": location, **kwargs}
@@ -81,7 +78,7 @@ class RealGooglePlacesAPI:
             self.api_key = os.environ.get("GOOGLE_KEY")
         self.base_url = "https://maps.googleapis.com/maps/api/place"
 
-    def place_search(self, query: str, location: str = None, radius: int = 1000, **kwargs) -> Dict[str, Any]:
+    def place_search(self, query: str, location: str = None, radius: int = 1000, **kwargs) -> dict[str, Any]:
         """Search for places using Google Places API."""
         url = f"{self.base_url}/textsearch/json"
         params = {"query": query, "key": self.api_key, **kwargs}
@@ -104,7 +101,7 @@ class RealOpenAIAPI:
             "Content-Type": "application/json"
         }
 
-    def chat_completion(self, messages: List[Dict[str, str]], model: str = "gpt-3.5-turbo", **kwargs) -> Dict[str, Any]:
+    def chat_completion(self, messages: list[dict[str, str]], model: str = "gpt-3.5-turbo", **kwargs) -> dict[str, Any]:
         """Generate chat completions using OpenAI API."""
         url = f"{self.base_url}/chat/completions"
         data = {
@@ -141,12 +138,12 @@ class RealScreenshotOneAPI:
 def check_api_key(api_name: str) -> bool:
     """Check if the API key for a specific API is available in environment variables."""
     key_mapping = {
-        'yelp': ['YELP_API_KEY', 'YELP_KEY'],
-        'google': ['GOOGLE_API_KEY', 'GOOGLE_KEY'],
-        'openai': ['OPENAI_API_KEY'],
-        'sendgrid': ['SENDGRID_API_KEY', 'SENDGRID_KEY'],
-        'screenshotone': ['SCREENSHOT_ONE_API_KEY', 'SCREENSHOT_ONE_KEY'],
-        'anthropic': ['ANTHROPIC_API_KEY'],
+        "yelp": ["YELP_API_KEY", "YELP_KEY"],
+        "google": ["GOOGLE_API_KEY", "GOOGLE_KEY"],
+        "openai": ["OPENAI_API_KEY"],
+        "sendgrid": ["SENDGRID_API_KEY", "SENDGRID_KEY"],
+        "screenshotone": ["SCREENSHOT_ONE_API_KEY", "SCREENSHOT_ONE_KEY"],
+        "anthropic": ["ANTHROPIC_API_KEY"],
     }
 
     env_vars = key_mapping.get(api_name, [])
@@ -154,16 +151,11 @@ def check_api_key(api_name: str) -> bool:
         return False
 
     # Check all possible environment variable names
-    for env_var in env_vars:
-        if os.environ.get(env_var):
-            return True
-
-    return False
+    return any(os.environ.get(env_var) for env_var in env_vars)
 
 
-def validate_yelp_api() -> Dict[str, Any]:
+def validate_yelp_api() -> dict[str, Any]:
     """Validate the Yelp API integration."""
-    print("\n🔍 Testing Yelp API integration...")
     result = {
         "api": "yelp",
         "key_available": check_api_key("yelp"),
@@ -175,7 +167,6 @@ def validate_yelp_api() -> Dict[str, Any]:
 
     if not result["key_available"]:
         result["error"] = "API key not found in environment variables"
-        print("❌ Yelp API key not found in environment variables")
         return result
 
     try:
@@ -194,20 +185,16 @@ def validate_yelp_api() -> Dict[str, Any]:
                 "total": len(response["businesses"]),
                 "first_business": response["businesses"][0]["name"] if response["businesses"] else None
             }
-            print(f"✅ Yelp API test successful - found {len(response['businesses'])} businesses")
         else:
             result["error"] = "Invalid response format"
-            print("❌ Yelp API test failed - invalid response format")
     except Exception as e:
         result["error"] = str(e)
-        print(f"❌ Yelp API test failed with error: {e}")
 
     return result
 
 
-def validate_google_places_api() -> Dict[str, Any]:
+def validate_google_places_api() -> dict[str, Any]:
     """Validate the Google Places API integration."""
-    print("\n🔍 Testing Google Places API integration...")
     result = {
         "api": "google",
         "key_available": check_api_key("google"),
@@ -219,7 +206,6 @@ def validate_google_places_api() -> Dict[str, Any]:
 
     if not result["key_available"]:
         result["error"] = "API key not found in environment variables"
-        print("❌ Google Places API key not found in environment variables")
         return result
 
     try:
@@ -238,20 +224,16 @@ def validate_google_places_api() -> Dict[str, Any]:
                 "total": len(response["results"]),
                 "first_place": response["results"][0]["name"] if response["results"] else None
             }
-            print(f"✅ Google Places API test successful - found {len(response['results'])} places")
         else:
             result["error"] = "Invalid response format"
-            print("❌ Google Places API test failed - invalid response format")
     except Exception as e:
         result["error"] = str(e)
-        print(f"❌ Google Places API test failed with error: {e}")
 
     return result
 
 
-def validate_openai_api() -> Dict[str, Any]:
+def validate_openai_api() -> dict[str, Any]:
     """Validate the OpenAI API integration."""
-    print("\n🔍 Testing OpenAI API integration...")
     result = {
         "api": "openai",
         "key_available": check_api_key("openai"),
@@ -263,7 +245,6 @@ def validate_openai_api() -> Dict[str, Any]:
 
     if not result["key_available"]:
         result["error"] = "API key not found in environment variables"
-        print("❌ OpenAI API key not found in environment variables")
         return result
 
     try:
@@ -290,20 +271,16 @@ def validate_openai_api() -> Dict[str, Any]:
             result["response_sample"] = {
                 "message": response["choices"][0]["message"]["content"] if response["choices"] else None
             }
-            print(f"✅ OpenAI API test successful")
         else:
             result["error"] = "Invalid response format"
-            print("❌ OpenAI API test failed - invalid response format")
     except Exception as e:
         result["error"] = str(e)
-        print(f"❌ OpenAI API test failed with error: {e}")
 
     return result
 
 
-def validate_sendgrid_api() -> Dict[str, Any]:
+def validate_sendgrid_api() -> dict[str, Any]:
     """Validate the SendGrid API integration."""
-    print("\n🔍 Testing SendGrid API integration...")
     result = {
         "api": "sendgrid",
         "key_available": check_api_key("sendgrid"),
@@ -315,7 +292,6 @@ def validate_sendgrid_api() -> Dict[str, Any]:
 
     if not result["key_available"]:
         result["error"] = "API key not found in environment variables"
-        print("❌ SendGrid API key not found in environment variables")
         return result
 
     try:
@@ -326,7 +302,6 @@ def validate_sendgrid_api() -> Dict[str, Any]:
         from_email = os.environ.get("SENDGRID_FROM_EMAIL")
         if not from_email:
             result["error"] = "SENDGRID_FROM_EMAIL not found in environment variables"
-            print("❌ SENDGRID_FROM_EMAIL not found in environment variables")
             return result
 
         # Make an API call to check the API key validity using a simpler endpoint
@@ -343,7 +318,6 @@ def validate_sendgrid_api() -> Dict[str, Any]:
             result["response_sample"] = {
                 "scopes": len(scopes_info) if isinstance(scopes_info, list) else "N/A"
             }
-            print(f"✅ SendGrid API test successful - API key is valid")
         # Handle the case where we get a 403 but the key might still be valid
         elif response.status_code == 403:
             # Try a different endpoint that might have less restrictive permissions
@@ -353,21 +327,18 @@ def validate_sendgrid_api() -> Dict[str, Any]:
             if response.status_code == 200:
                 result["success"] = True
                 result["response_sample"] = {"message": "API key is valid but has limited permissions"}
-                print(f"✅ SendGrid API test successful - API key is valid (limited permissions)")
             else:
                 response.raise_for_status()
         else:
             response.raise_for_status()  # Raise error for non-200 status codes
     except Exception as e:
         result["error"] = str(e)
-        print(f"❌ SendGrid API test failed with error: {e}")
 
     return result
 
 
-def validate_screenshotone_api() -> Dict[str, Any]:
+def validate_screenshotone_api() -> dict[str, Any]:
     """Validate the ScreenshotOne API integration."""
-    print("\n🔍 Testing ScreenshotOne API integration...")
     result = {
         "api": "screenshotone",
         "key_available": check_api_key("screenshotone"),
@@ -379,7 +350,6 @@ def validate_screenshotone_api() -> Dict[str, Any]:
 
     if not result["key_available"]:
         result["error"] = "API key not found in environment variables"
-        print("❌ ScreenshotOne API key not found in environment variables")
         return result
 
     try:
@@ -407,13 +377,11 @@ def validate_screenshotone_api() -> Dict[str, Any]:
         if response.status_code == 200:
             result["success"] = True
             result["response_sample"] = {"message": "Successfully generated screenshot"}
-            print(f"✅ ScreenshotOne API test successful - screenshot generated")
         elif response.status_code == 402 or response.status_code == 403:
             # API key is valid but quota exceeded or insufficient permissions
             error_info = response.json()
             result["success"] = True  # API key is valid even though quota is exceeded
             result["response_sample"] = {"message": error_info.get("message", "Quota exceeded or insufficient permissions")}
-            print(f"✅ ScreenshotOne API test successful - API key is valid (quota issue)")
         else:
             # Try a simpler endpoint that just checks the API key
             test_url = "https://api.screenshotone.com/usage"
@@ -423,19 +391,16 @@ def validate_screenshotone_api() -> Dict[str, Any]:
             if test_response.status_code == 200 or test_response.status_code == 402:
                 result["success"] = True
                 result["response_sample"] = {"message": "API key is valid"}
-                print(f"✅ ScreenshotOne API test successful - API key is valid")
             else:
                 response.raise_for_status()
     except Exception as e:
         result["error"] = str(e)
-        print(f"❌ ScreenshotOne API test failed with error: {e}")
 
     return result
 
 
-def validate_anthropic_api() -> Dict[str, Any]:
+def validate_anthropic_api() -> dict[str, Any]:
     """Validate the Anthropic API integration."""
-    print("\n🔍 Testing Anthropic API integration...")
     result = {
         "api": "anthropic",
         "key_available": bool(os.environ.get("ANTHROPIC_API_KEY")),
@@ -447,7 +412,6 @@ def validate_anthropic_api() -> Dict[str, Any]:
 
     if not result["key_available"]:
         result["error"] = "API key not found in environment variables"
-        print("❌ Anthropic API key not found in environment variables")
         return result
 
     try:
@@ -487,12 +451,10 @@ def validate_anthropic_api() -> Dict[str, Any]:
                 "model": response_data["model"],
                 "tokens": response_data["usage"]["output_tokens"]
             }
-            print(f"✅ Anthropic API test successful - response: {response_data['content'][0]['text']}")
         else:
             response.raise_for_status()  # Raise error for non-200 status codes
     except Exception as e:
         result["error"] = str(e)
-        print(f"❌ Anthropic API test failed with error: {e}")
 
     return result
 
@@ -522,36 +484,28 @@ def main():
         if validator:
             results.append(validator())
         else:
-            print(f"❌ Unknown API: {args.api}")
             return 1
     else:
-        print("🚀 Validating all API integrations...")
         for validator in api_validators.values():
             results.append(validator())
 
     # Print summary
-    print("\n📊 API Integration Validation Summary:")
-    print("=====================================")
     success_count = 0
     key_available_count = 0
 
     for result in results:
-        api_name = result["api"].upper()
+        result["api"].upper()
         if result["key_available"]:
             key_available_count += 1
 
         if result["success"]:
             success_count += 1
-            print(f"✅ {api_name}: SUCCESS (latency: {result['latency']:.2f}s)")
         else:
             if result["key_available"]:
-                print(f"❌ {api_name}: FAILED - {result['error']}")
+                pass
             else:
-                print(f"⚠️ {api_name}: SKIPPED - API key not available")
+                pass
 
-    print("\n📈 Results:")
-    print(f"  APIs with keys available: {key_available_count}/{len(results)}")
-    print(f"  Successful API tests: {success_count}/{key_available_count}")
 
     # Save results to file
     results_dir = project_root / "tests" / "results"
@@ -569,7 +523,6 @@ def main():
             "results": results
         }, f, indent=2)
 
-    print(f"\n📝 Detailed results saved to: {results_file}")
 
     # Return success if all APIs with keys available passed
     return 0 if success_count == key_available_count else 1

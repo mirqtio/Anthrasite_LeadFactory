@@ -9,6 +9,7 @@ import tempfile
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
+
 # Use lowercase versions for Python 3.9 compatibility
 from unittest.mock import MagicMock
 

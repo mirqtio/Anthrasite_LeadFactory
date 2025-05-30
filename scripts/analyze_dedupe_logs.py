@@ -12,9 +12,9 @@ This script reads dedupe logs and provides analysis on:
 import argparse
 import json
 import sys
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
 from collections import defaultdict
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
 # Add project root to path
 sys.path.insert(0, "/Users/charlieirwin/Documents/GitHub/Anthrasite_LeadFactory")
@@ -33,12 +33,12 @@ class EnhancedDedupeLogAnalyzer(DedupeLogAnalyzer):
         file_path: str,
         start_time: Optional[datetime] = None,
         end_time: Optional[datetime] = None,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Load logs from a JSON lines file."""
         logs = []
 
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 for line in f:
                     try:
                         log = json.loads(line.strip())
@@ -60,13 +60,12 @@ class EnhancedDedupeLogAnalyzer(DedupeLogAnalyzer):
                         continue
 
         except FileNotFoundError:
-            print(f"Log file not found: {file_path}")
             return []
 
         self.logs = logs
         return logs
 
-    def analyze_conflicts(self) -> Dict[str, Any]:
+    def analyze_conflicts(self) -> dict[str, Any]:
         """Analyze field conflicts from logs."""
         conflict_logs = [
             log for log in self.logs if log.get("event_type") == "field_conflict"
@@ -109,7 +108,7 @@ class EnhancedDedupeLogAnalyzer(DedupeLogAnalyzer):
             "field_statistics": field_stats,
         }
 
-    def analyze_duplicate_patterns(self) -> Dict[str, Any]:
+    def analyze_duplicate_patterns(self) -> dict[str, Any]:
         """Analyze patterns in duplicate detection."""
         duplicate_logs = [
             log for log in self.logs if log.get("event_type") == "duplicate_found"
@@ -145,7 +144,7 @@ class EnhancedDedupeLogAnalyzer(DedupeLogAnalyzer):
             "similarity_statistics": similarity_stats,
         }
 
-    def analyze_operation_performance(self) -> Dict[str, Any]:
+    def analyze_operation_performance(self) -> dict[str, Any]:
         """Analyze operation performance from logs."""
         operation_logs = [
             log
@@ -184,7 +183,7 @@ class EnhancedDedupeLogAnalyzer(DedupeLogAnalyzer):
 
         return operation_stats
 
-    def generate_summary_report(self) -> Dict[str, Any]:
+    def generate_summary_report(self) -> dict[str, Any]:
         """Generate a comprehensive summary report."""
         # Get batch progress logs
         batch_logs = [
@@ -263,14 +262,11 @@ def main():
     analyzer = EnhancedDedupeLogAnalyzer()
 
     # Load logs
-    print(f"Loading logs from {args.log_file}...")
-    logs = analyzer.load_logs_from_file(
+    analyzer.load_logs_from_file(
         args.log_file, start_time=args.start_time, end_time=args.end_time
     )
-    print(f"Loaded {len(logs)} log entries")
 
     # Generate report
-    print("Analyzing logs...")
     report = analyzer.generate_summary_report()
 
     # Output report
@@ -283,15 +279,11 @@ def main():
     if args.output:
         with open(args.output, "w") as f:
             f.write(output)
-        print(f"Report written to {args.output}")
     else:
-        print("\n" + "=" * 80)
-        print("DEDUPLICATION LOG ANALYSIS REPORT")
-        print("=" * 80)
-        print(output)
+        pass
 
 
-def format_text_report(report: Dict[str, Any]) -> str:
+def format_text_report(report: dict[str, Any]) -> str:
     """Format the report as human-readable text."""
     lines = []
 

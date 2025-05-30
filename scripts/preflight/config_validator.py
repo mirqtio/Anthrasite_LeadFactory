@@ -26,13 +26,13 @@ Usage:
             print(f"- {issue}")
 """
 
-import os
-import sys
 import logging
+import os
 import re
-from typing import List, Dict, Any, Optional, Tuple, Set
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Configure logging
 logging.basicConfig(
@@ -52,7 +52,7 @@ class ValidationResult:
 
     success: bool
     message: str
-    issues: List[str] = None
+    issues: list[str] = None
 
     def __post_init__(self):
         if self.issues is None:
@@ -128,7 +128,7 @@ class ConfigValidator:
 
         try:
             # Parse environment file
-            with open(self.env_file, "r") as f:
+            with open(self.env_file) as f:
                 for line in f:
                     line = line.strip()
                     if not line or line.startswith("#"):
@@ -147,10 +147,10 @@ class ConfigValidator:
             logger.error(f"Error loading environment file: {e}")
             return False
 
-    def _get_all_required_vars(self) -> Set[str]:
+    def _get_all_required_vars(self) -> set[str]:
         """Get all required environment variables"""
         required_vars = set()
-        for category, vars_list in self.REQUIRED_VARS.items():
+        for _category, vars_list in self.REQUIRED_VARS.items():
             required_vars.update(vars_list)
         return required_vars
 
@@ -260,7 +260,7 @@ PIPELINE_CONCURRENCY=2
             with open(output_path, "w") as f:
                 f.write(sample_config.strip())
             logger.info(f"✅ Sample configuration written to {output_path}")
-        except IOError as e:
+        except OSError as e:
             logger.error(f"Failed to write sample configuration: {str(e)}")
 
     def validate(self) -> ValidationResult:
@@ -326,7 +326,7 @@ PIPELINE_CONCURRENCY=2
         output_path = (
             Path(output_file) if output_file else self.env_file.with_suffix(".sample")
         )
-        all_required = self._get_all_required_vars()
+        self._get_all_required_vars()
 
         try:
             with open(output_path, "w") as f:
@@ -382,12 +382,10 @@ def main():
     result = validator.validate()
 
     if result.success:
-        print("✅ Environment configuration is valid")
         return 0
     else:
-        print(f"❌ Environment configuration is invalid: {result.message}")
-        for issue in result.issues:
-            print(f"  - {issue}")
+        for _issue in result.issues:
+            pass
         return 1
 
 

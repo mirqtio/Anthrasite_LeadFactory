@@ -247,12 +247,10 @@ def fix_file(file_path: str) -> bool:
     if not file_path.endswith(".py"):
         return False
 
-    print(f"Processing {file_path}...")
     try:
         with open(file_path, encoding="utf-8") as f:
             content = f.read()
-    except Exception as e:
-        print(f"Error reading {file_path}: {e}")
+    except Exception:
         return False
 
     # Store original content for comparison
@@ -279,10 +277,8 @@ def fix_file(file_path: str) -> bool:
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
-            print(f"✅ Fixed {file_path}")
             return True
-        except Exception as e:
-            print(f"Error writing {file_path}: {e}")
+        except Exception:
             return False
     return False
 
@@ -363,32 +359,19 @@ def create_non_automatable_issues_list(directory: str) -> None:
     with open(issues_file, "w", encoding="utf-8") as f:
         f.writelines(non_automatable_issues)
 
-    print(f"\nCreated list of non-automatable issues at {issues_file}")
-
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python fix_python39_compatibility.py <directory>")
         return 1
 
     directory = sys.argv[1]
     if not os.path.isdir(directory):
-        print(f"Error: {directory} is not a valid directory")
         return 1
 
-    print(f"Fixing Python 3.9 compatibility issues in {directory}...\n")
     files_processed, files_modified = process_directory(directory)
-    print(
-        f"\nProcessed {files_processed} Python files, modified {files_modified} files"
-    )
 
     # Create list of non-automatable issues
     create_non_automatable_issues_list(directory)
-
-    print("\nRemaining tasks:")
-    print("1. Install missing type stubs: pip install types-requests types-pytz")
-    print("2. Run the CI pipeline to verify the fixes")
-    print("3. Manually address remaining issues from the non-automatable issues list")
 
     return 0
 

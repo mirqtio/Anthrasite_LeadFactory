@@ -2,9 +2,9 @@
 """
 Wrapper script for mockup generation stage of the pipeline.
 """
-import sys
-import os
 import logging
+import os
+import sys
 from pathlib import Path
 
 # Set up logging
@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 
 try:
     # Import and run the actual mockup module
-    from leadfactory.pipeline.mockup import main, generate_mockups_for_all_businesses
+    from leadfactory.pipeline.mockup import generate_mockups_for_all_businesses, main
 
     # For E2E testing, if no arguments provided, process all businesses
     if len(sys.argv) == 1 and os.getenv("E2E_MODE") == "true":

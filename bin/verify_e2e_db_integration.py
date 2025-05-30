@@ -10,9 +10,9 @@ by using the application's database connector module. It verifies:
 4. Schema validation
 """
 
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
 
 # Add project root to path
@@ -192,15 +192,6 @@ def main():
 
     if all_passed:
         logger.info("✅ All integration tests passed!")
-        print("\n" + "=" * 80)
-        print(" E2E DATABASE INTEGRATION VERIFICATION COMPLETE ".center(80, "="))
-        print("=" * 80)
-        print(
-            "\nAll tests have passed. The application is properly integrated with the E2E database."
-        )
-        print("\nYou can now run full E2E tests using the following command:")
-        print("\n  python bin/run_e2e_test.py")
-        print("=" * 80 + "\n")
         return 0
     else:
         logger.error("❌ Some integration tests failed")

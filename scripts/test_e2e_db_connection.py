@@ -6,11 +6,12 @@ This script tests the connection to the E2E testing PostgreSQL database
 and verifies that the schema is properly set up with test data.
 """
 
+import logging
 import os
 import sys
-import psycopg2
-import logging
 from pathlib import Path
+
+import psycopg2
 
 # Set up logging
 logging.basicConfig(

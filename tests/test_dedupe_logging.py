@@ -2,21 +2,24 @@
 Tests for the enhanced deduplication logging system.
 """
 
+import os
 import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import unittest
-from unittest.mock import Mock, patch, MagicMock
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import json
-import tempfile
 import os
+import tempfile
+import unittest
 from datetime import datetime
+from unittest.mock import MagicMock, Mock, patch
 
 from leadfactory.pipeline.dedupe_logging import (
-    DedupeLogger, dedupe_operation, log_dedupe_performance,
-    DedupeLogAnalyzer
+    DedupeLogAnalyzer,
+    DedupeLogger,
+    dedupe_operation,
+    log_dedupe_performance,
 )
 
 
@@ -29,7 +32,7 @@ class TestDedupeLogger(unittest.TestCase):
 
     def test_log_merge(self):
         """Test logging merge operations."""
-        with patch.object(self.logger.logger, 'info') as mock_info:
+        with patch.object(self.logger.logger, "info") as mock_info:
             self.logger.log_merge(
                 primary_id=1,
                 secondary_id=2,
@@ -41,15 +44,15 @@ class TestDedupeLogger(unittest.TestCase):
             call_args = mock_info.call_args
             self.assertEqual(call_args[0][0], "Business merge completed")
 
-            extra = call_args[1]['extra']
-            self.assertEqual(extra['event_type'], 'business_merge')
-            self.assertEqual(extra['primary_id'], 1)
-            self.assertEqual(extra['secondary_id'], 2)
-            self.assertEqual(extra['confidence'], 0.95)
+            extra = call_args[1]["extra"]
+            self.assertEqual(extra["event_type"], "business_merge")
+            self.assertEqual(extra["primary_id"], 1)
+            self.assertEqual(extra["secondary_id"], 2)
+            self.assertEqual(extra["confidence"], 0.95)
 
     def test_log_conflict(self):
         """Test logging field conflicts."""
-        with patch.object(self.logger.logger, 'warning') as mock_warning:
+        with patch.object(self.logger.logger, "warning") as mock_warning:
             self.logger.log_conflict(
                 field="email",
                 primary_value="test1@example.com",
@@ -59,13 +62,13 @@ class TestDedupeLogger(unittest.TestCase):
             )
 
             mock_warning.assert_called_once()
-            extra = mock_warning.call_args[1]['extra']
-            self.assertEqual(extra['event_type'], 'field_conflict')
-            self.assertEqual(extra['field'], 'email')
+            extra = mock_warning.call_args[1]["extra"]
+            self.assertEqual(extra["event_type"], "field_conflict")
+            self.assertEqual(extra["field"], "email")
 
     def test_log_duplicate_found(self):
         """Test logging duplicate detection."""
-        with patch.object(self.logger.logger, 'info') as mock_info:
+        with patch.object(self.logger.logger, "info") as mock_info:
             self.logger.log_duplicate_found(
                 business1_id=1,
                 business2_id=2,
@@ -75,9 +78,9 @@ class TestDedupeLogger(unittest.TestCase):
             )
 
             mock_info.assert_called_once()
-            extra = mock_info.call_args[1]['extra']
-            self.assertEqual(extra['event_type'], 'duplicate_found')
-            self.assertEqual(extra['similarity_score'], 0.87)
+            extra = mock_info.call_args[1]["extra"]
+            self.assertEqual(extra["event_type"], "duplicate_found")
+            self.assertEqual(extra["similarity_score"], 0.87)
 
     def test_start_end_operation(self):
         """Test operation tracking."""
@@ -87,18 +90,18 @@ class TestDedupeLogger(unittest.TestCase):
         self.assertIn(op_id, self.logger.operations)
 
         # End operation
-        with patch.object(self.logger.logger, 'info') as mock_info:
+        with patch.object(self.logger.logger, "info") as mock_info:
             self.logger.end_operation(op_id, status="success", result_count=10)
 
             mock_info.assert_called_once()
-            extra = mock_info.call_args[1]['extra']
-            self.assertEqual(extra['operation_id'], op_id)
-            self.assertEqual(extra['status'], 'success')
-            self.assertIn('duration_seconds', extra)
+            extra = mock_info.call_args[1]["extra"]
+            self.assertEqual(extra["operation_id"], op_id)
+            self.assertEqual(extra["status"], "success")
+            self.assertIn("duration_seconds", extra)
 
     def test_log_batch_progress(self):
         """Test batch progress logging."""
-        with patch.object(self.logger.logger, 'info') as mock_info:
+        with patch.object(self.logger.logger, "info") as mock_info:
             self.logger.log_batch_progress(
                 batch_id="batch_123",
                 processed=50,
@@ -109,13 +112,13 @@ class TestDedupeLogger(unittest.TestCase):
             )
 
             mock_info.assert_called_once()
-            extra = mock_info.call_args[1]['extra']
-            self.assertEqual(extra['event_type'], 'batch_progress')
-            self.assertEqual(extra['progress_percentage'], 50.0)
+            extra = mock_info.call_args[1]["extra"]
+            self.assertEqual(extra["event_type"], "batch_progress")
+            self.assertEqual(extra["progress_percentage"], 50.0)
 
     def test_log_performance_metrics(self):
         """Test performance metrics logging."""
-        with patch.object(self.logger.logger, 'info') as mock_info:
+        with patch.object(self.logger.logger, "info") as mock_info:
             self.logger.log_performance_metrics(
                 operation_type="full_dedupe",
                 duration_seconds=120.5,
@@ -124,9 +127,9 @@ class TestDedupeLogger(unittest.TestCase):
             )
 
             mock_info.assert_called_once()
-            extra = mock_info.call_args[1]['extra']
-            self.assertEqual(extra['event_type'], 'performance_metrics')
-            self.assertEqual(extra['records_per_second'], 1000 / 120.5)
+            extra = mock_info.call_args[1]["extra"]
+            self.assertEqual(extra["event_type"], "performance_metrics")
+            self.assertEqual(extra["records_per_second"], 1000 / 120.5)
 
 
 class TestDedupeOperation(unittest.TestCase):
@@ -136,8 +139,8 @@ class TestDedupeOperation(unittest.TestCase):
         """Test successful operation tracking."""
         logger = DedupeLogger("test")
 
-        with patch.object(logger, 'start_operation') as mock_start:
-            with patch.object(logger, 'end_operation') as mock_end:
+        with patch.object(logger, "start_operation") as mock_start:
+            with patch.object(logger, "end_operation") as mock_end:
                 mock_start.return_value = "op_123"
 
                 with dedupe_operation(logger, "test_op", param1="value1") as op_id:
@@ -150,12 +153,12 @@ class TestDedupeOperation(unittest.TestCase):
         """Test operation tracking with exception."""
         logger = DedupeLogger("test")
 
-        with patch.object(logger, 'start_operation') as mock_start:
-            with patch.object(logger, 'end_operation') as mock_end:
+        with patch.object(logger, "start_operation") as mock_start:
+            with patch.object(logger, "end_operation") as mock_end:
                 mock_start.return_value = "op_123"
 
                 try:
-                    with dedupe_operation(logger, "test_op") as op_id:
+                    with dedupe_operation(logger, "test_op"):
                         raise ValueError("Test error")
                 except ValueError:
                     pass
@@ -178,15 +181,15 @@ class TestLogDedupePerformance(unittest.TestCase):
         def test_function(x, y):
             return x + y
 
-        with patch.object(logger, 'log_performance_metrics') as mock_log:
+        with patch.object(logger, "log_performance_metrics") as mock_log:
             result = test_function(1, 2)
 
             self.assertEqual(result, 3)
             mock_log.assert_called_once()
 
             call_args = mock_log.call_args[1]
-            self.assertEqual(call_args['operation_type'], 'test_function')
-            self.assertIn('duration_seconds', call_args)
+            self.assertEqual(call_args["operation_type"], "test_function")
+            self.assertIn("duration_seconds", call_args)
 
 
 class TestDedupeLogAnalyzer(unittest.TestCase):
@@ -230,11 +233,11 @@ class TestDedupeLogAnalyzer(unittest.TestCase):
         """Test merge pattern analysis."""
         result = self.analyzer.analyze_merge_patterns()
 
-        self.assertEqual(result['total_merges'], 3)
-        self.assertEqual(result['successful_merges'], 2)
-        self.assertEqual(result['failed_merges'], 1)
-        self.assertAlmostEqual(result['success_rate'], 66.67, places=2)
-        self.assertAlmostEqual(result['average_confidence'], 0.91, places=2)
+        self.assertEqual(result["total_merges"], 3)
+        self.assertEqual(result["successful_merges"], 2)
+        self.assertEqual(result["failed_merges"], 1)
+        self.assertAlmostEqual(result["success_rate"], 66.67, places=2)
+        self.assertAlmostEqual(result["average_confidence"], 0.91, places=2)
 
     def test_get_operation_summary(self):
         """Test operation summary generation."""
@@ -258,20 +261,20 @@ class TestDedupeLogAnalyzer(unittest.TestCase):
 
         result = self.analyzer.get_operation_summary()
 
-        self.assertIn('find_duplicates', result)
-        self.assertIn('merge_businesses', result)
-        self.assertEqual(result['find_duplicates']['count'], 1)
-        self.assertEqual(result['merge_businesses']['avg_duration'], 2.1)
+        self.assertIn("find_duplicates", result)
+        self.assertIn("merge_businesses", result)
+        self.assertEqual(result["find_duplicates"]["count"], 1)
+        self.assertEqual(result["merge_businesses"]["avg_duration"], 2.1)
 
     def test_empty_logs(self):
         """Test analyzer with no logs."""
         self.analyzer.logs = []
 
         merge_result = self.analyzer.analyze_merge_patterns()
-        self.assertEqual(merge_result['message'], "No merge logs found")
+        self.assertEqual(merge_result["message"], "No merge logs found")
 
         op_result = self.analyzer.get_operation_summary()
-        self.assertEqual(op_result['message'], "No operation logs found")
+        self.assertEqual(op_result["message"], "No operation logs found")
 
 
 class TestLogAnalysisIntegration(unittest.TestCase):
@@ -280,7 +283,7 @@ class TestLogAnalysisIntegration(unittest.TestCase):
     def test_log_and_analyze(self):
         """Test logging and analyzing in sequence."""
         # Create temporary log file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.log', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".log", delete=False) as f:
             log_file = f.name
 
         try:
@@ -296,7 +299,7 @@ class TestLogAnalysisIntegration(unittest.TestCase):
             logger.end_operation(op_id, status="success")
 
             # Close logger to flush
-            if hasattr(logger.logger, 'handlers'):
+            if hasattr(logger.logger, "handlers"):
                 for handler in logger.logger.handlers:
                     handler.flush()
                     handler.close()
@@ -306,7 +309,7 @@ class TestLogAnalysisIntegration(unittest.TestCase):
 
             # Verify analysis
             merge_patterns = analyzer.analyze_merge_patterns()
-            self.assertEqual(merge_patterns['total_merges'], 2)
+            self.assertEqual(merge_patterns["total_merges"], 2)
 
         finally:
             # Clean up
@@ -314,5 +317,5 @@ class TestLogAnalysisIntegration(unittest.TestCase):
                 os.unlink(log_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

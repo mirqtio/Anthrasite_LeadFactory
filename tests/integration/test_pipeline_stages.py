@@ -14,10 +14,9 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 # Import the modules being tested - TEMPORARY FIX for import issues
 try:
-    from leadfactory.pipeline import dedupe, scrape, enrich, score, mockup, email_queue
+    from leadfactory.pipeline import dedupe, email_queue, enrich, mockup, score, scrape
     IMPORT_SUCCESS = True
-except ImportError as e:
-    print(f"WARNING: Could not import leadfactory.pipeline modules: {e}")
+except ImportError:
     # Create mock modules for testing
     class MockModule:
         def __getattr__(self, name):

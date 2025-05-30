@@ -6,21 +6,22 @@ This module provides robust validation and reporting capabilities for E2E pipeli
 including result validation, metrics tracking, and report generation for various stakeholders.
 """
 
-import os
-import sys
-import json
 import csv
-import logging
 import datetime
-import tempfile
+import json
+import logging
+import os
 import smtplib
-import matplotlib.pyplot as plt
+import sys
+import tempfile
+from collections import defaultdict
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from typing import Dict, List, Any, Optional, Tuple, Union, Set
 from pathlib import Path
-from collections import defaultdict
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+import matplotlib.pyplot as plt
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -104,7 +105,7 @@ class MetricsCalculator:
 
     def calculate_stage_success_rates(
         self, num_executions: int = 10
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Calculate success rates for each pipeline stage.
 
@@ -161,7 +162,7 @@ class MetricsCalculator:
 
     def calculate_stage_average_durations(
         self, num_executions: int = 10
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Calculate average durations for each pipeline stage.
 
@@ -192,7 +193,7 @@ class MetricsCalculator:
             for stage, durations in stage_durations.items()
         }
 
-    def calculate_failure_counts(self, num_executions: int = 10) -> Dict[str, int]:
+    def calculate_failure_counts(self, num_executions: int = 10) -> dict[str, int]:
         """
         Calculate failure counts by category.
 
@@ -219,7 +220,7 @@ class MetricsCalculator:
 
         return dict(category_counts)
 
-    def calculate_retry_rates(self, num_executions: int = 10) -> Dict[str, float]:
+    def calculate_retry_rates(self, num_executions: int = 10) -> dict[str, float]:
         """
         Calculate retry rates for each pipeline stage.
 
@@ -277,7 +278,7 @@ class ResultValidator:
         self.requirements = self._load_requirements()
         self.tracker = ExecutionTracker()
 
-    def _load_requirements(self) -> Dict[str, Any]:
+    def _load_requirements(self) -> dict[str, Any]:
         """
         Load requirements from the requirements file.
 
@@ -289,7 +290,7 @@ class ResultValidator:
             return self._create_default_requirements()
 
         try:
-            with open(self.requirements_file, "r") as f:
+            with open(self.requirements_file) as f:
                 requirements_data = json.load(f)
                 logger.info(f"Loaded requirements from {self.requirements_file}")
                 return requirements_data
@@ -297,7 +298,7 @@ class ResultValidator:
             logger.error(f"Failed to load requirements: {e}")
             return self._create_default_requirements()
 
-    def _create_default_requirements(self) -> Dict[str, Any]:
+    def _create_default_requirements(self) -> dict[str, Any]:
         """
         Create default requirements.
 
@@ -357,7 +358,7 @@ class ResultValidator:
 
     def validate_test_coverage(
         self, execution_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate test coverage against requirements.
 
@@ -450,7 +451,7 @@ class ResultValidator:
 
     def validate_performance(
         self, execution_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate performance metrics against requirements.
 
@@ -542,7 +543,7 @@ class ResultValidator:
             "performance_issues": performance_issues,
         }
 
-    def validate_outputs(self, execution_id: Optional[str] = None) -> Dict[str, Any]:
+    def validate_outputs(self, execution_id: Optional[str] = None) -> dict[str, Any]:
         """
         Validate the presence of required output files.
 
@@ -588,7 +589,7 @@ class ResultValidator:
             "missing_outputs": missing_outputs,
         }
 
-    def validate_execution(self, execution_id: Optional[str] = None) -> Dict[str, Any]:
+    def validate_execution(self, execution_id: Optional[str] = None) -> dict[str, Any]:
         """
         Perform comprehensive validation of an execution.
 
@@ -726,7 +727,6 @@ class ReportGenerator:
             extension = "csv"
         elif output_format == OutputFormat.CONSOLE:
             formatted_content = self._format_as_console(content, report_type)
-            print(formatted_content)
             return None
         else:
             raise ValueError(f"Unsupported output format: {output_format}")
@@ -743,7 +743,7 @@ class ReportGenerator:
 
     def _generate_executive_summary(
         self, execution_id: Optional[str], num_executions: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate an executive summary report.
 
@@ -805,7 +805,7 @@ class ReportGenerator:
             "trend": trend_data,
         }
 
-    def _count_validation_issues(self, validation_results: Dict[str, Any]) -> int:
+    def _count_validation_issues(self, validation_results: dict[str, Any]) -> int:
         """
         Count the number of validation issues in validation results.
 
@@ -834,7 +834,7 @@ class ReportGenerator:
 
         return count
 
-    def _format_as_html(self, content: Dict[str, Any], report_type: str) -> str:
+    def _format_as_html(self, content: dict[str, Any], report_type: str) -> str:
         """
         Format report content as HTML.
 
@@ -886,7 +886,7 @@ class ReportGenerator:
 
         return html
 
-    def _executive_summary_to_html(self, content: Dict[str, Any]) -> str:
+    def _executive_summary_to_html(self, content: dict[str, Any]) -> str:
         """
         Format executive summary as HTML.
 
@@ -953,12 +953,12 @@ class ReportGenerator:
                 status_class = (
                     "good" if execution.get("status") == "success" else "critical"
                 )
-                html += f"<tr>"
+                html += "<tr>"
                 html += f"<td>{execution.get('execution_id', 'Unknown')}</td>"
                 html += f"<td class='{status_class}'>{execution.get('status', 'Unknown')}</td>"
                 html += f"<td>{execution.get('timestamp', '')}</td>"
                 html += f"<td>{execution.get('duration', 0):.1f}</td>"
-                html += f"</tr>"
+                html += "</tr>"
 
             html += "</table>"
         else:
@@ -967,7 +967,7 @@ class ReportGenerator:
 
         return html
 
-    def _dict_to_html_table(self, data: Dict[str, Any], nested: bool = False) -> str:
+    def _dict_to_html_table(self, data: dict[str, Any], nested: bool = False) -> str:
         """
         Convert a dictionary to an HTML table.
 
@@ -993,7 +993,7 @@ class ReportGenerator:
             elif isinstance(value, list):
                 if value and isinstance(value[0], dict):
                     # List of dictionaries
-                    html += f"<td><table>"
+                    html += "<td><table>"
                     # Create headers
                     headers = set()
                     for item in value:
@@ -1023,7 +1023,7 @@ class ReportGenerator:
         html += "</table>" if not nested else ""
         return html
 
-    def _format_as_markdown(self, content: Dict[str, Any], report_type: str) -> str:
+    def _format_as_markdown(self, content: dict[str, Any], report_type: str) -> str:
         """
         Format report content as Markdown.
 
@@ -1052,7 +1052,7 @@ class ReportGenerator:
 
         return md
 
-    def _executive_summary_to_markdown(self, content: Dict[str, Any]) -> str:
+    def _executive_summary_to_markdown(self, content: dict[str, Any]) -> str:
         """
         Format executive summary as Markdown.
 
@@ -1113,7 +1113,7 @@ class ReportGenerator:
 
         return md
 
-    def _technical_detail_to_markdown(self, content: Dict[str, Any]) -> str:
+    def _technical_detail_to_markdown(self, content: dict[str, Any]) -> str:
         """
         Format technical detail report as Markdown.
 
@@ -1163,7 +1163,7 @@ class ReportGenerator:
 
         return md
 
-    def _trend_analysis_to_markdown(self, content: Dict[str, Any]) -> str:
+    def _trend_analysis_to_markdown(self, content: dict[str, Any]) -> str:
         """
         Format trend analysis report as Markdown.
 
@@ -1235,7 +1235,7 @@ class ReportGenerator:
                 success_rate = (trend_point.get("status") == "success") * 100
                 md += f"| {success_rate:.0f}% "
                 md += f"| {trend_point.get('duration', 0):.1f}s "
-                md += f"| 1 |\n"
+                md += "| 1 |\n"
             md += "\n"
 
         # Failure analysis and recurring patterns
@@ -1259,7 +1259,7 @@ class ReportGenerator:
 
         return md
 
-    def _dict_to_markdown(self, data: Dict[str, Any], level: int = 0) -> str:
+    def _dict_to_markdown(self, data: dict[str, Any], level: int = 0) -> str:
         """
         Convert a dictionary to Markdown format.
 
@@ -1312,7 +1312,7 @@ class ReportGenerator:
 
         return md
 
-    def _format_as_csv(self, content: Dict[str, Any], report_type: str) -> str:
+    def _format_as_csv(self, content: dict[str, Any], report_type: str) -> str:
         """
         Format report content as CSV.
 
@@ -1331,7 +1331,7 @@ class ReportGenerator:
             # For other reports, just create a flat key-value CSV
             return self._dict_to_csv(content)
 
-    def _tabular_data_to_csv(self, content: Dict[str, Any]) -> str:
+    def _tabular_data_to_csv(self, content: dict[str, Any]) -> str:
         """
         Convert tabular data to CSV format.
 
@@ -1342,11 +1342,11 @@ class ReportGenerator:
             CSV formatted data
         """
         # Find the first list of dictionaries in the content
-        for key, value in content.items():
+        for _key, value in content.items():
             if isinstance(value, list) and value and isinstance(value[0], dict):
                 # This is a table we can convert to CSV
-                import io
                 import csv
+                import io
 
                 output = io.StringIO()
                 writer = csv.DictWriter(output, fieldnames=value[0].keys())
@@ -1358,7 +1358,7 @@ class ReportGenerator:
         # Fallback to flat CSV if no tabular data found
         return self._dict_to_csv(content)
 
-    def _dict_to_csv(self, data: Dict[str, Any]) -> str:
+    def _dict_to_csv(self, data: dict[str, Any]) -> str:
         """
         Convert a dictionary to flat CSV format.
 
@@ -1369,7 +1369,6 @@ class ReportGenerator:
             CSV formatted data
         """
         import io
-        import csv
 
         # Flatten the dictionary
         flat_data = []
@@ -1396,7 +1395,7 @@ class ReportGenerator:
 
         return output.getvalue()
 
-    def _format_as_console(self, content: Dict[str, Any], report_type: str) -> str:
+    def _format_as_console(self, content: dict[str, Any], report_type: str) -> str:
         """
         Format report content for console output.
 
@@ -1445,7 +1444,7 @@ class ReportGenerator:
             failures = content.get("failure_distribution", {})
 
             if failures:
-                max_category_len = max(len(str(k)) for k in failures.keys())
+                max_category_len = max(len(str(k)) for k in failures)
 
                 for category, count in failures.items():
                     output += f"{category:{max_category_len}}: {count}\n"
@@ -1486,7 +1485,7 @@ class ReportGenerator:
 
         return output
 
-    def _dict_to_console(self, data: Dict[str, Any], indent: int = 0) -> str:
+    def _dict_to_console(self, data: dict[str, Any], indent: int = 0) -> str:
         """
         Convert a dictionary to console output with indentation.
 
@@ -1521,7 +1520,7 @@ class ReportGenerator:
 
         return output
 
-    def _generate_technical_detail(self, execution_id: Optional[str]) -> Dict[str, Any]:
+    def _generate_technical_detail(self, execution_id: Optional[str]) -> dict[str, Any]:
         """
         Generate a technical detail report.
 
@@ -1589,7 +1588,7 @@ class ReportGenerator:
             "resolution_attempts": resolution_attempts,
         }
 
-    def _generate_trend_analysis(self, num_executions: int) -> Dict[str, Any]:
+    def _generate_trend_analysis(self, num_executions: int) -> dict[str, Any]:
         """
         Generate a trend analysis report.
 
@@ -1676,7 +1675,7 @@ class ReportGenerator:
 
     def _generate_test_coverage_report(
         self, execution_id: Optional[str]
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a test coverage report.
 
@@ -1690,7 +1689,7 @@ class ReportGenerator:
         validation_results = self.validator.validate_test_coverage(execution_id)
 
         # Get recent executions for trend
-        executions = self.tracker.get_recent_executions(10)
+        self.tracker.get_recent_executions(10)
 
         # Calculate stage success rates
         stage_success_rates = self.metrics.calculate_stage_success_rates(10)
@@ -1709,7 +1708,7 @@ class ReportGenerator:
             ),
         }
 
-    def _generate_issue_report(self, execution_id: Optional[str]) -> Dict[str, Any]:
+    def _generate_issue_report(self, execution_id: Optional[str]) -> dict[str, Any]:
         """
         Generate an issue report.
 
@@ -1796,7 +1795,7 @@ class ReportGenerator:
             "resolution_attempts": resolution_attempts,
         }
 
-    def _generate_performance_metrics(self, num_executions: int) -> Dict[str, Any]:
+    def _generate_performance_metrics(self, num_executions: int) -> dict[str, Any]:
         """
         Generate a performance metrics report.
 
@@ -1891,7 +1890,7 @@ class ReportGenerator:
             "execution_durations": execution_durations,
         }
 
-    def _generate_daily_summary(self) -> Dict[str, Any]:
+    def _generate_daily_summary(self) -> dict[str, Any]:
         """
         Generate a daily summary report.
 
@@ -1964,7 +1963,7 @@ class ReportGenerator:
             ],
         }
 
-    def _generate_weekly_summary(self) -> Dict[str, Any]:
+    def _generate_weekly_summary(self) -> dict[str, Any]:
         """
         Generate a weekly summary report.
 
@@ -2077,7 +2076,7 @@ class ReportGenerator:
         self,
         report_path: str,
         distribution_channel: str,
-        recipients: Optional[List[str]] = None,
+        recipients: Optional[list[str]] = None,
     ) -> bool:
         """
         Distribute a report through the specified channel.
@@ -2099,7 +2098,7 @@ class ReportGenerator:
             return False
 
     def _distribute_via_email(
-        self, report_path: str, recipients: Optional[List[str]]
+        self, report_path: str, recipients: Optional[list[str]]
     ) -> bool:
         """
         Distribute a report via email.
@@ -2125,8 +2124,8 @@ class ReportGenerator:
         _, ext = os.path.splitext(report_path)
 
         # Read the report content
-        with open(report_path, "r") as f:
-            content = f.read()
+        with open(report_path) as f:
+            f.read()
 
         # TODO: Implement actual email sending logic here
         # This would typically involve SMTP or a service like SendGrid
@@ -2135,7 +2134,7 @@ class ReportGenerator:
         return True
 
     def _distribute_via_slack(
-        self, report_path: str, channels: Optional[List[str]]
+        self, report_path: str, channels: Optional[list[str]]
     ) -> bool:
         """
         Distribute a report via Slack.
@@ -2195,15 +2194,11 @@ def main():
     # Check if the report type is valid
     valid_types = [t for t in dir(ReportType) if not t.startswith("__")]
     if args.type.upper() not in valid_types:
-        print(f"Invalid report type: {args.type}")
-        print(f"Valid types: {', '.join(valid_types)}")
         return 1
 
     # Check if the output format is valid
     valid_formats = [f for f in dir(OutputFormat) if not f.startswith("__")]
     if args.format.upper() not in valid_formats:
-        print(f"Invalid output format: {args.format}")
-        print(f"Valid formats: {', '.join(valid_formats)}")
         return 1
 
     # Generate the report
@@ -2220,8 +2215,6 @@ def main():
             num_executions=args.num_executions,
         )
 
-        print(f"Report generated: {report_path}")
-
         # Distribute the report if requested
         if args.distribute and args.channel and args.recipients:
             recipients = args.recipients.split(",")
@@ -2233,14 +2226,12 @@ def main():
             )
 
             if success:
-                print(f"Report distributed via {args.channel} to {args.recipients}")
+                pass
             else:
-                print(f"Failed to distribute report via {args.channel}")
                 return 1
 
         return 0
-    except Exception as e:
-        print(f"Error generating report: {e}")
+    except Exception:
         return 1
 
 

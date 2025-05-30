@@ -32,15 +32,16 @@ Usage:
     sendgrid_result = tester.test_sendgrid_api()
 """
 
+import json
+import logging
 import os
 import sys
-import logging
-import json
 import time
-import requests
-from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import requests
 
 # Configure logging
 logging.basicConfig(
@@ -60,9 +61,9 @@ class ApiTestResult:
     success: bool
     api_name: str
     message: str
-    response_data: Optional[Dict[str, Any]] = None
+    response_data: Optional[dict[str, Any]] = None
     status_code: Optional[int] = None
-    issues: List[str] = None
+    issues: list[str] = None
 
     def __post_init__(self):
         if self.issues is None:
@@ -105,7 +106,7 @@ class ApiTester:
         if self.env_file.exists():
             logger.info(f"Loading API keys from {self.env_file}")
 
-            with open(self.env_file, "r") as f:
+            with open(self.env_file) as f:
                 for line in f:
                     line = line.strip()
                     if not line or line.startswith("#"):
@@ -527,7 +528,7 @@ E2E_MODE=true
             with open(output_path, "w") as f:
                 f.write(sample_config.strip())
             logger.info(f"✅ Sample API configuration written to {output_path}")
-        except IOError as e:
+        except OSError as e:
             logger.error(f"Failed to write sample API configuration: {str(e)}")
 
 
@@ -568,18 +569,12 @@ def main():
         result = tester.test_sendgrid_api()
 
     # Print results
-    print("\n" + "=" * 80)
-    print(f" API CONNECTIVITY TEST: {args.api.upper()} ".center(80, "="))
-    print("=" * 80)
 
     if result.success:
-        print(f"\n✅ {result.message}")
+        pass
     else:
-        print(f"\n❌ {result.message}")
-        for issue in result.issues:
-            print(f"  - {issue}")
-
-    print("\n" + "=" * 80)
+        for _issue in result.issues:
+            pass
 
     return 0 if result.success else 1
 

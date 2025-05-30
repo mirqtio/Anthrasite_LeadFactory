@@ -59,7 +59,6 @@ def load_environment():
     # First file found takes precedence
     for env_file in env_files:
         if os.path.exists(env_file):
-            print(f"Loading environment from {env_file}")
             with open(env_file) as f:
                 for line in f:
                     line = line.strip()
@@ -78,10 +77,7 @@ def load_environment():
     missing_vars = [var for var in required_vars if var not in env_vars]
 
     if missing_vars:
-        print(
-            f"ERROR: Missing required environment variables: {', '.join(missing_vars)}"
-        )
-        print("Please create a .env file based on .env.example")
+        pass
 
     return env_vars
 

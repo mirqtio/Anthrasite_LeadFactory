@@ -9,7 +9,8 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
+
 # Import common step definitions
 from tests.bdd.step_defs.common_step_definitions import *
 
@@ -86,7 +87,7 @@ except ImportError:
     budget_gate = MockBudgetGate()
 
 # Load the scenarios from the feature file
-scenarios('../features/pipeline_stages.feature')
+scenarios("../features/pipeline_stages.feature")
 
 
 # Step definitions
@@ -114,7 +115,7 @@ def scrape_businesses(source, limit):
     pass
 
 
-@then(parsers.parse('I should receive at least {count:d} businesses'))
+@then(parsers.parse("I should receive at least {count:d} businesses"))
 def should_receive_businesses(count):
     """Verify that we received the expected number of businesses."""
     # Mock verification
@@ -274,10 +275,10 @@ def check_budget_status(api_costs_logged):
     summary = budget_gate.get_cost_summary(db_conn)
 
     api_costs_logged.update({
-        'monthly_costs': monthly_costs,
-        'daily_costs': daily_costs,
-        'budget_status': status,
-        'cost_summary': summary
+        "monthly_costs": monthly_costs,
+        "daily_costs": daily_costs,
+        "budget_status": status,
+        "cost_summary": summary
     })
 
     return api_costs_logged
@@ -287,7 +288,7 @@ def check_budget_status(api_costs_logged):
 @then("I should see the total cost for the current month")
 def check_monthly_cost(api_costs_logged):
     """Check that total cost for current month is available."""
-    monthly_costs = api_costs_logged['monthly_costs']
+    monthly_costs = api_costs_logged["monthly_costs"]
 
     assert monthly_costs is not None, "Monthly costs should not be None"
     assert monthly_costs > 0, "Monthly costs should be greater than 0"
@@ -297,8 +298,8 @@ def check_monthly_cost(api_costs_logged):
 @then("I should see the cost breakdown by model")
 def check_cost_by_model(api_costs_logged):
     """Check that cost breakdown by model is available."""
-    cost_summary = api_costs_logged['cost_summary']
-    by_model = cost_summary['by_model']
+    cost_summary = api_costs_logged["cost_summary"]
+    by_model = cost_summary["by_model"]
 
     assert by_model is not None, "Cost breakdown by model should not be None"
     assert "gpt-4" in by_model, "Cost breakdown should include gpt-4"
@@ -310,8 +311,8 @@ def check_cost_by_model(api_costs_logged):
 @then("I should see the cost breakdown by purpose")
 def check_cost_by_purpose(api_costs_logged):
     """Check that cost breakdown by purpose is available."""
-    cost_summary = api_costs_logged['cost_summary']
-    by_purpose = cost_summary['by_purpose']
+    cost_summary = api_costs_logged["cost_summary"]
+    by_purpose = cost_summary["by_purpose"]
 
     assert by_purpose is not None, "Cost breakdown by purpose should not be None"
     assert "verification" in by_purpose, "Cost breakdown should include verification"
@@ -325,7 +326,7 @@ def check_cost_by_purpose(api_costs_logged):
 @then("I should know if we're within budget limits")
 def check_budget_limits(api_costs_logged):
     """Check that budget status indicates if we're within limits."""
-    status = api_costs_logged['budget_status']
+    status = api_costs_logged["budget_status"]
 
     assert status is not None, "Budget status should not be None"
     assert "status" in status, "Budget status should include status field"

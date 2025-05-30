@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from pytest_bdd import given, scenario, then, when
+
 # Import common step definitions
 from tests.bdd.step_defs.common_step_definitions import *
 
@@ -45,6 +46,7 @@ except ImportError:
 
 # Import scenarios
 from pytest_bdd import scenarios
+
 # Import common step definitions
 from tests.bdd.step_defs.common_step_definitions import *
 
@@ -410,14 +412,14 @@ def run_deduplication(mock_llm_verifier, exact_duplicate_businesses, temp_db):
     path, conn = temp_db
 
     # Create matcher and verifier
-    matcher = dedupe.LevenshteinMatcher()
+    dedupe.LevenshteinMatcher()
 
     # Mock process_duplicate_pair to avoid actual DB changes
     mock_process = MagicMock()
     mock_process.return_value = (True, 2)  # Success, merged into business 2
 
     # Mock the main function to return proper structure instead of running the full script
-    mock_main = MagicMock()
+    MagicMock()
 
     with patch("bin.dedupe.process_duplicate_pair", mock_process):
         # Simulate the deduplication process result
@@ -452,7 +454,7 @@ def run_deduplication_fuzzy(context, mock_llm_verifier, similar_businesses, temp
         # Mock find_candidates to return some test candidates
         mock_candidates = [(1, 2, 0.8), (3, 4, 0.75)]  # (id1, id2, similarity_score)
 
-        with patch.object(matcher, 'find_candidates', return_value=mock_candidates):
+        with patch.object(matcher, "find_candidates", return_value=mock_candidates):
             # Find candidates
             candidates = matcher.find_candidates(conn)
 
@@ -464,19 +466,19 @@ def run_deduplication_fuzzy(context, mock_llm_verifier, similar_businesses, temp
                     # Also call the verifier to simulate LLM verification
                     try:
                         mock_llm_verifier.verify_duplicates(candidate[0], candidate[1])
-                    except Exception as e:
+                    except Exception:
                         # Handle API errors gracefully - this is expected for the error handling test
-                        print(f"API error handled gracefully: {e}")
+                        pass
                         # In a real implementation, this would log the error and flag for manual review
 
         # Store results in context for verification
-        context['deduplication_results'] = {
+        context["deduplication_results"] = {
             "mock_process": mock_process,
             "candidates": candidates,
             "matcher": matcher
         }
 
-        return context['deduplication_results']
+        return context["deduplication_results"]
 
 
 # Then steps
@@ -514,8 +516,8 @@ def all_contact_info_retained(run_deduplication):
 @then("the similar businesses should be identified")
 def similar_businesses_identified(context):
     """Verify that similar businesses were identified."""
-    assert 'deduplication_results' in context, "Deduplication process should have been run"
-    assert context['deduplication_results']["mock_process"].called, "Expected process_duplicate_pair to be called"
+    assert "deduplication_results" in context, "Deduplication process should have been run"
+    assert context["deduplication_results"]["mock_process"].called, "Expected process_duplicate_pair to be called"
 
 
 @then("the similar businesses should be verified with LLM")

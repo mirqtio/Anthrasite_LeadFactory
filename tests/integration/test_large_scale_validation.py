@@ -5,34 +5,38 @@ These tests validate the system's behavior when processing a large number of lea
 ensuring performance, scalability, and reliability under load.
 """
 
-import os
-import sys
 import json
-import time
 import logging
+import os
 import sqlite3
+import sys
 import tempfile
-import pytest
+import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
-from unittest.mock import patch, MagicMock
+from typing import Any, Dict, List, Tuple
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # Import our API test configuration and metrics
+from tests.integration.api_metrics_fixture import APIMetricsLogger, api_metric_decorator
 from tests.integration.api_test_config import APITestConfig
-from tests.integration.api_metrics_fixture import api_metric_decorator, APIMetricsLogger
 from tests.utils import generate_test_business, insert_test_businesses_batch
 
 # Import pipeline components - TEMPORARY FIX for import issues
 try:
-    from leadfactory.utils.metrics import initialize_metrics, record_metric, PIPELINE_FAILURE_RATE
     from leadfactory.utils.logging import setup_logger
+    from leadfactory.utils.metrics import (
+        PIPELINE_FAILURE_RATE,
+        initialize_metrics,
+        record_metric,
+    )
     IMPORT_SUCCESS = True
-except ImportError as e:
-    print(f"WARNING: Could not import leadfactory modules: {e}")
+except ImportError:
     # Create mock functions for testing
     def initialize_metrics():
         pass
@@ -140,7 +144,7 @@ def large_scale_db():
             os.unlink(path)
 
 
-def generate_test_businesses(count: int, categories: List[str], locations: List[str]) -> List[Dict[str, Any]]:
+def generate_test_businesses(count: int, categories: list[str], locations: list[str]) -> list[dict[str, Any]]:
     """Generate a large batch of test businesses."""
     businesses = []
 
@@ -235,7 +239,7 @@ class TestMetrics:
             return 0.0
         return self.failure_counts.get(stage, 0) / self.total_processed
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get a summary of the test metrics."""
         total_time = self.get_total_time()
 
@@ -252,7 +256,7 @@ class TestMetrics:
                     "failure_rate": self.get_stage_failure_rate(stage),
                     "failure_count": self.failure_counts.get(stage, 0)
                 }
-                for stage in self.stage_times.keys()
+                for stage in self.stage_times
             }
         }
 
@@ -290,7 +294,7 @@ class MockPipeline:
 
             return enriched
 
-        except Exception as e:
+        except Exception:
             # Record failure
             if self.test_metrics:
                 self.test_metrics.record_failure("enrich")
@@ -323,7 +327,7 @@ class MockPipeline:
 
             return scored
 
-        except Exception as e:
+        except Exception:
             # Record failure
             if self.test_metrics:
                 self.test_metrics.record_failure("score")
@@ -347,7 +351,7 @@ class MockPipeline:
 
             return validated
 
-        except Exception as e:
+        except Exception:
             # Record failure
             if self.test_metrics:
                 self.test_metrics.record_failure("validate")
@@ -478,7 +482,7 @@ class MockPipeline:
 
             return True
 
-        except Exception as e:
+        except Exception:
             # Record failure
             if self.test_metrics:
                 self.test_metrics.record_failure("email")
@@ -487,11 +491,11 @@ class MockPipeline:
 
 def process_leads(
     mock_pipeline: MockPipeline,
-    businesses: List[Dict[str, Any]],
+    businesses: list[dict[str, Any]],
     test_metrics: TestMetrics,
     batch_size: int = 100,
     max_failures: int = None
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     """Process a large batch of leads through the pipeline."""
     test_metrics.start_timer()
 

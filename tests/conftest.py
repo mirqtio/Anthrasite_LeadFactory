@@ -11,7 +11,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 # Create a MagicMock object instead of a regular function
 mock_track_api_cost = MagicMock(return_value=True)
 mock_track_api_cost.__name__ = "mock_track_api_cost"
@@ -46,15 +45,15 @@ class MockWebPage:
 sys.modules["wappalyzer"] = type("wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage})
 
 # Create directory structure in the module namespace for proper mocking
-if 'leadfactory' not in sys.modules:
-    sys.modules['leadfactory'] = type('leadfactory', (), {})()
-if 'leadfactory.utils' not in sys.modules:
-    sys.modules['leadfactory.utils'] = type('utils', (), {})()
-if 'leadfactory.utils.io' not in sys.modules:
-    sys.modules['leadfactory.utils.io'] = type('io', (), {'track_api_cost': mock_track_api_cost})()
+if "leadfactory" not in sys.modules:
+    sys.modules["leadfactory"] = type("leadfactory", (), {})()
+if "leadfactory.utils" not in sys.modules:
+    sys.modules["leadfactory.utils"] = type("utils", (), {})()
+if "leadfactory.utils.io" not in sys.modules:
+    sys.modules["leadfactory.utils.io"] = type("io", (), {"track_api_cost": mock_track_api_cost})()
 
 # Direct patch of the module attributes instead of using patch()
-sys.modules['leadfactory.utils.io'].track_api_cost = mock_track_api_cost
+sys.modules["leadfactory.utils.io"].track_api_cost = mock_track_api_cost
 
 # Try importing using relative imports for the CI environment
 try:

@@ -3,12 +3,12 @@ Integration tests for the email queue process.
 These tests verify the end-to-end email generation, queuing, and sending workflow.
 """
 
-import os
-import sys
 import json
+import os
 import sqlite3
+import sys
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 # Import test utilities
 from tests.utils import (
+    create_test_emails,
     generate_test_business,
     insert_test_businesses_batch,
-    create_test_emails
 )
 
 
@@ -198,7 +198,7 @@ def test_email_content_generation(business_with_score):
     """Test email content generation for different business scores."""
     db = business_with_score["db"]
     business_id = business_with_score["business_id"]
-    score = business_with_score["score"]
+    business_with_score["score"]
     variant = business_with_score["email_variant"]
     subject_keywords = business_with_score["subject_contains"]
     content_keywords = business_with_score["content_contains"]
@@ -709,7 +709,7 @@ def test_email_queue_processing(email_queue_setup):
 def test_email_event_tracking(populated_email_queue_db):
     """Test tracking email open and click events."""
     db = populated_email_queue_db["db"]
-    email_ids = populated_email_queue_db["email_ids"]
+    populated_email_queue_db["email_ids"]
 
     # Select a subset of emails that are in 'sent' status
     cursor = db.cursor()

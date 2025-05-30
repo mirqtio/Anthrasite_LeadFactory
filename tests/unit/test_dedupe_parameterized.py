@@ -3,10 +3,10 @@ Parameterized tests for the deduplication functionality.
 Tests the matching, verification, and merging of duplicate businesses with various data patterns.
 """
 
-import os
-import sys
 import json
+import os
 import sqlite3
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -719,10 +719,10 @@ def test_business_merging(dedupe_test_db, merge_case):
     target_id = insert_custom_business(dedupe_test_db, merge_case["target_business"])
 
     # Create a matcher instance (just needed for the merge function)
-    matcher = dedupe.LevenshteinMatcher()
+    dedupe.LevenshteinMatcher()
 
     # Mock the verifier (not actually used in the merge function)
-    verifier = MagicMock()
+    MagicMock()
 
     # Mock the database connection
     with patch("bin.dedupe.get_db_connection") as mock_get_db:

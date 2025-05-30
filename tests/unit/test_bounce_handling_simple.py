@@ -4,8 +4,9 @@ Unit tests for bounce handling functionality.
 Tests the bounce rate calculation logic for email deliverability monitoring.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 import requests
 from requests.exceptions import RequestException, Timeout
 
@@ -103,7 +104,7 @@ class TestBounceHandling:
         """Set up test fixtures before each test method."""
         self.sender = MockSendGridEmailSender()
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_bounce_rate_calculation_with_valid_data(self, mock_requests_get):
         """Test bounce rate calculation with valid SendGrid response data."""
         # Arrange
@@ -134,7 +135,7 @@ class TestBounceHandling:
         assert bounce_rate == 0.05  # 5 bounces out of 100 requests = 5%
         mock_requests_get.assert_called_once()
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_bounce_rate_with_zero_requests(self, mock_requests_get):
         """Test bounce rate calculation when there are zero requests."""
         # Arrange
@@ -164,7 +165,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_bounce_rate_with_empty_response(self, mock_requests_get):
         """Test bounce rate calculation with empty response from SendGrid."""
         # Arrange
@@ -179,7 +180,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_bounce_rate_with_api_error(self, mock_requests_get):
         """Test bounce rate calculation when SendGrid API returns an error."""
         # Arrange
@@ -194,7 +195,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_bounce_rate_with_network_timeout(self, mock_requests_get):
         """Test bounce rate calculation when network request times out."""
         # Arrange
@@ -206,7 +207,7 @@ class TestBounceHandling:
         # Assert
         assert bounce_rate == 0.0
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_spam_rate_calculation_with_valid_data(self, mock_requests_get):
         """Test spam rate calculation with valid SendGrid response data."""
         # Arrange
@@ -244,7 +245,7 @@ class TestBounceHandling:
         (1, 10, 0.10),      # Small volume
         (100, 1000, 0.10),  # Large volume
     ])
-    @patch('requests.get')
+    @patch("requests.get")
     def test_bounce_rate_calculations(self, mock_requests_get, bounce_count, request_count, expected_rate):
         """Test bounce rate calculations with various scenarios."""
         # Arrange

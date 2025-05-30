@@ -3,9 +3,9 @@ Parameterized tests for the scraping functionality.
 Tests scraping with different filters, sources, and error handling scenarios.
 """
 
+import json
 import os
 import sys
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -14,7 +14,6 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 # Import the modules being tested
 from leadfactory.pipeline import scrape
-
 
 # Test data for business categories
 test_categories = [
@@ -443,10 +442,10 @@ def test_scraping_error_handling(error_case):
                 return []  # Empty result if all retries fail
 
             # Try to scrape with retry
-            result = scrape_with_retry("test", "test", 10)
+            scrape_with_retry("test", "test", 10)
 
             # If we get here, there was no exception (shouldn't happen with our mock)
-            assert False, "Expected an exception to be raised"
+            raise AssertionError("Expected an exception to be raised")
 
         except Exception:
             # Expected behavior - check if retry logic was followed

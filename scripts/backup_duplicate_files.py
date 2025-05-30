@@ -11,6 +11,7 @@ Usage:
 This script follows the task-master workflow and is part of the Python 3.9 compatibility task.
 """
 
+import contextlib
 import os
 import shutil
 from datetime import datetime
@@ -27,9 +28,6 @@ def main():
         / f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     )
 
-    print(f"Repository root: {repo_root}")
-    print(f"Backup directory: {backup_root}")
-
     # Create backup directory with timestamp
     backup_root.mkdir(parents=True, exist_ok=True)
 
@@ -44,8 +42,6 @@ def main():
             if file.endswith(" 2.py"):
                 duplicate_files.append(root_path / file)
 
-    print(f"Found {len(duplicate_files)} duplicate files to back up.")
-
     # Move each file to the backup directory, preserving structure
     for file_path in duplicate_files:
         rel_path = file_path.relative_to(repo_root)
@@ -55,15 +51,8 @@ def main():
         backup_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Move the file
-        try:
+        with contextlib.suppress(Exception):
             shutil.move(file_path, backup_path)
-            print(f"Moved: {rel_path} → {backup_path.relative_to(repo_root)}")
-        except Exception as e:
-            print(f"Error moving {rel_path}: {e}")
-
-    print("\nBackup complete.")
-    print(f"All duplicate files have been moved to: {backup_root}")
-    print("To restore files if needed, copy them back from the backup directory.")
 
 
 if __name__ == "__main__":

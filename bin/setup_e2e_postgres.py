@@ -6,11 +6,11 @@ This script provides a simplified, reliable way to set up the PostgreSQL databas
 for E2E testing using Docker.
 """
 
+import logging
 import os
+import subprocess
 import sys
 import time
-import subprocess
-import logging
 from pathlib import Path
 
 # Set up logging
@@ -39,8 +39,7 @@ def exec_command(cmd_list, check=True):
         result = subprocess.run(
             cmd_list,
             check=check,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
         if result.stdout.strip():

@@ -7,24 +7,23 @@ that automatically identifies, logs, and assists in resolving failures, creating
 self-improving system that maintains pipeline reliability.
 """
 
-import os
-import sys
+import argparse
+import datetime
 import json
+import logging
+import os
+import subprocess
+import sys
 import time
 import uuid
-import logging
-import datetime
-import argparse
-import subprocess
-from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent
 if project_root not in sys.path:
     sys.path.append(str(project_root))
 
-from scripts.preflight.preflight_check import PreflightCheck
 from scripts.e2e.execution_logger import (
     ExecutionLogHandler,
     ExecutionTracker,
@@ -32,6 +31,7 @@ from scripts.e2e.execution_logger import (
 )
 from scripts.e2e.failure_analyzer import FailureAnalyzer
 from scripts.e2e.task_generator import TaskGenerator
+from scripts.preflight.preflight_check import PreflightCheck
 
 # Configure logging
 log_dir = Path(project_root) / "logs" / "e2e"
@@ -66,7 +66,7 @@ class ExecutionStatus:
 class PipelineStage:
     """Pipeline stage definition"""
 
-    def __init__(self, name: str, script_path: str, depends_on: List[str] = None):
+    def __init__(self, name: str, script_path: str, depends_on: list[str] = None):
         self.name = name
         self.script_path = script_path
         self.depends_on = depends_on or []
@@ -147,7 +147,7 @@ class PipelineExecutor:
         self.known_issues_file = project_root / "scripts" / "e2e" / "known_issues.json"
         self.known_issues = self._load_known_issues()
 
-    def _load_known_issues(self) -> Dict[str, Dict[str, Any]]:
+    def _load_known_issues(self) -> dict[str, dict[str, Any]]:
         """Load known issues from the registry file."""
         if not self.known_issues_file.exists():
             # Create default known issues file if it doesn't exist
@@ -196,7 +196,7 @@ class PipelineExecutor:
             return default_issues
 
         try:
-            with open(self.known_issues_file, "r") as f:
+            with open(self.known_issues_file) as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             logger.error(f"Failed to load known issues from {self.known_issues_file}")
@@ -288,7 +288,7 @@ class PipelineExecutor:
 
         return overall_success
 
-    def _get_pipeline_stages(self) -> Dict[str, Dict[str, str]]:
+    def _get_pipeline_stages(self) -> dict[str, dict[str, str]]:
         """Get the pipeline stages configuration."""
         stages = {
             "preflight": {
@@ -356,7 +356,7 @@ class PipelineExecutor:
         result = preflight.run()
 
         # Record end time
-        end_time = datetime.datetime.now()
+        datetime.datetime.now()
 
         if result.success:
             # Record success
@@ -395,7 +395,7 @@ class PipelineExecutor:
 
             return False
 
-    def _execute_stage(self, stage_name: str, stage_config: Dict[str, str]) -> bool:
+    def _execute_stage(self, stage_name: str, stage_config: dict[str, str]) -> bool:
         """
         Execute a single pipeline stage with retry logic.
 
@@ -522,7 +522,7 @@ class PipelineExecutor:
 
     def _categorize_failure(
         self, stage_name: str, error_message: str
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """
         Categorize a failure based on the error message and known issues.
 
@@ -595,7 +595,7 @@ class PipelineExecutor:
 
         return failure_info
 
-    def _attempt_resolution(self, failures: List[Dict[str, str]]) -> bool:
+    def _attempt_resolution(self, failures: list[dict[str, str]]) -> bool:
         """
         Attempt to automatically resolve failures.
 
@@ -676,7 +676,7 @@ class PipelineExecutor:
 
         return all_resolved
 
-    def _resolve_environment_issue(self, failure: Dict[str, str]) -> bool:
+    def _resolve_environment_issue(self, failure: dict[str, str]) -> bool:
         """
         Attempt to resolve environment-related issues.
 
@@ -710,7 +710,7 @@ class PipelineExecutor:
         # For now, just return False to indicate we can't automatically resolve
         return False
 
-    def _resolve_database_issue(self, failure: Dict[str, str]) -> bool:
+    def _resolve_database_issue(self, failure: dict[str, str]) -> bool:
         """
         Attempt to resolve database-related issues.
 
@@ -755,7 +755,7 @@ class PipelineExecutor:
         logger.info(f"Generating tasks for {len(self.results['failures'])} failures")
         self.logger.add_log_entry(
             "info",
-            f"Generating tasks for failures",
+            "Generating tasks for failures",
             {"failure_count": len(self.results["failures"])},
         )
 
@@ -771,7 +771,7 @@ class PipelineExecutor:
                 task_ids.append(task_id)
                 self.logger.add_log_entry(
                     "info",
-                    f"Created task for failure",
+                    "Created task for failure",
                     {
                         "task_id": task_id,
                         "stage": failure["stage"],

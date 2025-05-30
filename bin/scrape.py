@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 # Use dict instead of Dict for Python 3.9 compatibility
-
 # Use lowercase versions for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
 from dotenv import load_dotenv

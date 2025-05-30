@@ -9,13 +9,14 @@ This script manages the database schema for E2E testing:
 - Provides utilities for schema inspection and maintenance
 """
 
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
+from pathlib import Path
+
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from pathlib import Path
 
 # Set up logging
 logging.basicConfig(
@@ -44,7 +45,7 @@ def get_connection_string():
         logger.error(f"Environment file not found: {ENV_FILE}")
         return None
 
-    with open(ENV_FILE, "r") as f:
+    with open(ENV_FILE) as f:
         for line in f:
             if line.startswith("DATABASE_URL="):
                 return line.strip().split("=", 1)[1]
@@ -302,11 +303,7 @@ def show_schema():
         )
         tables = [row[0] for row in cursor.fetchall()]
 
-        print("\n=== DATABASE SCHEMA ===\n")
-
         for table in tables:
-            print(f"\nTABLE: {table}")
-            print("-" * (len(table) + 7))
 
             # Get columns
             cursor.execute(
@@ -321,9 +318,6 @@ def show_schema():
 
             for column in columns:
                 name, data_type, nullable, default = column
-                nullable_str = "NULL" if nullable == "YES" else "NOT NULL"
-                default_str = f" DEFAULT {default}" if default else ""
-                print(f"  {name} {data_type} {nullable_str}{default_str}")
 
             # Get constraints
             cursor.execute(
@@ -338,21 +332,18 @@ def show_schema():
             constraints = cursor.fetchall()
 
             if constraints:
-                print("\n  Constraints:")
                 for constraint in constraints:
                     name, type_code, definition = constraint
-                    type_name = {
+                    {
                         "p": "PRIMARY KEY",
                         "f": "FOREIGN KEY",
                         "u": "UNIQUE",
                         "c": "CHECK",
                     }.get(type_code, "UNKNOWN")
-                    print(f"    {name} ({type_name}): {definition}")
 
             # Get row count
             cursor.execute(f"SELECT COUNT(*) FROM {table};")
             count = cursor.fetchone()[0]
-            print(f"\n  Row count: {count}")
 
             # Show sample data if table has rows
             if count > 0:
@@ -368,13 +359,11 @@ def show_schema():
                     ORDER BY ordinal_position;
                 """
                 )
-                column_names = [col[0] for col in cursor.fetchall()]
+                [col[0] for col in cursor.fetchall()]
 
-                print("\n  Sample data:")
                 for row in rows:
-                    for i, value in enumerate(row):
-                        print(f"    {column_names[i]}: {value}")
-                    print("")
+                    for _i, _value in enumerate(row):
+                        pass
 
         cursor.close()
         conn.close()

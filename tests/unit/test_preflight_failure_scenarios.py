@@ -6,25 +6,26 @@ handles errors appropriately, including network issues, resource constraints,
 permission problems, and recovery mechanisms.
 """
 
-import pytest
 import os
-import tempfile
 import shutil
-from unittest.mock import patch, MagicMock, mock_open
+import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock, mock_open, patch
+
+import pytest
 
 # Import the preflight validation components
 from scripts.preflight.pipeline_validator import (
+    DatabaseConnectionRule,
+    EnvironmentVariableRule,
+    FileAccessRule,
+    ModuleImportRule,
+    NetworkConnectivityRule,
     PipelineValidator,
-    ValidationLogger,
     ValidationError,
     ValidationErrorCode,
+    ValidationLogger,
     ValidationSeverity,
-    DatabaseConnectionRule,
-    ModuleImportRule,
-    FileAccessRule,
-    EnvironmentVariableRule,
-    NetworkConnectivityRule
 )
 
 
@@ -36,7 +37,7 @@ class TestDatabaseFailureScenarios:
         rule = DatabaseConnectionRule()
 
         with patch.dict(os.environ, {"DATABASE_URL": "postgresql://timeout:test@slow-host:5432/test"}):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 import psycopg2
                 mock_connect.side_effect = psycopg2.OperationalError("connection timeout")
 
@@ -51,7 +52,7 @@ class TestDatabaseFailureScenarios:
         rule = DatabaseConnectionRule()
 
         with patch.dict(os.environ, {"DATABASE_URL": "postgresql://baduser:badpass@localhost:5432/test"}):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 import psycopg2
                 mock_connect.side_effect = psycopg2.OperationalError("authentication failed")
 
@@ -66,7 +67,7 @@ class TestDatabaseFailureScenarios:
         rule = DatabaseConnectionRule()
 
         with patch.dict(os.environ, {"DATABASE_URL": "postgresql://user:pass@localhost:5432/nonexistent"}):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 import psycopg2
                 mock_connect.side_effect = psycopg2.OperationalError("database does not exist")
 
@@ -84,7 +85,7 @@ class TestNetworkFailureScenarios:
         """Test network connection refused scenarios."""
         rule = NetworkConnectivityRule("http://localhost:9999")
 
-        with patch('requests.get') as mock_get:
+        with patch("requests.get") as mock_get:
             import requests
             mock_get.side_effect = requests.ConnectionError("Connection refused")
 
@@ -97,7 +98,7 @@ class TestNetworkFailureScenarios:
         """Test network timeout scenarios."""
         rule = NetworkConnectivityRule("http://httpbin.org/delay/10", timeout=1)
 
-        with patch('requests.get') as mock_get:
+        with patch("requests.get") as mock_get:
             import requests
             mock_get.side_effect = requests.Timeout("Request timeout")
 
@@ -110,7 +111,7 @@ class TestNetworkFailureScenarios:
         """Test HTTP error response scenarios."""
         rule = NetworkConnectivityRule("http://api.example.com/health")
 
-        with patch('requests.get') as mock_get:
+        with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.status_code = 500
             mock_get.return_value = mock_response
@@ -142,7 +143,7 @@ class TestFileSystemFailureScenarios:
             rule = FileAccessRule(temp_path, access_type="read")
 
             # Mock os.access to return False for read permission
-            with patch('os.access') as mock_access:
+            with patch("os.access") as mock_access:
                 mock_access.return_value = False
 
                 issues = rule.validate({})
@@ -205,7 +206,7 @@ class TestModuleImportFailureScenarios:
         """Test module import error scenarios through mocking."""
         rule = ModuleImportRule("sys")  # Use a real module for this test
 
-        with patch('importlib.util.find_spec') as mock_find_spec:
+        with patch("importlib.util.find_spec") as mock_find_spec:
             mock_find_spec.side_effect = ImportError("Module import failed")
 
             issues = rule.validate({})
@@ -229,7 +230,7 @@ class TestPartialFailureScenarios:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -275,7 +276,7 @@ class TestPartialFailureScenarios:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -339,7 +340,7 @@ class TestErrorHandlingAndRecovery:
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -362,7 +363,7 @@ class TestResourceConstraintScenarios:
         """Test memory exhaustion scenarios."""
         validator = PipelineValidator()
 
-        with patch('psycopg2.connect') as mock_connect:
+        with patch("psycopg2.connect") as mock_connect:
             mock_connect.side_effect = MemoryError("Out of memory")
 
             with patch.dict(os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}):
@@ -429,7 +430,7 @@ class TestRealWorldFailureScenarios:
         }
 
         with patch.dict(os.environ, prod_env):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 # Simulate database connection failure
                 import psycopg2
                 mock_connect.side_effect = psycopg2.OperationalError("Connection refused")
@@ -454,7 +455,7 @@ class TestRealWorldFailureScenarios:
         }
 
         with patch.dict(os.environ, dev_env):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 
@@ -476,7 +477,7 @@ class TestRealWorldFailureScenarios:
         }
 
         with patch.dict(os.environ, ci_env):
-            with patch('psycopg2.connect') as mock_connect:
+            with patch("psycopg2.connect") as mock_connect:
                 mock_conn = MagicMock()
                 mock_connect.return_value = mock_conn
 

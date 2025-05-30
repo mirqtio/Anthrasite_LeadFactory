@@ -8,9 +8,9 @@ control test behavior.
 
 import os
 import sys
-from pathlib import Path
-from typing import Dict, Optional, List, Any
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 import pytest
 from _pytest.config import Config
@@ -19,7 +19,7 @@ from _pytest.terminal import TerminalReporter
 # Import project modules
 # Handle missing metrics module gracefully
 try:
-    from leadfactory.utils.metrics import COST_COUNTER, API_LATENCY
+    from leadfactory.utils.metrics import API_LATENCY, COST_COUNTER
 except (ImportError, ModuleNotFoundError):
     # Create mock metrics objects if the real ones aren't available
     class MockMetric:
@@ -38,42 +38,42 @@ except (ImportError, ModuleNotFoundError):
             pass
 
     # Create mock metric instances
-    COST_COUNTER = MockMetric('api_cost_total', 'Total API cost in USD', ['api_name', 'operation'])
-    API_LATENCY = MockMetric('api_latency_seconds', 'API latency in seconds', ['api_name', 'endpoint', 'status'])
+    COST_COUNTER = MockMetric("api_cost_total", "Total API cost in USD", ["api_name", "operation"])
+    API_LATENCY = MockMetric("api_latency_seconds", "API latency in seconds", ["api_name", "endpoint", "status"])
 
 # Import API fixtures to make them available to tests
 from tests.integration.api_fixtures import (
-    yelp_api,
     google_places_api,
     openai_api,
-    sendgrid_api,
     screenshotone_api,
+    sendgrid_api,
     setup_mock_data_dir,
+    yelp_api,
+)
+
+# Import API metrics fixtures
+from tests.integration.api_metrics_fixture import (
+    APIMetricsLogger,
+    api_metric_decorator,
+    api_metrics_logger,
+    calculate_openai_cost,
 )
 
 # Import API test configuration
 from tests.integration.api_test_config import APITestConfig
 
-# Import API metrics fixtures
-from tests.integration.api_metrics_fixture import (
-    APIMetricsLogger,
-    api_metrics_logger,
-    api_metric_decorator,
-    calculate_openai_cost
-)
-
 # Re-export the fixtures to make them available to all integration tests
 __all__ = [
-    'yelp_api',
-    'google_places_api',
-    'openai_api',
-    'sendgrid_api',
-    'screenshotone_api',
-    'setup_mock_data_dir',
-    'api_metrics_logger',
-    'api_metric_decorator',
-    'api_test_config',
-    'metrics_report'
+    "yelp_api",
+    "google_places_api",
+    "openai_api",
+    "sendgrid_api",
+    "screenshotone_api",
+    "setup_mock_data_dir",
+    "api_metrics_logger",
+    "api_metric_decorator",
+    "api_test_config",
+    "metrics_report"
 ]
 
 
@@ -207,7 +207,7 @@ def apis_to_test(request):
 
 
 @pytest.fixture
-def api_keys() -> Dict[str, Optional[str]]:
+def api_keys() -> dict[str, Optional[str]]:
     """Return API keys from environment variables."""
     return {
         "yelp": os.environ.get("YELP_API_KEY"),
@@ -279,10 +279,11 @@ def metrics_report(api_metrics_logger):
             report_path = output_dir / f"api_metrics_report_{timestamp}.html"
 
             try:
-                import pandas as pd
-                import matplotlib.pyplot as plt
                 import base64
                 from io import BytesIO
+
+                import matplotlib.pyplot as plt
+                import pandas as pd
 
                 # Convert metrics to DataFrame
                 metrics_df = pd.DataFrame(api_metrics_logger.metrics)
@@ -291,27 +292,27 @@ def metrics_report(api_metrics_logger):
                 plt.figure(figsize=(10, 6))
 
                 # Plot 1: API Call Distribution
-                api_counts = metrics_df['api'].value_counts()
+                api_counts = metrics_df["api"].value_counts()
                 ax1 = plt.subplot(121)
-                api_counts.plot(kind='bar', ax=ax1)
-                plt.title('API Call Distribution')
-                plt.ylabel('Number of Calls')
+                api_counts.plot(kind="bar", ax=ax1)
+                plt.title("API Call Distribution")
+                plt.ylabel("Number of Calls")
                 plt.tight_layout()
 
                 # Plot 2: Average Response Times
                 ax2 = plt.subplot(122)
-                avg_times = metrics_df.groupby('api')['request_time'].mean() * 1000  # Convert to ms
-                avg_times.plot(kind='bar', ax=ax2)
-                plt.title('Average Response Times')
-                plt.ylabel('Time (ms)')
+                avg_times = metrics_df.groupby("api")["request_time"].mean() * 1000  # Convert to ms
+                avg_times.plot(kind="bar", ax=ax2)
+                plt.title("Average Response Times")
+                plt.ylabel("Time (ms)")
                 plt.tight_layout()
 
                 # Save plot to base64 string
                 buffer = BytesIO()
-                plt.savefig(buffer, format='png')
+                plt.savefig(buffer, format="png")
                 plt.close()
                 buffer.seek(0)
-                plot_data = base64.b64encode(buffer.read()).decode('utf-8')
+                plot_data = base64.b64encode(buffer.read()).decode("utf-8")
 
                 # Generate HTML report
                 html_content = f"""
@@ -392,7 +393,7 @@ def metrics_report(api_metrics_logger):
                             </tr>
                     """
 
-                    if 'total_cost' in stats and stats['total_cost'] is not None:
+                    if "total_cost" in stats and stats["total_cost"] is not None:
                         html_content += f"""
                             <tr>
                                 <td>Total Cost</td>
@@ -400,7 +401,7 @@ def metrics_report(api_metrics_logger):
                             </tr>
                         """
 
-                    if 'total_tokens' in stats and stats['total_tokens'] is not None:
+                    if "total_tokens" in stats and stats["total_tokens"] is not None:
                         html_content += f"""
                             <tr>
                                 <td>Total Tokens</td>
@@ -451,7 +452,7 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus, conf
         terminalreporter.write_line(f"Overall Success Rate: {summary['success_rate']*100:.1f}%")
         terminalreporter.write_line(f"Average Response Time: {summary['average_request_time']*1000:.2f} ms")
 
-        if summary.get('total_cost') is not None:
+        if summary.get("total_cost") is not None:
             terminalreporter.write_line(f"Total Estimated Cost: ${summary['total_cost']:.4f}")
 
         # Print per-API summary
@@ -463,10 +464,10 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus, conf
             terminalreporter.write_line(f"  Success Rate: {stats['success_rate']*100:.1f}%")
             terminalreporter.write_line(f"  Avg Response Time: {stats['average_request_time']*1000:.2f} ms")
 
-            if 'total_cost' in stats and stats['total_cost'] is not None:
+            if "total_cost" in stats and stats["total_cost"] is not None:
                 terminalreporter.write_line(f"  Estimated Cost: ${stats['total_cost']:.4f}")
 
-            if 'total_tokens' in stats and stats['total_tokens'] is not None:
+            if "total_tokens" in stats and stats["total_tokens"] is not None:
                 terminalreporter.write_line(f"  Total Tokens: {stats['total_tokens']}")
 
         # Generate report if requested

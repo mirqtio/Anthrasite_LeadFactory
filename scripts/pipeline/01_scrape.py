@@ -2,9 +2,9 @@
 """
 Wrapper script for web scraping stage of the pipeline.
 """
-import sys
-import os
 import logging
+import os
+import sys
 from pathlib import Path
 
 # Set up logging

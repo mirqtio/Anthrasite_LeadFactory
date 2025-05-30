@@ -6,15 +6,15 @@ This module provides sophisticated analysis of pipeline execution failures,
 identifies patterns, and implements automatic resolution strategies.
 """
 
-import os
-import sys
-import re
+import datetime
 import json
 import logging
-import datetime
-from typing import Dict, List, Any, Optional, Tuple, Union, Set
-from pathlib import Path
+import os
+import re
+import sys
 from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -34,8 +34,8 @@ class FailurePattern:
         description: str,
         regex_pattern: str,
         category: str,
-        stages: List[str],
-        resolution_steps: List[str],
+        stages: list[str],
+        resolution_steps: list[str],
         auto_resolvable: bool = False,
         resolution_script: Optional[str] = None,
     ):
@@ -83,7 +83,7 @@ class FailurePattern:
             return True
         return False
 
-    def get_match_groups(self, error_message: str) -> Optional[Dict[str, str]]:
+    def get_match_groups(self, error_message: str) -> Optional[dict[str, str]]:
         """
         Get named capture groups from the regex match.
 
@@ -98,7 +98,7 @@ class FailurePattern:
             return match.groupdict()
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the pattern to a dictionary.
 
@@ -122,7 +122,7 @@ class FailurePattern:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "FailurePattern":
+    def from_dict(cls, data: dict[str, Any]) -> "FailurePattern":
         """
         Create a FailurePattern from a dictionary.
 
@@ -197,7 +197,7 @@ class FailureAnalyzer:
         self.patterns = self._load_patterns()
         self.tracker = ExecutionTracker()
 
-    def _load_patterns(self) -> List[FailurePattern]:
+    def _load_patterns(self) -> list[FailurePattern]:
         """
         Load failure patterns from the patterns file.
 
@@ -215,7 +215,7 @@ class FailureAnalyzer:
             self._save_patterns(patterns)
         else:
             try:
-                with open(self.patterns_file, "r") as f:
+                with open(self.patterns_file) as f:
                     patterns_data = json.load(f)
 
                     for pattern_data in patterns_data:
@@ -231,7 +231,7 @@ class FailureAnalyzer:
 
         return patterns
 
-    def _save_patterns(self, patterns: List[FailurePattern]) -> None:
+    def _save_patterns(self, patterns: list[FailurePattern]) -> None:
         """
         Save failure patterns to the patterns file.
 
@@ -252,7 +252,7 @@ class FailureAnalyzer:
         except OSError as e:
             self.logger.error(f"Failed to save failure patterns: {e}")
 
-    def _create_default_patterns(self) -> List[FailurePattern]:
+    def _create_default_patterns(self) -> list[FailurePattern]:
         """
         Create default failure patterns.
 
@@ -427,7 +427,7 @@ class FailureAnalyzer:
 
     def analyze_failure(
         self, stage: str, error_message: str
-    ) -> Tuple[List[FailurePattern], Dict[str, Any]]:
+    ) -> tuple[list[FailurePattern], dict[str, Any]]:
         """
         Analyze a failure message to identify matching patterns.
 
@@ -474,8 +474,8 @@ class FailureAnalyzer:
         return matching_patterns, context
 
     def get_resolution_steps(
-        self, pattern_id: str, context: Dict[str, Any] = None
-    ) -> List[str]:
+        self, pattern_id: str, context: dict[str, Any] = None
+    ) -> list[str]:
         """
         Get resolution steps for a failure pattern, with variables replaced from context.
 
@@ -544,7 +544,7 @@ class FailureAnalyzer:
 
         return None
 
-    def analyze_execution_history(self, num_executions: int = 10) -> Dict[str, Any]:
+    def analyze_execution_history(self, num_executions: int = 10) -> dict[str, Any]:
         """
         Analyze execution history to identify recurring failure patterns.
 
@@ -669,7 +669,7 @@ class FailureAnalyzer:
             "stage_reliability": stage_reliability,
         }
 
-    def generate_dashboard_data(self) -> Dict[str, Any]:
+    def generate_dashboard_data(self) -> dict[str, Any]:
         """
         Generate data for a failure analysis dashboard.
 
@@ -753,7 +753,6 @@ def main():
         execution = tracker.get_execution(args.analyze_execution)
 
         if not execution:
-            print(f"Execution not found: {args.analyze_execution}")
             return 1
 
         # Analyze failures
@@ -799,9 +798,8 @@ def main():
         if args.output:
             with open(args.output, "w") as f:
                 json.dump(results, f, indent=2)
-            print(f"Analysis results saved to {args.output}")
         else:
-            print(json.dumps(results, indent=2))
+            pass
 
     elif args.history:
         results = analyzer.analyze_execution_history()
@@ -809,9 +807,8 @@ def main():
         if args.output:
             with open(args.output, "w") as f:
                 json.dump(results, f, indent=2)
-            print(f"History analysis saved to {args.output}")
         else:
-            print(json.dumps(results, indent=2))
+            pass
 
     elif args.dashboard:
         results = analyzer.generate_dashboard_data()
@@ -819,14 +816,10 @@ def main():
         if args.output:
             with open(args.output, "w") as f:
                 json.dump(results, f, indent=2)
-            print(f"Dashboard data saved to {args.output}")
         else:
-            print(json.dumps(results, indent=2))
+            pass
 
     else:
-        print(
-            "No action specified. Use --analyze-execution, --history, or --dashboard."
-        )
         return 1
 
     return 0

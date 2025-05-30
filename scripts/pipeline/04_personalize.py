@@ -3,8 +3,8 @@
 Wrapper script for email personalization stage of the pipeline.
 This is a placeholder for personalization functionality.
 """
-import sys
 import logging
+import sys
 
 # Set up logging
 logging.basicConfig(

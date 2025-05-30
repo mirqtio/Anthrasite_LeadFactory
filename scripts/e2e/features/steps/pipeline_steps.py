@@ -3,25 +3,26 @@
 Step definitions for E2E Pipeline Execution and Resolution BDD tests
 """
 
-import os
-import sys
 import json
 import logging
+import os
+import sys
 from pathlib import Path
-from behave import given, when, then
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+from behave import given, then, when
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent.parent.parent
 if project_root not in sys.path:
     sys.path.append(str(project_root))
 
+from scripts.e2e.generate_report import ReportGenerator
 from scripts.e2e.pipeline_executor import (
-    PipelineExecutor,
     ExecutionStatus,
     FailureCategory,
+    PipelineExecutor,
 )
-from scripts.e2e.generate_report import ReportGenerator
 
 
 @given("the preflight checks have been completed successfully")
@@ -417,8 +418,8 @@ def step_report_includes_failure_analysis(context):
 def step_multiple_executions_recorded(context):
     """Set up multiple recorded pipeline executions"""
     # Create a temporary history file with multiple executions
-    from tempfile import NamedTemporaryFile
     import json
+    from tempfile import NamedTemporaryFile
 
     context.history_file = NamedTemporaryFile(delete=False, mode="w+")
 

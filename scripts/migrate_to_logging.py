@@ -10,12 +10,12 @@ CAUTION: This script identifies potential changes only. All replacements should 
 manually reviewed to ensure correct log levels and context are applied.
 """
 
+import argparse
+import ast
 import os
 import re
-import ast
-import argparse
-from typing import Dict, List, Tuple, Optional
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 
 def find_import_logging(file_content: str) -> bool:
@@ -37,17 +37,15 @@ def find_import_our_logging(file_content: str) -> bool:
 def should_skip_file(file_path: str) -> bool:
     """Determine if a file should be skipped."""
     # Skip tests, backup files, and scripts
-    if (
+    return bool(
         "/tests/" in file_path
         or "backup_" in file_path
         or "/scripts/" in file_path
         or "test_" in file_path
-    ):
-        return True
-    return False
+    )
 
 
-def analyze_print_statement(node, context: Optional[str] = None) -> Tuple[str, str]:
+def analyze_print_statement(node, context: Optional[str] = None) -> tuple[str, str]:
     """
     Analyze a print statement to determine the appropriate log level and format.
 
@@ -81,10 +79,7 @@ def analyze_print_statement(node, context: Optional[str] = None) -> Tuple[str, s
         log_level = "debug"
 
     # Create suggested replacement with logger
-    if context:
-        context_str = f", extra={context}"
-    else:
-        context_str = ""
+    context_str = f", extra={context}" if context else ""
 
     return (
         log_level,
@@ -92,7 +87,7 @@ def analyze_print_statement(node, context: Optional[str] = None) -> Tuple[str, s
     )
 
 
-def scan_file(file_path: str) -> List[Dict]:
+def scan_file(file_path: str) -> list[dict]:
     """
     Scan a file for print statements and suggest logger replacements.
 
@@ -102,7 +97,7 @@ def scan_file(file_path: str) -> List[Dict]:
     results = []
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         tree = ast.parse(content)
@@ -143,13 +138,13 @@ def scan_file(file_path: str) -> List[Dict]:
                     }
                 )
 
-    except Exception as e:
-        print(f"Error analyzing {file_path}: {str(e)}")
+    except Exception:
+        pass
 
     return results
 
 
-def scan_directory(directory: str, extensions: List[str] = None) -> List[Dict]:
+def scan_directory(directory: str, extensions: list[str] = None) -> list[dict]:
     """
     Recursively scan a directory for Python files with print statements.
 
@@ -165,7 +160,7 @@ def scan_directory(directory: str, extensions: List[str] = None) -> List[Dict]:
 
     results = []
 
-    for root, dirs, files in os.walk(directory):
+    for root, _dirs, files in os.walk(directory):
         for file in files:
             if any(file.endswith(ext) for ext in extensions):
                 file_path = os.path.join(root, file)
@@ -179,7 +174,7 @@ def scan_directory(directory: str, extensions: List[str] = None) -> List[Dict]:
     return results
 
 
-def generate_report(results: List[Dict]) -> str:
+def generate_report(results: list[dict]) -> str:
     """
     Generate a human-readable report of suggested logger replacements.
 
@@ -258,20 +253,14 @@ def main():
     directory = args.directory
     extensions = args.extensions.split(",")
 
-    print(f"Scanning directory: {directory}")
-    print(f"File extensions: {extensions}")
-
     results = scan_directory(directory, extensions)
     report = generate_report(results)
 
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(report)
-        print(f"Report written to {args.output}")
     else:
-        print("\n" + report)
-
-    print(f"Found {len(results)} print statements to replace.")
+        pass
 
 
 if __name__ == "__main__":

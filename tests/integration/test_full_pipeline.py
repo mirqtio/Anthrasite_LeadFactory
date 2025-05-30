@@ -3,11 +3,11 @@ Integration tests for the full LeadFactory pipeline.
 Tests the entire workflow from scraping to email generation.
 """
 
-import os
-import sys
 import json
+import os
 import sqlite3
-from unittest.mock import patch, MagicMock
+import sys
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -16,11 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 # Import test utilities
 from tests.utils import (
-    generate_test_business,
-    insert_test_businesses_batch,
     MockLevenshteinMatcher,
     MockOllamaVerifier,
-    MockRequests
+    MockRequests,
+    generate_test_business,
+    insert_test_businesses_batch,
 )
 
 
@@ -207,7 +207,7 @@ class MockPipeline:
         self.db.commit()
 
         # Return the IDs of inserted businesses
-        return [i for i in range(1, len(businesses) + 1)]
+        return list(range(1, len(businesses) + 1))
 
     def enrich_businesses(self, business_ids):
         """Mock enriching businesses."""
@@ -647,7 +647,7 @@ def test_full_pipeline_workflow(pipeline_db):
     assert scored_count > 0, "No businesses were scored"
 
     # Step 6: Generate emails
-    email_ids = pipeline.generate_emails(min_score=0)  # Use 0 to include all businesses
+    pipeline.generate_emails(min_score=0)  # Use 0 to include all businesses
 
     # Verify emails were generated
     cursor.execute("SELECT COUNT(*) FROM emails")
@@ -662,7 +662,7 @@ def test_full_pipeline_workflow(pipeline_db):
     assert result["sent"] > 0, "No emails were sent"
 
     # Step 8: Track API costs
-    cost_id = pipeline.track_api_cost(
+    pipeline.track_api_cost(
         model="gpt-4",
         tokens=1000,
         purpose="duplicate_verification",
@@ -729,7 +729,7 @@ def test_pipeline_with_budget_constraints(pipeline_db):
     )
 
     # Try to enrich, but this should be limited by budget
-    enriched_ids = pipeline.enrich_businesses(business_ids[:2])  # Limit to just 2
+    pipeline.enrich_businesses(business_ids[:2])  # Limit to just 2
 
     # Verify the number of API cost entries matches expectations
     cursor.execute("SELECT COUNT(*) FROM api_costs")

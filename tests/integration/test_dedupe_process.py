@@ -3,11 +3,11 @@ Integration tests for the deduplication process.
 These tests verify the end-to-end deduplication workflow with various business scenarios.
 """
 
-import os
-import sys
 import json
+import os
 import sqlite3
-from unittest.mock import patch, MagicMock
+import sys
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -16,11 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 # Import test utilities
 from tests.utils import (
+    MockLevenshteinMatcher,
+    MockOllamaVerifier,
+    create_duplicate_pairs,
     generate_test_business,
     insert_test_businesses_batch,
-    create_duplicate_pairs,
-    MockLevenshteinMatcher,
-    MockOllamaVerifier
 )
 
 
@@ -498,7 +498,7 @@ def test_dedupe_batch_processing(populated_dedupe_db):
         business2 = dict(cursor.fetchone())
 
         # Calculate similarity
-        similarity = matcher.calculate_similarity(business1, business2)
+        matcher.calculate_similarity(business1, business2)
 
         # Verify with LLM
         is_duplicate, confidence, reasoning = verifier.verify_duplicates(business1, business2)
@@ -544,11 +544,11 @@ def test_dedupe_batch_processing(populated_dedupe_db):
 
     # Check that merged or rejected counts increased
     assert merged_after + rejected_after > merged_before + rejected_before, \
-        f"Expected merged or rejected count to increase"
+        "Expected merged or rejected count to increase"
 
     # Check that some businesses were merged (relaxed assertion)
     cursor.execute("SELECT COUNT(*) FROM businesses WHERE merged_into IS NOT NULL")
-    merged_business_count = cursor.fetchone()[0]
+    cursor.fetchone()[0]
 
     # At least verify that the test processed pairs successfully
     assert pending_after < pending_before, "Test should have processed some pairs"

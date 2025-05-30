@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test suite for the refactored PipelineValidator.
 
@@ -7,28 +6,30 @@ functionality of the updated PipelineValidator.
 """
 
 import os
-import pytest
-import tempfile
-from unittest.mock import patch, MagicMock
-from pathlib import Path
 
 # Add the project root to the path
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from scripts.preflight.pipeline_validator import (
-    PipelineValidator,
-    ValidationRule,
     DatabaseConnectionRule,
-    ModuleImportRule,
-    FileAccessRule,
     EnvironmentVariableRule,
+    FileAccessRule,
+    ModuleImportRule,
     NetworkConnectivityRule,
     PipelineValidationResult,
+    PipelineValidator,
     ValidationError,
-    ValidationSeverity,
+    ValidationErrorBuilder,
     ValidationErrorCode,
-    ValidationErrorBuilder
+    ValidationRule,
+    ValidationSeverity,
 )
 
 
@@ -72,7 +73,7 @@ class TestValidationRules:
 
     def test_file_access_rule_existing_file(self):
         """Test file access rule with existing file."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             tmp.write("test content")
             tmp_path = tmp.name
 
@@ -101,7 +102,7 @@ class TestValidationRules:
         assert issues[0].severity == ValidationSeverity.ERROR
         assert "nonexistent_module_xyz" in issues[0].message
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_success(self, mock_get):
         """Test network connectivity rule with successful connection."""
         mock_response = MagicMock()
@@ -113,7 +114,7 @@ class TestValidationRules:
 
         assert len(issues) == 0
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_network_connectivity_rule_failure(self, mock_get):
         """Test network connectivity rule with failed connection."""
         mock_get.side_effect = Exception("Connection failed")
@@ -126,7 +127,7 @@ class TestValidationRules:
         assert issues[0].severity == ValidationSeverity.ERROR
         assert "example.com" in issues[0].message
 
-    @patch('psycopg2.connect')
+    @patch("psycopg2.connect")
     def test_database_connection_rule_success(self, mock_connect):
         """Test database connection rule with successful connection."""
         mock_conn = MagicMock()
@@ -164,7 +165,7 @@ class TestPipelineValidator:
             "personalize", "render", "email_queue"
         ]
 
-        assert validator.PIPELINE_STAGES == expected_stages
+        assert expected_stages == validator.PIPELINE_STAGES
 
     def test_supporting_modules_defined(self):
         """Test that supporting modules are properly defined."""
@@ -175,7 +176,7 @@ class TestPipelineValidator:
             "conflict_resolution", "data_preservation", "manual_review"
         ]
 
-        assert validator.SUPPORTING_MODULES == expected_modules
+        assert expected_modules == validator.SUPPORTING_MODULES
 
     def test_validation_rules_created(self):
         """Test that validation rules are created for all components."""
@@ -291,8 +292,8 @@ class TestIntegration:
         "SENDGRID_API_KEY": "test_sendgrid_key",
         "SENDGRID_FROM_EMAIL": "test@anthrasite.io"
     })
-    @patch('psycopg2.connect')
-    @patch('os.path.exists')
+    @patch("psycopg2.connect")
+    @patch("os.path.exists")
     def test_full_validation_with_database(self, mock_exists, mock_connect):
         """Test full validation with database connection."""
         # Mock file existence for templates
@@ -360,8 +361,8 @@ class TestDependencyChecking:
         "GOOGLE_API_KEY": "test_google_key",
         "SCREENSHOTONE_API_KEY": "test_screenshot_key"
     })
-    @patch('psycopg2.connect')
-    @patch('os.path.exists')
+    @patch("psycopg2.connect")
+    @patch("os.path.exists")
     def test_validate_dependencies_success(self, mock_exists, mock_connect):
         """Test successful dependency validation."""
         # Mock file existence for templates

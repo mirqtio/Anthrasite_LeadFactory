@@ -6,19 +6,19 @@ This test suite covers unusual, malformed, and edge case bounce scenarios
 to ensure the system handles them gracefully.
 """
 
-import unittest
-from unittest.mock import Mock, patch
 import json
+import unittest
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+from unittest.mock import Mock, patch
 
 # Try to import the actual implementation, fallback to mocks if not available
 try:
     from leadfactory.webhooks.sendgrid_webhook import (
-        SendGridWebhookHandler,
         BounceEvent,
         BounceType,
-        EventType
+        EventType,
+        SendGridWebhookHandler,
     )
     REAL_IMPLEMENTATION = True
 except ImportError:
@@ -50,17 +50,17 @@ except ImportError:
             self.sg_message_id = sg_message_id
 
         @classmethod
-        def from_webhook_data(cls, data: Dict[str, Any]):
+        def from_webhook_data(cls, data: dict[str, Any]):
             return cls(
-                email=data.get('email', ''),
-                event=data.get('event', ''),
-                timestamp=data.get('timestamp', 0),
-                bounce_type=data.get('type'),
-                reason=data.get('reason'),
-                status=data.get('status'),
-                message_id=data.get('message_id'),
-                sg_event_id=data.get('sg_event_id'),
-                sg_message_id=data.get('sg_message_id')
+                email=data.get("email", ""),
+                event=data.get("event", ""),
+                timestamp=data.get("timestamp", 0),
+                bounce_type=data.get("type"),
+                reason=data.get("reason"),
+                status=data.get("status"),
+                message_id=data.get("message_id"),
+                sg_event_id=data.get("sg_event_id"),
+                sg_message_id=data.get("sg_message_id")
             )
 
     class SendGridWebhookHandler:
@@ -72,15 +72,15 @@ except ImportError:
             self.soft_bounce_counts = {}
             self.errors = []
 
-        def process_webhook_events(self, events: List[Dict[str, Any]]):
+        def process_webhook_events(self, events: list[dict[str, Any]]):
             for event in events:
                 try:
-                    if event['event'] == EventType.BOUNCE:
+                    if event["event"] == EventType.BOUNCE:
                         self._process_bounce_event(event)
                 except Exception as e:
                     self.errors.append(str(e))
 
-        def _process_bounce_event(self, event_data: Dict[str, Any]):
+        def _process_bounce_event(self, event_data: dict[str, Any]):
             bounce_event = BounceEvent.from_webhook_data(event_data)
             self.bounce_events.append(bounce_event)
 
@@ -92,10 +92,10 @@ except ImportError:
                 self._increment_soft_bounce_count(bounce_event.email)
 
         def _mark_email_permanently_bounced(self, email: str):
-            self.email_statuses[email] = 'hard_bounced'
+            self.email_statuses[email] = "hard_bounced"
 
         def _mark_email_blocked(self, email: str):
-            self.email_statuses[email] = 'blocked'
+            self.email_statuses[email] = "blocked"
 
         def _increment_soft_bounce_count(self, email: str):
             self.soft_bounce_counts[email] = self.soft_bounce_counts.get(email, 0) + 1
@@ -284,7 +284,7 @@ class TestBounceEdgeCases(unittest.TestCase):
 
         # Verify correct categorization
         hard_bounces = sum(1 for email, status in self.handler.email_statuses.items()
-                          if status == 'hard_bounced')
+                          if status == "hard_bounced")
         soft_bounces = len(self.handler.soft_bounce_counts)
 
         self.assertEqual(hard_bounces, 500)  # Every odd index
@@ -310,7 +310,7 @@ class TestBounceEdgeCases(unittest.TestCase):
         self.assertEqual(len(self.handler.bounce_events), 5)
 
         # Verify email status is still correct
-        self.assertEqual(self.handler.email_statuses[email], 'hard_bounced')
+        self.assertEqual(self.handler.email_statuses[email], "hard_bounced")
 
     def test_mixed_event_types_in_batch(self):
         """Test processing batch with mixed event types (not just bounces)."""
@@ -348,7 +348,7 @@ class TestBounceEdgeCases(unittest.TestCase):
         self.assertEqual(len(self.handler.bounce_events), 2)
 
         # Verify correct processing
-        self.assertEqual(self.handler.email_statuses["bounce@example.com"], 'hard_bounced')
+        self.assertEqual(self.handler.email_statuses["bounce@example.com"], "hard_bounced")
         self.assertEqual(self.handler.soft_bounce_counts["bounce2@example.com"], 1)
 
     def test_malformed_json_like_strings(self):
@@ -384,5 +384,5 @@ class TestBounceEdgeCases(unittest.TestCase):
         self.assertEqual(bounce_event.email, "epoch@example.com")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

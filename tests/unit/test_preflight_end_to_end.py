@@ -6,19 +6,19 @@ ensuring proper execution order, accurate pass/fail determination, and comprehen
 logging and reporting.
 """
 
-import unittest
-from unittest.mock import patch, MagicMock, mock_open
+import logging
 import os
 import tempfile
-import logging
+import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, mock_open, patch
 
 from scripts.preflight.pipeline_validator import (
     PipelineValidator,
-    ValidationLogger,
     ValidationError,
+    ValidationErrorCode,
+    ValidationLogger,
     ValidationSeverity,
-    ValidationErrorCode
 )
 
 
@@ -28,12 +28,12 @@ class TestPreflightEndToEnd(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         self.test_env = {
-            'DATABASE_URL': 'postgresql://test:test@localhost:5432/testdb',
-            'YELP_API_KEY': 'test_yelp_key',
-            'GOOGLE_API_KEY': 'test_google_key',
-            'SCREENSHOTONE_API_KEY': 'test_screenshot_key',
-            'SENDGRID_API_KEY': 'test_sendgrid_key',
-            'SENDGRID_FROM_EMAIL': 'test@example.com'
+            "DATABASE_URL": "postgresql://test:test@localhost:5432/testdb",
+            "YELP_API_KEY": "test_yelp_key",
+            "GOOGLE_API_KEY": "test_google_key",
+            "SCREENSHOTONE_API_KEY": "test_screenshot_key",
+            "SENDGRID_API_KEY": "test_sendgrid_key",
+            "SENDGRID_FROM_EMAIL": "test@example.com"
         }
 
         # Create temporary files for testing
@@ -41,9 +41,9 @@ class TestPreflightEndToEnd(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp()
 
         # Create test email template
-        self.email_template = os.path.join(self.temp_dir, 'email_template.html')
-        with open(self.email_template, 'w') as f:
-            f.write('<html><body>Test template</body></html>')
+        self.email_template = os.path.join(self.temp_dir, "email_template.html")
+        with open(self.email_template, "w") as f:
+            f.write("<html><body>Test template</body></html>")
         self.temp_files.append(self.email_template)
 
     def tearDown(self):
@@ -55,11 +55,11 @@ class TestPreflightEndToEnd(unittest.TestCase):
             os.rmdir(self.temp_dir)
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('builtins.open', new_callable=mock_open, read_data='<html><body>Test</body></html>')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("builtins.open", new_callable=mock_open, read_data="<html><body>Test</body></html>")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_complete_preflight_sequence_success(self, mock_find_spec, mock_exists, mock_file, mock_requests, mock_db):
         """Test successful execution of complete preflight sequence."""
         # Set up environment variables
@@ -96,14 +96,14 @@ class TestPreflightEndToEnd(unittest.TestCase):
             mock_exists.assert_called()
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_complete_preflight_sequence_failure(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Test complete preflight sequence with multiple failures."""
         # Set up minimal environment (missing required keys)
-        minimal_env = {'DATABASE_URL': 'postgresql://test:test@localhost:5432/testdb'}
+        minimal_env = {"DATABASE_URL": "postgresql://test:test@localhost:5432/testdb"}
 
         with patch.dict(os.environ, minimal_env):
             # Mock database connection failure
@@ -128,10 +128,10 @@ class TestPreflightEndToEnd(unittest.TestCase):
             self.assertFalse(result, "Complete preflight sequence should fail with missing dependencies")
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_preflight_execution_order(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Test that preflight checks execute in the correct order."""
         with patch.dict(os.environ, self.test_env):
@@ -151,24 +151,24 @@ class TestPreflightEndToEnd(unittest.TestCase):
             validator = PipelineValidator()
 
             # Capture log messages to verify execution order
-            with self.assertLogs('pipeline_validator', level='INFO') as log_context:
+            with self.assertLogs("pipeline_validator", level="INFO") as log_context:
                 validator.validate()
 
                 log_messages = [record.getMessage() for record in log_context.records]
 
                 # Verify that dependency validation happens first
-                dependency_logs = [msg for msg in log_messages if 'dependency' in msg.lower()]
+                dependency_logs = [msg for msg in log_messages if "dependency" in msg.lower()]
                 self.assertTrue(len(dependency_logs) > 0, "Dependency validation should be logged")
 
                 # Verify that component validation follows
-                component_logs = [msg for msg in log_messages if 'component' in msg.lower()]
+                component_logs = [msg for msg in log_messages if "component" in msg.lower()]
                 self.assertTrue(len(component_logs) > 0, "Component validation should be logged")
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_preflight_pass_fail_determination(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Test accurate pass/fail determination for the complete sequence."""
         # Test scenario 1: All checks pass
@@ -190,7 +190,7 @@ class TestPreflightEndToEnd(unittest.TestCase):
             self.assertTrue(result, "Should pass when all checks succeed")
 
         # Test scenario 2: Critical failure causes overall failure
-        with patch.dict(os.environ, {'DATABASE_URL': 'invalid_url'}):
+        with patch.dict(os.environ, {"DATABASE_URL": "invalid_url"}):
             mock_db.side_effect = Exception("Critical database error")
             mock_exists.return_value = True
             mock_find_spec.return_value = mock_spec
@@ -201,10 +201,10 @@ class TestPreflightEndToEnd(unittest.TestCase):
             self.assertFalse(result, "Should fail when critical checks fail")
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_preflight_logging_and_reporting(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Test comprehensive logging and reporting of sequence results."""
         with patch.dict(os.environ, self.test_env):
@@ -214,7 +214,7 @@ class TestPreflightEndToEnd(unittest.TestCase):
 
             # Some requests succeed, some fail
             def mock_request_side_effect(url, **kwargs):
-                if 'google' in url:
+                if "google" in url:
                     response = MagicMock()
                     response.status_code = 200
                     return response
@@ -229,34 +229,34 @@ class TestPreflightEndToEnd(unittest.TestCase):
             # Create validator and capture logs
             validator = PipelineValidator()
 
-            with self.assertLogs('pipeline_validator', level='INFO') as log_context:
+            with self.assertLogs("pipeline_validator", level="INFO") as log_context:
                 result = validator.validate()
 
                 log_messages = [record.getMessage() for record in log_context.records]
 
                 # Verify comprehensive logging
-                self.assertTrue(any('Starting pipeline validation' in msg for msg in log_messages),
+                self.assertTrue(any("Starting pipeline validation" in msg for msg in log_messages),
                               "Should log validation start")
 
-                self.assertTrue(any('validation' in msg.lower() for msg in log_messages),
+                self.assertTrue(any("validation" in msg.lower() for msg in log_messages),
                               "Should log validation progress")
 
                 # Check for error reporting
-                error_logs = [msg for msg in log_messages if 'ERROR' in str(log_context.records)]
+                error_logs = [msg for msg in log_messages if "ERROR" in str(log_context.records)]
                 if not result:
                     self.assertTrue(len(error_logs) > 0, "Should log errors when validation fails")
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_preflight_partial_failure_handling(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Test handling of partial failures in the preflight sequence."""
         # Set up environment with some missing optional components
         partial_env = {
-            'DATABASE_URL': 'postgresql://test:test@localhost:5432/testdb',
-            'YELP_API_KEY': 'test_yelp_key',
+            "DATABASE_URL": "postgresql://test:test@localhost:5432/testdb",
+            "YELP_API_KEY": "test_yelp_key",
             # Missing GOOGLE_API_KEY and other optional keys
         }
 
@@ -281,10 +281,10 @@ class TestPreflightEndToEnd(unittest.TestCase):
             self.assertIsInstance(result, bool, "Should return a boolean result even with partial failures")
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_preflight_error_recovery_and_continuation(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Test that preflight sequence continues after non-critical errors."""
         with patch.dict(os.environ, self.test_env):
@@ -312,21 +312,21 @@ class TestPreflightEndToEnd(unittest.TestCase):
             validator = PipelineValidator()
 
             # Capture logs to verify continuation after errors
-            with self.assertLogs('pipeline_validator', level='INFO') as log_context:
-                result = validator.validate()
+            with self.assertLogs("pipeline_validator", level="INFO") as log_context:
+                validator.validate()
 
                 log_messages = [record.getMessage() for record in log_context.records]
 
                 # Verify that validation continued despite some failures
-                component_validations = [msg for msg in log_messages if 'Validating component' in msg]
+                component_validations = [msg for msg in log_messages if "Validating component" in msg]
                 self.assertTrue(len(component_validations) > 1,
                               "Should continue validating multiple components despite some failures")
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_preflight_performance_and_timeout_handling(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Test preflight sequence performance and timeout handling."""
         with patch.dict(os.environ, self.test_env):
@@ -375,10 +375,10 @@ class TestPreflightEndToEnd(unittest.TestCase):
         self.assertIsNotNone(logger.validation_session_id, "Logger should have session ID")
 
     @patch.dict(os.environ, {}, clear=True)
-    @patch('psycopg2.connect')
-    @patch('requests.get')
-    @patch('os.path.exists')
-    @patch('importlib.util.find_spec')
+    @patch("psycopg2.connect")
+    @patch("requests.get")
+    @patch("os.path.exists")
+    @patch("importlib.util.find_spec")
     def test_preflight_comprehensive_end_to_end(self, mock_find_spec, mock_exists, mock_requests, mock_db):
         """Comprehensive end-to-end test covering the complete preflight workflow."""
         with patch.dict(os.environ, self.test_env):
@@ -400,7 +400,7 @@ class TestPreflightEndToEnd(unittest.TestCase):
             validator = PipelineValidator()
 
             # Test complete validation workflow
-            with self.assertLogs('pipeline_validator', level='INFO') as log_context:
+            with self.assertLogs("pipeline_validator", level="INFO") as log_context:
                 result = validator.validate()
 
                 # Verify workflow completion
@@ -410,13 +410,13 @@ class TestPreflightEndToEnd(unittest.TestCase):
                 log_messages = [record.getMessage() for record in log_context.records]
 
                 # Check for key workflow stages
-                self.assertTrue(any('Starting pipeline validation' in msg for msg in log_messages),
+                self.assertTrue(any("Starting pipeline validation" in msg for msg in log_messages),
                               "Should log workflow start")
 
-                self.assertTrue(any('dependency' in msg.lower() for msg in log_messages),
+                self.assertTrue(any("dependency" in msg.lower() for msg in log_messages),
                               "Should log dependency validation")
 
-                self.assertTrue(any('component' in msg.lower() for msg in log_messages),
+                self.assertTrue(any("component" in msg.lower() for msg in log_messages),
                               "Should log component validation")
 
                 # Verify database connections were tested
@@ -429,5 +429,5 @@ class TestPreflightEndToEnd(unittest.TestCase):
                 mock_exists.assert_called()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

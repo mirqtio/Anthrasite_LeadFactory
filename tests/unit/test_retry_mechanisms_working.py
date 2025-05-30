@@ -5,23 +5,32 @@ Tests retry logic, circuit breakers, and monitoring functionality.
 """
 
 import asyncio
+import os
+import sys
 import time
 import unittest
-import sys
-import os
-from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
 
 # Add the project root to Python path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from leadfactory.pipeline.retry_mechanisms import (
-    RetryConfig, CircuitBreakerConfig, CircuitBreaker, RetryManager,
-    RetryMonitor, with_retry, with_async_retry, CircuitBreakerState,
-    retry_monitor
-)
 from leadfactory.pipeline.error_handling import (
-    PipelineError, RetryStrategy, ErrorCategory, ErrorSeverity
+    ErrorCategory,
+    ErrorSeverity,
+    PipelineError,
+    RetryStrategy,
+)
+from leadfactory.pipeline.retry_mechanisms import (
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitBreakerState,
+    RetryConfig,
+    RetryManager,
+    RetryMonitor,
+    retry_monitor,
+    with_async_retry,
+    with_retry,
 )
 
 
@@ -233,7 +242,7 @@ class TestRetryManager(unittest.TestCase):
         self.assertEqual(self.retry_manager.retry_stats["total_attempts"], 1)
         self.assertEqual(self.retry_manager.retry_stats["failed_retries"], 1)
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_retry_timing(self, mock_sleep):
         """Test that retry delays are applied correctly."""
         mock_func = Mock(side_effect=[ConnectionError("Error"), "success"])

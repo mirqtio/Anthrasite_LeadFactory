@@ -2,15 +2,16 @@
 BDD step definitions for the scoring functionality feature.
 """
 
-import os
-import sys
-import sqlite3
 import json
+import os
+import sqlite3
+import sys
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_bdd import given, when, then, parsers, scenarios
+from pytest_bdd import given, parsers, scenarios, then, when
+
 # Import common step definitions
 from tests.bdd.step_defs.common_step_definitions import *
 
@@ -37,7 +38,7 @@ except ImportError:
 # Import shared steps to ensure 'the database is initialized' step is available
 
 # Load the scenarios from the feature file
-scenarios('../features/pipeline_stages.feature')
+scenarios("../features/pipeline_stages.feature")
 
 
 @pytest.fixture

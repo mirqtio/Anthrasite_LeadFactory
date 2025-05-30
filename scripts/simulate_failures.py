@@ -34,21 +34,20 @@ import random
 import sys
 import time
 import traceback
-from typing import Any, Dict, List, Optional, Tuple, Union, Callable
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 # Add the parent directory to the path to import leadfactory modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from leadfactory.utils.logging import get_logger, LogContext
+from leadfactory.utils.logging import LogContext, get_logger
 from leadfactory.utils.metrics import (
-    PIPELINE_ERRORS,
     PIPELINE_DURATION,
+    PIPELINE_ERRORS,
     PIPELINE_FAILURE_RATE,
     MetricsTimer,
-    record_metric,
     push_to_gateway,
+    record_metric,
 )
-
 
 # Configure logger
 logger = get_logger("failure_simulator")
@@ -172,17 +171,15 @@ class FailureSimulator:
         logger.info("Simulating resource exhaustion", extra=self.context)
 
         try:
-            with LogContext(
-                logger, operation="resource_intensive_task", **self.context
-            ):
-                with MetricsTimer(
+            with (
+                LogContext(logger, operation="resource_intensive_task", **self.context),
+                MetricsTimer(
                     PIPELINE_DURATION, stage=self.stage, operation="resource_task"
-                ):
-                    # Simulate memory exhaustion
-                    logger.debug(
-                        "Allocating large amounts of memory", extra=self.context
-                    )
-                    raise MemoryError("Out of memory: simulated resource exhaustion")
+                ),
+            ):
+                # Simulate memory exhaustion
+                logger.debug("Allocating large amounts of memory", extra=self.context)
+                raise MemoryError("Out of memory: simulated resource exhaustion")
         except MemoryError as e:
             # Log the resource failure with structured context
             logger.error(
@@ -229,23 +226,23 @@ class FailureSimulator:
         logger.info("Simulating external API failure", extra=self.context)
 
         try:
-            with LogContext(
-                logger,
-                operation="external_api_call",
-                service="mock_service",
-                **self.context,
+            with (
+                LogContext(
+                    logger,
+                    operation="external_api_call",
+                    service="mock_service",
+                    **self.context,
+                ),
+                MetricsTimer(PIPELINE_DURATION, stage=self.stage, operation="api_call"),
             ):
-                with MetricsTimer(
-                    PIPELINE_DURATION, stage=self.stage, operation="api_call"
-                ):
-                    # Simulate API error response
-                    logger.debug("Calling external API", extra=self.context)
-                    error_response = {
-                        "error": "rate_limit_exceeded",
-                        "message": "Too many requests, please try again later",
-                        "status_code": 429,
-                    }
-                    raise RuntimeError(f"API request failed: {error_response}")
+                # Simulate API error response
+                logger.debug("Calling external API", extra=self.context)
+                error_response = {
+                    "error": "rate_limit_exceeded",
+                    "message": "Too many requests, please try again later",
+                    "status_code": 429,
+                }
+                raise RuntimeError(f"API request failed: {error_response}")
         except RuntimeError as e:
             # Log the API failure with structured context
             logger.error(
@@ -283,13 +280,15 @@ class FailureSimulator:
                 )
 
         try:
-            with LogContext(
-                logger, operation="multi_component_operation", **self.context
-            ):
-                with MetricsTimer(
+            with (
+                LogContext(
+                    logger, operation="multi_component_operation", **self.context
+                ),
+                MetricsTimer(
                     PIPELINE_DURATION, stage=self.stage, operation="cascade_operation"
-                ):
-                    component_a()
+                ),
+            ):
+                component_a()
         except RuntimeError as e:
             # Log the cascading failure with structured context
             logger.error(

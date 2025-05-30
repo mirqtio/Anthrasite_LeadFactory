@@ -2,21 +2,21 @@
 """
 Unit tests for the E2E Pipeline Report Generator
 """
-import os
 import json
+import os
 import tempfile
 import unittest
 from datetime import datetime
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
 from scripts.e2e.report_generator import (
-    ReportGenerator,
     MetricsCalculator,
-    ResultValidator,
+    OutputFormat,
+    ReportGenerator,
     ReportType,
-    OutputFormat
+    ResultValidator,
 )
 
 
@@ -77,7 +77,7 @@ class TestReportGenerator(unittest.TestCase):
         self.assertTrue(report_path.endswith(".html"))
 
         # Read report content and verify structure
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             content = f.read()
             self.assertIn("<html", content)
             self.assertIn("Executive Summary", content)
@@ -124,7 +124,7 @@ class TestReportGenerator(unittest.TestCase):
         self.assertTrue(report_path.endswith(".json"))
 
         # Verify JSON structure
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             report_data = json.load(f)
             self.assertEqual(report_data["execution_id"], "test-123")
             self.assertEqual(report_data["execution_status"], "success")
@@ -174,7 +174,7 @@ class TestReportGenerator(unittest.TestCase):
         self.assertTrue(report_path.endswith(".md"))
 
         # Verify Markdown structure
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             content = f.read()
             self.assertIn("# E2E Pipeline Trend Analysis", content)
             self.assertIn("90.0%", content)  # Success rate
@@ -229,7 +229,7 @@ class TestReportGenerator(unittest.TestCase):
         self.assertTrue(report_path.endswith(".html"))
 
         # Verify HTML structure
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             content = f.read()
             self.assertIn("<html", content)
             self.assertIn("Issue Report", content)
@@ -267,7 +267,7 @@ class TestReportGenerator(unittest.TestCase):
         self.assertTrue(report_path.endswith(".csv"))
 
         # Verify CSV structure
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             content = f.read()
             self.assertIn("status,passed", content)
             self.assertIn("required_stages_coverage,100.0", content)

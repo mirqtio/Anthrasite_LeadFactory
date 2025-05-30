@@ -18,9 +18,9 @@ import os
 import re
 import sys
 from typing import Any, Optional, Union
+
 # Use lowercase dict for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
-
 import Levenshtein
 import requests
 from dotenv import load_dotenv
@@ -80,7 +80,9 @@ def get_database_connection(db_path=None):
     """Return appropriate DatabaseConnection implementation based on environment."""
     try:
         # Try to import the real implementation
-        from leadfactory.utils.e2e_db_connector import db_connection as DatabaseConnection
+        from leadfactory.utils.e2e_db_connector import (
+            db_connection as DatabaseConnection,
+        )
 
         return DatabaseConnection(db_path)
     except ImportError:

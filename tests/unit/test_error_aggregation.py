@@ -5,22 +5,22 @@ Test suite for error aggregation and reporting functionality.
 import json
 import unittest
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 try:
     from leadfactory.pipeline.error_aggregation import (
-        ErrorAggregator,
-        ErrorPattern,
-        ErrorMetrics,
-        AlertThreshold,
         AlertLevel,
-        TimeWindow
+        AlertThreshold,
+        ErrorAggregator,
+        ErrorMetrics,
+        ErrorPattern,
+        TimeWindow,
     )
     from leadfactory.pipeline.error_handling import (
-        PipelineError,
         BatchResult,
+        ErrorCategory,
         ErrorSeverity,
-        ErrorCategory
+        PipelineError,
     )
 except ImportError:
     # Mock classes for testing
@@ -49,23 +49,23 @@ except ImportError:
 
     class PipelineError:
         def __init__(self, **kwargs):
-            self.id = kwargs.get('id', 'test-error')
-            self.timestamp = kwargs.get('timestamp', datetime.now())
-            self.stage = kwargs.get('stage', 'test-stage')
-            self.operation = kwargs.get('operation', 'test-op')
-            self.error_type = kwargs.get('error_type', 'TestError')
-            self.error_message = kwargs.get('error_message', 'Test error')
-            self.severity = kwargs.get('severity', ErrorSeverity.MEDIUM)
-            self.category = kwargs.get('category', ErrorCategory.BUSINESS_LOGIC)
-            self.context = kwargs.get('context', {})
-            self.business_id = kwargs.get('business_id')
-            self.batch_id = kwargs.get('batch_id')
-            self.recoverable = kwargs.get('recoverable', True)
+            self.id = kwargs.get("id", "test-error")
+            self.timestamp = kwargs.get("timestamp", datetime.now())
+            self.stage = kwargs.get("stage", "test-stage")
+            self.operation = kwargs.get("operation", "test-op")
+            self.error_type = kwargs.get("error_type", "TestError")
+            self.error_message = kwargs.get("error_message", "Test error")
+            self.severity = kwargs.get("severity", ErrorSeverity.MEDIUM)
+            self.category = kwargs.get("category", ErrorCategory.BUSINESS_LOGIC)
+            self.context = kwargs.get("context", {})
+            self.business_id = kwargs.get("business_id")
+            self.batch_id = kwargs.get("batch_id")
+            self.recoverable = kwargs.get("recoverable", True)
 
     class BatchResult:
         def __init__(self, **kwargs):
-            self.batch_id = kwargs.get('batch_id', 'test-batch')
-            self.errors = kwargs.get('errors', [])
+            self.batch_id = kwargs.get("batch_id", "test-batch")
+            self.errors = kwargs.get("errors", [])
 
     class ErrorAggregator:
         def __init__(self, **kwargs):
@@ -95,10 +95,10 @@ except ImportError:
                 critical_error_count=sum(1 for e in self.error_history
                                        if e.severity == ErrorSeverity.CRITICAL),
                 affected_businesses=set(),
-                errors_by_severity={'critical': 1, 'high': 2, 'medium': 3},
-                errors_by_category={'network': 2, 'database': 1, 'validation': 3},
-                errors_by_stage={'stage1': 3, 'stage2': 3},
-                errors_by_operation={'op1': 4, 'op2': 2},
+                errors_by_severity={"critical": 1, "high": 2, "medium": 3},
+                errors_by_category={"network": 2, "database": 1, "validation": 3},
+                errors_by_stage={"stage1": 3, "stage2": 3},
+                errors_by_operation={"op1": 4, "op2": 2},
                 patterns=[]
             )
 
@@ -134,46 +134,46 @@ except ImportError:
             }
 
         def export_metrics_to_json(self, filepath):
-            report = self.generate_error_report(TimeWindow.LAST_24_HOURS)
+            self.generate_error_report(TimeWindow.LAST_24_HOURS)
             # Mock implementation - just return success
             pass
 
     class ErrorMetrics:
         def __init__(self, **kwargs):
-            self.time_window = kwargs.get('time_window')
-            self.start_time = kwargs.get('start_time')
-            self.end_time = kwargs.get('end_time')
-            self.total_errors = kwargs.get('total_errors', 0)
-            self.error_rate_per_hour = kwargs.get('error_rate_per_hour', 0.0)
-            self.critical_error_count = kwargs.get('critical_error_count', 0)
-            self.affected_businesses = kwargs.get('affected_businesses', set())
-            self.errors_by_severity = kwargs.get('errors_by_severity', {})
-            self.errors_by_category = kwargs.get('errors_by_category', {})
-            self.errors_by_stage = kwargs.get('errors_by_stage', {})
-            self.errors_by_operation = kwargs.get('errors_by_operation', {})
-            self.patterns = kwargs.get('patterns', [])
+            self.time_window = kwargs.get("time_window")
+            self.start_time = kwargs.get("start_time")
+            self.end_time = kwargs.get("end_time")
+            self.total_errors = kwargs.get("total_errors", 0)
+            self.error_rate_per_hour = kwargs.get("error_rate_per_hour", 0.0)
+            self.critical_error_count = kwargs.get("critical_error_count", 0)
+            self.affected_businesses = kwargs.get("affected_businesses", set())
+            self.errors_by_severity = kwargs.get("errors_by_severity", {})
+            self.errors_by_category = kwargs.get("errors_by_category", {})
+            self.errors_by_stage = kwargs.get("errors_by_stage", {})
+            self.errors_by_operation = kwargs.get("errors_by_operation", {})
+            self.patterns = kwargs.get("patterns", [])
 
         def to_dict(self):
             return {
-                'total_errors': self.total_errors,
-                'error_rate_per_hour': self.error_rate_per_hour
+                "total_errors": self.total_errors,
+                "error_rate_per_hour": self.error_rate_per_hour
             }
 
     class AlertThreshold:
         def __init__(self, **kwargs):
-            self.name = kwargs.get('name', 'Test Threshold')
-            self.metric_type = kwargs.get('metric_type', 'error_count')
-            self.threshold_value = kwargs.get('threshold_value', 10)
-            self.alert_level = kwargs.get('alert_level', AlertLevel.WARNING)
-            self.time_window = kwargs.get('time_window', TimeWindow.LAST_HOUR)
+            self.name = kwargs.get("name", "Test Threshold")
+            self.metric_type = kwargs.get("metric_type", "error_count")
+            self.threshold_value = kwargs.get("threshold_value", 10)
+            self.alert_level = kwargs.get("alert_level", AlertLevel.WARNING)
+            self.time_window = kwargs.get("time_window", TimeWindow.LAST_HOUR)
 
         def to_dict(self):
             return {
-                'name': self.name,
-                'metric_type': self.metric_type,
-                'threshold_value': self.threshold_value,
-                'alert_level': self.alert_level.value,
-                'time_window': self.time_window.value
+                "name": self.name,
+                "metric_type": self.metric_type,
+                "threshold_value": self.threshold_value,
+                "alert_level": self.alert_level.value,
+                "time_window": self.time_window.value
             }
 
 
@@ -381,9 +381,9 @@ class TestErrorReporting(unittest.TestCase):
         report = self.aggregator.generate_error_report(TimeWindow.LAST_24_HOURS)
 
         # Verify report structure
-        self.assertIn('report_generated_at', report)
-        self.assertIn('metrics', report)
-        self.assertIsInstance(report['metrics'], dict)
+        self.assertIn("report_generated_at", report)
+        self.assertIn("metrics", report)
+        self.assertIsInstance(report["metrics"], dict)
 
     def test_error_summary_generation(self):
         """Test error summary generation."""
@@ -398,12 +398,12 @@ class TestErrorReporting(unittest.TestCase):
         summary = self.aggregator.get_error_summary(hours=24)
 
         # Verify summary structure
-        self.assertIn('total_errors', summary)
-        self.assertIn('error_rate_per_hour', summary)
-        self.assertIn('time_period_hours', summary)
-        self.assertEqual(summary['time_period_hours'], 24)
+        self.assertIn("total_errors", summary)
+        self.assertIn("error_rate_per_hour", summary)
+        self.assertIn("time_period_hours", summary)
+        self.assertEqual(summary["time_period_hours"], 24)
 
-    @patch('builtins.open', create=True)
+    @patch("builtins.open", create=True)
     def test_metrics_export_to_json(self, mock_open):
         """Test exporting metrics to JSON file."""
         mock_file = MagicMock()
@@ -414,12 +414,12 @@ class TestErrorReporting(unittest.TestCase):
         self.aggregator.add_error(error)
 
         # Export metrics - since we're using mock, just verify the method exists
-        self.assertTrue(hasattr(self.aggregator, 'export_metrics_to_json'))
+        self.assertTrue(hasattr(self.aggregator, "export_metrics_to_json"))
         self.aggregator.export_metrics_to_json("test_metrics.json")
 
         # For mock implementation, just verify no exceptions were raised
         self.assertTrue(True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

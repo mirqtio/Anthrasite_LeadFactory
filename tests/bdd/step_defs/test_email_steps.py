@@ -2,15 +2,16 @@
 BDD step definitions for the email generation functionality feature.
 """
 
-import os
-import sys
-import sqlite3
 import json
+import os
+import sqlite3
+import sys
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_bdd import given, when, then, parsers, scenarios
+from pytest_bdd import given, parsers, scenarios, then, when
+
 # Import common step definitions
 from tests.bdd.step_defs.common_step_definitions import *
 
@@ -36,7 +37,7 @@ except ImportError:
 # Import shared steps to ensure 'the database is initialized' step is available
 
 # Load the scenarios from the feature file
-scenarios('../features/pipeline_stages.feature')
+scenarios("../features/pipeline_stages.feature")
 
 
 @pytest.fixture
@@ -181,8 +182,8 @@ def generate_email_for_business(high_scoring_business):
     # Mock email generation - in a real scenario, this would call the actual email generation function
     email_data = {
         "subject": "Improve Your Website Performance",
-        "body_html": f"<p>Dear High Score Business,</p><p>We can help you improve your website.</p>",
-        "body_text": f"Dear High Score Business,\n\nWe can help you improve your website."
+        "body_html": "<p>Dear High Score Business,</p><p>We can help you improve your website.</p>",
+        "body_text": "Dear High Score Business,\n\nWe can help you improve your website."
     }
 
     # Insert the email

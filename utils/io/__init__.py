@@ -69,9 +69,9 @@ def track_api_cost(
 def make_api_request(
     url: str,
     method: str = "GET",
-    headers: Optional[Dict[str, str]] = None,
-    params: Optional[Dict[str, Any]] = None,
-    data: Optional[Union[Dict[str, Any], str]] = None,
+    headers: Optional[dict[str, str]] = None,
+    params: Optional[dict[str, Any]] = None,
+    data: Optional[Union[dict[str, Any], str]] = None,
     timeout: int = 30,
     **kwargs,
 ) -> Any:

@@ -543,7 +543,7 @@ class MockLevenshteinMatcher:
             common_words = words1.intersection(words2)
 
             # Exclude common business words that don't indicate similarity
-            exclude_words = {'inc', 'corp', 'llc', 'ltd', 'company', 'co', 'clinic', 'care', 'services', 'solutions', 'group', 'dental', 'auto', 'repair'}
+            exclude_words = {"inc", "corp", "llc", "ltd", "company", "co", "clinic", "care", "services", "solutions", "group", "dental", "auto", "repair"}
             meaningful_common = common_words - exclude_words
 
             # If they share significant meaningful words, consider them similar
@@ -586,14 +586,14 @@ class MockLevenshteinMatcher:
         if addr1 and addr2:
             # Extract street number and name
             import re
-            addr1_parts = re.findall(r'\d+|[a-zA-Z]+', addr1)
-            addr2_parts = re.findall(r'\d+|[a-zA-Z]+', addr2)
+            addr1_parts = re.findall(r"\d+|[a-zA-Z]+", addr1)
+            addr2_parts = re.findall(r"\d+|[a-zA-Z]+", addr2)
 
             if len(addr1_parts) >= 2 and len(addr2_parts) >= 2:
                 # If street numbers match and street names are similar
                 if addr1_parts[0] == addr2_parts[0]:  # Same street number
-                    street_name1 = ' '.join(addr1_parts[1:3])  # First 2 words after number
-                    street_name2 = ' '.join(addr2_parts[1:3])
+                    street_name1 = " ".join(addr1_parts[1:3])  # First 2 words after number
+                    street_name2 = " ".join(addr2_parts[1:3])
                     if street_name1 == street_name2:
                         return True
 

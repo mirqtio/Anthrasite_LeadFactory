@@ -2,10 +2,10 @@
 Unit tests for the score module.
 """
 
-import os
-import sys
-import sqlite3
 import json
+import os
+import sqlite3
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest

@@ -5,20 +5,21 @@ This script collects performance metrics from previous validation runs and
 generates an HTML dashboard with interactive charts.
 """
 
-import os
-import sys
-import json
-import glob
 import argparse
 import datetime
+import glob
+import json
+import os
+import sys
 from collections import defaultdict
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+
 import matplotlib.dates as mdates
-from matplotlib.ticker import MaxNLocator
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
 from jinja2 import Template
+from matplotlib.ticker import MaxNLocator
 
 # Configure Matplotlib and Seaborn
 plt.style.use("ggplot")
@@ -264,7 +265,7 @@ def find_metrics_files(metrics_dir):
 def load_historical_data(history_file):
     """Load historical validation data from JSON file."""
     if os.path.exists(history_file):
-        with open(history_file, "r") as f:
+        with open(history_file) as f:
             return json.load(f)
     return []
 
@@ -275,7 +276,7 @@ def update_historical_data(history_file, metrics_files, history_data, max_histor
 
     for metrics_file in metrics_files:
         try:
-            with open(metrics_file, "r") as f:
+            with open(metrics_file) as f:
                 metrics = json.load(f)
 
             if "run_id" in metrics and metrics["run_id"] not in existing_dates:
@@ -292,8 +293,8 @@ def update_historical_data(history_file, metrics_files, history_data, max_histor
                         metrics["date"] = "Unknown"
 
                 history_data.append(metrics)
-        except (json.JSONDecodeError, IOError) as e:
-            print(f"Error processing {metrics_file}: {e}", file=sys.stderr)
+        except (OSError, json.JSONDecodeError):
+            pass
 
     # Sort by timestamp (newest first) and limit to max_history
     history_data.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
@@ -354,7 +355,6 @@ def generate_trend_charts(history_data, output_dir):
     # Convert to pandas DataFrame for easier plotting
     df = pd.DataFrame(history_data)
     if len(df) == 0:
-        print("No historical data to generate charts", file=sys.stderr)
         return
 
     # Convert timestamp to datetime
@@ -454,7 +454,6 @@ def generate_trend_charts(history_data, output_dir):
 def generate_dashboard(history_data, output_dir):
     """Generate HTML dashboard."""
     if not history_data:
-        print("No historical data available to generate dashboard", file=sys.stderr)
         return
 
     # Prepare data for template
@@ -546,7 +545,6 @@ def main():
     # Find metrics files
     metrics_files = find_metrics_files(args.metrics_dir)
     if not metrics_files:
-        print(f"No metrics files found in {args.metrics_dir}", file=sys.stderr)
         return 1
 
     # Load and update historical data
@@ -561,7 +559,6 @@ def main():
     # Generate dashboard
     generate_dashboard(history_data, args.output_dir)
 
-    print(f"Dashboard generated in {args.output_dir}")
     return 0
 
 

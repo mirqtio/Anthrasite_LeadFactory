@@ -17,14 +17,16 @@ import os
 import sys
 import time
 from typing import Any, Optional
+
 # Use lowercase dict for Python 3.9 compatibility
 # Use lowercase versions for Python 3.9 compatibility
 from urllib.parse import urlparse
 
 # Third-party imports
 import requests
-from dotenv import load_dotenv
 import wappalyzer
+from dotenv import load_dotenv
+
 # Add project root to path to allow importing local 'utils' modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -94,7 +96,9 @@ def get_database_connection(db_path=None):
     """Return appropriate DatabaseConnection implementation based on environment."""
     try:
         # Try to import the real implementation
-        from leadfactory.utils.e2e_db_connector import db_connection as DatabaseConnection
+        from leadfactory.utils.e2e_db_connector import (
+            db_connection as DatabaseConnection,
+        )
 
         return DatabaseConnection(db_path)
     except ImportError:

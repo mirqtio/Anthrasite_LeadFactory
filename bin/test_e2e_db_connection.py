@@ -6,16 +6,14 @@ This script tests the connection to the E2E PostgreSQL database and verifies
 that the expected tables and data are present.
 """
 
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
 
 try:
     import psycopg2
 except ImportError:
-    print("Error: psycopg2 module not found. Please install it with:")
-    print("pip install psycopg2-binary")
     sys.exit(1)
 
 # Set up logging
@@ -31,7 +29,7 @@ ENV_FILE = Path(__file__).parent.parent / ".env.e2e"
 DATABASE_URL = None
 
 if ENV_FILE.exists():
-    with open(ENV_FILE, "r") as f:
+    with open(ENV_FILE) as f:
         for line in f:
             if line.startswith("DATABASE_URL="):
                 DATABASE_URL = line.strip().split("=", 1)[1]

@@ -150,7 +150,7 @@ def test_save_to_json():
 
         # Read back the data
         import json
-        with open(temp_path, "r") as f:
+        with open(temp_path) as f:
             loaded_data = json.load(f)
 
         # Verify the data matches

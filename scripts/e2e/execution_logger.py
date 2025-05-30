@@ -6,14 +6,14 @@ This module provides comprehensive logging and tracking capabilities for the E2E
 capturing execution details, failures, and resolutions in structured formats.
 """
 
-import os
-import sys
+import datetime
 import json
 import logging
-import datetime
+import os
+import sys
 import traceback
-from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -100,7 +100,7 @@ class ExecutionLogHandler:
             self.logger.error(f"Failed to write JSON log: {e}")
 
     def add_log_entry(
-        self, level: str, message: str, data: Optional[Dict[str, Any]] = None
+        self, level: str, message: str, data: Optional[dict[str, Any]] = None
     ):
         """
         Add a structured log entry to the execution data.
@@ -386,7 +386,7 @@ class ExecutionLogHandler:
 
         self._write_json_log()
 
-    def get_execution_data(self) -> Dict[str, Any]:
+    def get_execution_data(self) -> dict[str, Any]:
         """
         Get a copy of the current execution data.
 
@@ -416,13 +416,13 @@ class ExecutionTracker:
         )
         self.history_data = self._load_history()
 
-    def _load_history(self) -> List[Dict[str, Any]]:
+    def _load_history(self) -> list[dict[str, Any]]:
         """Load execution history from the history file."""
         if not self.history_file.exists():
             return []
 
         try:
-            with open(self.history_file, "r") as f:
+            with open(self.history_file) as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError) as e:
             logging.error(f"Failed to load execution history: {e}")
@@ -439,7 +439,7 @@ class ExecutionTracker:
         except OSError as e:
             logging.error(f"Failed to save execution history: {e}")
 
-    def add_execution(self, execution_data: Dict[str, Any]):
+    def add_execution(self, execution_data: dict[str, Any]):
         """
         Add an execution to the history.
 
@@ -466,7 +466,7 @@ class ExecutionTracker:
         # Save to file
         self._save_history()
 
-    def get_execution(self, execution_id: str) -> Optional[Dict[str, Any]]:
+    def get_execution(self, execution_id: str) -> Optional[dict[str, Any]]:
         """
         Get a specific execution by ID.
 
@@ -482,7 +482,7 @@ class ExecutionTracker:
 
         return None
 
-    def get_recent_executions(self, count: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_executions(self, count: int = 10) -> list[dict[str, Any]]:
         """
         Get the most recent executions.
 
@@ -505,7 +505,7 @@ class ExecutionTracker:
         failure_category: Optional[str] = None,
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search for executions matching the given criteria.
 
@@ -581,7 +581,7 @@ class ExecutionTracker:
 
     def get_stage_reliability(
         self, stage_name: str, recent_count: Optional[int] = None
-    ) -> Dict[str, Union[float, int]]:
+    ) -> dict[str, Union[float, int]]:
         """
         Calculate the reliability of a specific stage.
 
@@ -654,7 +654,7 @@ class ExecutionTracker:
             "avg_duration": avg_duration,
         }
 
-    def get_common_failures(self, recent_count: Optional[int] = None) -> Dict[str, int]:
+    def get_common_failures(self, recent_count: Optional[int] = None) -> dict[str, int]:
         """
         Get the most common failure categories.
 

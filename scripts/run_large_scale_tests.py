@@ -6,14 +6,14 @@ This script executes the large-scale validation tests and generates
 performance reports based on the results.
 """
 
-import os
-import sys
-import json
 import argparse
 import datetime
+import json
 import logging
-import tempfile
+import os
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 # Add parent directory to path so we can import from leadfactory
@@ -97,7 +97,7 @@ def run_pytest_command(test_name, output_file=None, junit_file=None, extra_args=
     command = ["pytest", "-xvs", test_name]
 
     if output_file:
-        command.extend(["-o", f"console_output_style=classic", "--no-header"])
+        command.extend(["-o", "console_output_style=classic", "--no-header"])
 
     if junit_file:
         command.extend(["--junitxml", junit_file])
@@ -122,7 +122,7 @@ def extract_metrics_from_output(output_file):
     metrics = {}
 
     try:
-        with open(output_file, "r") as f:
+        with open(output_file) as f:
             content = f.read()
 
             # Look for JSON metrics in the output

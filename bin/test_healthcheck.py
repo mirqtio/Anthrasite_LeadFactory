@@ -4,30 +4,21 @@ Healthcheck script for Task #5: Consolidate and Enhance Test Suite.
 Verifies that the test suite has been properly consolidated and structured.
 """
 
+import contextlib
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 
 def check_directory_exists(path, description):
     """Check if a directory exists and print the status."""
-    if os.path.exists(path) and os.path.isdir(path):
-        print(f"✅ {description} exists at {path}")
-        return True
-    else:
-        print(f"❌ ERROR: {description} not found at {path}")
-        return False
+    return bool(os.path.exists(path) and os.path.isdir(path))
 
 
 def check_file_exists(filepath, description):
     """Check if a file exists and print the status."""
-    if os.path.exists(filepath):
-        print(f"✅ {description} exists at {filepath}")
-        return True
-    else:
-        print(f"❌ ERROR: {description} not found at {filepath}")
-        return False
+    return bool(os.path.exists(filepath))
 
 
 def check_test_directory_structure():
@@ -94,10 +85,9 @@ def check_old_test_files_removed():
     all_removed = True
     for file in old_files:
         if os.path.exists(file):
-            print(f"❌ ERROR: Old test file still exists: {file}")
             all_removed = False
         else:
-            print(f"✅ Old test file successfully removed: {file}")
+            pass
 
     return all_removed
 
@@ -106,7 +96,6 @@ def check_test_coverage():
     """Check test coverage for the dedupe module."""
     try:
         # Run pytest with coverage for the dedupe module
-        print("Running test coverage check for dedupe module...")
         result = subprocess.run(
             [
                 "python",
@@ -122,9 +111,6 @@ def check_test_coverage():
         )
 
         if result.returncode != 0:
-            print(f"❌ ERROR: Tests failed with exit code {result.returncode}")
-            print(f"Test output: {result.stdout}")
-            print(f"Test errors: {result.stderr}")
             return False
 
         # Check coverage from output
@@ -138,7 +124,6 @@ def check_test_coverage():
         )
 
         if not coverage_line:
-            print("❌ ERROR: Could not find coverage information in test output")
             return False
 
         # Extract coverage percentage
@@ -146,21 +131,15 @@ def check_test_coverage():
             coverage_parts = coverage_line.split()
             coverage_percent = float(coverage_parts[-1].rstrip("%"))
 
-            print(f"✅ Test coverage for dedupe module: {coverage_percent:.1f}%")
-
             # Warn if coverage is low
             if coverage_percent < 70:
-                print(
-                    f"⚠️ WARNING: Test coverage is below 70% ({coverage_percent:.1f}%)"
-                )
+                pass
 
             return True
-        except (IndexError, ValueError) as e:
-            print(f"❌ ERROR: Failed to parse coverage percentage: {e}")
+        except (IndexError, ValueError):
             return False
 
-    except Exception as e:
-        print(f"❌ ERROR: Failed to run coverage test: {e}")
+    except Exception:
         return False
 
 
@@ -168,7 +147,6 @@ def check_no_skipped_tests():
     """Check that there are no skipped tests in the test suite."""
     try:
         # Run pytest with verbose output to see skipped tests
-        print("Checking for skipped tests...")
         result = subprocess.run(
             ["python", "-m", "pytest", "-v"],
             capture_output=True,
@@ -180,20 +158,17 @@ def check_no_skipped_tests():
         skipped_count = result.stdout.count("SKIPPED")
 
         if skipped_count > 0:
-            print(f"❌ ERROR: Found {skipped_count} skipped tests")
 
             # Extract skipped test info
             for line in result.stdout.split("\n"):
                 if "SKIPPED" in line:
-                    print(f"  - {line.strip()}")
+                    pass
 
             return False
         else:
-            print("✅ No skipped tests found")
             return True
 
-    except Exception as e:
-        print(f"❌ ERROR: Failed to check for skipped tests: {e}")
+    except Exception:
         return False
 
 
@@ -201,7 +176,6 @@ def check_bdd_tests():
     """Check that BDD tests are properly implemented."""
     try:
         # Run pytest-bdd tests
-        print("Checking BDD tests...")
         result = subprocess.run(
             ["python", "-m", "pytest", "tests/bdd", "-v"],
             capture_output=True,
@@ -210,29 +184,19 @@ def check_bdd_tests():
         )
 
         if result.returncode != 0:
-            print(f"❌ ERROR: BDD tests failed with exit code {result.returncode}")
-            print(f"Test output: {result.stdout}")
-            print(f"Test errors: {result.stderr}")
             return False
 
         # Count passing tests
         passing_count = result.stdout.count("PASSED")
 
-        if passing_count > 0:
-            print(f"✅ {passing_count} BDD tests passing")
-            return True
-        else:
-            print("❌ ERROR: No passing BDD tests found")
-            return False
+        return passing_count > 0
 
-    except Exception as e:
-        print(f"❌ ERROR: Failed to check BDD tests: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run all healthchecks and return exit code based on results."""
-    print("\n=== Test Suite Consolidation Healthcheck ===\n")
 
     checks = [
         check_test_directory_structure(),
@@ -241,28 +205,16 @@ def main():
     ]
 
     # Optional checks that may fail if dependencies are not installed
-    try:
+    with contextlib.suppress(Exception):
         checks.append(check_test_coverage())
-    except Exception as e:
-        print(f"⚠️ WARNING: Could not check test coverage: {e}")
 
-    try:
+    with contextlib.suppress(Exception):
         checks.append(check_no_skipped_tests())
-    except Exception as e:
-        print(f"⚠️ WARNING: Could not check for skipped tests: {e}")
 
-    try:
+    with contextlib.suppress(Exception):
         checks.append(check_bdd_tests())
-    except Exception as e:
-        print(f"⚠️ WARNING: Could not check BDD tests: {e}")
 
     success = all(checks)
-
-    print("\n=== Healthcheck Summary ===")
-    print(f"Total checks: {len(checks)}")
-    print(f"Passed: {sum(1 for check in checks if check)}")
-    print(f"Failed: {sum(1 for check in checks if not check)}")
-    print(f"Status: {'PASSED' if success else 'FAILED'}")
 
     return 0 if success else 1
 

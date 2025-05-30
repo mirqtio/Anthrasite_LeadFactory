@@ -6,8 +6,9 @@ They will run with mocks by default, but can use the real API when --use-real-ap
 """
 
 import os
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from tests.integration.api_test_config import APITestConfig
 
@@ -97,7 +98,9 @@ def test_google_places_api_error_handling(google_places_api):
     # Test with invalid API key
     with patch.dict(os.environ, {"GOOGLE_API_KEY": "invalid_key"}):
         # Create a new client with invalid key
-        from tests.integration.api_fixtures import google_places_api as google_api_fixture
+        from tests.integration.api_fixtures import (
+            google_places_api as google_api_fixture,
+        )
         invalid_google_api = google_api_fixture(None)
 
         # Test error handling

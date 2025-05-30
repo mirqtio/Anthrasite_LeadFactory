@@ -25,13 +25,14 @@ Usage:
             print(f"- {issue}")
 """
 
+import logging
 import os
 import sys
-import logging
-import psycopg2
-from typing import List, Dict, Any, Optional, Tuple, Set
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+import psycopg2
 
 # Configure logging
 logging.basicConfig(
@@ -50,9 +51,9 @@ class DbVerificationResult:
 
     success: bool
     message: str
-    issues: List[str] = None
-    tables_verified: List[str] = None
-    rows_verified: Dict[str, int] = None
+    issues: list[str] = None
+    tables_verified: list[str] = None
+    rows_verified: dict[str, int] = None
 
     def __post_init__(self):
         if self.issues is None:
@@ -106,7 +107,7 @@ class DbVerifier:
         if not self.db_url and self.env_file.exists():
             logger.info(f"Loading database URL from {self.env_file}")
 
-            with open(self.env_file, "r") as f:
+            with open(self.env_file) as f:
                 for line in f:
                     line = line.strip()
                     if not line or line.startswith("#"):
@@ -127,7 +128,7 @@ class DbVerifier:
             logger.error("Database URL not found in environment or file")
             self.db_url = None
 
-    def _connect_to_db(self) -> Tuple[bool, Optional[str]]:
+    def _connect_to_db(self) -> tuple[bool, Optional[str]]:
         """
         Connect to the database
 
@@ -161,7 +162,7 @@ class DbVerifier:
             self.conn = None
             logger.info("Database connection closed")
 
-    def _verify_tables(self) -> Tuple[bool, List[str], List[str]]:
+    def _verify_tables(self) -> tuple[bool, list[str], list[str]]:
         """
         Verify that required tables exist
 
@@ -201,7 +202,7 @@ class DbVerifier:
                 list(set(self.REQUIRED_TABLES) - set(tables_verified)),
             )
 
-    def _verify_row_counts(self) -> Tuple[bool, Dict[str, int], List[str]]:
+    def _verify_row_counts(self) -> tuple[bool, dict[str, int], list[str]]:
         """
         Verify that tables have the minimum required number of rows
 
@@ -209,7 +210,7 @@ class DbVerifier:
             Tuple of (success, row_counts, issues)
         """
         if not self.conn:
-            return False, {}, [f"No database connection to verify row counts"]
+            return False, {}, ["No database connection to verify row counts"]
 
         row_counts = {}
         issues = []
@@ -240,7 +241,7 @@ class DbVerifier:
             logger.error(error_message)
             return False, row_counts, [error_message]
 
-    def _verify_sample_data(self) -> Tuple[bool, List[str]]:
+    def _verify_sample_data(self) -> tuple[bool, list[str]]:
         """
         Verify that sample data exists in the database
 
@@ -262,7 +263,7 @@ class DbVerifier:
                     count = cursor.fetchone()[0]
 
                     if count < 3:
-                        issue = f"Missing sample ZIP codes in zip_queue"
+                        issue = "Missing sample ZIP codes in zip_queue"
                         logger.error(f"❌ {issue}")
                         issues.append(issue)
                     else:
@@ -279,7 +280,7 @@ class DbVerifier:
                     count = cursor.fetchone()[0]
 
                     if count < 3:
-                        issue = f"Missing sample verticals in verticals table"
+                        issue = "Missing sample verticals in verticals table"
                         logger.error(f"❌ {issue}")
                         issues.append(issue)
                     else:
@@ -296,7 +297,7 @@ class DbVerifier:
                     count = cursor.fetchone()[0]
 
                     if count == 0:
-                        issue = f"Missing initial schema migration record"
+                        issue = "Missing initial schema migration record"
                         logger.error(f"❌ {issue}")
                         issues.append(issue)
                     else:
@@ -348,7 +349,7 @@ E2E_MODE=true
             with open(output_path, "w") as f:
                 f.write(sample_config.strip())
             logger.info(f"✅ Sample database configuration written to {output_path}")
-        except IOError as e:
+        except OSError as e:
             logger.error(f"Failed to write sample database configuration: {str(e)}")
 
     def verify_database(self) -> DbVerificationResult:
@@ -544,33 +545,21 @@ def main():
         result = verifier.verify_database()
 
     # Print results
-    print("\n" + "=" * 80)
-    print(" DATABASE VERIFICATION RESULTS ".center(80, "="))
-    print("=" * 80)
 
     if result.success:
-        print(f"\n✅ {result.message}")
 
         if result.tables_verified:
-            print("\nVerified Tables:")
             for table in result.tables_verified:
-                row_count = result.rows_verified.get(table, "N/A")
-                print(f"  - {table}: {row_count} rows")
+                result.rows_verified.get(table, "N/A")
     else:
-        print(f"\n❌ {result.message}")
 
         if result.issues:
-            print("\nIssues:")
-            for issue in result.issues:
-                print(f"  - {issue}")
+            for _issue in result.issues:
+                pass
 
         if result.tables_verified:
-            print("\nVerified Tables:")
             for table in result.tables_verified:
-                row_count = result.rows_verified.get(table, "N/A")
-                print(f"  - {table}: {row_count} rows")
-
-    print("\n" + "=" * 80)
+                result.rows_verified.get(table, "N/A")
 
     return 0 if result.success else 1
 

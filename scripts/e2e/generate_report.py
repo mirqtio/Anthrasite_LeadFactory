@@ -6,14 +6,14 @@ This module generates detailed reports of the E2E pipeline execution results,
 including execution statistics, test coverage, and failure analysis.
 """
 
-import os
-import sys
-import json
-import logging
 import argparse
 import datetime
-from typing import Dict, List, Any, Optional
+import json
+import logging
+import os
+import sys
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add the project root directory to Python path
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -74,7 +74,7 @@ class ReportGenerator:
         """Load execution history from the history file."""
         try:
             if os.path.exists(self.history_file):
-                with open(self.history_file, "r") as f:
+                with open(self.history_file) as f:
                     self.history_data = json.load(f)
                 logger.info(
                     f"Loaded execution history with {len(self.history_data)} records"
@@ -586,14 +586,14 @@ def main():
     generator = ReportGenerator(args.execution_id, args.history_file)
 
     if args.trend:
-        report = generator.generate_trend_report(args.num_executions, args.output)
+        generator.generate_trend_report(args.num_executions, args.output)
     elif args.detailed:
-        report = generator.generate_detailed_report(args.output)
+        generator.generate_detailed_report(args.output)
     else:
-        report = generator.generate_summary_report(args.output)
+        generator.generate_summary_report(args.output)
 
     if not args.output:
-        print(report)
+        pass
 
 
 if __name__ == "__main__":

@@ -5,23 +5,24 @@ This test suite validates the comprehensive error handling mechanisms including
 error propagation, partial failure handling, batch processing, and retry logic.
 """
 
-import pytest
 import time
 from datetime import datetime, timedelta
+from typing import Any, List
 from unittest.mock import Mock, patch
-from typing import List, Any
+
+import pytest
 
 # Try to import the actual error handling module
 try:
     from leadfactory.pipeline.error_handling import (
-        ErrorSeverity,
-        ErrorCategory,
-        RetryStrategy,
-        PipelineError,
         BatchResult,
+        ErrorCategory,
         ErrorPropagationManager,
-        with_error_handling,
+        ErrorSeverity,
+        PipelineError,
+        RetryStrategy,
         create_batch_processor,
+        with_error_handling,
     )
     HAS_ERROR_HANDLING = True
 except ImportError:
@@ -570,7 +571,7 @@ class TestBatchProcessor:
         processor = create_batch_processor("test", "test_batch", error_manager=manager, continue_on_error=False)
 
         def failing_processor(item, **kwargs):
-            item_index = kwargs.get('item_index', 0)
+            item_index = kwargs.get("item_index", 0)
             if item_index == 2:  # Fail the 3rd item (index 2)
                 raise ValueError(f"Failed to process item {item}")
             return item * 2
@@ -587,7 +588,10 @@ class TestBatchProcessor:
     def test_batch_processing_with_context(self):
         """Test batch processing with additional context."""
         try:
-            from leadfactory.pipeline.error_handling import ErrorPropagationManager, create_batch_processor
+            from leadfactory.pipeline.error_handling import (
+                ErrorPropagationManager,
+                create_batch_processor,
+            )
 
             manager = ErrorPropagationManager()
             processor = create_batch_processor("test", "test_batch", error_manager=manager)
@@ -660,7 +664,7 @@ class TestIntegrationScenarios:
         processor = MockBatchProcessor("test", "test_stage", error_manager=manager)
 
         def high_failure_processor(item, **kwargs):
-            item_index = kwargs.get('item_index', 0)
+            item_index = kwargs.get("item_index", 0)
             if item_index < 3:  # Fail first 3 items (60% failure rate)
                 raise ValueError(f"Failed to process item {item}")
             return item * 2

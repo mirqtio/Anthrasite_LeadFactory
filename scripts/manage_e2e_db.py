@@ -9,12 +9,12 @@ This script manages the E2E testing PostgreSQL database:
 - Provides helper functions for other scripts to use
 """
 
-import os
-import sys
-import time
-import subprocess
 import argparse
 import logging
+import os
+import subprocess
+import sys
+import time
 from pathlib import Path
 
 # Set up logging
@@ -41,10 +41,7 @@ def run_command(command, check=True, shell=False, cwd=None):
 
     # Handle both string and list commands
     if isinstance(command, str):
-        if shell:
-            cmd = command
-        else:
-            cmd = command.split()
+        cmd = command if shell else command.split()
     else:  # command is already a list
         cmd = command
 
@@ -53,8 +50,7 @@ def run_command(command, check=True, shell=False, cwd=None):
             cmd,
             check=check,
             shell=shell,  # nosec B602
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
             cwd=cwd or str(PROJECT_ROOT),
         )

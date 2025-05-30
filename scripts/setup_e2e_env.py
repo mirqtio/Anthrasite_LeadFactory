@@ -7,10 +7,10 @@ to the .env.e2e file while ensuring EMAIL_OVERRIDE is properly set.
 """
 
 import os
-import sys
-from pathlib import Path
 import re
+import sys
 import time
+from pathlib import Path
 
 # Keys to copy from .env to .env.e2e
 KEYS_TO_COPY = [
@@ -60,7 +60,7 @@ def parse_env_file(file_path):
     """Parse an env file and return a dictionary of keys and values."""
     result = {}
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             lines = f.readlines()
 
         for line in lines:
@@ -73,8 +73,8 @@ def parse_env_file(file_path):
                 key, value = match.groups()
                 result[key] = value
 
-    except Exception as e:
-        print(f"Error parsing {file_path}: {e}")
+    except Exception:
+        pass
 
     return result
 
@@ -96,11 +96,10 @@ def update_e2e_env_file(source_env, target_e2e_env, keys_to_copy, forced_setting
     if os.path.exists(target_e2e_env):
         backup_path = f"{target_e2e_env}.bak.{int(time.time())}"
         try:
-            with open(target_e2e_env, "r") as src, open(backup_path, "w") as dst:
+            with open(target_e2e_env) as src, open(backup_path, "w") as dst:
                 dst.write(src.read())
-            print(f"Backed up existing .env.e2e to {backup_path}")
-        except Exception as e:
-            print(f"Warning: Failed to backup .env.e2e: {e}")
+        except Exception:
+            pass
 
     # Update e2e_env_data with values from env_data
     for key in keys_to_copy:
@@ -137,24 +136,15 @@ def update_e2e_env_file(source_env, target_e2e_env, keys_to_copy, forced_setting
                 if key in e2e_env_data:
                     f.write(f"{key}={e2e_env_data[key]}\n")
 
-        print(f"Updated {target_e2e_env} successfully!")
-        print(f"Copied {len(copied_keys)} keys from {source_env}")
-        print(f"Set {len(forced_settings)} forced settings for E2E testing")
-
         # Report any missing keys
         missing_keys = [
             key for key in keys_to_copy if key not in env_data or not env_data[key]
         ]
         if missing_keys:
-            print(f"\nWarning: The following keys were not found in {source_env}:")
             for key in missing_keys:
-                print(f"  - {key}")
-            print(
-                "\nYou may need to add these manually to .env.e2e for full E2E testing functionality."
-            )
+                pass
 
-    except Exception as e:
-        print(f"Error writing to {target_e2e_env}: {e}")
+    except Exception:
         return False
 
     return True
@@ -168,7 +158,6 @@ def main():
 
     # Check if .env exists
     if not source_env.exists():
-        print(f"Error: {source_env} not found!")
         return 1
 
     # Update .env.e2e
@@ -177,13 +166,8 @@ def main():
     )
 
     if success:
-        print("\nSetup complete!")
-        print("To run the E2E tests:")
-        print("1. Verify the values in .env.e2e are correct")
-        print("2. Run: python scripts/run_e2e_test.py")
         return 0
     else:
-        print("\nSetup failed! See error messages above.")
         return 1
 
 

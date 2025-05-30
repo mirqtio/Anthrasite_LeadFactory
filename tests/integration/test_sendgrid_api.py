@@ -6,9 +6,10 @@ They will run with mocks by default, but can use the real API when --use-real-ap
 """
 
 import os
-import pytest
-from unittest.mock import patch
 import uuid
+from unittest.mock import patch
+
+import pytest
 
 from tests.integration.api_test_config import APITestConfig
 

@@ -15,7 +15,7 @@ def get_env_keys(env_file):
     """Extract only the key names from an .env file."""
     keys = []
     try:
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -25,8 +25,8 @@ def get_env_keys(env_file):
                 if match:
                     key = match.group(1)
                     keys.append(key)
-    except Exception as e:
-        print(f"Error reading {env_file}: {e}")
+    except Exception:
+        pass
 
     return keys
 
@@ -37,14 +37,12 @@ def main():
     env_file = project_root / ".env"
 
     if not env_file.exists():
-        print(f"Error: {env_file} not found!")
         return 1
 
     # Get key names only
     keys = get_env_keys(env_file)
 
     if not keys:
-        print("No keys found in .env file")
         return 1
 
     # Group keys by prefix
@@ -56,24 +54,18 @@ def main():
         key_groups[prefix].append(key)
 
     # Print keys by group
-    print("\nEnvironment variable keys found in .env:")
-    print("----------------------------------------")
     for prefix, prefix_keys in sorted(key_groups.items()):
-        print(f"\n{prefix.upper()} related keys:")
         for key in sorted(prefix_keys):
-            print(f"  - {key}")
+            pass
 
     # Print some specific keys we're looking for
     important_prefixes = ["sendgrid", "screenshot", "openai", "yelp", "google"]
-    print("\nKeys relevant for E2E testing:")
-    print("-----------------------------")
     for prefix in important_prefixes:
         if prefix in key_groups:
-            print(f"\n{prefix.upper()} keys:")
             for key in sorted(key_groups[prefix]):
-                print(f"  - {key}")
+                pass
         else:
-            print(f"\nNo {prefix.upper()} keys found")
+            pass
 
     return 0
 

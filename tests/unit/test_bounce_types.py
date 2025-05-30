@@ -6,23 +6,24 @@ This module tests the system's response to various types of email bounces
 and ensures proper categorization and handling of each bounce type.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import modules with fallback for testing
 try:
     from leadfactory.webhooks.sendgrid_webhook import (
-        SendGridWebhookHandler,
         BounceEvent,
         BounceType,
-        EventType
+        EventType,
+        SendGridWebhookHandler,
     )
 except ImportError:
     # Create mock classes for testing if import fails
-    from enum import Enum
     from dataclasses import dataclass
+    from enum import Enum
     from typing import Optional
 
     class BounceType(Enum):
@@ -43,13 +44,13 @@ except ImportError:
         reason: Optional[str] = None
 
         @classmethod
-        def from_webhook_data(cls, data: Dict[str, Any]) -> 'BounceEvent':
+        def from_webhook_data(cls, data: dict[str, Any]) -> "BounceEvent":
             return cls(
-                email=data.get('email', ''),
-                event=data.get('event', ''),
-                timestamp=data.get('timestamp', 0),
-                bounce_type=data.get('type'),
-                reason=data.get('reason')
+                email=data.get("email", ""),
+                event=data.get("event", ""),
+                timestamp=data.get("timestamp", 0),
+                bounce_type=data.get("type"),
+                reason=data.get("reason")
             )
 
     class SendGridWebhookHandler:
@@ -57,8 +58,8 @@ except ImportError:
             self.webhook_secret = webhook_secret
             self.db_path = db_path
 
-        def process_webhook_events(self, events: List[Dict[str, Any]]) -> Dict[str, int]:
-            return {"bounce": len([e for e in events if e.get('event') == 'bounce'])}
+        def process_webhook_events(self, events: list[dict[str, Any]]) -> dict[str, int]:
+            return {"bounce": len([e for e in events if e.get("event") == "bounce"])}
 
 
 class TestHardBounces:
@@ -110,7 +111,7 @@ class TestHardBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_mark_email_permanently_bounced') as mock_mark:
+        with patch.object(self.webhook_handler, "_mark_email_permanently_bounced") as mock_mark:
             self.webhook_handler._process_bounce_event(hard_bounce_event)
 
         # Assert
@@ -128,7 +129,7 @@ class TestHardBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_increment_soft_bounce_count') as mock_increment:
+        with patch.object(self.webhook_handler, "_increment_soft_bounce_count") as mock_increment:
             self.webhook_handler._process_bounce_event(hard_bounce_event)
 
         # Assert
@@ -158,7 +159,7 @@ class TestHardBounces:
         ]
 
         # Act
-        with patch.object(self.webhook_handler, '_mark_email_permanently_bounced') as mock_mark:
+        with patch.object(self.webhook_handler, "_mark_email_permanently_bounced") as mock_mark:
             for event in hard_bounce_events:
                 self.webhook_handler._process_bounce_event(event)
 
@@ -217,7 +218,7 @@ class TestSoftBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_increment_soft_bounce_count') as mock_increment:
+        with patch.object(self.webhook_handler, "_increment_soft_bounce_count") as mock_increment:
             self.webhook_handler._process_bounce_event(soft_bounce_event)
 
         # Assert
@@ -235,7 +236,7 @@ class TestSoftBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_mark_email_permanently_bounced') as mock_mark:
+        with patch.object(self.webhook_handler, "_mark_email_permanently_bounced") as mock_mark:
             self.webhook_handler._process_bounce_event(soft_bounce_event)
 
         # Assert
@@ -273,7 +274,7 @@ class TestSoftBounces:
         ]
 
         # Act
-        with patch.object(self.webhook_handler, '_increment_soft_bounce_count') as mock_increment:
+        with patch.object(self.webhook_handler, "_increment_soft_bounce_count") as mock_increment:
             for event in soft_bounce_events:
                 self.webhook_handler._process_bounce_event(event)
 
@@ -305,8 +306,8 @@ class TestSoftBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_increment_soft_bounce_count') as mock_increment, \
-             patch.object(self.webhook_handler, '_mark_email_delivered') as mock_delivered:
+        with patch.object(self.webhook_handler, "_increment_soft_bounce_count") as mock_increment, \
+             patch.object(self.webhook_handler, "_mark_email_delivered") as mock_delivered:
 
             self.webhook_handler._process_bounce_event(soft_bounce_event)
             self.webhook_handler._process_delivered_event(delivered_event)
@@ -365,7 +366,7 @@ class TestBlockBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_mark_email_blocked') as mock_block:
+        with patch.object(self.webhook_handler, "_mark_email_blocked") as mock_block:
             self.webhook_handler._process_bounce_event(block_bounce_event)
 
         # Assert
@@ -383,7 +384,7 @@ class TestBlockBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_increment_soft_bounce_count') as mock_increment:
+        with patch.object(self.webhook_handler, "_increment_soft_bounce_count") as mock_increment:
             self.webhook_handler._process_bounce_event(block_bounce_event)
 
         # Assert
@@ -401,7 +402,7 @@ class TestBlockBounces:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_mark_email_permanently_bounced') as mock_mark:
+        with patch.object(self.webhook_handler, "_mark_email_permanently_bounced") as mock_mark:
             self.webhook_handler._process_bounce_event(block_bounce_event)
 
         # Assert
@@ -427,7 +428,7 @@ class TestDroppedEvents:
         }
 
         # Act
-        with patch.object(self.webhook_handler, '_process_bounce_event') as mock_process:
+        with patch.object(self.webhook_handler, "_process_bounce_event") as mock_process:
             self.webhook_handler.process_webhook_events([dropped_event])
 
         # Assert
@@ -538,11 +539,11 @@ class TestBounceTypeClassification:
         ]
 
         # Act
-        with patch.object(self.webhook_handler, '_mark_email_permanently_bounced') as mock_hard, \
-             patch.object(self.webhook_handler, '_increment_soft_bounce_count') as mock_soft, \
-             patch.object(self.webhook_handler, '_mark_email_blocked') as mock_block, \
-             patch.object(self.webhook_handler, '_store_bounce_event'), \
-             patch.object(self.webhook_handler, '_check_bounce_rate_thresholds'):
+        with patch.object(self.webhook_handler, "_mark_email_permanently_bounced") as mock_hard, \
+             patch.object(self.webhook_handler, "_increment_soft_bounce_count") as mock_soft, \
+             patch.object(self.webhook_handler, "_mark_email_blocked") as mock_block, \
+             patch.object(self.webhook_handler, "_store_bounce_event"), \
+             patch.object(self.webhook_handler, "_check_bounce_rate_thresholds"):
 
             result = self.webhook_handler.process_webhook_events(mixed_bounce_events)
 
@@ -572,7 +573,7 @@ class TestBounceTypeClassification:
         }
 
         # Act & Assert - Should not crash
-        with patch.object(self.webhook_handler, '_store_bounce_event'):
+        with patch.object(self.webhook_handler, "_store_bounce_event"):
             try:
                 self.webhook_handler._process_bounce_event(unknown_bounce_event)
                 self.webhook_handler._process_bounce_event(missing_type_event)

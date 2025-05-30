@@ -1,18 +1,18 @@
 """
 Pytest configuration and fixtures for BDD tests.
 """
-import sys
-import os
 import json
+import os
 import sqlite3
+import sys
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 # Set environment variables for testing
-os.environ['TEST_MODE'] = 'True'
-os.environ['MOCK_EXTERNAL_APIS'] = 'True'
+os.environ["TEST_MODE"] = "True"
+os.environ["MOCK_EXTERNAL_APIS"] = "True"
 
 # Global context dictionary for sharing state between steps
 @pytest.fixture(scope="function")

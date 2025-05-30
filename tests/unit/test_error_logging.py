@@ -15,25 +15,24 @@ from unittest.mock import MagicMock, patch
 
 try:
     from leadfactory.pipeline.error_handling import (
-        ErrorPropagationManager,
-        PipelineError,
         BatchResult,
-        ErrorSeverity,
         ErrorCategory,
+        ErrorPropagationManager,
+        ErrorSeverity,
+        PipelineError,
+        create_batch_processor,
         with_error_handling,
-        create_batch_processor
     )
     from leadfactory.utils.logging import (
-        get_logger,
-        setup_logger,
         JsonFormatter,
-        RequestContextFilter,
         LogContext,
-        log_execution_time
+        RequestContextFilter,
+        get_logger,
+        log_execution_time,
+        setup_logger,
     )
 except ImportError:
     # Fallback for testing environments where imports might fail
-    print("Warning: Could not import real modules, using mocks")
 
     # Mock classes for testing
     class ErrorSeverity:
@@ -51,48 +50,48 @@ except ImportError:
 
     class PipelineError:
         def __init__(self, **kwargs):
-            self.id = kwargs.get('id', 'test-error-id')
-            self.stage = kwargs.get('stage', 'test-stage')
-            self.operation = kwargs.get('operation', 'test-operation')
-            self.error_message = kwargs.get('error_message', 'Test error')
-            self.severity = kwargs.get('severity', ErrorSeverity.MEDIUM)
-            self.category = kwargs.get('category', ErrorCategory.BUSINESS_LOGIC)
-            self.context = kwargs.get('context', {})
-            self.batch_id = kwargs.get('batch_id')
+            self.id = kwargs.get("id", "test-error-id")
+            self.stage = kwargs.get("stage", "test-stage")
+            self.operation = kwargs.get("operation", "test-operation")
+            self.error_message = kwargs.get("error_message", "Test error")
+            self.severity = kwargs.get("severity", ErrorSeverity.MEDIUM)
+            self.category = kwargs.get("category", ErrorCategory.BUSINESS_LOGIC)
+            self.context = kwargs.get("context", {})
+            self.batch_id = kwargs.get("batch_id")
 
         def to_dict(self):
             return {
-                'id': self.id,
-                'stage': self.stage,
-                'operation': self.operation,
-                'error_message': self.error_message,
-                'severity': self.severity,
-                'category': self.category,
-                'context': self.context,
-                'batch_id': self.batch_id
+                "id": self.id,
+                "stage": self.stage,
+                "operation": self.operation,
+                "error_message": self.error_message,
+                "severity": self.severity,
+                "category": self.category,
+                "context": self.context,
+                "batch_id": self.batch_id
             }
 
     class BatchResult:
         def __init__(self, **kwargs):
-            self.batch_id = kwargs.get('batch_id', 'test-batch-id')
-            self.stage = kwargs.get('stage', 'test-stage')
-            self.operation = kwargs.get('operation', 'test-operation')
-            self.total_items = kwargs.get('total_items', 0)
-            self.successful_items = kwargs.get('successful_items', 0)
-            self.failed_items = kwargs.get('failed_items', 0)
-            self.errors = kwargs.get('errors', [])
-            self.context = kwargs.get('context', {})
+            self.batch_id = kwargs.get("batch_id", "test-batch-id")
+            self.stage = kwargs.get("stage", "test-stage")
+            self.operation = kwargs.get("operation", "test-operation")
+            self.total_items = kwargs.get("total_items", 0)
+            self.successful_items = kwargs.get("successful_items", 0)
+            self.failed_items = kwargs.get("failed_items", 0)
+            self.errors = kwargs.get("errors", [])
+            self.context = kwargs.get("context", {})
 
         def to_dict(self):
             return {
-                'batch_id': self.batch_id,
-                'stage': self.stage,
-                'operation': self.operation,
-                'total_items': self.total_items,
-                'successful_items': self.successful_items,
-                'failed_items': self.failed_items,
-                'errors': [e.to_dict() if hasattr(e, 'to_dict') else e for e in self.errors],
-                'context': self.context
+                "batch_id": self.batch_id,
+                "stage": self.stage,
+                "operation": self.operation,
+                "total_items": self.total_items,
+                "successful_items": self.successful_items,
+                "failed_items": self.failed_items,
+                "errors": [e.to_dict() if hasattr(e, "to_dict") else e for e in self.errors],
+                "context": self.context
             }
 
     class ErrorPropagationManager:
@@ -115,22 +114,22 @@ except ImportError:
     class JsonFormatter(logging.Formatter):
         def format(self, record):
             log_data = {
-                'timestamp': datetime.now().isoformat(),
-                'level': record.levelname,
-                'message': record.getMessage(),
-                'module': record.module,
-                'function': record.funcName,
-                'line': record.lineno
+                "timestamp": datetime.now().isoformat(),
+                "level": record.levelname,
+                "message": record.getMessage(),
+                "module": record.module,
+                "function": record.funcName,
+                "line": record.lineno
             }
 
             # Add extra fields from the record
-            if hasattr(record, '__dict__'):
+            if hasattr(record, "__dict__"):
                 for key, value in record.__dict__.items():
-                    if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
-                                 'filename', 'module', 'lineno', 'funcName', 'created',
-                                 'msecs', 'relativeCreated', 'thread', 'threadName',
-                                 'processName', 'process', 'getMessage', 'exc_info',
-                                 'exc_text', 'stack_info']:
+                    if key not in ["name", "msg", "args", "levelname", "levelno", "pathname",
+                                 "filename", "module", "lineno", "funcName", "created",
+                                 "msecs", "relativeCreated", "thread", "threadName",
+                                 "processName", "process", "getMessage", "exc_info",
+                                 "exc_text", "stack_info"]:
                         log_data[key] = value
 
             return json.dumps(log_data)
@@ -138,7 +137,7 @@ except ImportError:
     class RequestContextFilter(logging.Filter):
         def __init__(self, request_id=None):
             super().__init__()
-            self.request_id = request_id or 'test-request-id'
+            self.request_id = request_id or "test-request-id"
 
         def filter(self, record):
             record.request_id = self.request_id
@@ -167,7 +166,7 @@ class TestErrorLoggingSystem(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.log_stream = StringIO()
-        self.logger = logging.getLogger('test_error_logging')
+        self.logger = logging.getLogger("test_error_logging")
         self.logger.setLevel(logging.DEBUG)
 
         # Clear any existing handlers
@@ -216,21 +215,21 @@ class TestStructuredLogging(TestErrorLoggingSystem):
         log_data = json.loads(log_output)
 
         # Verify required fields are present
-        self.assertIn('timestamp', log_data)
-        self.assertIn('level', log_data)
-        self.assertIn('message', log_data)
-        self.assertIn('stage', log_data)
-        self.assertIn('operation', log_data)
-        self.assertIn('error_message', log_data)
-        self.assertIn('severity', log_data)
-        self.assertIn('category', log_data)
+        self.assertIn("timestamp", log_data)
+        self.assertIn("level", log_data)
+        self.assertIn("message", log_data)
+        self.assertIn("stage", log_data)
+        self.assertIn("operation", log_data)
+        self.assertIn("error_message", log_data)
+        self.assertIn("severity", log_data)
+        self.assertIn("category", log_data)
 
         # Verify field values
-        self.assertEqual(log_data['level'], 'ERROR')
-        self.assertEqual(log_data['stage'], 'test_stage')
-        self.assertEqual(log_data['operation'], 'test_operation')
-        self.assertEqual(log_data['severity'], ErrorSeverity.HIGH)
-        self.assertEqual(log_data['category'], ErrorCategory.VALIDATION)
+        self.assertEqual(log_data["level"], "ERROR")
+        self.assertEqual(log_data["stage"], "test_stage")
+        self.assertEqual(log_data["operation"], "test_operation")
+        self.assertEqual(log_data["severity"], ErrorSeverity.HIGH)
+        self.assertEqual(log_data["category"], ErrorCategory.VALIDATION)
 
     def test_consistent_error_fields(self):
         """Test that all error logs contain consistent required fields."""
@@ -241,25 +240,25 @@ class TestStructuredLogging(TestErrorLoggingSystem):
         # Test different types of errors
         error_scenarios = [
             {
-                'stage': 'scrape',
-                'operation': 'fetch_data',
-                'error_message': 'Network timeout',
-                'severity': ErrorSeverity.MEDIUM,
-                'category': ErrorCategory.NETWORK
+                "stage": "scrape",
+                "operation": "fetch_data",
+                "error_message": "Network timeout",
+                "severity": ErrorSeverity.MEDIUM,
+                "category": ErrorCategory.NETWORK
             },
             {
-                'stage': 'enrich',
-                'operation': 'validate_data',
-                'error_message': 'Invalid email format',
-                'severity': ErrorSeverity.LOW,
-                'category': ErrorCategory.VALIDATION
+                "stage": "enrich",
+                "operation": "validate_data",
+                "error_message": "Invalid email format",
+                "severity": ErrorSeverity.LOW,
+                "category": ErrorCategory.VALIDATION
             },
             {
-                'stage': 'score',
-                'operation': 'calculate_score',
-                'error_message': 'Database connection failed',
-                'severity': ErrorSeverity.CRITICAL,
-                'category': ErrorCategory.DATABASE
+                "stage": "score",
+                "operation": "calculate_score",
+                "error_message": "Database connection failed",
+                "severity": ErrorSeverity.CRITICAL,
+                "category": ErrorCategory.DATABASE
             }
         ]
 
@@ -274,8 +273,8 @@ class TestStructuredLogging(TestErrorLoggingSystem):
             log_data = json.loads(log_output)
 
             # Verify all required fields are present
-            required_fields = ['timestamp', 'level', 'message', 'stage', 'operation',
-                             'error_message', 'severity', 'category']
+            required_fields = ["timestamp", "level", "message", "stage", "operation",
+                             "error_message", "severity", "category"]
             for field in required_fields:
                 self.assertIn(field, log_data, f"Missing required field: {field}")
 
@@ -314,8 +313,8 @@ class TestContextAwareLogging(TestErrorLoggingSystem):
         log_data = json.loads(log_output)
 
         # Verify context is captured
-        self.assertIn('context', log_data)
-        captured_context = log_data['context']
+        self.assertIn("context", log_data)
+        captured_context = log_data["context"]
 
         # Verify all context fields are present
         for key, value in context.items():
@@ -353,14 +352,14 @@ class TestContextAwareLogging(TestErrorLoggingSystem):
         log_data = json.loads(log_output)
 
         # Verify batch context is captured
-        self.assertIn('context', log_data)
-        self.assertEqual(log_data['batch_id'], 'batch-xyz-789')
-        self.assertEqual(log_data['total_items'], 100)
-        self.assertEqual(log_data['successful_items'], 85)
-        self.assertEqual(log_data['failed_items'], 15)
+        self.assertIn("context", log_data)
+        self.assertEqual(log_data["batch_id"], "batch-xyz-789")
+        self.assertEqual(log_data["total_items"], 100)
+        self.assertEqual(log_data["successful_items"], 85)
+        self.assertEqual(log_data["failed_items"], 15)
 
         # Verify processing context
-        captured_context = log_data['context']
+        captured_context = log_data["context"]
         for key, value in batch_context.items():
             self.assertIn(key, captured_context)
             self.assertEqual(captured_context[key], value)
@@ -386,8 +385,8 @@ class TestLogCorrelationIds(TestErrorLoggingSystem):
         log_data = json.loads(log_output)
 
         # Verify request ID is included
-        self.assertIn('request_id', log_data)
-        self.assertEqual(log_data['request_id'], request_id)
+        self.assertIn("request_id", log_data)
+        self.assertEqual(log_data["request_id"], request_id)
 
     def test_batch_correlation_tracking(self):
         """Test correlation tracking across batch operations."""
@@ -430,9 +429,9 @@ class TestLogCorrelationIds(TestErrorLoggingSystem):
 
         # Verify all entries have same correlation IDs
         for entry in logged_entries:
-            self.assertEqual(entry['request_id'], request_id)
-            self.assertEqual(entry['batch_id'], batch_id)
-            self.assertEqual(entry['stage'], 'test_stage')
+            self.assertEqual(entry["request_id"], request_id)
+            self.assertEqual(entry["batch_id"], batch_id)
+            self.assertEqual(entry["stage"], "test_stage")
 
 
 class TestActionableLogging(TestErrorLoggingSystem):
@@ -471,17 +470,17 @@ class TestActionableLogging(TestErrorLoggingSystem):
         log_data = json.loads(log_output)
 
         # Verify troubleshooting information is present
-        context = log_data['context']
-        self.assertIn('error_code', context)
-        self.assertIn('suggested_action', context)
-        self.assertIn('documentation_link', context)
-        self.assertIn('retry_after_seconds', context)
-        self.assertIn('api_status_page', context)
+        context = log_data["context"]
+        self.assertIn("error_code", context)
+        self.assertIn("suggested_action", context)
+        self.assertIn("documentation_link", context)
+        self.assertIn("retry_after_seconds", context)
+        self.assertIn("api_status_page", context)
 
         # Verify actionable information
-        self.assertEqual(context['suggested_action'], "Retry with exponential backoff")
-        self.assertEqual(context['retry_after_seconds'], 30)
-        self.assertFalse(context['max_retries_exceeded'])
+        self.assertEqual(context["suggested_action"], "Retry with exponential backoff")
+        self.assertEqual(context["retry_after_seconds"], 30)
+        self.assertFalse(context["max_retries_exceeded"])
 
     def test_performance_troubleshooting_context(self):
         """Test performance-related troubleshooting information."""
@@ -523,13 +522,13 @@ class TestActionableLogging(TestErrorLoggingSystem):
         log_data = json.loads(log_output)
 
         # Verify performance troubleshooting info
-        context = log_data['context']
-        self.assertIn('execution_time_ms', context)
-        self.assertIn('optimization_suggestions', context)
-        self.assertIn('slow_queries', context)
-        self.assertTrue(context['performance_threshold_exceeded'])
-        self.assertIsInstance(context['optimization_suggestions'], list)
-        self.assertGreater(len(context['optimization_suggestions']), 0)
+        context = log_data["context"]
+        self.assertIn("execution_time_ms", context)
+        self.assertIn("optimization_suggestions", context)
+        self.assertIn("slow_queries", context)
+        self.assertTrue(context["performance_threshold_exceeded"])
+        self.assertIsInstance(context["optimization_suggestions"], list)
+        self.assertGreater(len(context["optimization_suggestions"]), 0)
 
 
 class TestLogIntegration(TestErrorLoggingSystem):
@@ -587,13 +586,13 @@ class TestLogIntegration(TestErrorLoggingSystem):
         log_data = json.loads(log_output)
 
         # Verify batch logging integration
-        self.assertEqual(log_data['batch_id'], 'integration-test-batch')
-        self.assertEqual(log_data['total_items'], 10)
-        self.assertEqual(log_data['successful_items'], 7)
-        self.assertEqual(log_data['failed_items'], 3)
-        self.assertIn('errors', log_data)
-        self.assertEqual(len(log_data['errors']), 3)
+        self.assertEqual(log_data["batch_id"], "integration-test-batch")
+        self.assertEqual(log_data["total_items"], 10)
+        self.assertEqual(log_data["successful_items"], 7)
+        self.assertEqual(log_data["failed_items"], 3)
+        self.assertIn("errors", log_data)
+        self.assertEqual(len(log_data["errors"]), 3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

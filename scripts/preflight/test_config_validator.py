@@ -7,9 +7,9 @@ ensuring it correctly identifies missing, invalid, or misconfigured
 environment variables.
 """
 
+import logging
 import os
 import sys
-import logging
 import tempfile
 from pathlib import Path
 
@@ -80,7 +80,7 @@ RATE_LIMIT_PERIOD=60
         if result.success:
             logger.info("✅ Test passed: Valid configuration validated successfully")
         else:
-            logger.error(f"❌ Test failed: Valid configuration reported as invalid")
+            logger.error("❌ Test failed: Valid configuration reported as invalid")
             logger.error(f"Message: {result.message}")
             for issue in result.issues:
                 logger.error(f"  - {issue}")
@@ -122,7 +122,7 @@ EMAIL_FROM=test@example.com
         if not result.success and len(result.issues) > 0:
             logger.info("✅ Test passed: Missing variables detected correctly")
         else:
-            logger.error(f"❌ Test failed: Missing variables not detected")
+            logger.error("❌ Test failed: Missing variables not detected")
             return False
 
         return not result.success
@@ -174,7 +174,7 @@ RATE_LIMIT_PERIOD=60
         if not result.success and len(result.issues) > 0:
             logger.info("✅ Test passed: Invalid formats detected correctly")
         else:
-            logger.error(f"❌ Test failed: Invalid formats not detected")
+            logger.error("❌ Test failed: Invalid formats not detected")
             return False
 
         return not result.success
@@ -226,7 +226,7 @@ RATE_LIMIT_PERIOD=60
         if result.success:
             logger.info("✅ Test passed: Mockup mode validation successful")
         else:
-            logger.error(f"❌ Test failed: Mockup mode validation failed")
+            logger.error("❌ Test failed: Mockup mode validation failed")
             logger.error(f"Message: {result.message}")
             for issue in result.issues:
                 logger.error(f"  - {issue}")
@@ -253,11 +253,11 @@ def test_generate_sample():
 
         # Check if file was created
         if success and os.path.exists(output_file):
-            with open(output_file, "r") as f:
+            with open(output_file) as f:
                 content = f.read()
 
             # Check if file contains all required variables
-            for category, vars_list in validator.REQUIRED_VARS.items():
+            for _category, vars_list in validator.REQUIRED_VARS.items():
                 for var in vars_list:
                     if var not in content:
                         logger.error(f"❌ Test failed: {var} missing from sample file")
@@ -288,43 +288,26 @@ def main():
 
     test_results = []
 
-    print("\n" + "=" * 80)
-    print(" CONFIG VALIDATOR TESTS ".center(80, "="))
-    print("=" * 80)
-
     for test_name, test_func in tests:
-        print(f"\nRunning test: {test_name}")
-        print("-" * (14 + len(test_name)))
 
         try:
             result = test_func()
             test_results.append((test_name, result))
 
             if result:
-                print(f"✅ {test_name}: PASSED")
+                pass
             else:
-                print(f"❌ {test_name}: FAILED")
-        except Exception as e:
-            print(f"❌ {test_name}: ERROR - {e}")
+                pass
+        except Exception:
             test_results.append((test_name, False))
 
     # Print summary
-    print("\n" + "=" * 80)
-    print(" TEST SUMMARY ".center(80, "="))
-    print("=" * 80)
 
     passed = sum(1 for _, result in test_results if result)
     failed = len(test_results) - passed
 
     for test_name, result in test_results:
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status} - {test_name}")
-
-    print("-" * 80)
-    print(f"Total tests: {len(test_results)}")
-    print(f"Passed: {passed}")
-    print(f"Failed: {failed}")
-    print("=" * 80)
+        pass
 
     return 0 if failed == 0 else 1
 

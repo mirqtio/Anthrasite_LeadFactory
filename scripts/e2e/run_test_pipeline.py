@@ -5,10 +5,10 @@ Test Runner for E2E Pipeline Execution and Resolution Loop
 This script executes the pipeline in a test mode to validate the implementation.
 """
 
-import os
-import sys
 import argparse
 import datetime
+import os
+import sys
 from pathlib import Path
 
 # Add the project root directory to Python path
@@ -16,8 +16,8 @@ project_root = Path(__file__).resolve().parent.parent.parent
 if project_root not in sys.path:
     sys.path.append(str(project_root))
 
-from scripts.e2e.pipeline_executor import PipelineExecutor
 from scripts.e2e.execution_logger import ExecutionTracker
+from scripts.e2e.pipeline_executor import PipelineExecutor
 
 
 def setup_test_env():
@@ -58,17 +58,12 @@ def main():
     args = parser.parse_args()
 
     # Set up test environment
-    paths = setup_test_env()
-    print(f"Set up test environment:")
-    print(f"- Log directory: {paths['log_dir']}")
-    print(f"- Test data directory: {paths['test_data_dir']}")
+    setup_test_env()
 
     # Create a timestamp for this test run
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Test run ID: {timestamp}")
+    datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Execute the pipeline
-    print("\n=== Starting Pipeline Execution ===\n")
 
     if args.mock:
         # In mock mode, we'll patch subprocess.run to simulate execution
@@ -89,7 +84,6 @@ def main():
                 result.returncode = 1
                 result.stdout = f"Mock output for {stage_name}"
                 result.stderr = f"Mock error for {stage_name}: Simulated failure"
-                print(f"[MOCK] Simulating failure in stage: {stage_name}")
                 return result
 
             # Otherwise succeed
@@ -97,7 +91,6 @@ def main():
             result.returncode = 0
             result.stdout = f"Mock output for {stage_name}"
             result.stderr = ""
-            print(f"[MOCK] Simulating success in stage: {stage_name}")
             return result
 
         # Apply the mock
@@ -114,58 +107,38 @@ def main():
         success = executor.execute_pipeline()
 
     # Print execution summary
-    print("\n=== Pipeline Execution Summary ===\n")
-    print(f"Execution ID: {executor.execution_id}")
-    print(f"Status: {'Success' if success else 'Failure'}")
 
     if executor.start_time and executor.end_time:
-        duration = (executor.end_time - executor.start_time).total_seconds()
-        print(f"Duration: {duration:.2f} seconds")
+        (executor.end_time - executor.start_time).total_seconds()
 
     # Print stage results
-    print("\nStage Results:")
-    for stage_name, stage in executor.stages.items():
-        status_icon = (
-            "✅"
-            if stage.status == "success"
-            else "❌" if stage.status == "failure" else "⏩"
-        )
-        print(f"- {status_icon} {stage.name}: {stage.status}")
+    for _stage_name, stage in executor.stages.items():
         if stage.retry_count > 0:
-            print(f"  Retries: {stage.retry_count}")
+            pass
 
     # Print failure summary
     if executor.results["failures"]:
-        print("\nFailures:")
-        for failure in executor.results["failures"]:
-            print(f"- Stage: {failure['stage']}")
-            print(f"  Category: {failure['category']}")
-            print(f"  Message: {failure['message']}")
-            print(f"  Resolution: {failure['resolution']}")
+        for _failure in executor.results["failures"]:
+            pass
 
     # Print resolution attempts
     if executor.results["resolution_attempts"]:
-        print("\nResolution Attempts:")
         for attempt in executor.results["resolution_attempts"]:
-            status_icon = "✅" if attempt["success"] else "❌"
-            print(f"- {status_icon} Stage: {attempt['stage']}")
-            print(f"  Issue: {attempt['issue']}")
-            print(f"  Resolution: {attempt['resolution']}")
-            print(f"  Result: {attempt['result']}")
+            "✅" if attempt["success"] else "❌"
 
     # Get history and check if this execution was recorded
     tracker = ExecutionTracker()
     execution = tracker.get_execution(executor.execution_id)
 
     if execution:
-        print("\nExecution successfully recorded in history.")
+        pass
     else:
-        print("\nWARNING: Execution not found in history!")
+        pass
 
     # Print path to the execution summary markdown file
     summary_file = project_root / "e2e_summary.md"
     if summary_file.exists():
-        print(f"\nExecution summary saved to: {summary_file}")
+        pass
 
     # Return exit code based on success
     return 0 if success else 1

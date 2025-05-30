@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, validator
+from pydantic import BaseModel, Field, ValidationError, field_validator, validator
 
 from leadfactory.utils.logging import get_logger
 
@@ -99,8 +99,9 @@ class ScoringRule(BaseModel):
         default=0, ge=0, le=100
     )  # Higher priority rules evaluated first
 
-    @validator("score")
-    def validate_score(self, v):
+    @field_validator("score")
+    @classmethod
+    def validate_score(cls, v):
         """Ensure score is within reasonable bounds."""
         if not -100 <= v <= 100:
             raise ValueError(f"Score must be between -100 and 100, got {v}")
@@ -116,8 +117,9 @@ class ScoringMultiplier(BaseModel):
     multiplier: float = Field(..., gt=0, le=10)  # Multiplier between 0 and 10
     enabled: bool = True
 
-    @validator("multiplier")
-    def validate_multiplier(self, v):
+    @field_validator("multiplier")
+    @classmethod
+    def validate_multiplier(cls, v):
         """Ensure multiplier is within reasonable bounds."""
         if not 0 < v <= 10:
             raise ValueError(f"Multiplier must be between 0 and 10, got {v}")
@@ -132,10 +134,15 @@ class ScoringSettings(BaseModel):
     max_score: int = Field(default=100, le=1000)
     high_score_threshold: int = Field(default=75, ge=0, le=100)
 
-    @validator("max_score")
-    def validate_max_score(self, v, values):
+    @field_validator("max_score")
+    @classmethod
+    def validate_max_score(cls, v, info):
         """Ensure max_score is greater than min_score."""
-        if "min_score" in values and v <= values["min_score"]:
+        if (
+            hasattr(info, "data")
+            and "min_score" in info.data
+            and v <= info.data["min_score"]
+        ):
             raise ValueError("max_score must be greater than min_score")
         return v
 

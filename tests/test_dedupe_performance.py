@@ -5,18 +5,19 @@ This module tests the performance improvements including batch processing,
 caching, parallel execution, and database optimizations.
 """
 
-import sys
 import os
+import sys
 import tempfile
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, patch
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import performance module by loading it directly
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "dedupe_performance",
     os.path.join(os.path.dirname(os.path.dirname(__file__)), "leadfactory/pipeline/dedupe_performance.py")
@@ -128,7 +129,7 @@ class TestBusinessCache(unittest.TestCase):
 class TestOptimizedDeduplicator:
     """Test optimized deduplication functionality."""
 
-    @unittest.mock.patch('leadfactory.pipeline.dedupe_performance.DedupeConfig')
+    @unittest.mock.patch("leadfactory.pipeline.dedupe_performance.DedupeConfig")
     def test_deduplicator_initialization(self, mock_config):
         """Test deduplicator initialization."""
         deduplicator = OptimizedDeduplicator(mock_config, max_workers=2)
@@ -136,8 +137,8 @@ class TestOptimizedDeduplicator:
         self.assertIsInstance(deduplicator.business_cache, BusinessCache)
         self.assertIsInstance(deduplicator.metrics, PerformanceMetrics)
 
-    @patch('leadfactory.pipeline.dedupe_performance.db_connection')
-    @patch('leadfactory.pipeline.dedupe_performance.db_cursor')
+    @patch("leadfactory.pipeline.dedupe_performance.db_connection")
+    @patch("leadfactory.pipeline.dedupe_performance.db_cursor")
     def test_get_business_batch(self, mock_cursor, mock_connection):
         """Test batch business retrieval."""
         # Mock database response
@@ -149,18 +150,18 @@ class TestOptimizedDeduplicator:
         # Mock query results
         mock_cur.fetchall.return_value = [
             {
-                'id': 1, 'name': 'Business 1', 'address': '123 Main St',
-                'zip': '12345', 'phone': '555-1234', 'email': 'test@example.com',
-                'website': 'https://example.com', 'vertical': 'retail',
-                'source': 'google', 'google_response': None, 'yelp_response': None,
-                'manual_response': None, 'created_at': None, 'updated_at': None
+                "id": 1, "name": "Business 1", "address": "123 Main St",
+                "zip": "12345", "phone": "555-1234", "email": "test@example.com",
+                "website": "https://example.com", "vertical": "retail",
+                "source": "google", "google_response": None, "yelp_response": None,
+                "manual_response": None, "created_at": None, "updated_at": None
             },
             {
-                'id': 2, 'name': 'Business 2', 'address': '456 Oak Ave',
-                'zip': '12345', 'phone': '555-5678', 'email': 'test2@example.com',
-                'website': 'https://example2.com', 'vertical': 'food',
-                'source': 'yelp', 'google_response': None, 'yelp_response': None,
-                'manual_response': None, 'created_at': None, 'updated_at': None
+                "id": 2, "name": "Business 2", "address": "456 Oak Ave",
+                "zip": "12345", "phone": "555-5678", "email": "test2@example.com",
+                "website": "https://example2.com", "vertical": "food",
+                "source": "yelp", "google_response": None, "yelp_response": None,
+                "manual_response": None, "created_at": None, "updated_at": None
             }
         ]
 
@@ -169,34 +170,34 @@ class TestOptimizedDeduplicator:
         businesses = deduplicator.get_business_batch([1, 2])
 
         self.assertEqual(len(businesses), 2)
-        self.assertEqual(businesses[1]['name'], 'Business 1')
-        self.assertEqual(businesses[2]['name'], 'Business 2')
+        self.assertEqual(businesses[1]["name"], "Business 1")
+        self.assertEqual(businesses[2]["name"], "Business 2")
         self.assertEqual(deduplicator.metrics.cache_misses, 2)
 
     def test_should_merge_exact_website_match(self):
         """Test merge decision for exact website match."""
         deduplicator = OptimizedDeduplicator(MagicMock(), max_workers=2)
-        business1 = {'id': 1, 'website': 'https://example.com', 'name': 'Test Business'}
-        business2 = {'id': 2, 'website': 'https://example.com', 'name': 'Test Company'}
+        business1 = {"id": 1, "website": "https://example.com", "name": "Test Business"}
+        business2 = {"id": 2, "website": "https://example.com", "name": "Test Company"}
 
         self.assertTrue(deduplicator._should_merge(business1, business2))
 
     def test_should_merge_phone_match(self):
         """Test merge decision for phone match."""
         deduplicator = OptimizedDeduplicator(MagicMock(), max_workers=2)
-        business1 = {'id': 1, 'phone': '555-1234', 'name': 'Test Business'}
-        business2 = {'id': 2, 'phone': '555-1234', 'name': 'Different Name'}
+        business1 = {"id": 1, "phone": "555-1234", "name": "Test Business"}
+        business2 = {"id": 2, "phone": "555-1234", "name": "Different Name"}
 
         self.assertTrue(deduplicator._should_merge(business1, business2))
 
-    @patch('leadfactory.pipeline.dedupe_performance.ratio')
+    @patch("leadfactory.pipeline.dedupe_performance.ratio")
     def test_should_merge_name_similarity(self, mock_ratio):
         """Test merge decision for name similarity."""
         mock_ratio.return_value = 0.9  # High similarity
 
         deduplicator = OptimizedDeduplicator(MagicMock(), max_workers=2)
-        business1 = {'id': 1, 'name': 'Test Business Inc'}
-        business2 = {'id': 2, 'name': 'Test Business LLC'}
+        business1 = {"id": 1, "name": "Test Business Inc"}
+        business2 = {"id": 2, "name": "Test Business LLC"}
 
         self.assertTrue(deduplicator._should_merge(business1, business2))
         mock_ratio.assert_called_once()
@@ -206,28 +207,28 @@ class TestOptimizedDeduplicator:
         # Business 1 has more complete data
         deduplicator = OptimizedDeduplicator(MagicMock(), max_workers=2)
         business1 = {
-            'id': 1, 'name': 'Complete Business', 'address': '123 Main St',
-            'phone': '555-1234', 'email': 'test@example.com', 'website': 'https://example.com'
+            "id": 1, "name": "Complete Business", "address": "123 Main St",
+            "phone": "555-1234", "email": "test@example.com", "website": "https://example.com"
         }
         business2 = {
-            'id': 2, 'name': 'Incomplete Business', 'phone': '555-5678'
+            "id": 2, "name": "Incomplete Business", "phone": "555-5678"
         }
 
         primary_id, secondary_id = deduplicator._select_primary(business1, business2)
         self.assertEqual(primary_id, 1)
         self.assertEqual(secondary_id, 2)
 
-    @patch('leadfactory.pipeline.dedupe_performance.merge_business_records')
+    @patch("leadfactory.pipeline.dedupe_performance.merge_business_records")
     def test_merge_businesses_optimized(self, mock_merge):
         """Test optimized business merge."""
-        mock_merge.return_value = {'id': 1, 'merged': True}
+        mock_merge.return_value = {"id": 1, "merged": True}
 
         deduplicator = OptimizedDeduplicator(MagicMock(), max_workers=2)
         result = deduplicator._merge_businesses_optimized(1, 2)
         self.assertTrue(result)
         mock_merge.assert_called_once_with(1, 2)
 
-    @patch('leadfactory.pipeline.dedupe_performance.merge_business_records')
+    @patch("leadfactory.pipeline.dedupe_performance.merge_business_records")
     def test_merge_businesses_optimized_error(self, mock_merge):
         """Test optimized business merge with error."""
         mock_merge.side_effect = Exception("Database error")
@@ -249,12 +250,12 @@ class TestOptimizedDeduplicator:
 
         report = deduplicator.get_performance_report()
 
-        self.assertIn('metrics', report)
-        self.assertIn('recommendations', report)
-        self.assertEqual(report['metrics']['total_pairs'], 100)
-        self.assertEqual(report['metrics']['processed_pairs'], 95)
-        self.assertEqual(report['metrics']['cache_hit_rate'], 0.8)
-        self.assertEqual(report['metrics']['pairs_per_second'], 9.5)
+        self.assertIn("metrics", report)
+        self.assertIn("recommendations", report)
+        self.assertEqual(report["metrics"]["total_pairs"], 100)
+        self.assertEqual(report["metrics"]["processed_pairs"], 95)
+        self.assertEqual(report["metrics"]["cache_hit_rate"], 0.8)
+        self.assertEqual(report["metrics"]["pairs_per_second"], 9.5)
 
     def test_recommendations_generation(self):
         """Test performance recommendations."""
@@ -275,128 +276,128 @@ class TestOptimizedDeduplicator:
 class TestBatchProcessing:
     """Test batch processing functionality."""
 
-    @unittest.mock.patch('leadfactory.pipeline.dedupe_performance.DedupeConfig')
+    @unittest.mock.patch("leadfactory.pipeline.dedupe_performance.DedupeConfig")
     def test_process_single_batch(self, mock_config):
         """Test processing a single batch."""
         # Setup mocks
-        mock_get_batch = unittest.mock.patch.object(OptimizedDeduplicator, 'get_business_batch')
-        mock_should_merge = unittest.mock.patch.object(OptimizedDeduplicator, '_should_merge')
-        mock_merge = unittest.mock.patch.object(OptimizedDeduplicator, '_merge_businesses_optimized')
+        mock_get_batch = unittest.mock.patch.object(OptimizedDeduplicator, "get_business_batch")
+        mock_should_merge = unittest.mock.patch.object(OptimizedDeduplicator, "_should_merge")
+        mock_merge = unittest.mock.patch.object(OptimizedDeduplicator, "_merge_businesses_optimized")
 
         mock_get_batch.return_value = {
-            1: {'id': 1, 'name': 'Business 1'},
-            2: {'id': 2, 'name': 'Business 2'},
-            3: {'id': 3, 'name': 'Business 3'},
-            4: {'id': 4, 'name': 'Business 4'}
+            1: {"id": 1, "name": "Business 1"},
+            2: {"id": 2, "name": "Business 2"},
+            3: {"id": 3, "name": "Business 3"},
+            4: {"id": 4, "name": "Business 4"}
         }
         mock_should_merge.side_effect = [True, False]  # First pair merges, second flags
         mock_merge.return_value = True
 
         # Test data
         batch = [
-            {'business1_id': 1, 'business2_id': 2},
-            {'business1_id': 3, 'business2_id': 4}
+            {"business1_id": 1, "business2_id": 2},
+            {"business1_id": 3, "business2_id": 4}
         ]
 
         deduplicator = OptimizedDeduplicator(mock_config, max_workers=2)
         stats = deduplicator._process_single_batch(batch)
 
-        self.assertEqual(stats['processed'], 2)
-        self.assertEqual(stats['merged'], 1)
-        self.assertEqual(stats['flagged'], 1)
-        self.assertEqual(stats['errors'], 0)
+        self.assertEqual(stats["processed"], 2)
+        self.assertEqual(stats["merged"], 1)
+        self.assertEqual(stats["flagged"], 1)
+        self.assertEqual(stats["errors"], 0)
 
-    @patch.object(OptimizedDeduplicator, '_process_single_batch')
+    @patch.object(OptimizedDeduplicator, "_process_single_batch")
     def test_process_pairs_batch(self, mock_process_batch):
         """Test batch processing with multiple batches."""
         mock_process_batch.side_effect = [
-            {'processed': 2, 'merged': 1, 'flagged': 1, 'errors': 0},
-            {'processed': 2, 'merged': 0, 'flagged': 2, 'errors': 0},
-            {'processed': 1, 'merged': 1, 'flagged': 0, 'errors': 0}
+            {"processed": 2, "merged": 1, "flagged": 1, "errors": 0},
+            {"processed": 2, "merged": 0, "flagged": 2, "errors": 0},
+            {"processed": 1, "merged": 1, "flagged": 0, "errors": 0}
         ]
 
         # Create 5 pairs, batch size 2 = 3 batches
-        pairs = [{'business1_id': i, 'business2_id': i+1} for i in range(1, 6)]
+        pairs = [{"business1_id": i, "business2_id": i+1} for i in range(1, 6)]
 
         deduplicator = OptimizedDeduplicator(MagicMock(), max_workers=2)
         stats = deduplicator.process_pairs_batch(pairs, batch_size=2)
 
-        self.assertEqual(stats['processed'], 5)
-        self.assertEqual(stats['merged'], 2)
-        self.assertEqual(stats['flagged'], 3)
-        self.assertEqual(stats['errors'], 0)
+        self.assertEqual(stats["processed"], 5)
+        self.assertEqual(stats["merged"], 2)
+        self.assertEqual(stats["flagged"], 3)
+        self.assertEqual(stats["errors"], 0)
         self.assertEqual(mock_process_batch.call_count, 3)
 
 
 class TestParallelProcessing:
     """Test parallel processing functionality."""
 
-    @unittest.mock.patch('leadfactory.pipeline.dedupe_performance.DedupeConfig')
+    @unittest.mock.patch("leadfactory.pipeline.dedupe_performance.DedupeConfig")
     def test_process_pairs_parallel(self, mock_config):
         """Test parallel processing."""
-        mock_process_batch = unittest.mock.patch.object(OptimizedDeduplicator, '_process_single_batch')
-        mock_process_batch.return_value = {'processed': 2, 'merged': 1, 'flagged': 1, 'errors': 0}
+        mock_process_batch = unittest.mock.patch.object(OptimizedDeduplicator, "_process_single_batch")
+        mock_process_batch.return_value = {"processed": 2, "merged": 1, "flagged": 1, "errors": 0}
 
         # Create pairs for parallel processing
-        pairs = [{'business1_id': i, 'business2_id': i+1} for i in range(1, 9)]  # 8 pairs
+        pairs = [{"business1_id": i, "business2_id": i+1} for i in range(1, 9)]  # 8 pairs
 
         deduplicator = OptimizedDeduplicator(mock_config, max_workers=2)
         stats = deduplicator.process_pairs_parallel(pairs)
 
         # Should process all pairs
-        self.assertGreaterEqual(stats['processed'], 8)  # Might be more due to chunk processing
-        self.assertGreaterEqual(stats['merged'], 4)
-        self.assertGreaterEqual(stats['flagged'], 4)
+        self.assertGreaterEqual(stats["processed"], 8)  # Might be more due to chunk processing
+        self.assertGreaterEqual(stats["merged"], 4)
+        self.assertGreaterEqual(stats["flagged"], 4)
         self.assertGreater(deduplicator.metrics.parallel_operations, 0)
 
 
 class TestIntegration:
     """Integration tests for optimized deduplication."""
 
-    @patch('leadfactory.pipeline.dedupe_performance.get_potential_duplicate_pairs')
-    @patch('leadfactory.pipeline.dedupe_performance.load_dedupe_config')
-    @patch.object(OptimizedDeduplicator, 'optimize_database_indexes')
-    @patch.object(OptimizedDeduplicator, 'process_pairs_batch')
+    @patch("leadfactory.pipeline.dedupe_performance.get_potential_duplicate_pairs")
+    @patch("leadfactory.pipeline.dedupe_performance.load_dedupe_config")
+    @patch.object(OptimizedDeduplicator, "optimize_database_indexes")
+    @patch.object(OptimizedDeduplicator, "process_pairs_batch")
     def test_run_optimized_deduplication(self, mock_process, mock_optimize, mock_config, mock_get_pairs):
         """Test complete optimized deduplication run."""
         # Setup mocks
         mock_config.return_value = dedupe_performance.DedupeConfig()
         mock_get_pairs.return_value = [
-            {'business1_id': 1, 'business2_id': 2},
-            {'business1_id': 3, 'business2_id': 4}
+            {"business1_id": 1, "business2_id": 2},
+            {"business1_id": 3, "business2_id": 4}
         ]
         mock_optimize.return_value = True
-        mock_process.return_value = {'processed': 2, 'merged': 1, 'flagged': 1, 'errors': 0}
+        mock_process.return_value = {"processed": 2, "merged": 1, "flagged": 1, "errors": 0}
 
         result = run_optimized_deduplication(limit=10, use_parallel=False)
 
-        self.assertIn('stats', result)
-        self.assertIn('performance', result)
-        self.assertEqual(result['stats']['processed'], 2)
-        self.assertEqual(result['stats']['merged'], 1)
-        self.assertEqual(result['stats']['flagged'], 1)
+        self.assertIn("stats", result)
+        self.assertIn("performance", result)
+        self.assertEqual(result["stats"]["processed"], 2)
+        self.assertEqual(result["stats"]["merged"], 1)
+        self.assertEqual(result["stats"]["flagged"], 1)
 
         mock_optimize.assert_called_once()
         mock_get_pairs.assert_called_once_with(10)
         mock_process.assert_called_once()
 
-    @patch('leadfactory.pipeline.dedupe_performance.get_potential_duplicate_pairs')
-    @patch('leadfactory.pipeline.dedupe_performance.load_dedupe_config')
-    @patch.object(OptimizedDeduplicator, 'optimize_database_indexes')
-    @patch.object(OptimizedDeduplicator, 'process_pairs_parallel')
+    @patch("leadfactory.pipeline.dedupe_performance.get_potential_duplicate_pairs")
+    @patch("leadfactory.pipeline.dedupe_performance.load_dedupe_config")
+    @patch.object(OptimizedDeduplicator, "optimize_database_indexes")
+    @patch.object(OptimizedDeduplicator, "process_pairs_parallel")
     def test_run_optimized_deduplication_parallel(self, mock_process, mock_optimize, mock_config, mock_get_pairs):
         """Test optimized deduplication with parallel processing."""
         # Setup mocks
         mock_config.return_value = dedupe_performance.DedupeConfig()
-        mock_get_pairs.return_value = [{'business1_id': i, 'business2_id': i+1} for i in range(1, 101)]  # 100 pairs
+        mock_get_pairs.return_value = [{"business1_id": i, "business2_id": i+1} for i in range(1, 101)]  # 100 pairs
         mock_optimize.return_value = True
-        mock_process.return_value = {'processed': 100, 'merged': 50, 'flagged': 50, 'errors': 0}
+        mock_process.return_value = {"processed": 100, "merged": 50, "flagged": 50, "errors": 0}
 
         result = run_optimized_deduplication(use_parallel=True)
 
-        self.assertIn('stats', result)
-        self.assertIn('performance', result)
-        self.assertEqual(result['stats']['processed'], 100)
+        self.assertIn("stats", result)
+        self.assertIn("performance", result)
+        self.assertEqual(result["stats"]["processed"], 100)
 
         mock_process.assert_called_once()  # Should use parallel processing for 100+ pairs
 
