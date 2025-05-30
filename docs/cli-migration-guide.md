@@ -17,6 +17,8 @@ python3 -m leadfactory.cli.main [OPTIONS] COMMAND [ARGS]...
 - `python3 -m leadfactory.cli.main pipeline scrape` - Scrape business listings
 - `python3 -m leadfactory.cli.main pipeline enrich` - Enrich business data
 - `python3 -m leadfactory.cli.main pipeline dedupe` - Deduplicate business records
+- `python3 -m leadfactory.cli.main pipeline score` - Score businesses using configurable rules
+- `python3 -m leadfactory.cli.main pipeline mockup` - Generate AI-powered website mockups
 - `python3 -m leadfactory.cli.main pipeline email` - Send emails
 
 #### Administrative Operations
@@ -38,6 +40,8 @@ python3 -m leadfactory.cli.main [OPTIONS] COMMAND [ARGS]...
 | `python3 bin/scrape.py` | `python3 -m leadfactory.cli.main pipeline scrape` |
 | `python3 bin/enrich.py` | `python3 -m leadfactory.cli.main pipeline enrich` |
 | `python3 bin/dedupe.py` | `python3 -m leadfactory.cli.main pipeline dedupe` |
+| `python3 bin/score.py` | `python3 -m leadfactory.cli.main pipeline score` |
+| `python3 bin/mockup.py` | `python3 -m leadfactory.cli.main pipeline mockup` |
 | `python3 bin/email_queue.py` | `python3 -m leadfactory.cli.main pipeline email` |
 
 ### Parameter Mapping
@@ -57,6 +61,14 @@ python3 -m leadfactory.cli.main [OPTIONS] COMMAND [ARGS]...
 #### Email Command
 - Legacy: `python3 bin/email_queue.py --limit 25 --business_id 456 --force`
 - New: `python3 -m leadfactory.cli.main pipeline email --limit 25 --id 456 --force`
+
+#### Score Command
+- Legacy: `python3 bin/score.py --limit 50 --id 123`
+- New: `python3 -m leadfactory.cli.main pipeline score --limit 50 --business-id 123`
+
+#### Mockup Command
+- Legacy: `python3 bin/mockup.py --limit 10 --id 456`
+- New: `python3 -m leadfactory.cli.main pipeline mockup --business-id 456 --output ./mockups --tier premium`
 
 ## Backward Compatibility
 

@@ -184,6 +184,8 @@ python3 -m leadfactory.cli.main --help
 python3 -m leadfactory.cli.main pipeline scrape --limit 5
 python3 -m leadfactory.cli.main pipeline enrich --limit 10
 python3 -m leadfactory.cli.main pipeline dedupe --limit 100
+python3 -m leadfactory.cli.main pipeline score --limit 50
+python3 -m leadfactory.cli.main pipeline mockup --id 123
 python3 -m leadfactory.cli.main pipeline email --limit 5
 
 # Administrative operations
