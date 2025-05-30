@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 
 # Read requirements.txt
 requirements_path = Path(__file__).parent / "requirements" / "requirements.txt"
-with open(requirements_path) as f:
+with open(requirements_path, "r") as f:
     # Filter out comments and empty lines, and normalize version constraints
     install_requires = []
     for line in f:
@@ -20,7 +20,7 @@ with open(requirements_path) as f:
 long_description = ""
 readme_path = Path(__file__).parent / "README.md"
 if readme_path.exists():
-    with open(readme_path) as f:
+    with open(readme_path, "r") as f:
         long_description = f.read()
 
 setup(

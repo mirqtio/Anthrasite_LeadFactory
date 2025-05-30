@@ -11,10 +11,10 @@ from datetime import datetime
 
 def clean_tasks():
     # Read the current tasks.json
-    with open("tasks/tasks.json") as f:
+    with open("tasks/tasks.json", "r") as f:
         data = json.load(f)
 
-    len(data["tasks"])
+    original_count = len(data["tasks"])
 
     # Filter out auto-generated maintenance tasks
     cleaned_tasks = []
@@ -50,6 +50,12 @@ def clean_tasks():
     # Write the cleaned version
     with open("tasks/tasks.json", "w") as f:
         json.dump(data, f, indent=2)
+
+    print(f"Cleaned tasks.json:")
+    print(f"- Original tasks: {original_count}")
+    print(f"- Cleaned tasks: {len(cleaned_tasks)}")
+    print(f"- Removed: {original_count - len(cleaned_tasks)}")
+    print(f"- Backup saved to: {backup_path}")
 
     # Remove old task files
     for i in range(1, 274):

@@ -2385,6 +2385,477 @@
           "last_updated": "2025-05-29T22:47:34.764Z"
         }
       ]
+    },
+    {
+      "id": 16,
+      "title": "Add CLI Commands for Score and Mockup Pipeline Stages",
+      "description": "Implement CLI commands for the score and mockup pipeline stages in leadfactory/cli/commands/pipeline_commands.py, following the established pattern of existing commands like scrape, enrich, dedupe, and email.",
+      "details": "Implement CLI commands for score and mockup pipeline stages with the following requirements:\n\n1. Add new commands to leadfactory/cli/commands/pipeline_commands.py:\n   - Create a `score` command that executes the scoring pipeline stage\n   - Create a `mockup` command that executes the mockup generation pipeline stage\n\n2. Follow the established pattern of existing commands:\n   - Use consistent argument structure (input/output directories, configuration options)\n   - Implement proper error handling and logging\n   - Include help text and documentation for each command\n   - Ensure backward compatibility with legacy bin scripts\n\n3. Implementation details for score command:\n   - Add command that processes lead data through scoring rules\n   - Include options for scoring threshold configuration\n   - Implement progress reporting during execution\n   - Add support for different scoring models/configurations\n\n4. Implementation details for mockup command:\n   - Add command that generates visual mockups for qualified leads\n   - Include options for mockup template selection\n   - Add support for customizing mockup parameters\n   - Ensure proper integration with Supabase for image storage\n\n5. Refactor any shared functionality from legacy bin scripts into reusable modules\n   - Extract common validation logic\n   - Create helper functions for repeated operations\n   - Ensure consistent error handling across commands\n\n6. Update documentation to reflect the new CLI commands:\n   - Update README.md with command usage examples\n   - Add detailed command help text\n   - Document all command options and arguments\n\n7. Ensure the commands integrate properly with the existing pipeline validation framework",
+      "testStrategy": "1. Unit Tests:\n   - Create unit tests for each new command in tests/cli/commands/test_pipeline_commands.py\n   - Test argument parsing and validation for both commands\n   - Mock dependencies to test command execution paths\n   - Test error handling and edge cases\n\n2. Integration Tests:\n   - Create integration tests that verify the commands work with actual pipeline data\n   - Test the score command with sample lead data and verify scoring results\n   - Test the mockup command with scored leads and verify mockup generation\n   - Verify proper integration with Supabase for mockup storage\n\n3. End-to-End Tests:\n   - Create an end-to-end test that runs a complete pipeline including the new commands\n   - Verify that the commands can be chained together in sequence\n   - Test with realistic data sets to ensure performance and reliability\n\n4. Manual Testing:\n   - Execute the commands with various arguments and configurations\n   - Verify help text and documentation accuracy\n   - Test backward compatibility with workflows that used legacy bin scripts\n\n5. Regression Testing:\n   - Ensure existing pipeline commands continue to function correctly\n   - Verify that pipeline validation still works with the new commands\n   - Check that the overall CLI framework remains stable\n\n6. Documentation Verification:\n   - Verify that README.md and help text accurately describe the new commands\n   - Ensure examples in documentation work as expected",
+      "status": "in-progress",
+      "dependencies": [
+        4,
+        5
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement 'score' CLI command",
+          "description": "Create the CLI command for the 'score' pipeline stage following the existing command structure pattern",
+          "dependencies": [],
+          "details": "Develop the 'score' command with appropriate arguments, options, and help text. Ensure it properly interfaces with the scoring functionality in the pipeline. Include error handling and validation of inputs. Follow the existing CLI command patterns for consistency.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement 'mockup' CLI command",
+          "description": "Create the CLI command for the 'mockup' pipeline stage following the existing command structure pattern",
+          "dependencies": [],
+          "details": "Develop the 'mockup' command with appropriate arguments, options, and help text. Ensure it properly interfaces with the mockup generation functionality in the pipeline. Include error handling and validation of inputs. Follow the existing CLI command patterns for consistency.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Write tests for new CLI commands",
+          "description": "Create comprehensive tests for both the 'score' and 'mockup' CLI commands",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Develop unit tests to verify command registration, argument parsing, option handling, and integration with pipeline components. Include tests for error cases and edge conditions. Ensure test coverage meets project standards. Update any existing test suites that might be affected by the new commands.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Update documentation for new CLI commands",
+          "description": "Document the new 'score' and 'mockup' commands in the project documentation",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Update user guides, README files, and help text to include information about the new commands. Include examples of usage, available options, and expected outputs. Ensure the documentation follows the project's documentation standards and style. Update any command overview sections to include the new pipeline stages.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Implement Tier-Based Processing Logic for Enrich and Mockup Stages",
+      "description": "Enhance the pipeline to properly implement the tier-based processing logic for enrich and mockup stages, supporting three distinct tiers with different API calls as specified in section 2 of the requirements.",
+      "details": "Implement the tier-based processing logic with the following components:\n\n1. Tier Configuration Implementation:\n   - Update the configuration system to properly handle the three tiers:\n     - Tier-1: Basic scraping only\n     - Tier-2: Basic scraping + ScreenshotOne + PageSpeed API integration\n     - Tier-3: All Tier-2 features + SEMrush Site Audit integration\n\n2. Enrich Stage Modifications:\n   - Refactor the enrich stage in the pipeline to check the tier parameter\n   - Implement conditional logic to execute different API calls based on tier level\n   - For Tier-1: Execute only basic scraping functionality\n   - For Tier-2: Add ScreenshotOne and PageSpeed API calls\n   - For Tier-3: Include all Tier-2 functionality plus SEMrush Site Audit API integration\n   - Ensure proper error handling for each API integration\n\n3. Mockup Stage Modifications:\n   - Update the mockup generation stage to incorporate tier-specific data\n   - Create different mockup templates or sections based on available data from each tier\n   - Ensure mockups reflect the appropriate level of detail based on the tier\n   - Implement fallback mechanisms for missing data in lower tiers\n\n4. API Integration:\n   - Ensure all required API clients are properly configured\n   - Implement rate limiting and error handling for external API calls\n   - Add caching mechanisms to prevent redundant API calls\n   - Include proper logging for API responses and errors\n\n5. Pipeline Flow Control:\n   - Update the pipeline validator to verify tier parameter validity\n   - Ensure the tier parameter is properly passed between pipeline stages\n   - Add appropriate logging to track which tier is being processed\n\n6. Documentation:\n   - Update user documentation to explain the tier system and its capabilities\n   - Document the specific API calls and data available in each tier\n   - Include examples of how to specify the tier parameter in API calls",
+      "testStrategy": "Implement a comprehensive testing strategy to verify the tier-based processing logic:\n\n1. Unit Tests:\n   - Create unit tests for each tier level in both enrich and mockup stages\n   - Test the conditional logic that determines which API calls to make based on tier\n   - Verify that the appropriate APIs are called for each tier level\n   - Test error handling for API failures at each tier level\n   - Mock external API responses to simulate different scenarios\n\n2. Integration Tests:\n   - Create end-to-end tests that process sample leads through the pipeline with different tier parameters\n   - Verify that the correct data is collected and processed for each tier\n   - Test the complete pipeline flow with each tier setting\n   - Ensure proper data propagation between stages with different tier settings\n\n3. API Mock Tests:\n   - Create mock responses for ScreenshotOne, PageSpeed, and SEMrush APIs\n   - Test the system's handling of various API response scenarios\n   - Verify proper error handling when APIs return errors or unexpected data\n\n4. Performance Testing:\n   - Measure and compare processing times for different tiers\n   - Ensure higher tiers don't significantly impact performance for lower tier processing\n   - Test with batch processing to ensure scalability across tiers\n\n5. Manual Verification:\n   - Manually verify the mockups generated for each tier\n   - Compare the data enrichment results across tiers\n   - Ensure the visual differences in mockups accurately reflect the tier differences\n\n6. Documentation Testing:\n   - Verify that the API documentation correctly describes the tier parameter\n   - Test examples provided in the documentation to ensure they work as described",
+      "status": "pending",
+      "dependencies": [
+        5,
+        16
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design tier configuration schema",
+          "description": "Create a configuration schema that defines different processing tiers with their respective parameters, limits, and capabilities.",
+          "dependencies": [],
+          "details": "Define a JSON schema for tier configuration that includes tier levels (e.g., basic, standard, premium), rate limits, feature flags, and API access permissions. Ensure the schema is extensible for future tier additions. Include validation rules for configuration integrity.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement conditional API call logic",
+          "description": "Develop the core logic that determines which API endpoints to call based on the user's tier level.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a service layer that intercepts API requests, checks the user's tier from the configuration, and routes to appropriate endpoints or applies necessary limitations. Implement graceful degradation for lower tiers and enhanced capabilities for higher tiers. Include error handling for tier-specific failures.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Update mockup templates for tier-specific UI elements",
+          "description": "Modify UI templates to display different features and options based on the user's subscription tier.",
+          "dependencies": [
+            1
+          ],
+          "details": "Update existing mockup templates to include conditional rendering logic for tier-specific features. Create visual indicators for premium features that are unavailable in lower tiers. Design upgrade prompts that appear when users attempt to access higher-tier features.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Develop comprehensive testing strategy for tier-based processing",
+          "description": "Create test cases and automation scripts to verify the correct behavior of the system across different tier levels.",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Develop unit tests for tier configuration validation. Create integration tests that verify correct API routing based on tier levels. Implement end-to-end tests simulating users in different tiers attempting various operations. Include performance testing to ensure tier-based throttling works as expected.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Create documentation for tier-based system",
+          "description": "Develop comprehensive documentation for developers, administrators, and end-users explaining the tier-based processing system.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Create developer documentation explaining how to implement tier-aware features. Write administrator guides for configuring and managing tiers. Develop end-user documentation explaining tier benefits and limitations. Include troubleshooting guides for common tier-related issues and update API documentation to reflect tier-specific endpoints and parameters.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Implement A/B Testing Support for Email Variants",
+      "description": "Implement a complete A/B testing system for email variants as specified in section 2 of the requirements, utilizing the existing variant_id field in the email_queue table to support variant selection, tracking, and reporting.",
+      "details": "Implement a comprehensive A/B testing system for email variants with the following components:\n\n1. Variant Selection Mechanism:\n   - Create a `VariantSelector` class that implements logic for assigning leads to different email variants\n   - Implement configurable distribution strategies (equal split, percentage-based, etc.)\n   - Add support for multiple variants (A/B/n testing) beyond just two options\n   - Ensure deterministic variant assignment for consistent user experiences\n   - Integrate with the existing email_queue table's variant_id field\n\n2. Email Template Variant Management:\n   - Extend the email template system to support multiple variants per template\n   - Implement a versioning system for tracking template variants\n   - Create an interface for managing variant content (subject lines, body content, CTAs)\n   - Ensure backward compatibility with existing email templates\n\n3. Tracking Implementation:\n   - Add tracking parameters to email links to identify variants\n   - Implement event tracking for opens, clicks, and conversions per variant\n   - Create a data storage schema for variant performance metrics\n   - Implement aggregation logic for real-time and historical performance data\n\n4. Reporting System:\n   - Develop a reporting API for variant performance metrics\n   - Implement statistical significance calculations for variant comparison\n   - Create visualization components for performance comparison\n   - Add export functionality for variant performance data\n   - Implement automated winner selection based on configurable metrics\n\n5. Integration with Existing Systems:\n   - Modify the email sending pipeline to incorporate variant selection\n   - Update the email queue processing to handle variant-specific content\n   - Integrate with analytics systems for comprehensive performance tracking\n   - Ensure proper handling of variant data throughout the lead processing pipeline\n\n6. Configuration and Management:\n   - Create a configuration interface for defining test parameters\n   - Implement test duration controls and automatic completion\n   - Add manual override capabilities for test management\n   - Implement safeguards against invalid configurations\n\nThe implementation should follow best practices for A/B testing, including proper randomization, statistical validity, and isolation of variables.",
+      "testStrategy": "Verify the A/B testing implementation with the following test strategy:\n\n1. Unit Tests:\n   - Test the `VariantSelector` class with various distribution configurations\n   - Verify deterministic variant assignment for consistent user experiences\n   - Test template variant rendering with different content variations\n   - Validate tracking parameter generation and parsing\n   - Test statistical significance calculations with known datasets\n\n2. Integration Tests:\n   - Verify end-to-end flow from variant selection through email sending\n   - Test tracking data collection from email interactions\n   - Validate reporting API with simulated variant performance data\n   - Test integration with the email queue processing system\n   - Verify proper handling of variant_id throughout the pipeline\n\n3. Performance Tests:\n   - Benchmark variant selection performance under high load\n   - Test reporting system with large datasets\n   - Verify tracking system can handle concurrent events\n\n4. Functional Tests:\n   - Create test campaigns with multiple variants and verify correct distribution\n   - Validate that tracking correctly attributes actions to specific variants\n   - Test the reporting interface with real campaign data\n   - Verify that statistical calculations correctly identify winning variants\n   - Test automatic winner selection based on different metrics\n\n5. Regression Tests:\n   - Ensure existing email functionality works with variant testing enabled\n   - Verify backward compatibility with non-variant email templates\n   - Test that existing analytics are not affected by the new tracking\n\n6. User Acceptance Tests:\n   - Create a test campaign with marketing team to validate usability\n   - Verify that reporting provides actionable insights\n   - Test the configuration interface for ease of use\n\nDocument all test cases and results in the project wiki, including screenshots of the reporting interface and example variant performance data.",
+      "status": "pending",
+      "dependencies": [
+        3,
+        12,
+        13
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement variant selection mechanism",
+          "description": "Create a system that randomly assigns users to different email variants based on predefined distribution rules",
+          "dependencies": [],
+          "details": "Develop a statistically sound randomization algorithm that ensures even distribution across variants. Include support for weighted distributions, cohort-based assignments, and persistent user assignments. Implement safeguards to prevent bias in selection. Create unit tests to verify distribution accuracy.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Build template management system",
+          "description": "Create a system to manage multiple variants of email templates with version control",
+          "dependencies": [],
+          "details": "Design a template storage structure that supports multiple variants of the same email type. Implement version control for templates. Create an interface for previewing variants side by side. Add validation to ensure all variants contain required placeholders and meet deliverability standards.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Implement tracking and analytics",
+          "description": "Add tracking capabilities to measure performance metrics for each email variant",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement unique tracking identifiers for each variant. Track open rates, click rates, conversion rates, and other relevant metrics. Create a data storage solution optimized for quick retrieval and analysis. Ensure proper user privacy compliance in tracking implementation.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Develop reporting system",
+          "description": "Create a dashboard to visualize A/B test results with statistical significance indicators",
+          "dependencies": [
+            3
+          ],
+          "details": "Build visualizations for key metrics comparing variants. Implement statistical significance calculations with confidence intervals. Create exportable reports for stakeholders. Include recommendations based on test results. Design filters for viewing results by time period, user segment, and other relevant dimensions.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Integrate with existing email pipeline",
+          "description": "Modify the current email sending system to incorporate the A/B testing functionality",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Update the email generation process to select appropriate variants. Modify sending logic to track variant information. Ensure backward compatibility with existing email templates. Add error handling for variant selection failures. Create integration tests to verify end-to-end functionality.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Build configuration interface",
+          "description": "Create a user interface for setting up and managing A/B tests",
+          "dependencies": [
+            2,
+            5
+          ],
+          "details": "Design an interface for creating new tests, defining variants, setting distribution rules, and scheduling test duration. Implement validation for test parameters. Create preview functionality for variants. Add capabilities for pausing, resuming, or stopping tests. Include permissions management for test creation and analysis.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Implement LLM Fallback Mechanism",
+      "description": "Implement a robust fallback mechanism for LLM failures that uses GPT-4o as default and Claude as fallback on rate-limit or cost spike, with pipeline pausing if both hosted LLMs are unavailable.",
+      "details": "Implement a comprehensive LLM fallback mechanism with the following components:\n\n1. LLM Provider Abstraction Layer:\n   - Create an abstract `LLMProvider` interface that standardizes interactions with different LLM services\n   - Implement concrete provider classes for GPT-4o and Claude that conform to this interface\n   - Ensure consistent input/output handling across providers to maintain compatibility\n\n2. Fallback Strategy Implementation:\n   - Develop a `FallbackManager` class that orchestrates LLM provider selection and fallback logic\n   - Implement primary provider (GPT-4o) as default with configurable retry attempts\n   - Add detection for rate-limit errors and cost threshold breaches\n   - Implement automatic fallback to secondary provider (Claude) when primary fails\n   - Add pipeline pause mechanism when both providers are unavailable\n   - Include configurable timeout periods before retrying failed providers\n\n3. Cost Monitoring System:\n   - Implement real-time cost tracking for LLM API calls\n   - Create configurable cost thresholds that trigger fallback when exceeded\n   - Add daily/monthly budget limits with appropriate alerts\n   - Store cost metrics in database for analysis and reporting\n\n4. Health Check and Status Monitoring:\n   - Implement periodic health checks for LLM providers\n   - Create a status dashboard for monitoring provider availability\n   - Add logging for all provider transitions and failure events\n   - Implement alerting for extended provider outages\n\n5. Configuration Management:\n   - Create YAML configuration for fallback settings (retry attempts, timeouts, cost thresholds)\n   - Implement dynamic configuration updates without service restart\n   - Add environment-specific default configurations (dev, staging, production)\n\n6. Integration with Existing Pipeline:\n   - Refactor current LLM call points to use the new fallback system\n   - Ensure backward compatibility with existing code\n   - Add appropriate error handling and recovery mechanisms\n   - Implement graceful degradation for non-critical LLM features\n\n7. Performance Optimization:\n   - Implement request caching to reduce duplicate API calls\n   - Add request batching where appropriate to optimize costs\n   - Implement asynchronous processing for non-blocking operations\n\nCode structure example:\n```python\n# Abstract provider interface\nclass LLMProvider(ABC):\n    @abstractmethod\n    async def generate_response(self, prompt, parameters):\n        pass\n    \n    @abstractmethod\n    async def check_health(self):\n        pass\n\n# Concrete implementations\nclass GPT4oProvider(LLMProvider):\n    # Implementation for OpenAI's GPT-4o\n    \nclass ClaudeProvider(LLMProvider):\n    # Implementation for Anthropic's Claude\n\n# Fallback manager\nclass FallbackManager:\n    def __init__(self, config):\n        self.providers = self._initialize_providers(config)\n        self.cost_tracker = CostTracker()\n        # Additional initialization\n    \n    async def execute_with_fallback(self, prompt, parameters):\n        # Fallback logic implementation\n        \n    def _should_fallback(self, provider, error):\n        # Logic to determine if fallback should occur\n        \n    def pause_pipeline(self):\n        # Logic to pause pipeline when all providers fail\n```",
+      "testStrategy": "Implement a comprehensive testing strategy to verify the LLM fallback mechanism:\n\n1. Unit Tests:\n   - Test each LLM provider implementation in isolation with mocked API responses\n   - Verify the FallbackManager correctly handles different error scenarios (rate limits, timeouts, cost thresholds)\n   - Test cost tracking functionality with simulated API usage\n   - Verify pipeline pause mechanism activates when all providers are unavailable\n   - Test configuration loading and validation with various input scenarios\n\n2. Integration Tests:\n   - Create end-to-end tests that verify the complete fallback flow\n   - Test actual API interactions with sandbox/test accounts for both providers\n   - Verify correct provider selection based on availability and cost constraints\n   - Test the system's behavior when transitioning between providers\n   - Verify logging and monitoring systems capture all relevant events\n\n3. Failure Scenario Testing:\n   - Simulate rate limiting by making rapid API calls to trigger provider restrictions\n   - Test cost threshold breaches by simulating high-volume, high-token requests\n   - Simulate complete provider outages and verify pipeline pause behavior\n   - Test recovery scenarios when providers become available again\n   - Verify proper error messages and alerts are generated for each failure type\n\n4. Performance Testing:\n   - Measure response time differences between primary and fallback providers\n   - Test system behavior under high concurrency with multiple simultaneous requests\n   - Verify caching mechanisms reduce duplicate API calls\n   - Measure cost efficiency improvements from batching optimizations\n\n5. Manual Verification:\n   - Create a test dashboard to manually trigger different failure scenarios\n   - Verify the system's behavior matches the expected fallback sequence\n   - Test the admin interface for monitoring provider status\n   - Verify alerts and notifications are properly delivered\n\n6. Regression Testing:\n   - Ensure existing pipeline functionality continues to work with the new fallback system\n   - Verify no performance degradation in normal operation scenarios\n   - Test backward compatibility with existing code that uses LLM services\n\n7. Acceptance Criteria:\n   - System automatically falls back to Claude when GPT-4o encounters rate limits or cost spikes\n   - Pipeline pauses when both providers are unavailable\n   - All fallback events are properly logged with detailed error information\n   - Cost tracking accurately monitors usage across providers\n   - Configuration changes take effect without requiring service restart\n   - System recovers automatically when providers become available again",
+      "status": "pending",
+      "dependencies": [
+        5,
+        9,
+        13,
+        17
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design Provider Abstraction Layer",
+          "description": "Create a unified interface for interacting with different LLM providers",
+          "dependencies": [],
+          "details": "Develop an abstraction layer that standardizes interactions with different LLM providers (OpenAI, Anthropic, etc.). Include methods for sending prompts, handling responses, and managing provider-specific parameters. Ensure the interface is consistent regardless of the underlying provider.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement Fallback Strategy Logic",
+          "description": "Develop the core fallback mechanism to switch between providers",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a fallback orchestrator that can detect failures from the primary LLM provider and seamlessly switch to backup providers. Implement retry logic, timeout handling, and error classification to determine when fallback should be triggered. Design the system to maintain context and state during provider transitions.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Build Cost Monitoring System",
+          "description": "Implement tracking and reporting of usage costs across providers",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop a system to track API usage costs across all LLM providers. Include real-time cost calculation, budget thresholds, usage reporting, and alerting mechanisms. Ensure the system can inform fallback decisions based on cost considerations and provide detailed cost analytics.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Create Provider Health Check System",
+          "description": "Implement proactive monitoring of LLM provider availability and performance",
+          "dependencies": [
+            1
+          ],
+          "details": "Build a health check system that regularly tests each LLM provider's availability, response time, and quality. Implement circuit breaker patterns to temporarily disable underperforming providers. Create dashboards for monitoring provider health metrics and configure automated alerts for degraded performance.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Develop Configuration Management",
+          "description": "Create a flexible configuration system for fallback preferences and provider settings",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implement a configuration management system that allows defining provider preferences, fallback order, retry policies, and provider-specific settings. Support both static configuration files and dynamic runtime configuration updates. Include validation logic to ensure configurations are valid.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Integrate with Existing Pipeline Components",
+          "description": "Connect the fallback mechanism with the current LLM processing pipeline",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "details": "Integrate the fallback system with existing pipeline components. Ensure that prompt preprocessing, response postprocessing, and other pipeline stages work seamlessly with the fallback mechanism. Update logging, monitoring, and analytics systems to track fallback events and their impact on overall system performance.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Implement MOCKUP_ENABLED Flag and Tier-Based Mockup Generation",
+      "description": "Implement the MOCKUP_ENABLED configuration flag to control mockup generation based on tier levels, ensuring mockups are only generated for Tier-2 and Tier-3 leads as specified in sections 2 and 5 of the requirements.",
+      "details": "Implement a comprehensive tier-based mockup generation system with the following components:\n\n1. Configuration Flag Implementation:\n   - Add a new `MOCKUP_ENABLED` boolean flag to the system configuration\n   - Set default value to `False` for Tier-1 processing\n   - Set default value to `True` for Tier-2 and Tier-3 processing\n   - Implement configuration override capability for testing purposes\n\n2. Tier-Based Logic Integration:\n   - Modify the mockup generation pipeline to check both tier level and the MOCKUP_ENABLED flag\n   - Implement conditional logic to skip mockup generation for Tier-1 leads\n   - Ensure mockup generation proceeds for Tier-2 and Tier-3 leads when flag is enabled\n   - Add appropriate logging for skipped mockups with reason (tier level)\n\n3. Mockup Generator Enhancements:\n   - Update the mockup generator class to be tier-aware\n   - Implement tier-specific mockup templates or parameters if specified in requirements\n   - Add validation to prevent mockup generation attempts for inappropriate tiers\n   - Ensure resource efficiency by early-terminating mockup requests for Tier-1\n\n4. CLI Integration:\n   - Update the mockup CLI command to respect the MOCKUP_ENABLED flag\n   - Add a command-line override option (--force-mockup) for testing purposes\n   - Ensure CLI help documentation clearly explains the tier-based behavior\n\n5. Documentation Updates:\n   - Update developer documentation to explain the MOCKUP_ENABLED flag behavior\n   - Document the tier-based mockup generation rules\n   - Add examples of configuration for different environments\n\n6. Migration Plan:\n   - Implement backward compatibility to prevent breaking existing pipelines\n   - Add appropriate warnings for deprecated usage patterns\n   - Provide migration guide for updating existing code",
+      "testStrategy": "1. Unit Testing:\n   - Create unit tests for the MOCKUP_ENABLED flag in different configuration scenarios\n   - Test mockup generation with various combinations of tier levels and flag settings\n   - Verify that Tier-1 leads never generate mockups unless explicitly forced\n   - Verify that Tier-2 and Tier-3 leads generate mockups when the flag is enabled\n   - Test the --force-mockup CLI override functionality\n\n2. Integration Testing:\n   - Run end-to-end pipeline tests with different tier configurations\n   - Verify that the complete pipeline correctly handles the mockup generation rules\n   - Test database records to confirm mockup data is only present for appropriate tiers\n   - Verify that skipped mockups are properly logged with the correct reason\n\n3. Configuration Testing:\n   - Test configuration file loading with different MOCKUP_ENABLED settings\n   - Verify environment variable overrides work correctly\n   - Test configuration inheritance and precedence rules\n\n4. Performance Testing:\n   - Measure and compare pipeline performance with and without mockup generation\n   - Verify resource usage is appropriately reduced when mockups are skipped\n   - Test with large batches of mixed-tier leads to ensure correct behavior at scale\n\n5. Regression Testing:\n   - Verify that existing functionality continues to work with the new flag\n   - Ensure backward compatibility with existing code and configurations\n   - Check that no unintended side effects occur in related systems\n\n6. Documentation Verification:\n   - Review updated documentation for clarity and completeness\n   - Verify examples match the implemented behavior\n   - Ensure migration guidelines are accurate and comprehensive",
+      "status": "pending",
+      "dependencies": [
+        16,
+        17
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement MOCKUP_ENABLED configuration flag",
+          "description": "Add the MOCKUP_ENABLED flag to the configuration system to allow users to toggle mockup generation on/off globally.",
+          "dependencies": [],
+          "details": "Update the configuration module to include a new boolean flag MOCKUP_ENABLED that defaults to true. Ensure this flag is properly loaded from environment variables and config files. Add validation logic to ensure the flag is properly typed as a boolean.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement tier-based conditional mockup generation",
+          "description": "Modify the existing tier system to conditionally generate mockups based on the MOCKUP_ENABLED flag and tier settings.",
+          "dependencies": [
+            1
+          ],
+          "details": "Update the tier processing logic to check the MOCKUP_ENABLED flag before generating mockups. Implement tier-specific mockup settings that allow different tiers to have different mockup behaviors. Ensure backward compatibility with existing tier configurations.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Add CLI options for mockup control",
+          "description": "Extend the CLI interface to allow users to override the MOCKUP_ENABLED setting and control tier-based mockup generation.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Add a new command-line flag (--mockup or --no-mockup) to override the configuration setting. Update the CLI help documentation to explain the new options. Ensure the CLI options properly integrate with the configuration system.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Create documentation and tests for mockup configuration",
+          "description": "Document the new mockup configuration options and create tests to verify the functionality works as expected.",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Update user documentation to explain the MOCKUP_ENABLED flag and tier-based mockup settings. Create unit tests that verify mockups are generated or skipped based on configuration. Add integration tests that verify the CLI options work correctly. Document any migration steps for existing users.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Implement Automatic IP Pool Switching on Bounce Threshold",
+      "description": "Implement an automated mechanism to switch to a dedicated sub-user IP pool when bounce rates exceed 2%, as specified in section 2 of the requirements, replacing the current manual SendGrid configuration process.",
+      "details": "Implement a comprehensive automatic IP pool switching system with the following components:\n\n1. Bounce Rate Monitoring:\n   - Create a `BounceRateMonitor` class that interfaces with SendGrid API to retrieve bounce statistics\n   - Implement scheduled jobs to check bounce rates at regular intervals (hourly by default)\n   - Calculate rolling 24-hour bounce rate percentage for each IP pool/sub-user\n   - Add configurable threshold setting (default 2% per spec section 2)\n   - Implement proper error handling for API failures with retry logic\n\n2. IP Pool Management:\n   - Create an `IPPoolManager` class to handle IP pool switching operations\n   - Implement methods to retrieve available IP pools and their current status\n   - Add capability to switch active sending IP pool programmatically\n   - Implement cooldown period for previously high-bounce IP pools (default 72 hours)\n   - Add rotation strategy to ensure even distribution when multiple backup pools are available\n\n3. Notification System:\n   - Implement real-time alerts when bounce thresholds are approached (80% of threshold)\n   - Send critical notifications when automatic switching occurs\n   - Log all IP pool changes with timestamp, reason, and before/after state\n   - Create a dashboard component to display current and historical bounce rates\n\n4. Configuration Interface:\n   - Add new configuration parameters to settings:\n     - `BOUNCE_RATE_THRESHOLD`: Configurable bounce rate threshold (default 2.0)\n     - `BOUNCE_CHECK_INTERVAL`: Frequency of bounce rate checks (default 60 minutes)\n     - `IP_POOL_COOLDOWN_PERIOD`: Hours before a switched pool can be used again (default 72)\n     - `AUTO_SWITCH_ENABLED`: Master toggle for the feature (default True)\n   - Implement admin interface to manually override automatic decisions if needed\n\n5. SendGrid Integration:\n   - Extend existing SendGrid connector to support the new IP pool switching functionality\n   - Implement proper authentication and authorization for the required SendGrid API endpoints\n   - Add rate limiting and backoff strategies to prevent API abuse\n   - Create abstraction layer to support other email providers in the future\n\n6. Database Schema Updates:\n   - Add new tables to track:\n     - IP pool status history\n     - Bounce rate metrics over time\n     - Switching events with reasons\n   - Implement data retention policies for historical metrics\n\n7. Failsafe Mechanisms:\n   - Implement circuit breaker pattern to prevent excessive switching\n   - Add fallback logic if all available IP pools exceed threshold\n   - Create emergency manual override capability for critical situations\n   - Implement dry-run mode for testing without affecting production sending",
+      "testStrategy": "Implement a comprehensive testing strategy with the following components:\n\n1. Unit Tests:\n   - Test the `BounceRateMonitor` class with mock SendGrid API responses\n   - Verify threshold calculation logic with various bounce rate scenarios\n   - Test IP pool switching logic with different configurations\n   - Validate cooldown period enforcement\n   - Test notification triggers at different threshold levels\n\n2. Integration Tests:\n   - Create a SendGrid API sandbox environment for testing\n   - Implement tests that verify the complete switching workflow\n   - Test the system's response to various API error conditions\n   - Verify database logging of switching events and metrics\n   - Test the notification system's integration with alerting channels\n\n3. Load and Performance Tests:\n   - Verify the system can handle checking multiple IP pools simultaneously\n   - Test performance under high email volume conditions\n   - Measure and optimize API call frequency to SendGrid\n\n4. Mocked Scenario Tests:\n   - Create simulated bounce rate scenarios to trigger switching\n   - Test edge cases like all pools exceeding threshold\n   - Verify behavior when SendGrid API is temporarily unavailable\n   - Test recovery after system downtime\n\n5. Manual Verification:\n   - Create a test plan for QA to verify the switching behavior\n   - Implement a SendGrid bounce simulation tool for manual testing\n   - Document expected behavior for various threshold configurations\n\n6. Monitoring Tests:\n   - Verify metrics are correctly recorded for monitoring\n   - Test dashboard displays with various data scenarios\n   - Validate alert generation and delivery\n\n7. Regression Tests:\n   - Ensure existing email sending functionality works correctly after implementation\n   - Verify no impact on other SendGrid-related features\n   - Test backward compatibility with existing configuration\n\n8. End-to-End Tests:\n   - Create a complete test workflow from bounce detection to IP switching\n   - Verify all system components interact correctly\n   - Test the full recovery cycle after a switching event",
+      "status": "pending",
+      "dependencies": [
+        2,
+        13
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement bounce rate monitoring system",
+          "description": "Create a system to track and calculate email bounce rates in real-time",
+          "dependencies": [],
+          "details": "Develop a service that collects email delivery data, calculates bounce rates per IP pool, and maintains historical metrics. Include functionality to set configurable thresholds for different bounce types (hard bounces, soft bounces). Implement a data storage solution for bounce statistics with appropriate retention policies.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Develop IP pool management module",
+          "description": "Create a module to handle IP pool switching logic and management",
+          "dependencies": [
+            1
+          ],
+          "details": "Build a component that can evaluate bounce rate data against thresholds, make intelligent decisions about when to switch IP pools, implement cooldown periods for problematic pools, and maintain a registry of available IP pools with their current status and health metrics. Include safeguards to prevent rapid switching and ensure graceful degradation.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Integrate with SendGrid API",
+          "description": "Implement the integration with SendGrid's API for IP pool operations",
+          "dependencies": [
+            2
+          ],
+          "details": "Create a service layer that interfaces with SendGrid's API to retrieve IP pool information, monitor delivery metrics, and execute IP pool switching commands. Implement proper error handling, rate limiting compliance, authentication management, and retry logic for API failures. Document all API endpoints used and their response handling.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Build notification system",
+          "description": "Develop a notification system for IP pool switching events and issues",
+          "dependencies": [
+            2
+          ],
+          "details": "Create a flexible notification system that alerts administrators about IP pool switches, high bounce rates, and system errors. Implement multiple notification channels (email, Slack, SMS) with configurable severity levels. Include detailed contextual information in notifications to aid troubleshooting and provide actionable insights.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Create configuration interface",
+          "description": "Develop a user interface for system configuration and monitoring",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Build a web-based interface that allows administrators to configure bounce rate thresholds, manage IP pools, view historical performance metrics, and adjust notification settings. Include dashboards for real-time monitoring, manual override capabilities for IP pool switching, and audit logs of all system actions and configuration changes.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Implement GPU Auto-Spin for Large Personalisation Queue",
+      "description": "Implement an automatic GPU provisioning mechanism that spins up Hetzner GPU instances when the personalisation queue exceeds 2000 items, as specified in section 2 of the requirements.",
+      "details": "Implement a comprehensive GPU auto-scaling system with the following components:\n\n1. Queue Monitoring Service:\n   - Create a dedicated service that monitors the personalisation_queue table size\n   - Implement configurable thresholds (default: 2000) for triggering GPU provisioning\n   - Set up periodic checks (every 5 minutes) to evaluate queue size\n   - Add logging for all threshold checks and provisioning decisions\n\n2. Hetzner API Integration:\n   - Implement a `HetznerGPUManager` class that handles all interactions with Hetzner's API\n   - Create methods for spinning up GPU instances with appropriate specifications\n   - Implement authentication and secure credential management\n   - Add proper error handling and retry logic for API failures\n   - Include methods for instance status checking and health monitoring\n\n3. Auto-Scaling Logic:\n   - Implement rules for determining the number of GPU instances needed based on queue size\n   - Create logic for graceful shutdown when queue size decreases below threshold\n   - Add cooldown periods to prevent rapid spin-up/spin-down cycles\n   - Implement cost optimization by selecting appropriate instance types\n\n4. System Integration:\n   - Connect the GPU provisioning system to the existing personalisation pipeline\n   - Modify the task distribution logic to utilize available GPU resources\n   - Implement load balancing across multiple GPU instances if needed\n   - Ensure the system falls back to CPU processing if GPU provisioning fails\n\n5. Monitoring and Alerting:\n   - Add metrics for GPU utilization, cost, and processing efficiency\n   - Implement alerts for failed provisioning attempts\n   - Create dashboards for visualizing GPU usage and queue processing rates\n   - Set up cost tracking and reporting\n\n6. Configuration Management:\n   - Add new configuration parameters for GPU auto-scaling in the system config\n   - Include options for threshold adjustment, instance types, and scaling limits\n   - Implement environment-specific configurations (dev, staging, production)\n   - Document all configuration options thoroughly\n\n7. Security Considerations:\n   - Ensure secure handling of Hetzner API credentials\n   - Implement proper network security for GPU instances\n   - Add access controls for GPU management functions\n   - Follow security best practices for cloud resource provisioning",
+      "testStrategy": "1. Unit Testing:\n   - Create unit tests for the `HetznerGPUManager` class using mocked API responses\n   - Test queue monitoring logic with various queue sizes above and below threshold\n   - Verify auto-scaling logic correctly determines instance counts\n   - Test error handling and retry mechanisms\n\n2. Integration Testing:\n   - Set up a test environment with a simulated personalisation queue\n   - Verify the system correctly detects when queue size exceeds threshold\n   - Confirm API calls to Hetzner are properly formatted and authenticated\n   - Test the complete flow from queue monitoring to GPU provisioning\n\n3. Performance Testing:\n   - Measure the impact of GPU processing on queue throughput\n   - Compare processing times with and without GPU acceleration\n   - Test system behavior under various queue growth rates\n   - Verify the system can handle multiple GPU instances efficiently\n\n4. Failure Mode Testing:\n   - Simulate API failures and verify proper error handling\n   - Test behavior when GPU instances fail to provision\n   - Verify fallback to CPU processing works correctly\n   - Confirm alerts are triggered appropriately for failures\n\n5. Cost Optimization Testing:\n   - Verify instances are shut down when no longer needed\n   - Test cooldown periods prevent unnecessary provisioning cycles\n   - Measure actual costs against expected costs\n   - Verify cost reporting is accurate\n\n6. Security Testing:\n   - Audit credential handling for potential vulnerabilities\n   - Verify network security configurations for GPU instances\n   - Test access controls for GPU management functions\n   - Ensure compliance with security policies\n\n7. End-to-End Testing:\n   - Create a test scenario with a rapidly growing personalisation queue\n   - Verify the entire system from queue growth to GPU provisioning works correctly\n   - Confirm personalisation tasks are processed efficiently on GPU\n   - Test the complete cycle including shutdown when queue is processed",
+      "status": "pending",
+      "dependencies": [
+        13,
+        19
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Queue Monitoring Service",
+          "description": "Develop a service to monitor job queues and detect when GPU resources are needed",
+          "dependencies": [],
+          "details": "Create a service that monitors the job queue depth and processing times. Implement thresholds for triggering scale-up events. Include metrics collection for queue length, job wait times, and resource utilization. Design the service to be fault-tolerant with proper error handling and logging.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Develop Hetzner API Integration",
+          "description": "Create a robust integration with Hetzner Cloud API for GPU provisioning and management",
+          "dependencies": [],
+          "details": "Implement authentication with Hetzner API. Create modules for server creation, deletion, status checking, and configuration. Build retry mechanisms for API failures. Implement rate limiting to avoid API throttling. Document all API endpoints used and their response handling.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Design Auto-scaling Logic",
+          "description": "Develop intelligent scaling algorithms for efficient GPU resource management",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implement rules for when to scale up (provision new GPUs) and scale down (decommission idle GPUs). Create cost optimization logic to select appropriate GPU types based on workload. Develop cooldown periods to prevent thrashing. Implement gradual scaling to avoid sudden resource changes. Include predictive scaling based on historical patterns if possible.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Integrate with Personalization Pipeline",
+          "description": "Connect auto-provisioning system with the existing personalization pipeline",
+          "dependencies": [
+            3
+          ],
+          "details": "Modify the personalization pipeline to utilize the auto-provisioned GPU resources. Implement job distribution logic to efficiently allocate tasks to available GPUs. Create fallback mechanisms for when auto-provisioning fails. Update pipeline configuration to be aware of dynamic resources. Test end-to-end workflow with various load scenarios.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Implement Monitoring and Alerting",
+          "description": "Set up comprehensive monitoring and alerting for the GPU auto-provisioning system",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Configure metrics collection for GPU utilization, provisioning times, costs, and system health. Set up dashboards to visualize system performance. Implement alerts for failures, unusual scaling events, and cost thresholds. Create detailed logging for troubleshooting. Develop regular reporting on resource usage and efficiency.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Implement Security Measures",
+          "description": "Ensure the auto-provisioning system follows security best practices",
+          "dependencies": [
+            2,
+            4
+          ],
+          "details": "Implement secure API key management for Hetzner credentials. Set up network security for provisioned GPUs including firewalls and access controls. Create secure channels for communication between components. Implement audit logging for all provisioning actions. Develop a security incident response plan for the auto-provisioning system.",
+          "status": "pending"
+        }
+      ]
     }
   ]
 }

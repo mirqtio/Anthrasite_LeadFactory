@@ -72,6 +72,8 @@ pipeline.add_command(pipeline_commands.scrape)
 pipeline.add_command(pipeline_commands.enrich)
 pipeline.add_command(pipeline_commands.dedupe)
 pipeline.add_command(pipeline_commands.email)
+pipeline.add_command(pipeline_commands.score)
+pipeline.add_command(pipeline_commands.mockup)
 
 admin.add_command(admin_commands.db_setup)
 admin.add_command(admin_commands.migrate)

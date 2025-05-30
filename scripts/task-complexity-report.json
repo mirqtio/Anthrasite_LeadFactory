@@ -1,12 +1,12 @@
 {
   "meta": {
-    "generatedAt": "2025-05-29T22:12:43.438Z",
-    "tasksAnalyzed": 1,
-    "totalTasks": 15,
-    "analysisCount": 30,
+    "generatedAt": "2025-05-30T18:06:04.145Z",
+    "tasksAnalyzed": 7,
+    "totalTasks": 22,
+    "analysisCount": 37,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
-    "usedResearch": false
+    "usedResearch": true
   },
   "complexityAnalysis": [
     {
@@ -248,6 +248,62 @@
       "recommendedSubtasks": 8,
       "expansionPrompt": "Break down the 'Implement Comprehensive Velocity Tracking System' task into 8 specific subtasks that cover data model changes, command implementation, reporting features, testing, and documentation. Each subtask should be independently implementable with clear acceptance criteria.",
       "reasoning": "This task involves multiple components including data model changes (timestamps), new command implementation (velocity), enhancing existing functionality, analytics development, testing across multiple dimensions, and documentation. The task requires both backend logic and user-facing features while maintaining backward compatibility. The complexity is significant but not extreme as it builds on an existing system with clear requirements."
+    },
+    {
+      "taskId": 16,
+      "taskTitle": "Add CLI Commands for Score and Mockup Pipeline Stages",
+      "complexityScore": 4,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the implementation of CLI commands for score and mockup pipeline stages into specific subtasks covering command implementation, documentation, testing, and integration with existing pipeline components.",
+      "reasoning": "This task involves extending existing CLI functionality with a well-established pattern. The requirements are clear and the implementation follows existing examples. The complexity is moderate as it requires understanding the existing command structure and ensuring proper integration with pipeline stages."
+    },
+    {
+      "taskId": 17,
+      "taskTitle": "Implement Tier-Based Processing Logic for Enrich and Mockup Stages",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the implementation of tier-based processing logic into specific subtasks covering configuration system updates, conditional logic for API calls, mockup template modifications, testing strategies, and documentation updates.",
+      "reasoning": "This task requires implementing conditional logic across multiple pipeline stages and integrating with several external APIs. The complexity comes from ensuring proper tier-based behavior throughout the system while maintaining error handling and performance. It touches multiple components and requires careful coordination."
+    },
+    {
+      "taskId": 18,
+      "taskTitle": "Implement A/B Testing Support for Email Variants",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the implementation of the A/B testing system for email variants into specific subtasks covering variant selection mechanism, template management, tracking implementation, reporting system, integration with existing email pipeline, and configuration interface.",
+      "reasoning": "This is a complex feature requiring new systems for variant selection, tracking, reporting, and statistical analysis. It touches multiple components including email templates, sending pipeline, analytics, and reporting. The statistical aspects and ensuring proper randomization add significant complexity."
+    },
+    {
+      "taskId": 19,
+      "taskTitle": "Implement LLM Fallback Mechanism",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the implementation of the LLM fallback mechanism into specific subtasks covering provider abstraction layer, fallback strategy, cost monitoring, health checks, configuration management, and integration with existing pipeline components.",
+      "reasoning": "This task involves creating a sophisticated system to manage multiple LLM providers with fallback logic, cost monitoring, and health checks. The complexity comes from handling various failure scenarios, implementing proper abstraction, and ensuring seamless transitions between providers while maintaining pipeline functionality."
+    },
+    {
+      "taskId": 20,
+      "taskTitle": "Implement MOCKUP_ENABLED Flag and Tier-Based Mockup Generation",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the implementation of the MOCKUP_ENABLED flag and tier-based mockup generation into specific subtasks covering configuration system updates, conditional logic implementation, CLI integration, and documentation/testing requirements.",
+      "reasoning": "This task builds on the tier-based processing logic and requires adding configuration flags and conditional behavior. The complexity is moderate as it involves modifying existing components rather than creating entirely new systems, but requires careful integration with the tier system."
+    },
+    {
+      "taskId": 21,
+      "taskTitle": "Implement Automatic IP Pool Switching on Bounce Threshold",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the implementation of automatic IP pool switching into specific subtasks covering bounce rate monitoring, IP pool management, notification system, configuration interface, and SendGrid API integration.",
+      "reasoning": "This task requires creating a sophisticated monitoring and automation system that interfaces with external APIs. The complexity comes from implementing reliable bounce rate calculations, managing IP pool switching with proper safeguards, and ensuring the system can handle various failure scenarios."
+    },
+    {
+      "taskId": 22,
+      "taskTitle": "Implement GPU Auto-Spin for Large Personalisation Queue",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the implementation of GPU auto-provisioning into specific subtasks covering queue monitoring service, Hetzner API integration, auto-scaling logic, system integration with personalisation pipeline, monitoring/alerting, and security considerations.",
+      "reasoning": "This is a complex infrastructure automation task involving cloud resource provisioning, API integration, and sophisticated monitoring. The complexity comes from managing cloud resources programmatically, implementing proper scaling logic, ensuring cost optimization, and handling various failure scenarios while maintaining system security."
     }
   ]
 }
