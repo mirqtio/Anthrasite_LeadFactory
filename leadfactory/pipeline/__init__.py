@@ -15,6 +15,7 @@ from . import (
     score,
     scrape,
     screenshot,
+    unified_gpt4o,
 )
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "mockup",
     "screenshot",
     "dag_traversal",
+    "unified_gpt4o",
 ]

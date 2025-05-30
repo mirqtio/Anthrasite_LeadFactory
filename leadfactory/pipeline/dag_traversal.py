@@ -28,6 +28,7 @@ class PipelineStage(Enum):
     EMAIL_QUEUE = "email_queue"
     MOCKUP = "mockup"
     SCREENSHOT = "screenshot"
+    UNIFIED_GPT4O = "unified_gpt4o"  # New unified terminal node
 
 
 class DependencyType(Enum):
@@ -106,12 +107,34 @@ class PipelineDAG:
             StageDependency(
                 PipelineStage.SCORE, PipelineStage.EMAIL_QUEUE, DependencyType.REQUIRED
             ),
-            # Mockup and screenshot can run after enrichment
+            # Mockup and screenshot can run after enrichment (deprecated - replaced by unified node)
             StageDependency(
                 PipelineStage.ENRICH, PipelineStage.MOCKUP, DependencyType.OPTIONAL
             ),
             StageDependency(
                 PipelineStage.ENRICH, PipelineStage.SCREENSHOT, DependencyType.OPTIONAL
+            ),
+            # Unified GPT-4o node - terminal node that requires enrichment and scoring
+            StageDependency(
+                PipelineStage.ENRICH,
+                PipelineStage.UNIFIED_GPT4O,
+                DependencyType.REQUIRED,
+            ),
+            StageDependency(
+                PipelineStage.SCORE,
+                PipelineStage.UNIFIED_GPT4O,
+                DependencyType.REQUIRED,
+            ),
+            # Optional dependencies for unified node to enhance output quality
+            StageDependency(
+                PipelineStage.DEDUPE,
+                PipelineStage.UNIFIED_GPT4O,
+                DependencyType.OPTIONAL,
+            ),
+            StageDependency(
+                PipelineStage.SCREENSHOT,
+                PipelineStage.UNIFIED_GPT4O,
+                DependencyType.OPTIONAL,
             ),
         ]
 
@@ -220,6 +243,7 @@ class PipelineDAG:
             PipelineStage.EMAIL_QUEUE: ["email_generation"],
             PipelineStage.MOCKUP: ["mockup_generation"],
             PipelineStage.SCREENSHOT: ["screenshot_capture"],
+            PipelineStage.UNIFIED_GPT4O: ["unified_gpt4o"],  # New unified terminal node
         }
 
         filtered_stages = set()

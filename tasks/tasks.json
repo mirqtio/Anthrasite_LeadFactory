@@ -2478,7 +2478,7 @@
             2
           ],
           "details": "Create a unified terminal node that generates both mockup and email content using GPT-4o. Ensure all required inputs flow to this node and implement validation before execution. Optimize prompt construction for the combined task.",
-          "status": "pending"
+          "status": "in-progress"
         },
         {
           "id": 4,
