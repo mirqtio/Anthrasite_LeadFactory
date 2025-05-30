@@ -9,8 +9,6 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-# Import tier service
-from leadfactory.services.tier_service import APICallResult, get_tier_service
 from leadfactory.utils.e2e_db_connector import db_connection
 
 # Set up logging using unified logging system
@@ -78,9 +76,87 @@ def create_mockup_asset(business_id: int, mockup_path: str, mockup_url: str) -> 
         return False
 
 
+def validate_mockup_dependencies(business_id: int) -> dict[str, Any]:
+    """
+    Validate that all required dependencies are available for mockup generation.
+
+    Args:
+        business_id: ID of the business to validate dependencies for
+
+    Returns:
+        Dictionary with validation results and missing dependencies
+    """
+    missing_deps = []
+    validation_result = {
+        "valid": True,
+        "missing_dependencies": [],
+        "business_data": None,
+        "screenshot_path": None,
+    }
+
+    try:
+        with db_connection() as conn:
+            cursor = conn.cursor()
+
+            # Check if business exists and has required data
+            cursor.execute(
+                "SELECT id, name, website FROM businesses WHERE id = %s", (business_id,)
+            )
+            business_row = cursor.fetchone()
+
+            if not business_row:
+                missing_deps.append("business_record")
+            else:
+                validation_result["business_data"] = {
+                    "id": business_row[0],
+                    "name": business_row[1],
+                    "website": business_row[2],
+                }
+
+                # Validate website is present
+                if not business_row[2] or not business_row[2].strip():
+                    missing_deps.append("website_url")
+
+            # Check for screenshot asset (required for mockup generation)
+            cursor.execute(
+                """
+                SELECT file_path FROM assets
+                WHERE business_id = %s AND asset_type = 'screenshot'
+                ORDER BY created_at DESC LIMIT 1
+                """,
+                (business_id,),
+            )
+            screenshot_row = cursor.fetchone()
+
+            if not screenshot_row:
+                missing_deps.append("screenshot_asset")
+            else:
+                screenshot_path = screenshot_row[0]
+                if not os.path.exists(screenshot_path):
+                    missing_deps.append("screenshot_file")
+                else:
+                    validation_result["screenshot_path"] = screenshot_path
+
+            # Update validation result
+            validation_result["missing_dependencies"] = missing_deps
+            validation_result["valid"] = len(missing_deps) == 0
+
+            return validation_result
+
+    except Exception as e:
+        logger.error(
+            f"Error validating mockup dependencies for business {business_id}: {e}"
+        )
+        return {
+            "valid": False,
+            "missing_dependencies": ["validation_error"],
+            "error": str(e),
+        }
+
+
 # Mock implementation of generate_business_mockup
 def generate_business_mockup(
-    business_id: int, options: Optional[dict[str, Any]] = None, tier: int = 1
+    business_id: int, options: Optional[dict[str, Any]] = None
 ) -> dict[str, Any]:
     """
     Generate a mockup of a business website.
@@ -88,26 +164,26 @@ def generate_business_mockup(
     Args:
         business_id: ID of the business to generate a mockup for
         options: Optional configuration options
-        tier: Tier level (1, 2, or 3) for tier-based features
 
     Returns:
         Dictionary containing mockup details
     """
-    # Initialize tier service
-    tier_service = get_tier_service(tier)
-
     logger.info(
-        f"Generating mockup for business ID {business_id} with options {options} (Tier {tier})"
+        f"Generating mockup for business ID {business_id} with options {options}"
     )
 
-    # Check if mockup generation is available for this tier
-    if not tier_service.can_use_feature("basic_mockup", "mockup"):
-        logger.warning(f"Mockup generation not available for tier {tier}")
+    # Validate dependencies before proceeding
+    validation = validate_mockup_dependencies(business_id)
+    if not validation["valid"]:
+        logger.warning(
+            f"Mockup generation failed dependency validation for business {business_id}"
+        )
+        logger.warning(f"Missing dependencies: {validation['missing_dependencies']}")
         return {
             "business_id": business_id,
             "status": "failed",
-            "error": f"Mockup generation not available for tier {tier}",
-            "tier_limited": True,
+            "error": f"Missing required dependencies: {', '.join(validation['missing_dependencies'])}",
+            "missing_dependencies": validation["missing_dependencies"],
         }
 
     try:
@@ -119,75 +195,20 @@ def generate_business_mockup(
         mockup_path = f"{mockup_dir}/{mockup_filename}"
         mockup_url = f"https://storage.example.com/mockups/{mockup_filename}"
 
-        # Get business details for mockup generation
-        with db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT name, website FROM businesses WHERE id = %s", (business_id,)
-            )
-            row = cursor.fetchone()
-
-            if not row:
-                logger.error(f"Business {business_id} not found")
-                return {
-                    "business_id": business_id,
-                    "status": "failed",
-                    "error": "Business not found",
-                }
-
-            business_name, website = row
-
-            # Check if we have a screenshot to base the mockup on
-            cursor.execute(
-                """
-                SELECT file_path FROM assets
-                WHERE business_id = %s AND asset_type = 'screenshot'
-                ORDER BY created_at DESC LIMIT 1
-            """,
-                (business_id,),
-            )
-            screenshot_row = cursor.fetchone()
-
-        # Tier-based mockup generation logic
+        # Generate mockup from screenshot
         mockup_img = None
+        screenshot_path = validation["screenshot_path"]
 
-        # Basic mockup generation (available to all tiers)
-        if tier_service.can_use_feature("basic_mockup", "mockup"):
-            from PIL import Image, ImageDraw, ImageFont
+        from PIL import Image, ImageDraw, ImageFont
 
-            if screenshot_row and os.path.exists(screenshot_row[0]):
-                # Use existing screenshot as base for mockup
-                logger.info(f"Creating mockup based on screenshot: {screenshot_row[0]}")
-                try:
-                    base_img = Image.open(screenshot_row[0])
-                    # Resize to mockup dimensions if needed
-                    mockup_img = base_img.resize((1200, 800), Image.Resampling.LANCZOS)
-                except Exception as e:
-                    logger.error(f"Could not load screenshot {screenshot_row[0]}: {e}")
-                    raise Exception(
-                        f"Failed to load screenshot for mockup generation: {e}"
-                    )
-            else:
-                # No real screenshot available - cannot create meaningful mockup
-                logger.error(f"No real screenshot available for business {business_id}")
-                logger.error(
-                    "Cannot create mockup without real screenshot - failing pipeline"
-                )
-                raise Exception(
-                    f"Mockup generation requires real screenshot, but none found for business {business_id}"
-                )
-
-        # Enhanced mockup features for higher tiers
-        if tier_service.can_use_feature("enhanced_mockup", "mockup") and mockup_img:
-            logger.info(f"Applying enhanced mockup features for tier {tier}")
-            # Add enhanced features like filters, overlays, etc.
-            # This is a placeholder for future enhanced mockup functionality
-
-        # AI-powered mockup generation for tier 3
-        if tier_service.can_use_feature("ai_mockup", "mockup") and mockup_img:
-            logger.info(f"Applying AI-powered mockup enhancements for tier {tier}")
-            # This would integrate with OpenAI or other AI services for advanced mockup generation
-            # Placeholder for future AI-powered mockup functionality
+        logger.info(f"Creating mockup based on screenshot: {screenshot_path}")
+        try:
+            base_img = Image.open(screenshot_path)
+            # Resize to mockup dimensions if needed
+            mockup_img = base_img.resize((1200, 800), Image.Resampling.LANCZOS)
+        except Exception as e:
+            logger.error(f"Could not load screenshot {screenshot_path}: {e}")
+            raise Exception(f"Failed to load screenshot for mockup generation: {e}")
 
         if not mockup_img:
             raise Exception("Failed to generate mockup image")
@@ -205,22 +226,13 @@ def generate_business_mockup(
                 "mockup_url": mockup_url,
                 "status": "generated",
                 "timestamp": "2025-05-25T08:57:00Z",
-                "tier": tier,
             }
-
-            # Add tier-specific metadata
-            if tier >= 2:
-                result["enhanced_features"] = tier_service.get_enabled_features(
-                    "mockup"
-                )
-
             return result
         else:
             return {
                 "business_id": business_id,
                 "status": "failed",
                 "error": "Failed to create mockup asset",
-                "tier": tier,
             }
     except Exception as e:
         logger.error(f"Error generating mockup for business {business_id}: {e}")
@@ -228,7 +240,6 @@ def generate_business_mockup(
             "business_id": business_id,
             "status": "failed",
             "error": str(e),
-            "tier": tier,
         }
 
 

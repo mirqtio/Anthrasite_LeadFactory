@@ -74,7 +74,6 @@ if not has_io_imports:
         service_name: Optional[str] = None,
         operation: Optional[str] = None,
         cost_cents: int = 0,
-        tier: int = 1,
         business_id: Optional[int] = None,
     ) -> tuple[Optional[dict[Any, Any]], Optional[str]]:
         """Make an API request with retry logic and error handling."""
@@ -242,7 +241,6 @@ class YelpAPI:
             service_name="yelp",
             operation="search",
             cost_cents=YELP_SEARCH_COST,
-            tier=int(os.getenv("TIER", "1")),
         )
         if error:
             return [], error
@@ -267,7 +265,6 @@ class YelpAPI:
             service_name="yelp",
             operation="details",
             cost_cents=YELP_SEARCH_COST,
-            tier=int(os.getenv("TIER", "1")),
         )
         if error:
             return None, error
@@ -317,7 +314,6 @@ class GooglePlacesAPI:
             service_name="google",
             operation="search",
             cost_cents=GOOGLE_SEARCH_COST,
-            tier=int(os.getenv("TIER", "1")),
         )
         if error:
             return [], error
@@ -350,7 +346,6 @@ class GooglePlacesAPI:
             service_name="google",
             operation="details",
             cost_cents=GOOGLE_SEARCH_COST,
-            tier=int(os.getenv("TIER", "1")),
         )
         if error:
             return None, error

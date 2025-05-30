@@ -477,7 +477,6 @@ def log_cost(
     service: str,
     operation: str,
     cost_dollars: float,
-    tier: int = 1,
     business_id: Optional[int] = None,
 ) -> None:
     """Dummy implementation of log_cost for when the real one is not available."""

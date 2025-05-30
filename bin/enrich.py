@@ -3,11 +3,10 @@
 Anthrasite Lead-Factory: Lead Enrichment (02_enrich.py)
 Analyzes business websites to extract tech stack and performance metrics.
 Usage:
-    python bin/02_enrich.py [--limit N] [--id BUSINESS_ID] [--tier TIER]
+    python bin/02_enrich.py [--limit N] [--id BUSINESS_ID]
 Options:
     --limit N        Limit the number of businesses to process (default: all)
     --id BUSINESS_ID Process only the specified business ID
-    --tier TIER      Override the tier level (1, 2, or 3)
 """
 import argparse
 import concurrent.futures
@@ -31,80 +30,60 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
-# Import database utilities with conditional imports for testing
+try:
+    from leadfactory.config.node_config import NodeType, is_api_available, get_enabled_capabilities
+    from leadfactory.utils.logging import get_logger
+    from leadfactory.utils.e2e_db_connector import db_connection
+    from leadfactory.cost.cost_tracking import track_api_cost
+except ImportError:
+    # Fallback for when module is imported in test context
+    print("Warning: leadfactory modules not available, using fallback imports")
+    NodeType = None
+    is_api_available = lambda x: False
+    get_enabled_capabilities = lambda x: []
+    get_logger = lambda x: logging.getLogger(x)
+    db_connection = None
+    track_api_cost = lambda *args, **kwargs: None
 
-# For Python 3.9 compatibility, define fallback implementations for when imports are not available
+# Load environment variables
+load_dotenv()
 
+# Initialize logger
+logger = get_logger(__name__)
 
-# Define fallback function and class implementations
-class _TestingDatabaseConnection:
-    """Alternative database connection for testing environments."""
+# Constants
+DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
+MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
+PAGESPEED_API_KEY = os.getenv("PAGESPEED_KEY")
+SCREENSHOT_ONE_KEY = os.getenv("SCREENSHOT_ONE_KEY")
+SEMRUSH_KEY = os.getenv("SEMRUSH_KEY")
+# Cost tracking constants (in cents)
+PAGESPEED_COST = 0  # PageSpeed API is free
+SCREENSHOT_ONE_COST = 5  # $0.05 per screenshot
+SEMRUSH_SITE_AUDIT_COST = 50  # $0.50 per site audit
 
-    def __init__(self, db_path=None):
-        self.db_path = db_path
-        self.connection = None
-        self.cursor = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def execute(self, query, params=None):
-        return None
-
-    def fetchall(self):
-        return []
-
-    def fetchone(self):
-        return None
-
-    def commit(self):
-        pass
-
-
-def _testing_make_request(
-    url,
-    method="GET",
-    headers=None,
-    params=None,
-    data=None,
-    timeout=30,
-    max_retries=3,
-    retry_delay=2,
-    track_cost=True,
-    service_name=None,
-    operation=None,
-    cost_cents=0,
-    tier=1,
-    business_id=None,
-):
-    """Dummy implementation of make_api_request for testing environments."""
-    return {"status": "success", "data": {}}, None
-
-
-def _testing_track_cost(service, operation, cost_cents, tier=1, business_id=None):
-    """Dummy implementation of track_api_cost for testing environments."""
-    pass
-
-
-# Try to import real implementations first
-# Instead of defining local functions with the same names, we use adapter functions
-# This avoids name conflicts while providing the same functionality
 def get_database_connection(db_path=None):
     """Return appropriate DatabaseConnection implementation based on environment."""
-    try:
-        # Try to import the real implementation
-        from leadfactory.utils.e2e_db_connector import (
-            db_connection as DatabaseConnection,
-        )
-
-        return DatabaseConnection(db_path)
-    except ImportError:
-        # Fall back to our testing implementation
+    if db_connection:
+        return db_connection(db_path)
+    else:
+        # Fallback for testing
+        class _TestingDatabaseConnection:
+            def __init__(self, db_path=None):
+                pass
+            def __enter__(self):
+                return self
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                pass
+            def execute(self, query, params=None):
+                return None
+            def fetchall(self):
+                return []
+            def fetchone(self):
+                return None
+            def commit(self):
+                pass
         return _TestingDatabaseConnection(db_path)
-
 
 def make_request(
     url,
@@ -119,96 +98,31 @@ def make_request(
     service_name=None,
     operation=None,
     cost_cents=0,
-    tier=1,
     business_id=None,
 ):
     """Make API request in a way that works in all environments."""
+    if track_cost and service_name and operation:
+        track_api_cost(service_name, operation, cost_cents, business_id)
+
+    # Simple request implementation for fallback
     try:
-        # Try to import the real implementation
-        from utils.io import make_api_request
+        if method.upper() == "GET":
+            response = requests.get(url, headers=headers, params=params, timeout=timeout)
+        elif method.upper() == "POST":
+            response = requests.post(url, headers=headers, params=params, data=data, timeout=timeout)
+        else:
+            response = requests.request(method, url, headers=headers, params=params, data=data, timeout=timeout)
 
-        return make_api_request(
-            url,
-            method,
-            headers,
-            params,
-            data,
-            timeout,
-            max_retries,
-            retry_delay,
-            track_cost,
-            service_name,
-            operation,
-            cost_cents,
-            tier,
-            business_id,
-        )
-    except ImportError:
-        # Fall back to our testing implementation
-        return _testing_make_request(
-            url,
-            method,
-            headers,
-            params,
-            data,
-            timeout,
-            max_retries,
-            retry_delay,
-            track_cost,
-            service_name,
-            operation,
-            cost_cents,
-            tier,
-            business_id,
-        )
+        response.raise_for_status()
+        return response.json() if response.content else {}, None
+    except Exception as e:
+        return None, str(e)
 
 
-def track_cost(service, operation, cost_cents, tier=1, business_id=None):
+def track_cost(service, operation, cost_cents, business_id=None):
     """Track API cost in a way that works in all environments."""
-    try:
-        # Try to import the real implementation
-        from utils.io import track_api_cost
-
-        return track_api_cost(service, operation, cost_cents, tier, business_id)
-    except ImportError:
-        # Fall back to our testing implementation
-        return _testing_track_cost(service, operation, cost_cents, tier, business_id)
-
-
-# Import logging utilities with conditional imports for testing
-has_logger = False
-try:
-    from utils.logging_config import get_logger
-
-    has_logger = True
-except ImportError:
-    # Dummy implementation only created if the import fails
-    pass
-
-# Define dummy get_logger only if needed
-if not has_logger:
-
-    def get_logger(name: str) -> logging.Logger:
-        import logging
-
-        return logging.getLogger(name)
-
-
-# Load environment variables
-load_dotenv()
-# Set up logging
-logger = get_logger(__name__)
-# Constants
-DEFAULT_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
-MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", "10"))
-CURRENT_TIER = int(os.getenv("TIER", "1"))
-PAGESPEED_API_KEY = os.getenv("PAGESPEED_KEY")
-SCREENSHOT_ONE_KEY = os.getenv("SCREENSHOT_ONE_KEY")
-SEMRUSH_KEY = os.getenv("SEMRUSH_KEY")
-# Cost tracking constants (in cents)
-PAGESPEED_COST = 0  # PageSpeed API is free
-SCREENSHOT_ONE_COST = 5  # $0.05 per screenshot
-SEMRUSH_SITE_AUDIT_COST = 50  # $0.50 per site audit
+    if track_api_cost:
+        track_api_cost(service, operation, cost_cents, business_id)
 
 
 class TechStackAnalyzer:
@@ -317,7 +231,7 @@ class PageSpeedAnalyzer:
             service_name="pagespeed",
             operation="analyze",
             cost_cents=PAGESPEED_COST,
-            tier=CURRENT_TIER,
+            business_id=None,
         )
         if error:
             return {}, error
@@ -404,7 +318,7 @@ class ScreenshotGenerator:
                 service="screenshotone",
                 operation="capture",
                 cost_cents=SCREENSHOT_ONE_COST,
-                tier=CURRENT_TIER,
+                business_id=None,
             )
             # For a real implementation, we would upload this to Supabase Storage
             # For the prototype, we'll return a dummy URL
@@ -459,7 +373,7 @@ class SEMrushAnalyzer:
             service_name="semrush",
             operation="site_audit",
             cost_cents=SEMRUSH_SITE_AUDIT_COST,
-            tier=CURRENT_TIER,
+            business_id=None,
         )
         if error:
             return {}, error
@@ -563,11 +477,10 @@ def save_features(
         return False
 
 
-def enrich_business(business: dict, tier: int = CURRENT_TIER) -> bool:
+def enrich_business(business: dict) -> bool:
     """Enrich a business with tech stack and performance data.
     Args:
         business: Business information.
-        tier: Tier level (1, 2, or 3).
     Returns:
         True if successful, False otherwise.
     """
@@ -576,9 +489,7 @@ def enrich_business(business: dict, tier: int = CURRENT_TIER) -> bool:
     if not website:
         logger.warning(f"No website for business ID {business_id}")
         return False
-    logger.info(
-        f"Enriching business ID {business_id} with website {website} (Tier {tier})"
-    )
+    logger.info(f"Enriching business ID {business_id} with website {website}")
     # Initialize analyzers
     tech_analyzer = TechStackAnalyzer()
     pagespeed_analyzer = PageSpeedAnalyzer(PAGESPEED_API_KEY)
@@ -594,7 +505,7 @@ def enrich_business(business: dict, tier: int = CURRENT_TIER) -> bool:
     screenshot_url = None
     semrush_data = None
     # Tier 2+: Capture screenshot
-    if tier >= 2 and SCREENSHOT_ONE_KEY:
+    if SCREENSHOT_ONE_KEY:
         screenshot_generator = ScreenshotGenerator(SCREENSHOT_ONE_KEY)
         screenshot_url, screenshot_error = screenshot_generator.capture_screenshot(
             website
@@ -604,7 +515,7 @@ def enrich_business(business: dict, tier: int = CURRENT_TIER) -> bool:
                 f"Error capturing screenshot for {website}: {screenshot_error}"
             )
     # Tier 3: SEMrush Site Audit
-    if tier >= 3 and SEMRUSH_KEY:
+    if SEMRUSH_KEY:
         semrush_analyzer = SEMrushAnalyzer(SEMRUSH_KEY)
         semrush_data, semrush_error = semrush_analyzer.analyze_website(website)
         if semrush_error:
@@ -631,13 +542,7 @@ def main():
         "--limit", type=int, help="Limit the number of businesses to process"
     )
     parser.add_argument("--id", type=int, help="Process only the specified business ID")
-    parser.add_argument(
-        "--tier", type=int, choices=[1, 2, 3], help="Override the tier level"
-    )
     args = parser.parse_args()
-    # Get tier level
-    tier = args.tier if args.tier is not None else CURRENT_TIER
-    logger.info(f"Running enrichment with Tier {tier}")
     # Get businesses to enrich
     businesses = get_businesses_to_enrich(limit=args.limit, business_id=args.id)
     if not businesses:
@@ -653,7 +558,7 @@ def main():
     ) as executor:
         # Submit tasks
         future_to_business = {
-            executor.submit(enrich_business, business, tier): business
+            executor.submit(enrich_business, business): business
             for business in businesses
         }
         # Process results as they complete
