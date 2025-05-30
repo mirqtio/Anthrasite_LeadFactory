@@ -6,7 +6,16 @@ including scraping, enrichment, deduplication, scoring, and email generation.
 """
 
 # Import the available pipeline modules
-from . import dedupe, email_queue, enrich, mockup, score, scrape, screenshot
+from . import (
+    dag_traversal,
+    dedupe,
+    email_queue,
+    enrich,
+    mockup,
+    score,
+    scrape,
+    screenshot,
+)
 
 __all__ = [
     "scrape",
@@ -16,4 +25,5 @@ __all__ = [
     "email_queue",
     "mockup",
     "screenshot",
+    "dag_traversal",
 ]

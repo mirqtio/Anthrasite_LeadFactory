@@ -2458,7 +2458,7 @@
           "description": "Remove all tier-based conditional logic, configuration, and services from the codebase.",
           "dependencies": [],
           "details": "Delete TierService class, tier_config.py, and all tier-based conditional logic in all pipeline stages. Remove tier parameters from function signatures and replace with node capability flags and dependency requirements.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 2,
@@ -2468,7 +2468,7 @@
             1
           ],
           "details": "Implement a topological sorting algorithm for the pipeline DAG. Add dependency checking logic that evaluates required inputs at runtime. Add graceful degradation for missing optional dependencies and validation for critical dependencies needed for final GPT-4o call.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
