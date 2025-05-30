@@ -12,7 +12,7 @@ import sys
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import psycopg2
 
@@ -48,7 +48,7 @@ def load_e2e_env() -> bool:
     logger.info(f"Loading E2E environment from {ENV_FILE}")
 
     # Parse environment file
-    with open(ENV_FILE) as f:
+    with Path(ENV_FILE).open() as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
@@ -79,7 +79,7 @@ def load_production_test_env() -> bool:
     logger.info(f"Loading production test environment from {PROD_TEST_ENV_FILE}")
 
     # Parse environment file
-    with open(PROD_TEST_ENV_FILE) as f:
+    with Path(PROD_TEST_ENV_FILE).open() as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):

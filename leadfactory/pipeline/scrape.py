@@ -10,7 +10,7 @@ import re
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 # Use dict instead of Dict for Python 3.9 compatibility
 from leadfactory.config import load_config

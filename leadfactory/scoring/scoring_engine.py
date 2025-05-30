@@ -4,7 +4,7 @@ Main scoring engine for LeadFactory.
 This module provides the main interface for scoring businesses using YAML-defined rules.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 from leadfactory.utils.logging import LogContext, get_logger, log_execution_time
 from leadfactory.utils.metrics import (

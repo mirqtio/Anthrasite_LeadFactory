@@ -6,7 +6,7 @@ This module handles loading, parsing, and validating scoring rules from YAML fil
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError, field_validator, validator
@@ -167,9 +167,7 @@ class ScoringRulesParser:
                         If not provided, uses default path.
         """
         if config_path is None:
-            config_path = os.path.join(
-                os.path.dirname(__file__), "../../etc/scoring_rules.yml"
-            )
+            config_path = Path(__file__).parent / "../../etc/scoring_rules.yml"
         self.config_path = Path(config_path)
         self.config: Optional[ScoringRulesConfig] = None
         logger.info(
@@ -194,7 +192,7 @@ class ScoringRulesParser:
         logger.info(f"Loading scoring rules from: {self.config_path}")
 
         try:
-            with open(self.config_path) as f:
+            with self.config_path.open() as f:
                 raw_config = yaml.safe_load(f)
 
             logger.debug(

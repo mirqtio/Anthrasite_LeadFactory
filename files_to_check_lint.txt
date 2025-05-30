@@ -188,6 +188,7 @@
 ./scripts/preflight/test_pipeline_validator.py
 ./scripts/preflight/db_verifier.py
 ./scripts/test_e2e_db_connection.py
+./ci_tests/core_utils/test_string_utils.py
 ./clean_tasks.py
 ./.tmp/test_unsubscribe_3.py
 ./utils_legacy/metrics.py

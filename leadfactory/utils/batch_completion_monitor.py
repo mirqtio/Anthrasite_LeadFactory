@@ -15,7 +15,7 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -43,11 +43,12 @@ def get_batch_tracker_data() -> dict[str, Any]:
         Dictionary containing batch tracker data
     """
     tracker_file = os.getenv("BATCH_TRACKER_FILE", "data/batch_tracker.json")
-    if not os.path.exists(tracker_file):
+    tracker_path = Path(tracker_file)
+    if not tracker_path.exists():
         return {"batches": []}
 
     try:
-        with open(tracker_file) as f:
+        with tracker_path.open() as f:
             return json.load(f)
     except Exception as e:
         logger.error(f"Error loading batch tracker data: {e}")

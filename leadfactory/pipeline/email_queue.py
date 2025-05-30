@@ -16,7 +16,7 @@ import time
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Union, cast
+from typing import Any, Optional
 
 import requests
 
@@ -24,7 +24,7 @@ from leadfactory.config import load_config
 
 # Use typing.Type for creating a type variable that can accept multiple class types
 # This avoids type checking errors when assigning different class types to the same variable
-T = TypeVar("T")
+T = type
 
 
 # Define our own base connection class for testing scenarios

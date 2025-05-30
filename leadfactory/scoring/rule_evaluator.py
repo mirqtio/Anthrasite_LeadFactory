@@ -5,7 +5,7 @@ This module contains the logic for evaluating businesses against scoring rules.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from leadfactory.utils.logging import get_logger
 

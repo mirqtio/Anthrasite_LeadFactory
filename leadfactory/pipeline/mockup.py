@@ -7,7 +7,7 @@ This module provides functionality to generate mockups of business websites.
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from leadfactory.utils.e2e_db_connector import db_connection
 
