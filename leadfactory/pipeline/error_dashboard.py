@@ -43,7 +43,7 @@ class DashboardConfig:
     max_error_patterns: int = 10
     max_recent_errors: int = 50
     enable_real_time_alerts: bool = True
-    alert_email_recipients: List[str] = None
+    alert_email_recipients: list[str] = None
     dashboard_title: str = "LeadFactory Pipeline Error Dashboard"
 
     def __post_init__(self):
@@ -68,7 +68,7 @@ class ErrorDashboard:
         self.config = config or DashboardConfig()
         self.logger = get_logger(__name__)
 
-    def generate_dashboard_data(self) -> Dict[str, Any]:
+    def generate_dashboard_data(self) -> dict[str, Any]:
         """Generate comprehensive dashboard data."""
         # Get metrics for different time windows
         metrics_1h = self.aggregator.generate_error_metrics(TimeWindow.LAST_HOUR)
@@ -136,7 +136,7 @@ class ErrorDashboard:
 
         return dashboard_data
 
-    def _get_recent_errors(self, limit: int) -> List[Dict[str, Any]]:
+    def _get_recent_errors(self, limit: int) -> list[dict[str, Any]]:
         """Get recent errors for dashboard display."""
         recent_errors = sorted(
             self.aggregator.error_history, key=lambda e: e.timestamp, reverse=True
@@ -170,7 +170,7 @@ class ErrorDashboard:
             for error in recent_errors
         ]
 
-    def _calculate_error_trends(self) -> Dict[str, Any]:
+    def _calculate_error_trends(self) -> dict[str, Any]:
         """Calculate error trends for visualization."""
         now = datetime.now()
 
@@ -210,7 +210,7 @@ class ErrorDashboard:
             "trend_direction": self._calculate_trend_direction(hourly_counts),
         }
 
-    def _calculate_trend_direction(self, hourly_counts: Dict[str, int]) -> str:
+    def _calculate_trend_direction(self, hourly_counts: dict[str, int]) -> str:
         """Calculate overall trend direction."""
         if not hourly_counts:
             return "stable"
@@ -230,10 +230,9 @@ class ErrorDashboard:
         else:
             return "stable"
 
-    def _calculate_health_status(self, metrics_1h, metrics_24h) -> Dict[str, Any]:
+    def _calculate_health_status(self, metrics_1h, metrics_24h) -> dict[str, Any]:
         """Calculate overall pipeline health status."""
         # Define health criteria
-        critical_threshold = 10  # Critical errors in last hour
         warning_threshold = 50  # Total errors in last hour
 
         status = "healthy"
@@ -444,7 +443,7 @@ class ErrorReportGenerator:
 
     def generate_executive_summary(
         self, time_window: TimeWindow = TimeWindow.LAST_24_HOURS
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate executive summary of error status."""
         metrics = self.aggregator.generate_error_metrics(time_window)
 
@@ -487,7 +486,7 @@ class ErrorReportGenerator:
         else:
             return "HEALTHY: Pipeline operating within normal parameters"
 
-    def _get_top_issues(self, metrics) -> List[Dict[str, Any]]:
+    def _get_top_issues(self, metrics) -> list[dict[str, Any]]:
         """Get top issues for executive attention."""
         issues = []
 
@@ -524,7 +523,7 @@ class ErrorReportGenerator:
 
         return issues
 
-    def _get_executive_recommendations(self, metrics) -> List[str]:
+    def _get_executive_recommendations(self, metrics) -> list[str]:
         """Get executive-level recommendations."""
         recommendations = []
 

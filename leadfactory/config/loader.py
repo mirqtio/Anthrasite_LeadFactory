@@ -15,7 +15,7 @@ from typing import Any, Dict, Optional, Union
 _config_cache = None
 
 
-def load_config(env_file: Optional[str] = None) -> Dict[str, Any]:
+def load_config(env_file: Optional[str] = None) -> dict[str, Any]:
     """
     Load configuration from environment variables and/or .env file.
 
@@ -51,7 +51,7 @@ def load_config(env_file: Optional[str] = None) -> Dict[str, Any]:
     return config
 
 
-def get_config() -> Dict[str, Any]:
+def get_config() -> dict[str, Any]:
     """
     Get the configuration dictionary.
 

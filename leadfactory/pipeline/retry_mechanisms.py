@@ -42,10 +42,10 @@ class RetryConfig:
     exponential_base: float = 2.0  # Exponential backoff multiplier
     jitter: bool = True  # Add random jitter to prevent thundering herd
     backoff_strategy: RetryStrategy = RetryStrategy.EXPONENTIAL_BACKOFF
-    retryable_exceptions: List[type] = field(
+    retryable_exceptions: list[type] = field(
         default_factory=lambda: [ConnectionError, TimeoutError, OSError]
     )
-    retryable_categories: List[ErrorCategory] = field(
+    retryable_categories: list[ErrorCategory] = field(
         default_factory=lambda: [
             ErrorCategory.NETWORK,
             ErrorCategory.TIMEOUT,
@@ -74,7 +74,7 @@ class CircuitBreaker:
         self.success_count = 0
         self.last_failure_time: Optional[datetime] = None
         self.call_count = 0
-        self.success_rate_window: List[bool] = []
+        self.success_rate_window: list[bool] = []
 
     def can_execute(self) -> bool:
         """Check if a call can be executed based on circuit breaker state."""
@@ -125,7 +125,7 @@ class CircuitBreaker:
             self.state = CircuitBreakerState.OPEN
             logger.warning("Circuit breaker reopened during half-open test")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get circuit breaker statistics."""
         success_rate = 0.0
         if self.success_rate_window:
@@ -168,7 +168,7 @@ class RetryManager:
         self.circuit_breaker = (
             CircuitBreaker(circuit_breaker_config) if circuit_breaker_config else None
         )
-        self.retry_stats: Dict[str, int] = {
+        self.retry_stats: dict[str, int] = {
             "total_attempts": 0,
             "successful_retries": 0,
             "failed_retries": 0,
@@ -333,7 +333,7 @@ class RetryManager:
         else:
             raise Exception("All async retry attempts failed")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get retry statistics."""
         stats = self.retry_stats.copy()
         if self.circuit_breaker:
@@ -389,7 +389,7 @@ class RetryMonitor:
     """Monitor retry attempts and success rates across the pipeline."""
 
     def __init__(self):
-        self.operation_stats: Dict[str, Dict[str, Any]] = {}
+        self.operation_stats: dict[str, dict[str, Any]] = {}
         self.global_stats = {
             "total_operations": 0,
             "operations_with_retries": 0,
@@ -442,15 +442,15 @@ class RetryMonitor:
             else:
                 self.global_stats["failed_retries"] += 1
 
-    def get_operation_stats(self, operation_name: str) -> Optional[Dict[str, Any]]:
+    def get_operation_stats(self, operation_name: str) -> Optional[dict[str, Any]]:
         """Get statistics for a specific operation."""
         return self.operation_stats.get(operation_name)
 
-    def get_global_stats(self) -> Dict[str, Any]:
+    def get_global_stats(self) -> dict[str, Any]:
         """Get global retry statistics."""
         return self.global_stats.copy()
 
-    def get_summary_report(self) -> Dict[str, Any]:
+    def get_summary_report(self) -> dict[str, Any]:
         """Generate a comprehensive retry summary report."""
         total_ops = self.global_stats["total_operations"]
         retry_rate = (

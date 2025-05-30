@@ -60,7 +60,7 @@ class RuleEngine:
             self.logger.error(f"Failed to initialize scoring engine: {e}")
             raise
 
-    def evaluate(self, business: Dict[str, Any]) -> int:
+    def evaluate(self, business: dict[str, Any]) -> int:
         """
         Evaluate a business against all rules.
 
@@ -100,7 +100,7 @@ class RuleEngine:
 
 
 @log_execution_time
-def score_business(business: Dict[str, Any]) -> int:
+def score_business(business: dict[str, Any]) -> int:
     """
     Score a business based on various criteria.
 
@@ -164,7 +164,7 @@ def score_business(business: Dict[str, Any]) -> int:
 @log_execution_time
 def get_businesses_to_score(
     limit: Optional[int] = None, business_id: Optional[int] = None
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Get list of businesses to score.
 
@@ -176,7 +176,7 @@ def get_businesses_to_score(
         List of businesses to score.
     """
     logger.info(
-        f"Retrieving businesses to score",
+        "Retrieving businesses to score",
         extra={
             "limit": limit,
             "business_id": business_id,
@@ -291,7 +291,7 @@ def main() -> int:
         batch_id = f"score_batch_{int(time.time())}"
 
         logger.info(
-            f"Starting scoring process",
+            "Starting scoring process",
             extra={
                 "cli_args": vars(args),
                 "operation": "cli_score",

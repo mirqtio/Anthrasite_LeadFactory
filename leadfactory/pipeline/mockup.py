@@ -78,8 +78,8 @@ def create_mockup_asset(business_id: int, mockup_path: str, mockup_url: str) -> 
 
 # Mock implementation of generate_business_mockup
 def generate_business_mockup(
-    business_id: int, options: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+    business_id: int, options: Optional[dict[str, Any]] = None
+) -> dict[str, Any]:
     """
     Generate a mockup of a business website.
 
@@ -149,7 +149,7 @@ def generate_business_mockup(
             # No real screenshot available - cannot create meaningful mockup
             logger.error(f"No real screenshot available for business {business_id}")
             logger.error(
-                f"Cannot create mockup without real screenshot - failing pipeline"
+                "Cannot create mockup without real screenshot - failing pipeline"
             )
             raise Exception(
                 f"Mockup generation requires real screenshot, but none found for business {business_id}"

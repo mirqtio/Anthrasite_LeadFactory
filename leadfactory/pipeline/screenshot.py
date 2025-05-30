@@ -126,13 +126,13 @@ def generate_business_screenshot(business: dict) -> bool:
 
         except requests.exceptions.RequestException as e:
             logger.error(f"ScreenshotOne API failed for {website}: {e}")
-            logger.error(f"Cannot proceed without real screenshot - failing pipeline")
+            logger.error("Cannot proceed without real screenshot - failing pipeline")
             raise Exception(f"Screenshot generation failed: {e}")
 
     else:
         # No API key provided - this is a configuration error
         logger.error(
-            f"No ScreenshotOne API key provided - cannot generate real screenshots"
+            "No ScreenshotOne API key provided - cannot generate real screenshots"
         )
         raise Exception("SCREENSHOT_ONE_KEY is required for real screenshot generation")
 

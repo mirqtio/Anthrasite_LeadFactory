@@ -66,7 +66,7 @@ class PipelineError:
     severity: ErrorSeverity = ErrorSeverity.MEDIUM
     category: ErrorCategory = ErrorCategory.BUSINESS_LOGIC
     retry_strategy: RetryStrategy = RetryStrategy.NONE
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     traceback_info: Optional[str] = None
     business_id: Optional[int] = None
     batch_id: Optional[str] = None
@@ -74,7 +74,7 @@ class PipelineError:
     retry_count: int = 0
     max_retries: int = 3
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert error to dictionary for serialization."""
         return {
             "id": self.id,
@@ -101,7 +101,7 @@ class PipelineError:
         exception: Exception,
         stage: str,
         operation: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: Optional[dict[str, Any]] = None,
         business_id: Optional[int] = None,
         batch_id: Optional[str] = None,
     ) -> "PipelineError":
@@ -184,8 +184,8 @@ class BatchResult:
     successful_items: int = 0
     failed_items: int = 0
     skipped_items: int = 0
-    errors: List[PipelineError] = field(default_factory=list)
-    context: Dict[str, Any] = field(default_factory=dict)
+    errors: list[PipelineError] = field(default_factory=list)
+    context: dict[str, Any] = field(default_factory=dict)
     duration_seconds: float = 0.0
 
     def __post_init__(self):
@@ -215,7 +215,7 @@ class BatchResult:
         self.errors.append(error)
         self.failed_items += 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert batch result to dictionary for serialization."""
         return {
             "batch_id": self.batch_id,
@@ -246,8 +246,8 @@ class ErrorPropagationManager:
         """
         self.max_error_threshold = max_error_threshold
         self.stop_on_critical = stop_on_critical
-        self.error_history: List[PipelineError] = []
-        self.batch_results: List[BatchResult] = []
+        self.error_history: list[PipelineError] = []
+        self.batch_results: list[BatchResult] = []
 
     def should_continue_batch(self, batch_result: BatchResult) -> bool:
         """
@@ -299,7 +299,7 @@ class ErrorPropagationManager:
             extra=batch_result.to_dict(),
         )
 
-    def get_error_summary(self, hours: int = 24) -> Dict[str, Any]:
+    def get_error_summary(self, hours: int = 24) -> dict[str, Any]:
         """
         Get error summary for the specified time period.
 
@@ -352,7 +352,7 @@ def with_error_handling(
     error_manager: Optional[ErrorPropagationManager] = None,
     business_id: Optional[int] = None,
     batch_id: Optional[str] = None,
-    context: Optional[Dict[str, Any]] = None,
+    context: Optional[dict[str, Any]] = None,
 ):
     """
     Decorator for adding comprehensive error handling to pipeline functions.
@@ -450,10 +450,10 @@ def create_batch_processor(
     """
 
     def process_batch(
-        items: List[Any],
+        items: list[Any],
         processor_func: Callable,
         batch_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        context: Optional[dict[str, Any]] = None,
     ) -> BatchResult:
         """
         Process a batch of items with error handling.
@@ -531,7 +531,7 @@ def create_batch_processor(
                     and not error_manager.should_continue_batch(batch_result)
                 ):
                     logger.warning(
-                        f"Stopping batch processing due to error policy",
+                        "Stopping batch processing due to error policy",
                         extra={"batch_id": batch_id, "items_processed": i + 1},
                     )
                     break

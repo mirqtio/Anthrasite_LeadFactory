@@ -104,7 +104,7 @@ class OllamaVerifier:
 
     def verify_duplicates(
         self, business1: dict, business2: dict
-    ) -> Tuple[bool, float, str]:
+    ) -> tuple[bool, float, str]:
         """
         Verify if two businesses are duplicates using LLM.
 
@@ -166,7 +166,7 @@ class OllamaVerifier:
         }}
         """
 
-    def _parse_response(self, response: str) -> Tuple[bool, float, str]:
+    def _parse_response(self, response: str) -> tuple[bool, float, str]:
         """Parse the LLM response."""
         try:
             # Try to extract JSON from response
@@ -190,8 +190,8 @@ class OllamaVerifier:
 
 
 def apply_conflict_resolution(
-    primary: Dict[str, Any], secondary: Dict[str, Any], config: DedupeConfig
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    primary: dict[str, Any], secondary: dict[str, Any], config: DedupeConfig
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     Apply conflict resolution between two business records.
 
@@ -232,19 +232,19 @@ def apply_conflict_resolution(
     return updates, conflict_report
 
 
-def get_potential_duplicates(limit: Optional[int] = None) -> List[Dict[str, Any]]:
+def get_potential_duplicates(limit: Optional[int] = None) -> list[dict[str, Any]]:
     """Get potential duplicate pairs from the database."""
     return get_potential_duplicate_pairs(limit)
 
 
-def get_business_by_id(business_id: int) -> Optional[Dict[str, Any]]:
+def get_business_by_id(business_id: int) -> Optional[dict[str, Any]]:
     """Get business details by ID."""
     return get_business_details(business_id)
 
 
 def merge_businesses(
     primary_id: int, secondary_id: int, config: Optional[DedupeConfig] = None
-) -> Optional[Dict[str, Any]]:
+) -> Optional[dict[str, Any]]:
     """
     Merge two business records using the unified connector with data preservation.
 
@@ -267,7 +267,7 @@ def merge_businesses(
         "merge_businesses",
         primary_id=primary_id,
         secondary_id=secondary_id,
-    ) as op_id:
+    ):
 
         # Create backup before merge
         backup_id = preservation_manager.create_backup(
@@ -459,7 +459,7 @@ def merge_businesses(
 
 def select_primary_business(
     business1: dict, business2: dict, config: DedupeConfig
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     """
     Select which business should be primary based on data quality.
 
@@ -652,7 +652,7 @@ def deduplicate(
     config: Optional[DedupeConfig] = None,
     limit: Optional[int] = None,
     use_optimized: bool = True,
-) -> Dict[str, int]:
+) -> dict[str, int]:
     """
     Run the deduplication process.
 
@@ -699,7 +699,7 @@ def deduplicate(
         "full_deduplication",
         limit=limit,
         config_name=config.name if hasattr(config, "name") else "default",
-    ) as op_id:
+    ):
 
         # Ensure dedupe tables exist
         if not check_dedupe_tables_exist():

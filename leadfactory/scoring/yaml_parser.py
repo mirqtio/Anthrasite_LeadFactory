@@ -20,18 +20,18 @@ class TechStackCondition(BaseModel):
     """Model for technology stack conditions."""
 
     tech_stack_contains: Optional[str] = None
-    tech_stack_contains_any: Optional[List[str]] = None
-    tech_stack_version_lt: Optional[Dict[str, Union[str, float]]] = None
-    tech_stack_version_gt: Optional[Dict[str, Union[str, float]]] = None
+    tech_stack_contains_any: Optional[list[str]] = None
+    tech_stack_version_lt: Optional[dict[str, Union[str, float]]] = None
+    tech_stack_version_gt: Optional[dict[str, Union[str, float]]] = None
 
 
 class BusinessAttributeCondition(BaseModel):
     """Model for business attribute conditions."""
 
-    vertical_in: Optional[List[str]] = None
-    vertical_not_in: Optional[List[str]] = None
-    location_in: Optional[List[str]] = None
-    location_not_in: Optional[List[str]] = None
+    vertical_in: Optional[list[str]] = None
+    vertical_not_in: Optional[list[str]] = None
+    location_in: Optional[list[str]] = None
+    location_not_in: Optional[list[str]] = None
     employee_count_gt: Optional[int] = None
     employee_count_lt: Optional[int] = None
     revenue_gt: Optional[float] = None
@@ -43,9 +43,9 @@ class BusinessAttributeCondition(BaseModel):
 class SocialMediaCondition(BaseModel):
     """Model for social media conditions."""
 
-    has_social_media: Optional[List[str]] = None
-    social_followers_gt: Optional[Dict[str, int]] = None
-    social_engagement_gt: Optional[Dict[str, float]] = None
+    has_social_media: Optional[list[str]] = None
+    social_followers_gt: Optional[dict[str, int]] = None
+    social_engagement_gt: Optional[dict[str, float]] = None
 
 
 class RuleCondition(BaseModel):
@@ -53,15 +53,15 @@ class RuleCondition(BaseModel):
 
     # Tech stack conditions
     tech_stack_contains: Optional[str] = None
-    tech_stack_contains_any: Optional[List[str]] = None
-    tech_stack_version_lt: Optional[Dict[str, Union[str, float]]] = None
-    tech_stack_version_gt: Optional[Dict[str, Union[str, float]]] = None
+    tech_stack_contains_any: Optional[list[str]] = None
+    tech_stack_version_lt: Optional[dict[str, Union[str, float]]] = None
+    tech_stack_version_gt: Optional[dict[str, Union[str, float]]] = None
 
     # Business attribute conditions
-    vertical_in: Optional[List[str]] = None
-    vertical_not_in: Optional[List[str]] = None
-    location_in: Optional[List[str]] = None
-    location_not_in: Optional[List[str]] = None
+    vertical_in: Optional[list[str]] = None
+    vertical_not_in: Optional[list[str]] = None
+    location_in: Optional[list[str]] = None
+    location_not_in: Optional[list[str]] = None
     employee_count_gt: Optional[int] = None
     employee_count_lt: Optional[int] = None
     revenue_gt: Optional[float] = None
@@ -70,9 +70,9 @@ class RuleCondition(BaseModel):
     founded_year_lt: Optional[int] = None
 
     # Social media conditions
-    has_social_media: Optional[List[str]] = None
-    social_followers_gt: Optional[Dict[str, int]] = None
-    social_engagement_gt: Optional[Dict[str, float]] = None
+    has_social_media: Optional[list[str]] = None
+    social_followers_gt: Optional[dict[str, int]] = None
+    social_engagement_gt: Optional[dict[str, float]] = None
 
     # Website conditions
     has_contact_form: Optional[bool] = None
@@ -82,9 +82,9 @@ class RuleCondition(BaseModel):
     page_count_lt: Optional[int] = None
 
     # Combined conditions
-    all_of: Optional[List[Dict[str, Any]]] = None
-    any_of: Optional[List[Dict[str, Any]]] = None
-    none_of: Optional[List[Dict[str, Any]]] = None
+    all_of: Optional[list[dict[str, Any]]] = None
+    any_of: Optional[list[dict[str, Any]]] = None
+    none_of: Optional[list[dict[str, Any]]] = None
 
 
 class ScoringRule(BaseModel):
@@ -100,7 +100,7 @@ class ScoringRule(BaseModel):
     )  # Higher priority rules evaluated first
 
     @validator("score")
-    def validate_score(cls, v):
+    def validate_score(self, v):
         """Ensure score is within reasonable bounds."""
         if not -100 <= v <= 100:
             raise ValueError(f"Score must be between -100 and 100, got {v}")
@@ -117,7 +117,7 @@ class ScoringMultiplier(BaseModel):
     enabled: bool = True
 
     @validator("multiplier")
-    def validate_multiplier(cls, v):
+    def validate_multiplier(self, v):
         """Ensure multiplier is within reasonable bounds."""
         if not 0 < v <= 10:
             raise ValueError(f"Multiplier must be between 0 and 10, got {v}")
@@ -133,10 +133,10 @@ class ScoringSettings(BaseModel):
     high_score_threshold: int = Field(default=75, ge=0, le=100)
 
     @validator("max_score")
-    def validate_max_score(cls, v, values):
+    def validate_max_score(self, v, values):
         """Ensure max_score is greater than min_score."""
         if "min_score" in values and v <= values["min_score"]:
-            raise ValueError(f"max_score must be greater than min_score")
+            raise ValueError("max_score must be greater than min_score")
         return v
 
 
@@ -144,8 +144,8 @@ class ScoringRulesConfig(BaseModel):
     """Model for the complete scoring rules configuration."""
 
     settings: ScoringSettings
-    rules: List[ScoringRule]
-    multipliers: Optional[List[ScoringMultiplier]] = []
+    rules: list[ScoringRule]
+    multipliers: Optional[list[ScoringMultiplier]] = []
 
 
 class ScoringRulesParser:
@@ -187,7 +187,7 @@ class ScoringRulesParser:
         logger.info(f"Loading scoring rules from: {self.config_path}")
 
         try:
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 raw_config = yaml.safe_load(f)
 
             logger.debug(
@@ -215,7 +215,7 @@ class ScoringRulesParser:
             logger.error(f"Unexpected error loading configuration: {e}")
             raise
 
-    def get_enabled_rules(self) -> List[ScoringRule]:
+    def get_enabled_rules(self) -> list[ScoringRule]:
         """
         Get only the enabled rules.
 
@@ -237,7 +237,7 @@ class ScoringRulesParser:
 
         return enabled_rules
 
-    def get_enabled_multipliers(self) -> List[ScoringMultiplier]:
+    def get_enabled_multipliers(self) -> list[ScoringMultiplier]:
         """
         Get only the enabled multipliers.
 
@@ -271,7 +271,7 @@ class ScoringRulesParser:
 
         return self.config.settings
 
-    def validate_rule_syntax(self, rule_dict: Dict[str, Any]) -> bool:
+    def validate_rule_syntax(self, rule_dict: dict[str, Any]) -> bool:
         """
         Validate a single rule dictionary.
 

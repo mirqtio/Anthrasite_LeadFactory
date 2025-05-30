@@ -79,7 +79,7 @@ class CostTracker:
         # Initialize batch tracking
         self.current_batch_id: Optional[str] = None
         self.current_batch_start_time: Optional[datetime] = None
-        self.current_batch_costs: Dict[str, float] = {}
+        self.current_batch_costs: dict[str, float] = {}
 
         # Load tier thresholds
         self.tier_thresholds = {
@@ -166,7 +166,7 @@ class CostTracker:
         amount: float,
         service: str,
         operation: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        details: Optional[dict[str, Any]] = None,
         batch_id: Optional[str] = None,
     ) -> None:
         """Add a cost entry.
@@ -283,7 +283,7 @@ class CostTracker:
 
     def get_monthly_costs(
         self, year: Optional[int] = None, month: Optional[int] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get costs for a specific month.
 
         Args:
@@ -373,7 +373,7 @@ class CostTracker:
             "operations": operations,
         }
 
-    def get_daily_cost_breakdown(self) -> Dict[str, Dict[str, float]]:
+    def get_daily_cost_breakdown(self) -> dict[str, dict[str, float]]:
         """Get cost breakdown by service and operation for the current day.
 
         Returns:
@@ -409,7 +409,7 @@ class CostTracker:
 
         return breakdown
 
-    def get_monthly_cost_breakdown(self) -> Dict[str, Dict[str, float]]:
+    def get_monthly_cost_breakdown(self) -> dict[str, dict[str, float]]:
         """Get cost breakdown by service and operation for the current month.
 
         Returns:
@@ -558,7 +558,7 @@ class CostTracker:
 
         return is_active
 
-    def export_cost_report(self, report_data: Dict[str, Any], output_file: str) -> bool:
+    def export_cost_report(self, report_data: dict[str, Any], output_file: str) -> bool:
         """Export a cost report to a file.
 
         Args:
@@ -576,7 +576,7 @@ class CostTracker:
             logger.error(f"Failed to export cost report: {e}")
             return False
 
-    def get_daily_cost_report(self) -> Dict[str, Any]:
+    def get_daily_cost_report(self) -> dict[str, Any]:
         """Get a cost report for the current day.
 
         Returns:
@@ -594,7 +594,7 @@ class CostTracker:
 
         return report
 
-    def get_monthly_cost_report(self) -> Dict[str, Any]:
+    def get_monthly_cost_report(self) -> dict[str, Any]:
         """Get a cost report for the current month.
 
         Returns:
@@ -730,7 +730,7 @@ def main() -> int:
                     extra={"export_path": args.export},
                 )
             else:
-                logger.error(f"Failed to export daily cost report")
+                logger.error("Failed to export daily cost report")
                 return 1
 
     elif args.command == "monthly":
@@ -778,7 +778,7 @@ def main() -> int:
                     extra={"export_path": args.export},
                 )
             else:
-                logger.error(f"Failed to export monthly cost report")
+                logger.error("Failed to export monthly cost report")
                 return 1
 
     elif args.command == "budget":
@@ -792,7 +792,7 @@ def main() -> int:
                 extra={"budget": args.amount},
             )
         else:
-            logger.error(f"Failed to set monthly budget")
+            logger.error("Failed to set monthly budget")
             return 1
 
     else:

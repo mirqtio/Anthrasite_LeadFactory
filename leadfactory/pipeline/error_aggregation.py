@@ -79,11 +79,11 @@ class ErrorPattern:
     frequency: int = 0
     first_occurrence: Optional[datetime] = None
     last_occurrence: Optional[datetime] = None
-    affected_businesses: Set[int] = field(default_factory=set)
-    common_context: Dict[str, Any] = field(default_factory=dict)
-    sample_errors: List[str] = field(default_factory=list)
+    affected_businesses: set[int] = field(default_factory=set)
+    common_context: dict[str, Any] = field(default_factory=dict)
+    sample_errors: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert error pattern to dictionary."""
         return {
             "pattern_id": self.pattern_id,
@@ -121,18 +121,18 @@ class ErrorMetrics:
     start_time: datetime
     end_time: datetime
     total_errors: int = 0
-    errors_by_severity: Dict[str, int] = field(default_factory=dict)
-    errors_by_category: Dict[str, int] = field(default_factory=dict)
-    errors_by_stage: Dict[str, int] = field(default_factory=dict)
-    errors_by_operation: Dict[str, int] = field(default_factory=dict)
+    errors_by_severity: dict[str, int] = field(default_factory=dict)
+    errors_by_category: dict[str, int] = field(default_factory=dict)
+    errors_by_stage: dict[str, int] = field(default_factory=dict)
+    errors_by_operation: dict[str, int] = field(default_factory=dict)
     error_rate_per_hour: float = 0.0
-    most_common_errors: List[Tuple[str, int]] = field(default_factory=list)
-    affected_businesses: Set[int] = field(default_factory=set)
+    most_common_errors: list[tuple[str, int]] = field(default_factory=list)
+    affected_businesses: set[int] = field(default_factory=set)
     critical_error_count: int = 0
     recoverable_error_count: int = 0
-    patterns: List[ErrorPattern] = field(default_factory=list)
+    patterns: list[ErrorPattern] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert metrics to dictionary."""
         return {
             "time_window": self.time_window.value,
@@ -162,9 +162,9 @@ class AlertThreshold:
     threshold_value: float
     time_window: TimeWindow
     alert_level: AlertLevel
-    conditions: Dict[str, Any] = field(default_factory=dict)
+    conditions: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert threshold to dictionary."""
         return {
             "name": self.name,
@@ -192,9 +192,9 @@ class ErrorAggregator:
         """
         self.max_error_history = max_error_history
         self.pattern_detection_enabled = pattern_detection_enabled
-        self.error_history: List[PipelineError] = []
-        self.batch_history: List[BatchResult] = []
-        self.alert_thresholds: List[AlertThreshold] = []
+        self.error_history: list[PipelineError] = []
+        self.batch_history: list[BatchResult] = []
+        self.alert_thresholds: list[AlertThreshold] = []
         self.logger = get_logger(__name__)
 
         # Initialize default alert thresholds
@@ -265,7 +265,7 @@ class ErrorAggregator:
 
     def get_time_window_bounds(
         self, time_window: TimeWindow
-    ) -> Tuple[datetime, datetime]:
+    ) -> tuple[datetime, datetime]:
         """Get start and end times for a time window."""
         end_time = datetime.now()
 
@@ -284,7 +284,7 @@ class ErrorAggregator:
 
         return start_time, end_time
 
-    def filter_errors_by_time(self, time_window: TimeWindow) -> List[PipelineError]:
+    def filter_errors_by_time(self, time_window: TimeWindow) -> list[PipelineError]:
         """Filter errors by time window."""
         start_time, end_time = self.get_time_window_bounds(time_window)
 
@@ -377,7 +377,7 @@ class ErrorAggregator:
 
         return metrics
 
-    def detect_error_patterns(self, errors: List[PipelineError]) -> List[ErrorPattern]:
+    def detect_error_patterns(self, errors: list[PipelineError]) -> list[ErrorPattern]:
         """Detect patterns in the error data."""
         patterns = {}
 
@@ -430,7 +430,7 @@ class ErrorAggregator:
 
         return sorted_patterns
 
-    def check_alert_thresholds(self, metrics: ErrorMetrics) -> List[Dict[str, Any]]:
+    def check_alert_thresholds(self, metrics: ErrorMetrics) -> list[dict[str, Any]]:
         """Check if any alert thresholds are exceeded."""
         triggered_alerts = []
 
@@ -476,7 +476,7 @@ class ErrorAggregator:
         time_window: TimeWindow = TimeWindow.LAST_24_HOURS,
         include_patterns: bool = True,
         include_alerts: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate a comprehensive error report."""
         metrics = self.generate_error_metrics(time_window)
 
@@ -512,7 +512,7 @@ class ErrorAggregator:
 
         return report
 
-    def _generate_recommendations(self, metrics: ErrorMetrics) -> List[Dict[str, Any]]:
+    def _generate_recommendations(self, metrics: ErrorMetrics) -> list[dict[str, Any]]:
         """Generate recommendations based on error patterns."""
         recommendations = []
 
@@ -588,7 +588,7 @@ class ErrorAggregator:
 
         self.logger.info(f"Error metrics exported to {filepath}")
 
-    def get_error_summary(self, hours: int = 24) -> Dict[str, Any]:
+    def get_error_summary(self, hours: int = 24) -> dict[str, Any]:
         """Get a summary of errors for the specified time period."""
         # Convert hours to appropriate time window
         if hours <= 1:

@@ -82,7 +82,7 @@ def get_float_env(name: str, default: float = 0.0) -> float:
         return default
 
 
-def load_config(env_file: Optional[str] = None) -> Dict[str, Any]:
+def load_config(env_file: Optional[str] = None) -> dict[str, Any]:
     """
     Load configuration from environment variables and/or .env file.
 
@@ -119,7 +119,7 @@ def load_config(env_file: Optional[str] = None) -> Dict[str, Any]:
     return config
 
 
-def get_config() -> Dict[str, Any]:
+def get_config() -> dict[str, Any]:
     """
     Get the configuration dictionary.
 
@@ -162,5 +162,5 @@ for name in dir(settings_module):
         setattr(current_module, name, getattr(settings_module, name))
 
         # Add to __all__
-        if isinstance(__all__, List):  # For type checking
+        if isinstance(__all__, list):  # For type checking
             __all__.append(name)

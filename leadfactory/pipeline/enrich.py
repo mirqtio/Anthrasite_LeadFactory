@@ -28,7 +28,7 @@ logger = get_logger(__name__)
 
 
 @log_execution_time
-def enrich_business(business: Dict[str, Any], tier: int = 1) -> bool:
+def enrich_business(business: dict[str, Any], tier: int = 1) -> bool:
     """
     Enrich a business with tech stack and performance data.
 
@@ -105,7 +105,7 @@ def enrich_businesses(
 
     # Log with structured context
     logger.info(
-        f"Starting batch enrichment process",
+        "Starting batch enrichment process",
         extra={
             "operation": "batch_enrichment",
             "limit": limit,
@@ -205,7 +205,7 @@ def main() -> int:
     try:
         # Start the process with structured logging
         logger.info(
-            f"Starting enrichment process",
+            "Starting enrichment process",
             extra={"cli_args": vars(args), "operation": "cli_enrich"},
         )
 

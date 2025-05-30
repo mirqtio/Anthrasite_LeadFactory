@@ -221,7 +221,7 @@ class DedupeLogger:
         secondary_id: int,
         confidence: float,
         strategy: str,
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ):
         """Log merge operations with detailed information."""
         self.logger.info(
@@ -259,7 +259,7 @@ class DedupeLogger:
             },
         )
 
-    def get_metrics_summary(self) -> Dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, Any]:
         """Get a summary of collected metrics."""
         return {"operations": self.metrics, "timestamp": datetime.utcnow().isoformat()}
 
@@ -329,7 +329,7 @@ def log_dedupe_performance(logger: DedupeLogger):
                     records_processed=1,  # Default value
                 )
                 return result
-            except Exception as e:
+            except Exception:
                 duration_seconds = time.time() - start_time
                 logger.log_performance_metrics(
                     operation_type=f"{func.__name__}_failed",
@@ -355,16 +355,14 @@ class DedupeLogAnalyzer:
 
     def load_logs(
         self, start_time: Optional[datetime] = None, end_time: Optional[datetime] = None
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Load and parse dedupe logs within the specified time range."""
         if not self.log_file or not os.path.exists(self.log_file):
             return []
 
-        import json
-
         logs = []
         try:
-            with open(self.log_file, "r") as f:
+            with open(self.log_file) as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -390,7 +388,7 @@ class DedupeLogAnalyzer:
         self.logs = logs
         return logs
 
-    def analyze_merge_patterns(self) -> Dict[str, Any]:
+    def analyze_merge_patterns(self) -> dict[str, Any]:
         """Analyze merge patterns from logs."""
         merge_logs = [
             log for log in self.logs if log.get("event_type") == "business_merge"
@@ -424,7 +422,7 @@ class DedupeLogAnalyzer:
             ),
         }
 
-    def analyze_performance(self) -> Dict[str, Any]:
+    def analyze_performance(self) -> dict[str, Any]:
         """Analyze performance metrics from logs."""
         perf_logs = [
             log for log in self.logs if log.get("event_type") == "performance_metric"
@@ -459,7 +457,7 @@ class DedupeLogAnalyzer:
 
         return metrics
 
-    def get_operation_summary(self) -> Dict[str, Any]:
+    def get_operation_summary(self) -> dict[str, Any]:
         """Get a summary of all operations from logs."""
         operation_logs = [log for log in self.logs if log.get("operation_type")]
 
@@ -485,7 +483,7 @@ class DedupeLogAnalyzer:
 
         return operations
 
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> dict[str, Any]:
         """Generate a comprehensive dedupe analysis report."""
         return {
             "summary": {

@@ -174,7 +174,7 @@ class SendGridEmailSender:
         to_name: str,
         subject: str,
         html_content: str,
-        attachments: list[dict] = [],
+        attachments: list[dict] = None,
         is_dry_run: bool = False,
     ) -> Optional[str]:
         """Send an email via SendGrid.
@@ -190,6 +190,8 @@ class SendGridEmailSender:
         Returns:
             Message ID if successful, None otherwise.
         """
+        if attachments is None:
+            attachments = []
         if is_dry_run:
             logger.info(f"Dry run: would send email to {to_email}")
             return f"dry-run-{int(time.time())}"
@@ -526,7 +528,7 @@ def load_email_template() -> str:
     """
     try:
         # Load the template file
-        with open(EMAIL_TEMPLATE_PATH, "r", encoding="utf-8") as f:
+        with open(EMAIL_TEMPLATE_PATH, encoding="utf-8") as f:
             template = f.read()
         return template
     except Exception as e:
@@ -922,9 +924,9 @@ San Francisco, CA 94107
         logger.exception(f"Error generating email content: {str(e)}")
         # Return fallback content
         return (
-            f"Website proposal for your business",
-            f"<p>Hello! We've created a website mockup for your business.</p>",
-            f"Hello! We've created a website mockup for your business.",
+            "Website proposal for your business",
+            "<p>Hello! We've created a website mockup for your business.</p>",
+            "Hello! We've created a website mockup for your business.",
         )
 
 
@@ -1052,7 +1054,7 @@ def send_business_email(
             # No real mockup available - cannot send email
             logger.error(f"No real mockup file found for business {business['id']}")
             logger.error(
-                f"Cannot send email without real mockup - failing email delivery"
+                "Cannot send email without real mockup - failing email delivery"
             )
             raise Exception(
                 f"Email delivery requires real mockup, but none found for business {business['id']}"

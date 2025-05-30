@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 # Import from the original location
-from leadfactory.utils.string_utils import *
+from bin.utils.string_utils import *
 
 # Re-export everything from the original module
 __all__ = [

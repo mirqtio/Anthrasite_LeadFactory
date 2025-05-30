@@ -5,6 +5,7 @@ This module provides configuration options for the deduplication process,
 including thresholds, matching rules, and processing options.
 """
 
+import contextlib
 import json
 import os
 from typing import Any, Dict, List, Optional
@@ -26,15 +27,15 @@ class DedupeConfig:
         llm_base_url: str = "http://localhost:11434",
         llm_confidence_threshold: float = 0.8,
         llm_timeout: int = 30,
-        source_priorities: Optional[Dict[str, int]] = None,
-        matching_fields: Optional[List[str]] = None,
-        merge_fields: Optional[List[str]] = None,
+        source_priorities: Optional[dict[str, int]] = None,
+        matching_fields: Optional[list[str]] = None,
+        merge_fields: Optional[list[str]] = None,
         auto_flag_low_confidence: bool = True,
         low_confidence_threshold: float = 0.5,
         flag_same_name_different_address: bool = True,
-        conflict_resolution_rules: Optional[Dict[str, str]] = None,
+        conflict_resolution_rules: Optional[dict[str, str]] = None,
         enable_manual_review: bool = True,
-        manual_review_fields: Optional[List[str]] = None,
+        manual_review_fields: Optional[list[str]] = None,
     ):
         """Initialize deduplication configuration."""
         # Similarity thresholds
@@ -103,11 +104,11 @@ class DedupeConfig:
         ]
 
     @classmethod
-    def from_dict(cls, config_dict: Dict[str, Any]) -> "DedupeConfig":
+    def from_dict(cls, config_dict: dict[str, Any]) -> "DedupeConfig":
         """Create configuration from dictionary."""
         return cls(**config_dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert configuration to dictionary."""
         return {
             "name_similarity_threshold": self.name_similarity_threshold,
@@ -152,10 +153,10 @@ def load_dedupe_config(config_path: Optional[str] = None) -> DedupeConfig:
     # Load from file if provided
     if config_path and os.path.exists(config_path):
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 config_dict = json.load(f)
-        except Exception as e:
-            print(f"Error loading config from {config_path}: {e}")
+        except Exception:
+            pass
 
     # Override with environment variables
     env_mappings = {
@@ -174,9 +175,7 @@ def load_dedupe_config(config_path: Optional[str] = None) -> DedupeConfig:
 
     for env_var, (config_key, converter) in env_mappings.items():
         if env_var in os.environ:
-            try:
+            with contextlib.suppress(Exception):
                 config_dict[config_key] = converter(os.environ[env_var])
-            except Exception as e:
-                print(f"Error converting {env_var}: {e}")
 
     return DedupeConfig.from_dict(config_dict) if config_dict else DEFAULT_DEDUPE_CONFIG

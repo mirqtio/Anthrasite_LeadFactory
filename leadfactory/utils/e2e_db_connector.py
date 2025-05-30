@@ -9,9 +9,10 @@ E2E_MODE is enabled.
 import logging
 import os
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import psycopg2
 
@@ -47,7 +48,7 @@ def load_e2e_env() -> bool:
     logger.info(f"Loading E2E environment from {ENV_FILE}")
 
     # Parse environment file
-    with open(ENV_FILE, "r") as f:
+    with open(ENV_FILE) as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
@@ -78,7 +79,7 @@ def load_production_test_env() -> bool:
     logger.info(f"Loading production test environment from {PROD_TEST_ENV_FILE}")
 
     # Parse environment file
-    with open(PROD_TEST_ENV_FILE, "r") as f:
+    with open(PROD_TEST_ENV_FILE) as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
@@ -153,8 +154,8 @@ def db_cursor() -> Generator[psycopg2.extensions.cursor, None, None]:
 
 
 def execute_query(
-    query: str, params: Optional[Tuple] = None, fetch: bool = True
-) -> List[Tuple]:
+    query: str, params: Optional[tuple] = None, fetch: bool = True
+) -> list[tuple]:
     """
     Execute a SQL query and return the results.
 
@@ -180,7 +181,7 @@ def execute_query(
         raise
 
 
-def execute_transaction(queries: List[Tuple[str, Optional[Tuple]]]) -> bool:
+def execute_transaction(queries: list[tuple[str, Optional[tuple]]]) -> bool:
     """
     Execute multiple queries in a transaction.
 
@@ -267,7 +268,7 @@ def validate_schema() -> bool:
 # ===== DEDUPLICATION FUNCTIONS =====
 
 
-def get_potential_duplicate_pairs(limit: Optional[int] = None) -> List[Dict[str, Any]]:
+def get_potential_duplicate_pairs(limit: Optional[int] = None) -> list[dict[str, Any]]:
     """
     Get potential duplicate business pairs from the database.
 
@@ -349,7 +350,7 @@ def get_potential_duplicate_pairs(limit: Optional[int] = None) -> List[Dict[str,
         return []
 
 
-def get_business_details(business_id: int) -> Optional[Dict[str, Any]]:
+def get_business_details(business_id: int) -> Optional[dict[str, Any]]:
     """
     Get detailed business information including JSON responses.
 
@@ -423,7 +424,7 @@ def merge_business_records(primary_id: int, secondary_id: int) -> bool:
         return False
 
 
-def update_business_fields(business_id: int, updates: Dict[str, Any]) -> bool:
+def update_business_fields(business_id: int, updates: dict[str, Any]) -> bool:
     """
     Update specific fields of a business record.
 
@@ -502,7 +503,7 @@ def add_to_review_queue(
 
 def get_review_queue_items(
     status: str = None, limit: int = 100
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Get items from the review queue.
 

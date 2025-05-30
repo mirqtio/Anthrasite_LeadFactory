@@ -64,7 +64,7 @@ class BusinessCache:
         self._max_size = max_size
         self._access_count = defaultdict(int)
 
-    def get(self, business_id: int) -> Optional[Dict[str, Any]]:
+    def get(self, business_id: int) -> Optional[dict[str, Any]]:
         """Get business from cache."""
         with self._lock:
             if business_id in self._cache:
@@ -72,7 +72,7 @@ class BusinessCache:
                 return self._cache[business_id]
             return None
 
-    def put(self, business_id: int, business: Dict[str, Any]) -> None:
+    def put(self, business_id: int, business: dict[str, Any]) -> None:
         """Put business in cache with LRU eviction."""
         with self._lock:
             if len(self._cache) >= self._max_size:
@@ -105,7 +105,7 @@ class OptimizedDeduplicator:
         self.metrics = PerformanceMetrics()
         self.dedupe_logger = DedupeLogger()
 
-    def get_business_batch(self, business_ids: List[int]) -> Dict[int, Dict[str, Any]]:
+    def get_business_batch(self, business_ids: list[int]) -> dict[int, dict[str, Any]]:
         """
         Get multiple businesses in a single database query.
 
@@ -130,30 +130,29 @@ class OptimizedDeduplicator:
 
         # Fetch missing businesses in batch
         if missing_ids:
-            with db_connection() as conn:
-                with db_cursor(conn) as cursor:
-                    # Use IN clause for batch fetch
-                    placeholders = ",".join(["%s"] * len(missing_ids))
-                    query = f"""
+            with db_connection() as conn, db_cursor(conn) as cursor:
+                # Use IN clause for batch fetch
+                placeholders = ",".join(["%s"] * len(missing_ids))
+                query = f"""
                         SELECT id, name, address, zip, phone, email, website,
                                vertical, source, google_response, yelp_response,
                                manual_response, created_at, updated_at
                         FROM businesses
                         WHERE id IN ({placeholders})
                     """
-                    cursor.execute(query, missing_ids)
+                cursor.execute(query, missing_ids)
 
-                    for row in cursor.fetchall():
-                        business_data = dict(row)
-                        business_id = business_data["id"]
-                        cached_businesses[business_id] = business_data
-                        self.business_cache.put(business_id, business_data)
+                for row in cursor.fetchall():
+                    business_data = dict(row)
+                    business_id = business_data["id"]
+                    cached_businesses[business_id] = business_data
+                    self.business_cache.put(business_id, business_data)
 
         return cached_businesses
 
     def process_pairs_batch(
-        self, pairs: List[Dict[str, Any]], batch_size: int = 50
-    ) -> Dict[str, int]:
+        self, pairs: list[dict[str, Any]], batch_size: int = 50
+    ) -> dict[str, int]:
         """
         Process duplicate pairs in batches for better performance.
 
@@ -184,7 +183,7 @@ class OptimizedDeduplicator:
 
         return stats
 
-    def _process_single_batch(self, batch: List[Dict[str, Any]]) -> Dict[str, int]:
+    def _process_single_batch(self, batch: list[dict[str, Any]]) -> dict[str, int]:
         """Process a single batch of duplicate pairs."""
         stats = {"processed": 0, "merged": 0, "flagged": 0, "errors": 0}
 
@@ -235,7 +234,7 @@ class OptimizedDeduplicator:
 
         return stats
 
-    def process_pairs_parallel(self, pairs: List[Dict[str, Any]]) -> Dict[str, int]:
+    def process_pairs_parallel(self, pairs: list[dict[str, Any]]) -> dict[str, int]:
         """
         Process duplicate pairs in parallel using thread pool.
 
@@ -272,7 +271,7 @@ class OptimizedDeduplicator:
         return stats
 
     def _should_merge(
-        self, business1: Dict[str, Any], business2: Dict[str, Any]
+        self, business1: dict[str, Any], business2: dict[str, Any]
     ) -> bool:
         """Determine if two businesses should be merged (simplified logic)."""
         # Quick checks for exact matches
@@ -292,8 +291,8 @@ class OptimizedDeduplicator:
         return False
 
     def _select_primary(
-        self, business1: Dict[str, Any], business2: Dict[str, Any]
-    ) -> Tuple[int, int]:
+        self, business1: dict[str, Any], business2: dict[str, Any]
+    ) -> tuple[int, int]:
         """Select primary business based on data quality."""
         # Simple heuristic: prefer business with more complete data
         score1 = sum(
@@ -334,22 +333,21 @@ class OptimizedDeduplicator:
         ]
 
         try:
-            with db_connection() as conn:
-                with db_cursor(conn) as cursor:
-                    for index_sql in indexes:
-                        try:
-                            cursor.execute(index_sql)
-                            logger.info(f"Created index: {index_sql}")
-                        except Exception as e:
-                            logger.warning(
-                                f"Index creation failed (may already exist): {e}"
-                            )
+            with db_connection() as conn, db_cursor(conn) as cursor:
+                for index_sql in indexes:
+                    try:
+                        cursor.execute(index_sql)
+                        logger.info(f"Created index: {index_sql}")
+                    except Exception as e:
+                        logger.warning(
+                            f"Index creation failed (may already exist): {e}"
+                        )
             return True
         except Exception as e:
             logger.error(f"Error creating indexes: {e}")
             return False
 
-    def get_performance_report(self) -> Dict[str, Any]:
+    def get_performance_report(self) -> dict[str, Any]:
         """Generate a performance report."""
         return {
             "metrics": {
@@ -366,7 +364,7 @@ class OptimizedDeduplicator:
             "recommendations": self._generate_recommendations(),
         }
 
-    def _generate_recommendations(self) -> List[str]:
+    def _generate_recommendations(self) -> list[str]:
         """Generate performance recommendations based on metrics."""
         recommendations = []
 
@@ -389,7 +387,7 @@ def run_optimized_deduplication(
     limit: Optional[int] = None,
     use_parallel: bool = True,
     batch_size: int = 50,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Run optimized deduplication with performance tracking.
 

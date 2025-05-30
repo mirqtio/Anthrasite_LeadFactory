@@ -18,10 +18,10 @@ from typing import Any, Dict, List, Optional
 
 # Import database connection with fallback
 try:
-    from leadfactory.utils.e2e_db_connector import db_connection as DatabaseConnection
+    from leadfactory.utils.e2e_db_connector import db_connection as database_connection
 except ImportError:
     # Fallback for testing
-    class DatabaseConnection:
+    class database_connection:
         def __init__(self, db_path=None):
             pass
 
@@ -91,7 +91,7 @@ class BounceEvent:
     sg_message_id: Optional[str] = None
 
     @classmethod
-    def from_webhook_data(cls, data: Dict[str, Any]) -> "BounceEvent":
+    def from_webhook_data(cls, data: dict[str, Any]) -> "BounceEvent":
         """Create a BounceEvent from webhook data."""
         return cls(
             email=data.get("email", ""),
@@ -160,7 +160,7 @@ class SendGridWebhookHandler:
             logger.error(f"Error verifying webhook signature: {e}")
             return False
 
-    def process_webhook_events(self, events: List[Dict[str, Any]]) -> Dict[str, int]:
+    def process_webhook_events(self, events: list[dict[str, Any]]) -> dict[str, int]:
         """Process a list of webhook events.
 
         Args:
@@ -207,7 +207,7 @@ class SendGridWebhookHandler:
 
         return event_counts
 
-    def _process_bounce_event(self, event_data: Dict[str, Any]) -> None:
+    def _process_bounce_event(self, event_data: dict[str, Any]) -> None:
         """Process a bounce or dropped event.
 
         Args:
@@ -235,7 +235,7 @@ class SendGridWebhookHandler:
         # Check if bounce rate thresholds are exceeded
         self._check_bounce_rate_thresholds()
 
-    def _process_spam_event(self, event_data: Dict[str, Any]) -> None:
+    def _process_spam_event(self, event_data: dict[str, Any]) -> None:
         """Process a spam complaint event.
 
         Args:
@@ -251,7 +251,7 @@ class SendGridWebhookHandler:
         # Check if spam rate thresholds are exceeded
         self._check_spam_rate_thresholds()
 
-    def _process_unsubscribe_event(self, event_data: Dict[str, Any]) -> None:
+    def _process_unsubscribe_event(self, event_data: dict[str, Any]) -> None:
         """Process an unsubscribe event.
 
         Args:
@@ -264,7 +264,7 @@ class SendGridWebhookHandler:
         self._store_unsubscribe_event(event_data)
         self._mark_email_unsubscribed(email)
 
-    def _process_delivered_event(self, event_data: Dict[str, Any]) -> None:
+    def _process_delivered_event(self, event_data: dict[str, Any]) -> None:
         """Process a delivered event.
 
         Args:
@@ -283,7 +283,7 @@ class SendGridWebhookHandler:
             bounce_event: BounceEvent object to store
         """
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     INSERT OR REPLACE INTO email_bounces
@@ -308,10 +308,10 @@ class SendGridWebhookHandler:
         except Exception as e:
             logger.error(f"Error storing bounce event: {e}")
 
-    def _store_spam_event(self, event_data: Dict[str, Any]) -> None:
+    def _store_spam_event(self, event_data: dict[str, Any]) -> None:
         """Store spam complaint event in database."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     INSERT OR REPLACE INTO email_spam_reports
@@ -330,10 +330,10 @@ class SendGridWebhookHandler:
         except Exception as e:
             logger.error(f"Error storing spam event: {e}")
 
-    def _store_unsubscribe_event(self, event_data: Dict[str, Any]) -> None:
+    def _store_unsubscribe_event(self, event_data: dict[str, Any]) -> None:
         """Store unsubscribe event in database."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     INSERT OR REPLACE INTO email_unsubscribes
@@ -355,7 +355,7 @@ class SendGridWebhookHandler:
     def _mark_email_permanently_bounced(self, email: str) -> None:
         """Mark an email as permanently bounced."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     UPDATE email_queue
@@ -371,7 +371,7 @@ class SendGridWebhookHandler:
     def _mark_email_blocked(self, email: str) -> None:
         """Mark an email as blocked."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     UPDATE email_queue
@@ -387,7 +387,7 @@ class SendGridWebhookHandler:
     def _increment_soft_bounce_count(self, email: str) -> None:
         """Increment soft bounce count for an email."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     UPDATE email_queue
@@ -404,7 +404,7 @@ class SendGridWebhookHandler:
     def _mark_email_spam_complaint(self, email: str) -> None:
         """Mark an email as having a spam complaint."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     UPDATE email_queue
@@ -420,7 +420,7 @@ class SendGridWebhookHandler:
     def _mark_email_unsubscribed(self, email: str) -> None:
         """Mark an email as unsubscribed."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     UPDATE email_queue
@@ -436,7 +436,7 @@ class SendGridWebhookHandler:
     def _mark_email_delivered(self, email: str, message_id: Optional[str]) -> None:
         """Mark an email as delivered."""
         try:
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 db.execute(
                     """
                     UPDATE email_queue
@@ -513,7 +513,7 @@ class SendGridWebhookHandler:
         try:
             cutoff_time = datetime.now().timestamp() - (hours * 3600)
 
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 # Get total emails sent in time period
                 db.execute(
                     """
@@ -544,7 +544,7 @@ class SendGridWebhookHandler:
         try:
             cutoff_time = datetime.now().timestamp() - (hours * 3600)
 
-            with DatabaseConnection(self.db_path) as db:
+            with database_connection(self.db_path) as db:
                 # Get total emails sent in time period
                 db.execute(
                     """
@@ -594,7 +594,7 @@ def create_webhook_tables(db_path: Optional[str] = None) -> None:
         db_path: Path to the database file
     """
     try:
-        with DatabaseConnection(db_path) as db:
+        with database_connection(db_path) as db:
             # Create bounce events table
             db.execute(
                 """
@@ -650,12 +650,12 @@ def create_webhook_tables(db_path: Optional[str] = None) -> None:
                 db.execute(
                     "ALTER TABLE email_queue ADD COLUMN soft_bounce_count INTEGER DEFAULT 0"
                 )
-            except:
+            except Exception:
                 pass  # Column already exists
 
             try:
                 db.execute("ALTER TABLE email_queue ADD COLUMN delivered_at TEXT")
-            except:
+            except Exception:
                 pass  # Column already exists
 
             db.commit()

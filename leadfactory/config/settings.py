@@ -185,7 +185,7 @@ def is_staging() -> bool:
     return ENVIRONMENT.lower() == "staging"
 
 
-def get_all_settings() -> Dict[str, Any]:
+def get_all_settings() -> dict[str, Any]:
     """
     Get all configuration settings as a dictionary.
 

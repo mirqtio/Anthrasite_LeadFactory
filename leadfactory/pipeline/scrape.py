@@ -55,7 +55,7 @@ if not has_io_imports:
         import yaml
 
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 return yaml.safe_load(f) or {}
         except Exception as e:
             logger.error(f"Failed to load YAML config from {file_path}: {e}")
@@ -1277,7 +1277,7 @@ def main() -> int:
     try:
         # Start the process with structured logging
         logger.info(
-            f"Starting scraping process",
+            "Starting scraping process",
             extra={
                 "cli_args": vars(args),
                 "operation": "cli_scrape",
@@ -1291,7 +1291,7 @@ def main() -> int:
             verticals = load_yaml_config(VERTICALS_CONFIG_PATH).get("verticals", [])
             if not verticals:
                 logger.error(
-                    f"No verticals found in config",
+                    "No verticals found in config",
                     extra={"config_path": VERTICALS_CONFIG_PATH, "outcome": "failure"},
                 )
                 return 1
@@ -1301,7 +1301,7 @@ def main() -> int:
                 verticals = [v for v in verticals if v.get("name") == args.vertical]
                 if not verticals:
                     logger.error(
-                        f"Vertical not found",
+                        "Vertical not found",
                         extra={"vertical": args.vertical, "outcome": "failure"},
                     )
                     return 1
@@ -1320,14 +1320,14 @@ def main() -> int:
                 zip_codes = [z for z in zip_codes if z.get("zip_code") == args.zip]
                 if not zip_codes:
                     logger.error(
-                        f"ZIP code not found or not active",
+                        "ZIP code not found or not active",
                         extra={"zip_code": args.zip, "outcome": "failure"},
                     )
                     return 1
 
             # Log what we're doing with structured context
             logger.info(
-                f"Processing ZIP codes and verticals",
+                "Processing ZIP codes and verticals",
                 extra={
                     "zip_count": len(zip_codes),
                     "vertical_count": len(verticals),
@@ -1383,7 +1383,7 @@ def main() -> int:
 
             # Log the final results with structured data
             logger.info(
-                f"Completed scraping process",
+                "Completed scraping process",
                 extra={
                     "total_businesses": total_yelp + total_google,
                     "yelp_count": total_yelp,
@@ -1412,8 +1412,6 @@ def main() -> int:
         # Also print to stderr for debugging
         import traceback
 
-        print(f"ERROR: {e}", file=sys.stderr)
-        print(f"TRACEBACK:", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
         return 1
 

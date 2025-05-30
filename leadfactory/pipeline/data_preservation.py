@@ -87,7 +87,7 @@ class DataPreservationManager:
             logger.error(f"Failed to create audit tables: {e}")
 
     def create_backup(
-        self, business_ids: List[int], operation_type: str
+        self, business_ids: list[int], operation_type: str
     ) -> Optional[str]:
         """
         Create a backup of business records before modification.
@@ -153,7 +153,7 @@ class DataPreservationManager:
                 os.remove(backup_path)
             return None
 
-    def _get_related_data(self, business_id: int) -> Dict[str, Any]:
+    def _get_related_data(self, business_id: int) -> dict[str, Any]:
         """Get related data for a business (e.g., responses, metadata)."""
         related_data = {}
 
@@ -179,7 +179,7 @@ class DataPreservationManager:
         self,
         backup_id: str,
         operation_type: str,
-        business_ids: List[int],
+        business_ids: list[int],
         backup_path: str,
         backup_size: int,
         checksum: str,
@@ -246,7 +246,7 @@ class DataPreservationManager:
                 return False
 
             # Load backup data
-            with open(backup_path, "r") as f:
+            with open(backup_path) as f:
                 backup_data = json.load(f)
 
             # Restore businesses
@@ -274,7 +274,7 @@ class DataPreservationManager:
             return False
 
     def _restore_business(
-        self, business_id: int, business_data: Dict[str, Any]
+        self, business_id: int, business_data: dict[str, Any]
     ) -> bool:
         """Restore a single business record."""
         # This is a simplified restoration - adjust based on your needs
@@ -289,7 +289,7 @@ class DataPreservationManager:
         operation_type: str,
         business1_id: Optional[int],
         business2_id: Optional[int],
-        operation_data: Dict[str, Any],
+        operation_data: dict[str, Any],
         status: str,
         error_message: str = None,
         user_id: str = None,
@@ -335,7 +335,7 @@ class DataPreservationManager:
         start_date: datetime = None,
         end_date: datetime = None,
         limit: int = 100,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve audit trail entries.
 

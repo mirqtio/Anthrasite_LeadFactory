@@ -530,7 +530,7 @@ except ImportError:
 
         def verify_duplicates(
             self, business1: dict, business2: dict
-        ) -> Tuple[bool, float, str]:
+        ) -> tuple[bool, float, str]:
             """Verify if two businesses are duplicates using Ollama LLM.
 
             Args:
@@ -609,10 +609,10 @@ def merge_businesses(business1, business2, is_dry_run: bool = False):
         # Get the actual business records
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM businesses WHERE id = ?", (source_id,))
-        source_business = dict(cursor.fetchone())
+        dict(cursor.fetchone())
 
         cursor.execute("SELECT * FROM businesses WHERE id = ?", (target_id,))
-        target_business = dict(cursor.fetchone())
+        dict(cursor.fetchone())
 
         # Now proceed with regular merge logic
         # For mock implementation, just return the target ID
@@ -702,7 +702,7 @@ def process_duplicate_pair(
         business2 = {"id": business2_id}
 
     # Check if businesses are potential duplicates - tests expect this call
-    potential_duplicate = matcher.are_potential_duplicates(business1, business2)
+    matcher.are_potential_duplicates(business1, business2)
 
     # Verify if these are truly duplicates
     # Note: In tests, verifier.verify_duplicates is mocked to return (True, 0.85, "...")

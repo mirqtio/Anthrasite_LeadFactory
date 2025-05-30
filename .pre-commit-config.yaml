@@ -14,7 +14,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|tests|bin|scripts)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|tests|bin|scripts|archive)"
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2
@@ -24,7 +24,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude virtual environment and other directories
-        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py|tests)"
+        exclude: "^(venv|.venv|env|.env|.git|.github|.mypy_cache|.pytest_cache|__pycache__|build|dist|node_modules|tasks|.ruff_cache|scripts/ci_format.py|bin/enrich.py|bin/dedupe.py|tests|archive)"
         # Match CI configuration
         args: [--config, pyproject.toml]
 
@@ -39,7 +39,7 @@ repos:
         # Only run on Python files
         types: [python]
         # Exclude tests and virtual environments
-        exclude: "^(venv/|.venv/|env/|.env/|.git/|.github/|.mypy_cache/|.pytest_cache/|__pycache__/|build/|dist/|node_modules/|tasks/|tests/|.ruff_cache/)"
+        exclude: "^(venv/|.venv/|env/|.env/|.git/|.github/|.mypy_cache/|.pytest_cache/|__pycache__/|build/|dist/|node_modules/|tasks/|tests/|archive/|.ruff_cache/)"
 
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0

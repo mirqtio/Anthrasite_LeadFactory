@@ -59,7 +59,7 @@ class ScoringEngine:
             raise
 
     @log_execution_time
-    def score_business(self, business: Dict[str, Any]) -> Dict[str, Any]:
+    def score_business(self, business: dict[str, Any]) -> dict[str, Any]:
         """
         Score a single business based on loaded rules.
 
@@ -81,29 +81,31 @@ class ScoringEngine:
         business_id = business.get("id", "unknown")
         business_name = business.get("name", "unknown")
 
-        with LogContext(
-            self.logger, business_id=business_id, business_name=business_name
+        with (
+            LogContext(
+                self.logger, business_id=business_id, business_name=business_name
+            ),
+            MetricsTimer("scoring.score_business"),
         ):
-            with MetricsTimer("scoring.score_business"):
-                result = self._calculate_score(business)
+            result = self._calculate_score(business)
 
-                # Record metrics
-                record_metric(LEADS_SCORED, 1)
+            # Record metrics
+            record_metric(LEADS_SCORED, 1)
 
-                self.logger.info(
-                    f"Scored business {business_name}: {result['score']} points",
-                    extra={
-                        "score": result["score"],
-                        "adjustments": len(result["adjustments"]),
-                        "multiplier": result["final_multiplier"],
-                    },
-                )
+            self.logger.info(
+                f"Scored business {business_name}: {result['score']} points",
+                extra={
+                    "score": result["score"],
+                    "adjustments": len(result["adjustments"]),
+                    "multiplier": result["final_multiplier"],
+                },
+            )
 
-                return result
+            return result
 
     def score_businesses(
-        self, businesses: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, businesses: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """
         Score multiple businesses.
 
@@ -145,7 +147,7 @@ class ScoringEngine:
 
         return results
 
-    def _calculate_score(self, business: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_score(self, business: dict[str, Any]) -> dict[str, Any]:
         """
         Calculate the score for a business.
 
@@ -211,7 +213,7 @@ class ScoringEngine:
             },
         }
 
-    def get_rule_statistics(self) -> Dict[str, Any]:
+    def get_rule_statistics(self) -> dict[str, Any]:
         """
         Get statistics about loaded rules.
 
@@ -246,8 +248,8 @@ class ScoringEngine:
         }
 
     def validate_business_data(
-        self, business: Dict[str, Any]
-    ) -> Tuple[bool, List[str]]:
+        self, business: dict[str, Any]
+    ) -> tuple[bool, list[str]]:
         """
         Validate that business data has required fields for scoring.
 

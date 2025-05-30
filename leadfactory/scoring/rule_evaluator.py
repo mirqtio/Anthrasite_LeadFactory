@@ -22,8 +22,8 @@ class RuleEvaluator:
         self.logger = get_logger(__name__ + ".RuleEvaluator")
 
     def evaluate_rule(
-        self, business: Dict[str, Any], rule: ScoringRule
-    ) -> Tuple[bool, int]:
+        self, business: dict[str, Any], rule: ScoringRule
+    ) -> tuple[bool, int]:
         """
         Evaluate a single rule against a business.
 
@@ -50,7 +50,7 @@ class RuleEvaluator:
             return False, 0
 
     def evaluate_multiplier(
-        self, business: Dict[str, Any], multiplier: ScoringMultiplier
+        self, business: dict[str, Any], multiplier: ScoringMultiplier
     ) -> float:
         """
         Evaluate a scoring multiplier against a business.
@@ -82,7 +82,7 @@ class RuleEvaluator:
             return 1.0
 
     def _evaluate_condition(
-        self, business: Dict[str, Any], condition: RuleCondition
+        self, business: dict[str, Any], condition: RuleCondition
     ) -> bool:
         """
         Evaluate a condition against business data.
@@ -224,7 +224,7 @@ class RuleEvaluator:
         return True
 
     def _check_tech_stack_contains(
-        self, business: Dict[str, Any], technology: str
+        self, business: dict[str, Any], technology: str
     ) -> bool:
         """Check if business tech stack contains a technology."""
         tech_stack = business.get("tech_stack", [])
@@ -233,11 +233,11 @@ class RuleEvaluator:
             return any(technology.lower() in str(tech).lower() for tech in tech_stack)
         elif isinstance(tech_stack, dict):
             # Handle dict format {"technology": "version"}
-            return technology.lower() in [k.lower() for k in tech_stack.keys()]
+            return technology.lower() in [k.lower() for k in tech_stack]
         return False
 
     def _check_tech_version(
-        self, business: Dict[str, Any], technology: str, version: str, operator: str
+        self, business: dict[str, Any], technology: str, version: str, operator: str
     ) -> bool:
         """Check technology version comparison."""
         tech_stack = business.get("tech_stack", {})
@@ -282,7 +282,7 @@ class RuleEvaluator:
             return False
 
     def _check_attribute_in(
-        self, business: Dict[str, Any], attribute: str, values: List[str]
+        self, business: dict[str, Any], attribute: str, values: list[str]
     ) -> bool:
         """Check if business attribute is in list of values."""
         business_value = business.get(attribute, "")
@@ -291,7 +291,7 @@ class RuleEvaluator:
         return False
 
     def _check_location_in(
-        self, business: Dict[str, Any], locations: List[str]
+        self, business: dict[str, Any], locations: list[str]
     ) -> bool:
         """Check if business location matches any of the specified locations."""
         # Check multiple location fields
@@ -315,7 +315,7 @@ class RuleEvaluator:
 
     def _check_numeric_comparison(
         self,
-        business: Dict[str, Any],
+        business: dict[str, Any],
         field: str,
         value: Union[int, float],
         operator: str,
@@ -346,14 +346,14 @@ class RuleEvaluator:
             return False
 
     def _check_has_social_media(
-        self, business: Dict[str, Any], platforms: List[str]
+        self, business: dict[str, Any], platforms: list[str]
     ) -> bool:
         """Check if business has specified social media platforms."""
         social_media = business.get("social_media", {})
 
         if isinstance(social_media, dict):
             return any(
-                platform.lower() in [k.lower() for k in social_media.keys()]
+                platform.lower() in [k.lower() for k in social_media]
                 for platform in platforms
             )
         elif isinstance(social_media, list):
@@ -365,9 +365,9 @@ class RuleEvaluator:
 
     def _check_social_metric(
         self,
-        business: Dict[str, Any],
+        business: dict[str, Any],
         metric: str,
-        thresholds: Dict[str, int],
+        thresholds: dict[str, int],
         operator: str,
     ) -> bool:
         """Check social media metric comparison."""

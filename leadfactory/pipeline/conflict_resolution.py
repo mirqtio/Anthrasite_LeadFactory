@@ -45,7 +45,7 @@ class ConflictResolver:
         self.config = config
         self.resolution_rules = self._initialize_resolution_rules()
 
-    def _initialize_resolution_rules(self) -> Dict[str, ResolutionStrategy]:
+    def _initialize_resolution_rules(self) -> dict[str, ResolutionStrategy]:
         """Initialize default resolution rules for different fields."""
         return {
             # Core fields - prefer primary unless empty
@@ -67,8 +67,8 @@ class ConflictResolver:
         }
 
     def identify_conflicts(
-        self, primary: Dict[str, Any], secondary: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, primary: dict[str, Any], secondary: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Identify all conflicts between two business records.
 
@@ -137,10 +137,10 @@ class ConflictResolver:
 
     def resolve_conflicts(
         self,
-        conflicts: List[Dict[str, Any]],
-        primary: Dict[str, Any],
-        secondary: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        conflicts: list[dict[str, Any]],
+        primary: dict[str, Any],
+        secondary: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Resolve conflicts and return updates to apply to primary record.
 
@@ -229,7 +229,7 @@ class ConflictResolver:
         return value1 if len1 >= len2 else value2
 
     def _merge_newest(
-        self, field: str, primary: Dict[str, Any], secondary: Dict[str, Any]
+        self, field: str, primary: dict[str, Any], secondary: dict[str, Any]
     ) -> Any:
         """Keep the value from the most recently updated record."""
         # Check if we have timestamp information
@@ -256,7 +256,7 @@ class ConflictResolver:
             return primary.get(field)
 
     def _merge_highest_quality(
-        self, field: str, primary: Dict[str, Any], secondary: Dict[str, Any]
+        self, field: str, primary: dict[str, Any], secondary: dict[str, Any]
     ) -> Any:
         """Keep the highest quality value based on source priority."""
         primary_source = primary.get("source", "unknown")
@@ -271,8 +271,8 @@ class ConflictResolver:
             return primary.get(field)
 
     def generate_conflict_report(
-        self, conflicts: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, conflicts: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Generate a detailed conflict report for logging or review.
 
@@ -323,8 +323,8 @@ class ConflictResolver:
 
 
 def apply_conflict_resolution(
-    primary: Dict[str, Any], secondary: Dict[str, Any], config: DedupeConfig
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    primary: dict[str, Any], secondary: dict[str, Any], config: DedupeConfig
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     Apply conflict resolution to two business records.
 

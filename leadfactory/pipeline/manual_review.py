@@ -31,8 +31,8 @@ class ManualReviewManager:
         self,
         primary_id: int,
         secondary_id: int,
-        conflicts: List[Dict[str, Any]],
-        conflict_report: Dict[str, Any],
+        conflicts: list[dict[str, Any]],
+        conflict_report: dict[str, Any],
     ) -> Optional[int]:
         """
         Create a manual review request for conflicting records.
@@ -69,7 +69,7 @@ class ManualReviewManager:
             logger.error(f"Failed to create review request: {e}")
             return None
 
-    def get_pending_reviews(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_pending_reviews(self, limit: int = 10) -> list[dict[str, Any]]:
         """
         Get pending manual review requests.
 
@@ -95,7 +95,7 @@ class ManualReviewManager:
             logger.error(f"Failed to get pending reviews: {e}")
             return []
 
-    def format_review_for_display(self, review: Dict[str, Any]) -> str:
+    def format_review_for_display(self, review: dict[str, Any]) -> str:
         """
         Format a review request for human-readable display.
 
@@ -132,7 +132,7 @@ class ManualReviewManager:
         return "\n".join(output)
 
     def resolve_review(
-        self, review_id: int, resolutions: Dict[str, Any], merge_decision: str
+        self, review_id: int, resolutions: dict[str, Any], merge_decision: str
     ) -> bool:
         """
         Resolve a manual review with user decisions.
@@ -172,7 +172,7 @@ class ManualReviewManager:
             logger.error(f"Failed to resolve review {review_id}: {e}")
             return False
 
-    def get_review_statistics(self) -> Dict[str, Any]:
+    def get_review_statistics(self) -> dict[str, Any]:
         """
         Get statistics about manual reviews.
 
@@ -249,34 +249,19 @@ def interactive_review_session():
     """
     manager = ManualReviewManager()
 
-    print("Manual Review Session")
-    print("=" * 50)
-
     # Get pending reviews
     reviews = manager.get_pending_reviews(limit=5)
 
     if not reviews:
-        print("No pending reviews found.")
         return
 
-    print(f"Found {len(reviews)} pending reviews.\n")
-
     for review in reviews:
-        print(manager.format_review_for_display(review))
-        print("=" * 50)
 
         # Get user decision
-        print("\nOptions:")
-        print("1. Merge businesses")
-        print("2. Keep separate")
-        print("3. Defer decision")
-        print("4. Skip to next")
-        print("5. Exit session")
 
         choice = input("\nEnter your choice (1-5): ").strip()
 
         if choice == "5":
-            print("Exiting review session.")
             break
         elif choice == "4":
             continue
@@ -290,21 +275,12 @@ def interactive_review_session():
             success = manager.resolve_review(review["id"], resolutions, merge_decision)
 
             if success:
-                print(f"✓ Review resolved: {merge_decision}")
+                pass
             else:
-                print("✗ Failed to resolve review")
-
-        print("\n" + "=" * 50 + "\n")
+                pass
 
     # Show statistics
-    stats = manager.get_review_statistics()
-    print("\nReview Statistics:")
-    print(f"Pending: {stats.get('status_counts', {}).get('pending', 0)}")
-    print(f"Resolved: {stats.get('status_counts', {}).get('resolved', 0)}")
-    print(f"Deferred: {stats.get('status_counts', {}).get('deferred', 0)}")
-    print(
-        f"Average resolution time: {stats.get('avg_resolution_time_readable', 'N/A')}"
-    )
+    manager.get_review_statistics()
 
 
 if __name__ == "__main__":

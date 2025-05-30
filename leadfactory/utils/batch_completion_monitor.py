@@ -35,7 +35,7 @@ CHECK_INTERVAL = int(os.getenv("BATCH_COMPLETION_CHECK_INTERVAL_SECONDS", "300")
 
 
 # Temporary implementation - will be replaced with actual implementation when migrated
-def get_batch_tracker_data() -> Dict[str, Any]:
+def get_batch_tracker_data() -> dict[str, Any]:
     """
     Get batch tracker data from the tracker file.
 
@@ -47,7 +47,7 @@ def get_batch_tracker_data() -> Dict[str, Any]:
         return {"batches": []}
 
     try:
-        with open(tracker_file, "r") as f:
+        with open(tracker_file) as f:
             return json.load(f)
     except Exception as e:
         logger.error(f"Error loading batch tracker data: {e}")

@@ -59,22 +59,18 @@ class Colors:
 
 def print_header(text: str) -> None:
     """Print a formatted header."""
-    print(f"{Colors.HEADER}{text}{Colors.ENDC}")
 
 
 def print_success(text: str) -> None:
     """Print a success message."""
-    print(f"{Colors.OKGREEN}{text}{Colors.ENDC}")
 
 
 def print_warning(text: str) -> None:
     """Print a warning message."""
-    print(f"{Colors.WARNING}{text}{Colors.ENDC}")
 
 
 def print_error(text: str) -> None:
     """Print an error message."""
-    print(f"{Colors.FAIL}{text}{Colors.ENDC}")
 
 
 def format_currency(amount: float) -> str:
@@ -94,12 +90,9 @@ def show_summary() -> None:
         return
 
     print_header("Budget Summary")
-    print(f"Daily cost: {format_currency(cost_tracker.get_daily_cost())}")
-    print(f"Monthly cost: {format_currency(cost_tracker.get_monthly_cost())}")
 
     # Budget threshold information
     if budget_gate:
-        print(f"Budget threshold: {format_currency(budget_gate.threshold)}")
         is_active = budget_gate.is_active()
         status = "ACTIVE" if is_active else "inactive"
         color_fn = print_warning if is_active else print_success
@@ -125,17 +118,12 @@ def show_cost_breakdown(period: str = "day") -> None:
 
     # Print breakdown
     if not breakdown:
-        print("No cost data available")
         return
 
-    for service, operations in breakdown.items():
+    for _service, operations in breakdown.items():
         service_total = sum(operations.values())
-        print(f"{service}: {format_currency(service_total)}")
-        for operation, cost in operations.items():
-            percentage = cost / service_total if service_total > 0 else 0
-            print(
-                f"  {operation}: {format_currency(cost)} ({format_percentage(percentage)})"
-            )
+        for _operation, cost in operations.items():
+            cost / service_total if service_total > 0 else 0
 
 
 def show_scaling_gate_status() -> None:
@@ -149,9 +137,6 @@ def show_scaling_gate_status() -> None:
     status = "ACTIVE" if is_active else "inactive"
     color_fn = print_warning if is_active else print_success
     color_fn(f"Budget gate status: {status}")
-    print(f"Enabled: {budget_gate.enabled}")
-    print(f"Override: {budget_gate.override}")
-    print(f"Threshold: {format_currency(budget_gate.threshold)}")
 
 
 def manage_scaling_gate(activate: bool, reason: str = "") -> None:
@@ -202,7 +187,7 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
     # Summary command
-    summary_parser = subparsers.add_parser("summary", help="Show budget summary")
+    subparsers.add_parser("summary", help="Show budget summary")
 
     # Breakdown command
     breakdown_parser = subparsers.add_parser("breakdown", help="Show cost breakdown")
@@ -214,7 +199,7 @@ def main() -> int:
     )
 
     # Status command
-    status_parser = subparsers.add_parser("status", help="Show scaling gate status")
+    subparsers.add_parser("status", help="Show scaling gate status")
 
     # Enable command
     enable_parser = subparsers.add_parser("enable", help="Enable scaling gate")
