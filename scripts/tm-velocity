@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Task Master with Velocity Integration
+# Usage: tm-velocity [command] [options]
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+case "$1" in
+    "list"|"ls"|"")
+        # Enhanced list with velocity tracking
+        echo "📊 Task Master with Velocity Tracking"
+        echo ""
+        node "$SCRIPT_DIR/enhanced-list.js" "${@:2}"
+        ;;
+    "velocity")
+        # Direct velocity commands
+        node "$PROJECT_DIR/src/velocity/cli.js" "${@:2}"
+        ;;
+    "dashboard"|"dash")
+        # Quick access to dashboard
+        node "$PROJECT_DIR/src/velocity/cli.js" dashboard
+        ;;
+    "summary")
+        # Quick access to summary
+        node "$PROJECT_DIR/src/velocity/cli.js" summary
+        ;;
+    "metrics")
+        # Quick access to metrics
+        node "$PROJECT_DIR/src/velocity/cli.js" metrics
+        ;;
+    "trend")
+        # Quick access to trend
+        node "$PROJECT_DIR/src/velocity/cli.js" trend
+        ;;
+    "help"|"-h"|"--help")
+        echo "Task Master with Velocity Integration"
+        echo ""
+        echo "Enhanced Commands:"
+        echo "  tm-velocity list [options]    - List tasks with velocity metrics"
+        echo "  tm-velocity dashboard         - Show velocity dashboard"
+        echo "  tm-velocity summary          - Show velocity summary"
+        echo "  tm-velocity metrics          - Show detailed metrics"
+        echo "  tm-velocity trend            - Show trend analysis"
+        echo ""
+        echo "Standard Commands:"
+        echo "  tm-velocity [task-master-cmd] - Pass through to task-master"
+        echo ""
+        echo "Examples:"
+        echo "  tm-velocity list --status=pending"
+        echo "  tm-velocity dashboard"
+        echo "  tm-velocity set-status --id=1 --status=done"
+        ;;
+    *)
+        # Pass through to task-master for all other commands
+        task-master "$@"
+        ;;
+esac

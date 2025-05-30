@@ -88,8 +88,8 @@ class SendGridEmailSender:
             subuser: SendGrid subuser (prod or test)
         """
         self.api_key = api_key or os.environ.get("SENDGRID_API_KEY")
-        self.from_email = from_email or os.environ.get(
-            "SENDGRID_FROM_EMAIL", "noreply@anthrasite.com"
+        self.from_email = from_email or os.getenv(
+            "SENDGRID_FROM_EMAIL", "noreply@anthrasite.io"
         )
         self.from_name = from_name or os.environ.get(
             "SENDGRID_FROM_NAME", "Anthrasite Lead Factory"

@@ -1,12 +1,12 @@
 {
   "meta": {
-    "generatedAt": "2025-05-28T09:24:57.198Z",
-    "tasksAnalyzed": 8,
-    "totalTasks": 10,
-    "analysisCount": 24,
+    "generatedAt": "2025-05-29T22:12:43.438Z",
+    "tasksAnalyzed": 1,
+    "totalTasks": 15,
+    "analysisCount": 30,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
-    "usedResearch": true
+    "usedResearch": false
   },
   "complexityAnalysis": [
     {
@@ -200,6 +200,54 @@
       "recommendedSubtasks": 3,
       "expansionPrompt": "Break down this task with a focus on add test for preflight sequence.",
       "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Automate IP/Subuser Rotation for Bounce Thresholds",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the IP/Subuser rotation automation into 4 subtasks covering bounce rate monitoring, threshold detection, rotation logic implementation, and comprehensive testing with SendGrid API integration.",
+      "reasoning": "This task involves moderate complexity with API integration, real-time monitoring systems, and automated decision-making logic. It requires understanding of email delivery metrics, implementing threshold-based automation, and ensuring reliable rotation mechanisms with proper error handling and logging."
+    },
+    {
+      "taskId": 11,
+      "taskTitle": "Implement Web Interface for HTML and LLM Logs Browsing",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the web interface implementation into 4 subtasks covering frontend development, backend API implementation, search and filtering capabilities, and authentication/security features.",
+      "reasoning": "This task involves medium-high complexity requiring full-stack web development skills. It includes building both frontend and backend components, implementing search and filtering for potentially large datasets, data visualization, and security considerations. The complexity comes from creating a complete web application with multiple interconnected features."
+    },
+    {
+      "taskId": 12,
+      "taskTitle": "Implement Advanced Analytics for Lead Generation Optimization",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the advanced analytics implementation into 5 subtasks covering data integration/ETL, machine learning model development, analytics dashboard, automated reporting, and performance optimization.",
+      "reasoning": "This task involves high complexity requiring expertise in data science, machine learning, and analytics systems. It includes implementing predictive models, processing large datasets, building sophisticated dashboards, and creating automated reporting systems. The complexity stems from the need to integrate multiple data sources, develop accurate ML models, and create actionable insights."
+    },
+    {
+      "taskId": 13,
+      "taskTitle": "Implement Scalable Architecture for High-Volume Lead Processing",
+      "complexityScore": 9,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the scalable architecture implementation into 6 subtasks covering horizontal scaling, database optimization, caching layers, queue-based processing, auto-scaling configuration, and performance monitoring.",
+      "reasoning": "This task involves very high complexity requiring expertise in distributed systems, database optimization, and performance engineering. It includes major architectural changes to support 10x capacity increase, implementing caching strategies, message queues, auto-scaling, and comprehensive monitoring. The complexity comes from the need to maintain system stability during implementation while achieving significant performance improvements."
+    },
+    {
+      "taskId": 14,
+      "taskTitle": "CI Pipeline Test Monitoring and Governance Framework",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the test monitoring and governance framework into 5 subtasks covering advanced monitoring dashboard, alerting system, governance processes, long-term analytics, and development workflow integration.",
+      "reasoning": "This task involves medium-high complexity requiring expertise in monitoring systems, governance processes, and workflow integration. It includes building comprehensive dashboards, implementing intelligent alerting, establishing governance frameworks, and integrating with development workflows. The complexity comes from creating a complete monitoring and governance ecosystem that spans multiple systems and processes."
+    },
+    {
+      "taskId": 15,
+      "taskTitle": "Implement Comprehensive Velocity Tracking System",
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Break down the 'Implement Comprehensive Velocity Tracking System' task into 8 specific subtasks that cover data model changes, command implementation, reporting features, testing, and documentation. Each subtask should be independently implementable with clear acceptance criteria.",
+      "reasoning": "This task involves multiple components including data model changes (timestamps), new command implementation (velocity), enhancing existing functionality, analytics development, testing across multiple dimensions, and documentation. The task requires both backend logic and user-facing features while maintaining backward compatibility. The complexity is significant but not extreme as it builds on an existing system with clear requirements."
     }
   ]
 }

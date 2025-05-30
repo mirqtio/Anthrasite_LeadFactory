@@ -1,19 +1,71 @@
 {
   "tasks": [
     {
-      "id": "1",
+      "id": 1,
       "title": "Implement Scoring Rule Evaluation Engine",
       "description": "Full implementation of YAML-driven scoring, including tests and CI verification",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "feature",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Implement a comprehensive scoring rule evaluation engine that:\n- Reads scoring rules from YAML configuration files\n- Evaluates businesses against defined scoring criteria\n- Supports multiple scoring dimensions (quality, engagement, conversion potential)\n- Provides weighted scoring calculations\n- Includes comprehensive unit tests\n- Ensures CI pipeline verification passes\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for rule parsing and evaluation logic\n2. Integration tests with sample business data\n3. Performance tests for large datasets\n4. CI pipeline must pass all tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for rule parsing and evaluation logic\n2. Integration tests with sample business data\n3. Performance tests for large datasets\n4. CI pipeline must pass all tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement YAML parsing and validation module",
+          "description": "Create a module to parse YAML configuration files that define scoring rules, dimensions, and weights. Include validation to ensure the YAML structure meets the required schema.",
+          "dependencies": [],
+          "details": "Implement a parser that can read YAML files containing scoring rules. Add validation to check for required fields, proper data types, and logical consistency. Handle edge cases like malformed YAML, missing required fields, and invalid value ranges. Use a schema validation approach to ensure all required components are present before processing.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Develop core rule evaluation logic",
+          "description": "Build the central engine that evaluates individual rules against input data and calculates scores based on rule matches.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a rule evaluation system that can process different rule types (exact match, range, pattern, etc.). Implement logical operators (AND, OR, NOT) for complex rule combinations. Design the system to be extensible for future rule types. Include performance optimizations for efficient evaluation of large rule sets.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Implement scoring dimensions and weighted calculations",
+          "description": "Create the framework for multiple scoring dimensions and implement the weighted calculation system to produce final scores.",
+          "dependencies": [
+            2
+          ],
+          "details": "Design a system to organize rules into different scoring dimensions (e.g., quality, compliance, performance). Implement the weighted calculation logic that applies dimension-specific weights to produce aggregate scores. Include normalization functions to ensure consistent scoring across dimensions with different scales. Add support for dimension-specific thresholds and scoring curves.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Develop comprehensive test suite",
+          "description": "Create unit and integration tests for all components of the scoring engine, including edge cases and performance tests.",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Develop unit tests for each component (YAML parsing, rule evaluation, scoring calculations). Create integration tests that verify end-to-end functionality with sample YAML configurations and input data. Include performance tests to ensure the engine scales with large rule sets. Add specific tests for edge cases like conflicting rules, boundary conditions, and error handling.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Implement CI integration and documentation",
+          "description": "Set up continuous integration for the scoring engine and create comprehensive documentation for users and developers.",
+          "dependencies": [
+            4
+          ],
+          "details": "Configure CI pipeline to run tests automatically on code changes. Create user documentation explaining the YAML configuration format, available rule types, and scoring dimension setup. Write developer documentation covering the architecture, extension points, and contribution guidelines. Include examples of common use cases and configuration patterns. Add performance guidelines and optimization tips.",
+          "status": "done"
+        }
+      ]
     },
     {
-      "id": "2",
+      "id": 2,
       "title": "Automate IP/Subuser Rotation for Bounce Thresholds",
       "description": "Automate IP rotation based on bounce rates, with tests",
       "status": "deferred",
@@ -22,58 +74,313 @@
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Implement automatic IP and subuser rotation when bounce thresholds are exceeded:\n- Monitor bounce rates per IP/subuser\n- Define configurable bounce rate thresholds\n- Automatically rotate to next available IP/subuser when threshold exceeded\n- Implement cooldown periods for rotated IPs\n- Add comprehensive logging and alerting\n- Include unit and integration tests\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for threshold monitoring logic\n2. Integration tests with SendGrid API\n3. Simulate bounce scenarios and verify rotation\n4. Test alerting mechanisms\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for threshold monitoring logic\n2. Integration tests with SendGrid API\n3. Simulate bounce scenarios and verify rotation\n4. Test alerting mechanisms\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Bounce Rate Monitoring System",
+          "description": "Create a service to continuously monitor bounce rates for each IP/subuser combination in the system",
+          "dependencies": [],
+          "details": "Develop a monitoring service that connects to the email delivery metrics API to track bounce rates in real-time. Implement a data structure to store and update bounce rate statistics per IP/subuser. Create a configuration module to define sampling periods (e.g., hourly, daily) and calculation methods (e.g., rolling average vs. point-in-time). Ensure the monitoring runs as a background process with appropriate error handling and retry logic.",
+          "status": "pending",
+          "testStrategy": "Unit tests for bounce rate calculation logic. Mock API responses for testing different bounce scenarios. Integration tests with a test email provider account to verify accurate bounce detection."
+        },
+        {
+          "id": 2,
+          "title": "Develop Threshold Configuration and Detection System",
+          "description": "Create a configurable threshold system that can detect when IPs/subusers exceed defined bounce rate limits",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement a configuration module that allows setting different bounce thresholds (e.g., 5%, 8%, 10%) with different severity levels. Create a detection service that compares current bounce rates from the monitoring system against these thresholds. Implement a notification mechanism that triggers when thresholds are exceeded. Add support for different threshold types (absolute values vs. relative increases). Include configuration for different thresholds based on email volume or recipient domains.",
+          "status": "pending",
+          "testStrategy": "Unit tests for threshold detection logic with various configurations. Integration tests to verify threshold breach detection works correctly with the monitoring system."
+        },
+        {
+          "id": 3,
+          "title": "Build IP/Subuser Rotation Logic",
+          "description": "Implement the core rotation logic to automatically switch traffic to alternative IPs/subusers when thresholds are exceeded",
+          "dependencies": [
+            2
+          ],
+          "details": "Develop a rotation service that maintains a pool of available IPs/subusers. Implement logic to select the next best IP/subuser based on current performance metrics. Create a rotation execution mechanism that gracefully transitions traffic. Implement cooldown period tracking for rotated IPs/subusers, preventing their reuse until a configurable time has passed. Add a fallback mechanism for scenarios where no suitable alternatives are available. Include transaction safety to prevent partial rotations.",
+          "status": "pending",
+          "testStrategy": "Unit tests for rotation selection logic. Integration tests with mock email provider to verify rotation execution. Stress tests to ensure system handles multiple simultaneous rotation events correctly."
+        },
+        {
+          "id": 4,
+          "title": "Implement Logging, Alerting and System Integration",
+          "description": "Add comprehensive logging, alerting mechanisms, and integrate the complete system with existing infrastructure",
+          "dependencies": [
+            3
+          ],
+          "details": "Implement detailed logging for all rotation events, threshold breaches, and system decisions. Create an alerting system that notifies administrators of rotations, critical threshold breaches, and system issues. Develop a dashboard for visualizing current IP/subuser status, bounce rates, and rotation history. Integrate the complete system with existing email sending infrastructure. Add API endpoints for manual control and configuration updates. Implement a circuit breaker to disable automatic rotation in emergency situations.",
+          "status": "pending",
+          "testStrategy": "End-to-end tests of the complete system. Verification of logging and alerting functionality. Load testing to ensure system stability under production conditions. User acceptance testing of dashboard and control interfaces."
+        }
+      ]
     },
     {
-      "id": "3",
+      "id": 3,
       "title": "Finalize Dedupe Integration with Unified Postgres Connector",
       "description": "Remove legacy references and ensure proper duplicate handling",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "feature",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Complete the deduplication integration:\n- Remove all legacy dedupe code references\n- Ensure unified Postgres connector handles all deduplication\n- Implement proper conflict resolution for duplicate businesses\n- Preserve data from multiple sources during deduplication\n- Add comprehensive logging for dedupe operations\n- Include performance optimizations for large datasets\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for dedupe logic\n2. Integration tests with real duplicate scenarios\n3. Performance tests with large datasets\n4. Verify data preservation during merges\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for dedupe logic\n2. Integration tests with real duplicate scenarios\n3. Performance tests with large datasets\n4. Verify data preservation during merges\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Legacy Code Removal",
+          "description": "Identify and remove outdated deduplication code from the codebase",
+          "dependencies": [],
+          "details": "Analyze the existing codebase to identify all legacy deduplication functions, methods, and modules. Create a comprehensive inventory of code to be removed. Ensure proper documentation of removed functionality. Verify that removal doesn't break existing dependencies. Update relevant documentation to reflect changes.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Postgres Connector Integration",
+          "description": "Implement deduplication functionality within the Postgres connector",
+          "dependencies": [
+            1
+          ],
+          "details": "Extend the existing Postgres connector to support deduplication operations. Implement database queries and functions for identifying duplicate records. Create interfaces for deduplication operations that align with connector architecture. Add configuration options for deduplication settings. Write unit tests to verify connector integration.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Conflict Resolution Implementation",
+          "description": "Develop algorithms to handle data conflicts during deduplication",
+          "dependencies": [
+            2
+          ],
+          "details": "Design conflict resolution strategies for different data scenarios. Implement rule-based resolution for automatic conflict handling. Create user interfaces for manual conflict resolution when needed. Develop transaction management to ensure data integrity during resolution. Test with various conflict scenarios to ensure robustness.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Data Preservation Mechanisms",
+          "description": "Implement safeguards to prevent data loss during deduplication",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Create backup mechanisms before deduplication operations. Implement transaction rollback capabilities for failed operations. Design audit trails for tracking all deduplication actions. Develop recovery procedures for restoring data if needed. Test data preservation under various failure scenarios.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Logging Enhancements",
+          "description": "Improve logging system to track deduplication operations",
+          "dependencies": [
+            2,
+            3,
+            4
+          ],
+          "details": "Extend logging framework to capture detailed deduplication events. Implement structured logging for deduplication operations. Create log analysis tools for monitoring deduplication performance. Add configurable verbosity levels for different environments. Ensure logs contain sufficient information for troubleshooting.",
+          "status": "done"
+        },
+        {
+          "id": 6,
+          "title": "Performance Optimization",
+          "description": "Optimize deduplication processes for large datasets",
+          "dependencies": [
+            2,
+            3,
+            4,
+            5
+          ],
+          "details": "Profile deduplication operations to identify performance bottlenecks. Implement batch processing for handling large datasets efficiently. Optimize database queries with proper indexing strategies. Add caching mechanisms to improve repeated operations. Develop performance testing suite to validate optimizations with large datasets.",
+          "status": "done"
+        }
+      ]
     },
     {
-      "id": "4",
+      "id": 4,
       "title": "Replace Legacy bin/ Scripts with CLI Wrappers",
       "description": "Consolidate execution logic and remove old scripts",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "type": "refactor",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Modernize script execution:\n- Create CLI wrappers for all bin/ scripts\n- Consolidate common functionality into shared modules\n- Remove deprecated bin/ scripts\n- Update documentation to reference new CLI commands\n- Ensure backward compatibility where needed\n- Add proper argument parsing and validation\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for CLI commands\n2. Integration tests for each wrapper\n3. Verify all functionality is preserved\n4. Test backward compatibility\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for CLI commands\n2. Integration tests for each wrapper\n3. Verify all functionality is preserved\n4. Test backward compatibility\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Evaluate and select CLI framework",
+          "description": "Research and select an appropriate CLI framework for modernizing bin/ scripts",
+          "dependencies": [],
+          "details": "Compare options like argparse, click, typer, or docopt based on project needs. Consider factors like ease of use, documentation quality, maintenance status, and compatibility with existing codebase. Create a decision document with pros/cons of each option and final recommendation.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Identify common functionality across scripts",
+          "description": "Analyze existing bin/ scripts to identify shared functionality that can be consolidated",
+          "dependencies": [
+            1
+          ],
+          "details": "Review all bin/ scripts to identify patterns, duplicate code, and common operations. Document shared functionality like argument parsing, logging, error handling, configuration loading, and API interactions. Create a design for a common utilities module that can be reused across all scripts.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Implement wrapper and utilities library",
+          "description": "Create a common wrapper and utilities library based on the selected CLI framework",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Develop a shared library that implements the common functionality identified in subtask 2 using the CLI framework selected in subtask 1. Include standardized argument parsing, error handling, logging, and other shared operations. Create unit tests for the library to ensure reliability.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Refactor individual bin/ scripts",
+          "description": "Update each bin/ script to use the new wrapper and utilities library",
+          "dependencies": [
+            3
+          ],
+          "details": "Systematically refactor each bin/ script to use the new common library while maintaining existing functionality. Ensure consistent argument handling, help text, and error reporting across all scripts. Add appropriate type hints and docstrings. Implement unit tests for each refactored script.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Update documentation and verify backward compatibility",
+          "description": "Update documentation and test backward compatibility of refactored scripts",
+          "dependencies": [
+            4
+          ],
+          "details": "Update user documentation to reflect any changes in script usage. Create regression tests to verify that refactored scripts maintain backward compatibility with existing workflows. Test edge cases and error conditions. Collect feedback from team members who regularly use these scripts to ensure no functionality was lost.",
+          "status": "done"
+        }
+      ]
     },
     {
-      "id": "5",
+      "id": 5,
       "title": "Refactor PipelineValidator to Check Actual Stages",
       "description": "Update validation logic and add tests",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "refactor",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Refactor the pipeline validator to validate actual pipeline stages:\n- Check each pipeline stage's requirements before execution\n- Validate API keys, database connections, file permissions\n- Ensure all dependencies are met for each stage\n- Add stage-specific validation rules\n- Implement proper error reporting\n- Add comprehensive test coverage\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for each validation check\n2. Integration tests with full pipeline\n3. Test failure scenarios and error handling\n4. Verify all stages are properly validated\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for each validation check\n2. Integration tests with full pipeline\n3. Test failure scenarios and error handling\n4. Verify all stages are properly validated\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Stage Requirement Analysis",
+          "description": "Analyze and document the specific validation requirements for each pipeline stage",
+          "dependencies": [],
+          "details": "Identify all pipeline stages and their specific validation needs. Document required resources, permissions, and dependencies for each stage. Create a comprehensive mapping between stages and their validation requirements. Include edge cases and special conditions that need validation.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Validation Rule Implementation",
+          "description": "Implement the core validation rules for different resource types",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop validation logic for API keys, database connections, file permissions, and other resource types. Create modular validation functions that can be composed for different stages. Implement parameter validation for each rule type. Ensure validation rules are extensible for future requirements.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Dependency Checking System",
+          "description": "Build a system to validate dependencies between pipeline stages",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implement logic to verify that prerequisites for each stage are met. Create a dependency graph representation for validation sequencing. Add checks for circular dependencies. Develop a mechanism to validate cross-stage resource availability.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Error Reporting Enhancement",
+          "description": "Improve error reporting to provide clear, actionable validation feedback",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Design a structured error format with error codes, messages, and remediation steps. Implement context-aware error messages that reference specific validation failures. Add severity levels to validation errors. Create a logging system for validation errors that facilitates debugging.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Test Coverage Development",
+          "description": "Create comprehensive test suite for the refactored PipelineValidator",
+          "dependencies": [
+            2,
+            3,
+            4
+          ],
+          "details": "Develop unit tests for individual validation rules. Create integration tests for the complete validation process. Implement test cases for edge cases and error conditions. Add performance tests to ensure validation efficiency. Create documentation for test scenarios and expected outcomes.",
+          "status": "done"
+        }
+      ]
     },
     {
-      "id": "6",
+      "id": 6,
       "title": "Enable Disabled Tests and Resolve Failures",
       "description": "Identify and fix disabled tests, ensuring CI passes",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "bug",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Re-enable and fix all disabled tests:\n- Audit all test files for disabled/skipped tests\n- Identify root causes of test failures\n- Fix underlying issues causing test failures\n- Re-enable all tests\n- Ensure CI pipeline passes with all tests enabled\n- Add documentation for any complex fixes\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Run full test suite locally\n2. Fix each failing test\n3. Verify CI pipeline passes\n4. Monitor for flaky tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Run full test suite locally\n2. Fix each failing test\n3. Verify CI pipeline passes\n4. Monitor for flaky tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Conduct Test Audit and Inventory",
+          "description": "Create a comprehensive inventory of all failing tests across the codebase",
+          "dependencies": [],
+          "details": "Identify all failing tests in the codebase. Document each test's location, purpose, and current failure pattern. Categorize tests by component or functionality. Create a spreadsheet or tracking document with test names, file locations, and failure frequency. Prioritize tests based on importance and impact on the CI pipeline.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Perform Failure Analysis",
+          "description": "Analyze root causes of test failures and document patterns",
+          "dependencies": [
+            1
+          ],
+          "details": "For each failing test, reproduce the failure locally. Use debugging tools to identify the exact point of failure. Determine if failures are due to code bugs, environment issues, race conditions, or test implementation problems. Group tests by common failure patterns. Document findings for each test including stack traces, error messages, and potential causes.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Implement Test Fixes",
+          "description": "Fix identified issues in tests or application code",
+          "dependencies": [
+            2
+          ],
+          "details": "Address each failing test based on the root cause analysis. Update test code for implementation issues. Fix application code for actual bugs. Refactor flaky tests to make them more reliable. Add better error handling and logging to tests. Ensure tests run consistently in local environment before committing changes. Create separate branches for different categories of fixes.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Verify Fixes in CI Environment",
+          "description": "Ensure all test fixes pass consistently in the CI pipeline",
+          "dependencies": [
+            3
+          ],
+          "details": "Submit pull requests with test fixes to trigger CI pipeline. Monitor test runs in the CI environment to verify fixes. Address any environment-specific issues that appear only in CI. Run multiple CI builds to check for consistency and eliminate flakiness. Document any remaining issues that couldn't be resolved. Update the test inventory with the status of each fixed test.",
+          "status": "done"
+        }
+      ]
     },
     {
-      "id": "7",
+      "id": 7,
       "title": "Finalize Supabase PNG Upload Integration",
       "description": "Ensure mockup images upload correctly with error handling",
       "status": "deferred",
@@ -82,43 +389,586 @@
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Complete Supabase integration for PNG uploads:\n- Implement reliable PNG upload to Supabase storage\n- Add proper error handling and retry logic\n- Ensure mockup images are correctly linked to businesses\n- Implement CDN URL generation for uploaded images\n- Add cleanup for orphaned images\n- Include comprehensive error logging\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for upload logic\n2. Integration tests with Supabase\n3. Test error scenarios and retries\n4. Verify CDN URL generation\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for upload logic\n2. Integration tests with Supabase\n3. Test error scenarios and retries\n4. Verify CDN URL generation\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create New Package Structure",
+          "description": "Design and implement the new directory structure for the module organization",
+          "dependencies": [],
+          "details": "Create the folder hierarchy according to the new design. This includes creating main package directories, subpackages, and placeholder files. Document the new structure in a diagram or README file for reference during the migration process. Ensure the structure follows best practices for Python package organization.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Refactor Code and Update Imports",
+          "description": "Move code files to their new locations and update all import statements throughout the codebase",
+          "dependencies": [
+            1
+          ],
+          "details": "Systematically move each module to its new location in the package structure. Update all import statements in the codebase to reflect the new structure. Create proper __init__.py files with appropriate exports. Centralize configuration loading mechanisms. Use tools like isort or autoflake to help manage imports. Maintain a checklist of files that have been migrated.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Update Entry Points and Create Installation Files",
+          "description": "Update all entry points and create package installation files",
+          "dependencies": [
+            2
+          ],
+          "details": "Update all application entry points to work with the new structure. Create or update setup.py, pyproject.toml, and other installation files. Define package metadata, dependencies, and entry points in these files. Create comprehensive tests to verify the restructured package installs and runs correctly. Document the installation process in the README.",
+          "status": "pending"
+        }
+      ]
     },
     {
-      "id": "8",
+      "id": 8,
       "title": "Add Unit and Integration Tests for Bounce Handling Logic",
       "description": "Simulate bounce scenarios and verify system responses",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "test",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Implement comprehensive bounce handling tests:\n- Unit tests for bounce detection logic\n- Integration tests with SendGrid webhooks\n- Simulate various bounce types (hard, soft, block)\n- Test bounce threshold calculations\n- Verify proper email status updates\n- Test alerting and reporting mechanisms\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Mock SendGrid webhook payloads\n2. Test all bounce types\n3. Verify database updates\n4. Test threshold triggers\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Mock SendGrid webhook payloads\n2. Test all bounce types\n3. Verify database updates\n4. Test threshold triggers\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Develop unit tests for bounce handling",
+          "description": "Create comprehensive unit tests for the bounce handling functionality",
+          "dependencies": [],
+          "details": "Implement unit tests that cover the core bounce handling logic, including test cases for different bounce scenarios, edge cases, and error conditions. Ensure tests are isolated and don't depend on external services. Include mocking of dependencies and verification of expected behaviors.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement webhook simulation for bounce events",
+          "description": "Create a simulation framework for email service provider webhook events",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop a mechanism to simulate incoming webhook notifications from email service providers (ESP). This should include the ability to generate properly formatted webhook payloads with various bounce information. The simulation should be configurable to test different ESP formats and response scenarios.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Test handling of different bounce types",
+          "description": "Verify system correctly processes and categorizes different bounce types",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Test how the system handles different bounce categories (hard bounces, soft bounces, complaints, etc.). Verify that each type is properly identified, logged, and processed according to business rules. Include tests for unusual or malformed bounce notifications.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Verify bounce threshold functionality",
+          "description": "Test the bounce rate threshold monitoring and triggered actions",
+          "dependencies": [
+            3
+          ],
+          "details": "Validate that the system correctly tracks bounce rates and applies appropriate thresholds. Test scenarios where bounce rates approach and exceed configured thresholds, and verify that the correct actions are triggered (notifications, sending pauses, etc.). Include tests for threshold resets and recovery scenarios.",
+          "status": "done"
+        }
+      ]
     },
     {
-      "id": "9",
+      "id": 9,
       "title": "Improve Error Propagation and Partial Failure Handling",
       "description": "Ensure failures are logged without breaking the batch process",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "improvement",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Enhance error handling across the pipeline:\n- Implement proper error propagation between pipeline stages\n- Handle partial failures gracefully\n- Continue processing valid items when some fail\n- Add detailed error logging with context\n- Implement error aggregation and reporting\n- Add retry mechanisms for transient failures\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for error handling logic\n2. Integration tests with failure scenarios\n3. Test partial batch processing\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for error handling logic\n2. Integration tests with failure scenarios\n3. Test partial batch processing\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design Error Propagation Mechanism",
+          "description": "Create a standardized error propagation mechanism across the pipeline",
+          "dependencies": [],
+          "details": "Design and implement a consistent error type hierarchy that can carry contextual information. Define error interfaces that allow errors to propagate through pipeline stages while maintaining their original context. Include error categorization (e.g., transient vs. permanent, user error vs. system error).",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement Partial Failure Handling",
+          "description": "Develop a system to handle partial failures without aborting the entire pipeline",
+          "dependencies": [
+            1
+          ],
+          "details": "Create mechanisms to isolate failures to specific pipeline segments. Implement fallback strategies for non-critical failures. Design data structures to track which parts of a job succeeded and which failed. Ensure downstream stages can operate with partial data when appropriate.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Enhance Error Logging System",
+          "description": "Improve error logging with contextual information and structured formats",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement structured logging for errors with consistent fields. Add context-aware logging that captures the state at the time of failure. Create log correlation IDs to track errors across distributed components. Ensure logs include actionable information for troubleshooting.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Develop Error Aggregation and Reporting",
+          "description": "Create a system to aggregate and summarize errors for analysis",
+          "dependencies": [
+            3
+          ],
+          "details": "Build an error aggregation mechanism to collect errors across pipeline runs. Implement error categorization and frequency analysis. Create dashboards or reports to visualize error patterns. Design alerting thresholds for different error categories.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Implement Retry Mechanisms for Transient Failures",
+          "description": "Add intelligent retry logic for recoverable errors",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Design configurable retry policies with exponential backoff. Implement circuit breakers to prevent cascading failures during retry attempts. Create mechanisms to identify which errors are retryable. Add monitoring for retry attempts and success rates.",
+          "status": "done"
+        }
+      ]
     },
     {
-      "id": "10",
+      "id": 10,
       "title": "Add Test for Preflight Sequence",
       "description": "Write tests for the preflight check functionality",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "type": "test",
       "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
       "details": "Create comprehensive tests for preflight checks:\n- Test all preflight validation steps\n- Mock various failure scenarios\n- Verify proper error messages\n- Test environment variable validation\n- Test API connectivity checks\n- Test database connection validation\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for each preflight check\n2. Integration tests for full sequence\n3. Test various failure modes\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success"
+      "test_strategy": "1. Unit tests for each preflight check\n2. Integration tests for full sequence\n3. Test various failure modes\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Develop individual preflight check tests",
+          "description": "Create unit tests for each individual preflight check to verify they function correctly in isolation",
+          "dependencies": [],
+          "details": "Identify all preflight checks in the system, create test cases for each check covering both pass and fail conditions, ensure proper error messages are displayed for failed checks, and verify that each check correctly validates its specific requirement",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement failure scenario simulations",
+          "description": "Develop tests that simulate various failure scenarios to ensure the preflight sequence handles errors appropriately",
+          "dependencies": [
+            1
+          ],
+          "details": "Create test cases for common failure scenarios, test edge cases like partial failures, simulate network issues, resource constraints, and permission problems, verify error handling and recovery mechanisms work as expected",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Develop integration tests for the complete preflight sequence",
+          "description": "Create end-to-end tests that verify the entire preflight sequence functions correctly as an integrated process",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Develop tests that run the complete preflight sequence from start to finish, verify correct execution order of checks, test that the overall pass/fail determination is accurate, and ensure proper logging and reporting of the sequence results",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Implement Web Interface for HTML and LLM Logs Browsing",
+      "description": "Create a user-friendly web interface that allows users to browse, search, filter, and export stored HTML and LLM logs, providing easy access to historical data.",
+      "details": "Implement an advanced analytics system with the following components:\n\n1. Data Integration Layer:\n   - Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n   - Implement data normalization and cleaning processes\n   - Design a unified data schema optimized for analytics\n   - Set up real-time data streaming for continuous analysis\n\n2. Machine Learning Models:\n   - Develop lead quality scoring algorithms using supervised learning\n   - Implement pattern recognition for lead behavior analysis\n   - Create conversion prediction models with feature importance analysis\n   - Build ROI optimization algorithms with A/B testing capabilities\n   - Implement model training pipelines with validation frameworks\n\n3. Analytics Dashboard:\n   - Design an intuitive UI with key performance indicators\n   - Create interactive visualizations for lead funnel analysis\n   - Implement drill-down capabilities for detailed insights\n   - Add customizable reporting views for different stakeholders\n   - Ensure mobile responsiveness for on-the-go access\n\n4. Automated Reporting System:\n   - Implement scheduled report generation\n   - Create natural language generation for insight summaries\n   - Design alert mechanisms for anomaly detection\n   - Develop export functionality in multiple formats (PDF, CSV, Excel)\n   - Implement email delivery with customizable templates\n\n5. Scalable Architecture:\n   - Design for horizontal scaling to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Create data partitioning for efficient query processing\n   - Set up appropriate security measures for sensitive data\n   - Implement logging and monitoring for system health\n\n6. Integration with Existing Systems:\n   - Connect with current lead generation workflows\n   - Implement API endpoints for third-party tool integration\n   - Ensure backward compatibility with existing reporting tools\n   - Create documentation for integration points",
+      "testStrategy": "1. Unit Testing:\n   - Write unit tests for all frontend components (filters, search, pagination)\n   - Test backend API endpoints with various query parameters\n   - Verify authentication and authorization logic\n   - Test data export functionality for all supported formats\n\n2. Integration Testing:\n   - Test the complete flow from log storage to retrieval and display\n   - Verify filtering works correctly with backend queries\n   - Test search functionality with various query types\n   - Ensure pagination works correctly with large datasets\n\n3. Performance Testing:\n   - Benchmark API response times with various query complexities\n   - Test UI performance with large log datasets\n   - Verify memory usage remains acceptable during extended use\n   - Test concurrent user access scenarios\n\n4. User Acceptance Testing:\n   - Create test scenarios for common user workflows\n   - Verify all filtering options work as expected\n   - Test across different browsers and devices\n   - Validate that exported data is complete and correctly formatted\n\n5. Security Testing:\n   - Verify unauthorized users cannot access log data\n   - Test role-based access controls\n   - Ensure sensitive data is properly protected\n   - Validate input sanitization for search and filter parameters\n\n6. Regression Testing:\n   - Ensure existing log storage functionality continues to work\n   - Verify integration with any existing systems",
+      "status": "deferred",
+      "dependencies": [
+        9
+      ],
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Develop Backend API for Log Retrieval and Management",
+          "description": "Design and implement RESTful API endpoints that efficiently retrieve, filter, and export HTML and LLM logs from the database.",
+          "dependencies": [],
+          "details": "Create API endpoints for: fetching logs with pagination, filtering by date/type/business ID, searching log content, and exporting in CSV/JSON formats. Implement proper database queries with indexing for performance. Include authentication middleware to secure all endpoints and add request validation. Set up proper error handling and response formatting.",
+          "status": "pending",
+          "testStrategy": "Write unit tests for each API endpoint using a testing framework like Jest. Create integration tests that verify database interactions. Test performance with large datasets to ensure efficient query execution."
+        },
+        {
+          "id": 2,
+          "title": "Build Core UI Components and Layout",
+          "description": "Create the foundational UI components, layout structure, and navigation for the log browsing interface using a modern frontend framework.",
+          "dependencies": [
+            1
+          ],
+          "details": "Set up a React/Vue/Angular project with appropriate routing. Implement the main layout with navigation sidebar, header with authentication status, and content area. Create reusable components for log entries display, pagination controls, and basic filtering. Design responsive layouts that work on different screen sizes. Implement the authentication flow and protected routes.",
+          "status": "pending",
+          "testStrategy": "Use component testing to verify UI rendering. Create snapshot tests for key components. Test responsive behavior across different viewport sizes."
+        },
+        {
+          "id": 3,
+          "title": "Implement Advanced Filtering, Search and Visualization",
+          "description": "Enhance the basic interface with advanced filtering capabilities, full-text search functionality, and data visualization components for log analytics.",
+          "dependencies": [
+            2
+          ],
+          "details": "Build advanced filter components for date ranges, log types, and custom fields. Implement full-text search with result highlighting. Create dashboard views with charts showing log volume over time, distribution by type, and error rates. Add the ability to save and load filter presets. Implement keyboard shortcuts for power users. Ensure all filters are properly applied to API requests.",
+          "status": "pending",
+          "testStrategy": "Test filter combinations to ensure correct results. Verify search functionality with various query types. Test visualization components with different data scenarios."
+        },
+        {
+          "id": 4,
+          "title": "Optimize Performance and Add Export Functionality",
+          "description": "Improve application performance for large datasets and implement export capabilities for logs in various formats.",
+          "dependencies": [
+            3
+          ],
+          "details": "Implement virtualized lists for handling large log volumes efficiently. Add client-side caching of recent queries. Optimize API calls with debouncing for search inputs. Create export functionality for CSV, JSON, and PDF formats with proper formatting. Add user preferences for default views and filters that persist across sessions. Implement real-time updates for new logs using WebSockets or polling.",
+          "status": "pending",
+          "testStrategy": "Conduct performance testing with large datasets. Measure and optimize load times and rendering performance. Test export functionality with various log types and verify the correctness of exported data."
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Implement Advanced Analytics for Lead Generation Optimization",
+      "description": "Develop a comprehensive analytics system that leverages machine learning to analyze lead quality, conversion rates, and ROI, providing actionable insights through predictive models and automated reporting.",
+      "details": "Implement an advanced analytics system with the following components:\n\n1. Data Integration Layer:\n   - Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n   - Implement data normalization and cleaning processes\n   - Design a unified data schema optimized for analytics\n   - Set up real-time data streaming for continuous analysis\n\n2. Machine Learning Models:\n   - Develop lead quality scoring algorithms using supervised learning\n   - Implement pattern recognition for lead behavior analysis\n   - Create conversion prediction models with feature importance analysis\n   - Build ROI optimization algorithms with A/B testing capabilities\n   - Implement model training pipelines with validation frameworks\n\n3. Analytics Dashboard:\n   - Design an intuitive UI with key performance indicators\n   - Create interactive visualizations for lead funnel analysis\n   - Implement drill-down capabilities for detailed insights\n   - Add customizable reporting views for different stakeholders\n   - Ensure mobile responsiveness for on-the-go access\n\n4. Automated Reporting System:\n   - Implement scheduled report generation\n   - Create natural language generation for insight summaries\n   - Design alert mechanisms for anomaly detection\n   - Develop export functionality in multiple formats (PDF, CSV, Excel)\n   - Implement email delivery with customizable templates\n\n5. Scalable Architecture:\n   - Design for horizontal scaling to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Create data partitioning for efficient query processing\n   - Set up appropriate security measures for sensitive data\n   - Implement logging and monitoring for system health\n\n6. Integration with Existing Systems:\n   - Connect with current lead generation workflows\n   - Implement API endpoints for third-party tool integration\n   - Ensure backward compatibility with existing reporting tools\n   - Create documentation for integration points",
+      "testStrategy": "Verify the implementation through the following testing approach:\n\n1. Data Integration Testing:\n   - Validate data completeness and accuracy from all sources\n   - Test ETL processes with various data scenarios (clean, dirty, missing)\n   - Measure data processing performance under load\n   - Verify data consistency across the system\n\n2. Machine Learning Model Validation:\n   - Implement cross-validation for all predictive models\n   - Measure model accuracy, precision, recall, and F1 scores\n   - Conduct A/B testing to compare model performance against baseline\n   - Test model retraining processes with historical data\n   - Validate feature importance analysis with domain experts\n\n3. Dashboard and UI Testing:\n   - Perform usability testing with actual stakeholders\n   - Conduct cross-browser and cross-device compatibility testing\n   - Validate visualization accuracy against raw data\n   - Test performance with large datasets and concurrent users\n   - Verify export functionality for all supported formats\n\n4. Automated Reporting Testing:\n   - Validate report generation accuracy and completeness\n   - Test scheduling functionality across different time zones\n   - Verify email delivery and formatting across mail clients\n   - Test natural language generation for accuracy and readability\n   - Validate alert thresholds and notification delivery\n\n5. System Integration Testing:\n   - Test end-to-end workflows from data ingestion to reporting\n   - Validate API endpoints with various request scenarios\n   - Measure system performance under expected and peak loads\n   - Conduct security testing including penetration testing\n   - Verify system resilience with chaos engineering techniques\n\n6. User Acceptance Testing:\n   - Create test scenarios based on real business use cases\n   - Collect feedback from stakeholders on insights quality\n   - Validate ROI calculations against manual analysis\n   - Measure system adoption and usage metrics",
+      "status": "deferred",
+      "dependencies": [
+        5,
+        9,
+        11
+      ],
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Data Integration Layer with ETL Pipelines",
+          "description": "Create a robust data integration layer that collects, normalizes, and processes data from multiple sources including CRM systems, marketing platforms, and website analytics.",
+          "dependencies": [],
+          "details": "1. Design and implement ETL pipelines using Apache Airflow or similar orchestration tool\n2. Create connectors for major data sources (Salesforce, HubSpot, Google Analytics, etc.)\n3. Implement data cleaning and normalization processes using Pandas/PySpark\n4. Design a unified data schema in a data warehouse (Snowflake, BigQuery, or Redshift)\n5. Set up Kafka or similar technology for real-time data streaming\n6. Implement data validation checks to ensure data quality",
+          "status": "pending",
+          "testStrategy": "Create unit tests for each connector, integration tests for ETL pipelines, and data quality tests to verify schema compliance and data integrity."
+        },
+        {
+          "id": 2,
+          "title": "Develop Machine Learning Models for Lead Analysis",
+          "description": "Build and train machine learning models that analyze lead quality, predict conversion likelihood, and optimize ROI based on historical data patterns.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Implement lead scoring algorithm using supervised learning (Random Forest or XGBoost)\n2. Develop feature engineering pipeline to extract relevant attributes\n3. Create conversion prediction models with clearly defined feature importance\n4. Build ROI optimization algorithms incorporating A/B testing results\n5. Implement model training and validation framework with cross-validation\n6. Set up model versioning and deployment pipeline using MLflow or similar tool",
+          "status": "pending",
+          "testStrategy": "Validate models using cross-validation, A/B testing, and confusion matrices. Implement monitoring for model drift and performance degradation."
+        },
+        {
+          "id": 3,
+          "title": "Create Interactive Analytics Dashboard",
+          "description": "Design and implement an intuitive, interactive dashboard that visualizes key performance indicators, lead funnel metrics, and predictive insights.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Design dashboard wireframes with key visualization components\n2. Implement frontend using React or Vue.js with D3.js for visualizations\n3. Create interactive components for lead funnel analysis with drill-down capabilities\n4. Develop customizable views for different stakeholder needs\n5. Ensure responsive design for mobile and desktop access\n6. Implement real-time data updates using WebSockets",
+          "status": "pending",
+          "testStrategy": "Conduct usability testing with stakeholders, implement automated UI tests, and verify dashboard performance under various data loads."
+        },
+        {
+          "id": 4,
+          "title": "Build Automated Reporting System with Alerts",
+          "description": "Develop a comprehensive reporting system that generates scheduled reports, provides natural language summaries, and alerts users to significant changes or anomalies.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "1. Implement scheduled report generation using cron jobs or task schedulers\n2. Create templates for different report types (daily, weekly, monthly)\n3. Develop natural language generation for insight summaries using NLG libraries\n4. Implement anomaly detection algorithms to identify unusual patterns\n5. Create alert mechanisms via email, SMS, or in-app notifications\n6. Develop export functionality in multiple formats (PDF, CSV, Excel)",
+          "status": "pending",
+          "testStrategy": "Test scheduled jobs for reliability, validate report accuracy against raw data, and verify alert triggers with simulated anomalies."
+        },
+        {
+          "id": 5,
+          "title": "Implement System Integration and Scalable Architecture",
+          "description": "Design and implement a scalable architecture that integrates with existing systems, handles growing data volumes, and maintains performance under increasing load.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Design horizontally scalable architecture using microservices or serverless\n2. Implement caching strategies using Redis or similar technology\n3. Create data partitioning schemes for efficient query processing\n4. Develop API endpoints for integration with third-party tools\n5. Implement comprehensive security measures for data protection\n6. Set up monitoring and logging using ELK stack or similar solution\n7. Create detailed documentation for all integration points",
+          "status": "pending",
+          "testStrategy": "Conduct load testing to verify scalability, penetration testing for security, and integration testing with all connected systems."
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Implement Scalable Architecture for High-Volume Lead Processing",
+      "description": "Implement a scalable architecture for the Anthrasite LeadFactory system to efficiently process increased lead volumes, targeting at least 10x the current capacity without performance degradation.",
+      "details": "Implement a comprehensive scalable architecture with the following components:\n\n1. Horizontal Scaling Implementation:\n   - Refactor application components to be stateless\n   - Implement containerization using Docker for all services\n   - Configure Kubernetes for orchestration and auto-scaling\n   - Set up load balancing with health checks and failover\n   - Implement distributed session management if applicable\n\n2. Database Optimization:\n   - Implement database sharding for lead data\n   - Set up read replicas for high-volume queries\n   - Optimize database indexes based on query patterns\n   - Implement connection pooling\n   - Add database query caching where appropriate\n   - Consider NoSQL solutions for specific high-volume data types\n\n3. Caching Layer Implementation:\n   - Implement Redis or similar distributed caching\n   - Cache frequently accessed lead data and scoring rules\n   - Implement cache invalidation strategies\n   - Set up tiered caching (memory, distributed, disk)\n   - Configure TTL policies based on data volatility\n\n4. Message Queue System:\n   - Implement RabbitMQ or Kafka for asynchronous processing\n   - Design queue topology for lead processing workflows\n   - Implement dead letter queues for failed processing\n   - Configure retry policies and backoff strategies\n   - Add monitoring for queue depths and processing rates\n\n5. Microservices Architecture:\n   - Decompose monolithic components into microservices\n   - Define service boundaries based on business capabilities\n   - Implement API gateway for service orchestration\n   - Design inter-service communication protocols\n   - Implement circuit breakers for fault tolerance\n\n6. Monitoring and Observability:\n   - Implement distributed tracing (Jaeger or similar)\n   - Set up metrics collection with Prometheus\n   - Configure dashboards in Grafana for real-time monitoring\n   - Implement alerting for performance thresholds\n   - Add structured logging across all services\n\n7. Performance Testing Framework:\n   - Develop load testing scripts simulating 10x current volume\n   - Implement performance benchmarking tools\n   - Create automated performance regression tests\n   - Set up continuous performance testing in CI/CD pipeline",
+      "testStrategy": "1. Component-Level Testing:\n   - Unit test all new scalable components\n   - Test each service independently with mock dependencies\n   - Verify proper configuration of each infrastructure component\n   - Test failure scenarios and recovery mechanisms\n\n2. Integration Testing:\n   - Test communication between microservices\n   - Verify message queue producers and consumers\n   - Test database sharding and read replica functionality\n   - Validate caching behavior and invalidation\n   - Test service discovery and load balancing\n\n3. Load Testing:\n   - Create baseline performance metrics at current load\n   - Incrementally increase load to 2x, 5x, and 10x current volume\n   - Measure response times, throughput, and resource utilization\n   - Identify and resolve bottlenecks\n   - Test auto-scaling triggers and behavior\n\n4. Chaos Testing:\n   - Simulate infrastructure failures (network, instances, databases)\n   - Test system resilience during component outages\n   - Verify data consistency during recovery scenarios\n   - Validate circuit breaker functionality\n\n5. Monitoring Validation:\n   - Verify all metrics are properly collected and displayed\n   - Test alerting thresholds and notifications\n   - Validate distributed tracing for complex transactions\n   - Ensure logs provide adequate information for troubleshooting\n\n6. Acceptance Criteria:\n   - System must handle 10x current load with <10% performance degradation\n   - Recovery from component failures must be automatic\n   - No data loss during scaling or component failures\n   - All monitoring dashboards must accurately reflect system state",
+      "status": "deferred",
+      "dependencies": [
+        1,
+        3,
+        5,
+        9
+      ],
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Containerize Application Services with Docker",
+          "description": "Refactor application components to be stateless and implement containerization using Docker for all services in the LeadFactory system.",
+          "dependencies": [],
+          "details": "Create Dockerfiles for each service component, ensuring they are stateless and can be horizontally scaled. Extract configuration to environment variables. Implement health check endpoints for each service. Create docker-compose.yml for local development and testing. Document container resource requirements (CPU, memory) based on performance profiling.",
+          "status": "pending",
+          "testStrategy": "Verify containers start correctly with docker-compose. Test statelessness by running multiple instances and ensuring they function identically. Validate health check endpoints return appropriate status codes."
+        },
+        {
+          "id": 2,
+          "title": "Implement Database Sharding and Optimization",
+          "description": "Optimize database performance through sharding, read replicas, and query optimization to support high-volume lead processing.",
+          "dependencies": [],
+          "details": "Design sharding strategy based on lead data distribution (e.g., by geography or lead source). Implement connection pooling with HikariCP or similar. Create database migration scripts for sharding implementation. Optimize indexes based on query analysis. Set up read replicas for high-volume queries. Implement query caching for frequently accessed data. Document sharding keys and data access patterns.",
+          "status": "pending",
+          "testStrategy": "Benchmark query performance before and after optimization. Test data distribution across shards. Validate read replica synchronization. Verify connection pool efficiency under load."
+        },
+        {
+          "id": 3,
+          "title": "Deploy Distributed Caching with Redis",
+          "description": "Implement a distributed caching layer using Redis to improve performance for frequently accessed lead data and scoring rules.",
+          "dependencies": [
+            2
+          ],
+          "details": "Set up Redis cluster with appropriate persistence configuration. Implement cache client with consistent hashing. Create caching strategies for lead data, scoring rules, and computation results. Implement cache invalidation triggers based on data updates. Configure TTL policies based on data volatility. Add monitoring for cache hit/miss rates. Implement circuit breaker pattern for cache failures.",
+          "status": "pending",
+          "testStrategy": "Measure performance improvement with caching enabled vs. disabled. Test cache invalidation correctness. Verify cache resilience during Redis node failures. Benchmark cache throughput under high load."
+        },
+        {
+          "id": 4,
+          "title": "Implement Message Queue System with Kafka",
+          "description": "Design and implement a message queue system using Kafka for asynchronous lead processing and improved system resilience.",
+          "dependencies": [
+            1
+          ],
+          "details": "Set up Kafka cluster with appropriate topic configuration. Design topic partitioning strategy for lead processing workflows. Implement producer/consumer services for lead ingestion, processing, and distribution. Configure message retention policies. Implement dead letter queues for failed processing. Add retry logic with exponential backoff. Create monitoring for queue depths and processing rates. Document message schemas and event flows.",
+          "status": "pending",
+          "testStrategy": "Test message throughput under various loads. Verify message ordering and delivery guarantees. Validate retry and dead letter queue functionality. Test system recovery after broker failures."
+        },
+        {
+          "id": 5,
+          "title": "Orchestrate with Kubernetes and Implement Auto-scaling",
+          "description": "Configure Kubernetes for container orchestration with auto-scaling capabilities to dynamically adjust resources based on lead processing demand.",
+          "dependencies": [
+            1,
+            4
+          ],
+          "details": "Create Kubernetes deployment manifests for all containerized services. Configure horizontal pod autoscalers based on CPU/memory metrics. Implement readiness/liveness probes for all services. Set up ingress controllers with appropriate routing rules. Configure network policies for service-to-service communication. Implement resource quotas and limits. Create persistent volume claims for stateful components. Document Kubernetes cluster requirements and scaling parameters.",
+          "status": "pending",
+          "testStrategy": "Test auto-scaling by simulating traffic spikes. Verify pod recovery after forced termination. Validate resource allocation under various load conditions. Test rolling updates without service disruption."
+        },
+        {
+          "id": 6,
+          "title": "Implement Comprehensive Monitoring and Performance Testing",
+          "description": "Set up a complete monitoring solution with distributed tracing, metrics collection, and develop performance testing framework to validate 10x scalability.",
+          "dependencies": [
+            3,
+            5
+          ],
+          "details": "Implement distributed tracing with Jaeger across all services. Set up Prometheus for metrics collection with custom exporters for business KPIs. Create Grafana dashboards for real-time monitoring of system performance. Configure alerting for performance thresholds and anomaly detection. Implement structured logging with correlation IDs. Develop load testing scripts using JMeter or Locust simulating 10x current volume. Create automated performance regression tests in CI/CD pipeline. Document performance baselines and targets.",
+          "status": "pending",
+          "testStrategy": "Validate end-to-end tracing for lead processing workflows. Verify metrics accuracy against known workloads. Test alerting by triggering threshold violations. Execute load tests to verify 10x capacity without degradation."
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "CI Pipeline Test Monitoring and Governance Framework",
+      "description": "Develop and implement a comprehensive monitoring and governance framework to maintain test stability in the CI pipeline, building upon the core test re-enablement work completed in Task 6.",
+      "status": "deferred",
+      "dependencies": [
+        1,
+        5,
+        10
+      ],
+      "priority": "high",
+      "details": "Implement a comprehensive test monitoring and governance framework with the following components:\n\n1. Advanced Monitoring Dashboard:\n   - Implement metrics collection for test reliability (pass rate, execution time, flakiness score)\n   - Create interactive dashboards to visualize test health across the CI pipeline\n   - Develop trend analysis for test stability over time\n   - Implement drill-down capabilities to investigate specific test failures\n   - Set up customizable views for different stakeholder needs (developers, QA, management)\n\n2. Alerting System:\n   - Establish alerts for newly unstable tests\n   - Implement early warning system for tests showing signs of degrading stability\n   - Create notification channels for relevant teams when test patterns change\n   - Develop escalation paths for critical test failures\n   - Configure alert thresholds based on test importance and historical patterns\n\n3. Governance Framework:\n   - Develop comprehensive guidelines for writing stable tests\n   - Create a formal review process to prevent disabling tests without proper documentation\n   - Establish test ownership model with clear responsibilities\n   - Implement approval workflows for test modifications\n   - Define SLAs for addressing unstable tests\n\n4. Long-term Monitoring and Analytics:\n   - Build historical test performance database\n   - Implement machine learning models to predict potential test instabilities\n   - Create quarterly test health reports for leadership\n   - Develop correlation analysis between code changes and test stability\n   - Establish continuous improvement process based on analytics insights\n\n5. Integration with Development Workflow:\n   - Connect monitoring system with issue tracking\n   - Automate creation of tickets for unstable tests\n   - Integrate test health metrics into code review process\n   - Develop plugins for IDE to surface test stability information\n   - Create documentation and training materials for developers",
+      "testStrategy": "The monitoring and governance framework will be verified through the following steps:\n\n1. Dashboard Validation:\n   - Verify all key metrics are accurately displayed\n   - Confirm dashboard updates in real-time with test results\n   - Test filtering and search capabilities\n   - Validate data accuracy against raw test results\n   - Verify performance under load with historical data\n\n2. Alert System Testing:\n   - Simulate various test failure scenarios to verify alert triggering\n   - Confirm notifications are delivered through all configured channels\n   - Test escalation paths for critical failures\n   - Verify alert suppression mechanisms work correctly\n   - Validate that alert thresholds are appropriate\n\n3. Governance Process Verification:\n   - Conduct mock reviews using the new process\n   - Test approval workflows with various scenarios\n   - Verify enforcement of documentation requirements\n   - Confirm ownership model functions as designed\n   - Test SLA tracking and reporting\n\n4. Analytics System Testing:\n   - Validate historical data import and integrity\n   - Test prediction models against known historical patterns\n   - Verify report generation and distribution\n   - Confirm correlation analysis produces actionable insights\n   - Test system's ability to identify improvement opportunities\n\n5. Success Criteria:\n   - Dashboard provides clear visibility into test health for all stakeholders\n   - Alerts successfully identify 95% of unstable tests before they cause pipeline failures\n   - Governance process is followed for 100% of test modifications\n   - Analytics system produces actionable insights that lead to measurable stability improvements\n   - Development teams report increased confidence in test reliability",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Advanced Monitoring Dashboard",
+          "description": "Design and develop an interactive dashboard system that collects and visualizes test reliability metrics across the CI pipeline.",
+          "dependencies": [],
+          "details": "Create a comprehensive dashboard with the following features: metrics collection for test reliability (pass rate, execution time, flakiness score), interactive visualizations of test health, trend analysis capabilities, drill-down functionality for investigating failures, and customizable views for different stakeholders (developers, QA, management). Use modern data visualization libraries and ensure real-time data updates.",
+          "status": "pending",
+          "testStrategy": "Validate dashboard functionality with sample test data sets, verify all metrics display correctly, and conduct usability testing with representatives from each stakeholder group."
+        },
+        {
+          "id": 2,
+          "title": "Develop Alerting and Notification System",
+          "description": "Create a robust alerting system that proactively identifies and notifies teams about unstable tests and degrading test patterns.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement a multi-level alerting system that includes: early detection of newly unstable tests, warning indicators for tests showing degrading stability patterns, configurable notification channels (email, Slack, etc.), defined escalation paths for critical failures, and customizable alert thresholds based on test importance and historical patterns. Ensure the system integrates with the monitoring dashboard.",
+          "status": "pending",
+          "testStrategy": "Test alert triggers with simulated test failures, verify notification delivery across all channels, and validate escalation paths function as expected."
+        },
+        {
+          "id": 3,
+          "title": "Establish Test Governance Framework",
+          "description": "Create a comprehensive governance structure with guidelines, processes, and ownership models to maintain test stability.",
+          "dependencies": [],
+          "details": "Develop a formal governance framework including: detailed guidelines for writing stable tests, standardized review processes to prevent improper test disabling, a clear test ownership model with defined responsibilities, approval workflows for test modifications, and SLAs for addressing unstable tests. Document all processes and obtain stakeholder approval.",
+          "status": "pending",
+          "testStrategy": "Validate the governance framework through pilot implementation with selected teams, gather feedback, and refine processes before full rollout."
+        },
+        {
+          "id": 4,
+          "title": "Implement Long-term Analytics and Prediction System",
+          "description": "Build advanced analytics capabilities to track historical test performance and predict potential instabilities.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create a sophisticated analytics system that includes: a historical test performance database, machine learning models to predict potential test instabilities, automated quarterly test health reports for leadership, correlation analysis between code changes and test stability issues, and a continuous improvement process based on insights gained. Ensure the system can process large volumes of test data efficiently.",
+          "status": "pending",
+          "testStrategy": "Validate prediction accuracy with historical data, verify report generation functionality, and test system performance with large datasets."
+        },
+        {
+          "id": 5,
+          "title": "Integrate Monitoring with Development Workflow",
+          "description": "Connect the monitoring and governance framework with existing development tools and processes.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Implement seamless integrations between the monitoring system and development workflows including: automatic ticket creation for unstable tests in issue tracking systems, integration of test health metrics into code review processes, development of IDE plugins to surface test stability information, and creation of comprehensive documentation and training materials for developers. Ensure all integrations use standard APIs and follow security best practices.",
+          "status": "pending",
+          "testStrategy": "Test all integrations with actual development tools, conduct end-to-end workflow testing, and gather developer feedback on usability and effectiveness."
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Implement Comprehensive Velocity Tracking System",
+      "description": "Add velocity tracking capabilities to task-master CLI with timestamps, metrics, and reporting",
+      "status": "in-progress",
+      "priority": "medium",
+      "type": "feature",
+      "created_at": "2025-05-29T22:11:34Z",
+      "dependencies": [],
+      "details": "Implement comprehensive velocity tracking system for task-master CLI that includes:\n- Add completed_at and started_at timestamps to task lifecycle\n- Create velocity command for detailed velocity reports and analytics\n- Enhance existing list command with velocity metrics and ETA display\n- Track complexity points per day and provide accurate completion estimates\n- Include historical velocity analysis and trend reporting\n- All features must be tested and integrated into existing CLI workflow\n- Maintain backward compatibility with existing task.json format\n- Provide clear documentation for new velocity tracking features",
+      "test_strategy": "1. Unit tests for timestamp tracking and velocity calculations\n2. Integration tests with existing task-master commands\n3. Test velocity reporting accuracy with historical data\n4. Verify backward compatibility with existing tasks.json\n5. End-to-end testing of complete velocity tracking workflow\n6. Performance testing with large task datasets\n7. User acceptance testing for CLI usability\n8. Run all tests locally and fix any failures\n9. Create PR and ensure CI passes\n10. Merge to master and verify CI logs show success",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design Velocity Data Model",
+          "description": "Define and implement the data model changes needed to track timestamps and calculate velocity metrics",
+          "dependencies": [],
+          "details": "Create database schema changes to store task completion timestamps, add fields for start/end times, ensure backward compatibility with existing data, and define velocity calculation formulas. Acceptance criteria: Database migration scripts ready, entity models updated, and data access layer supports new fields.",
+          "status": "in-progress"
+        },
+        {
+          "id": 2,
+          "title": "Implement Core Velocity Calculation Logic",
+          "description": "Create the backend service layer for calculating various velocity metrics",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop algorithms to calculate velocity based on completed tasks over time periods (daily, weekly, monthly), implement methods for individual and team velocity, and create utility functions for trend analysis. Acceptance criteria: Unit tests pass for all calculation methods with various test datasets.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Develop Velocity Command Interface",
+          "description": "Create the command-line interface for accessing velocity metrics",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement new CLI command 'velocity' with appropriate parameters (--user, --team, --period, etc.), add help documentation, ensure proper error handling, and implement output formatting. Acceptance criteria: Command successfully retrieves and displays velocity data in various formats (text, JSON).",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Create Velocity Visualization Components",
+          "description": "Develop visual representations of velocity data for reporting",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement charts and graphs for velocity trends, create exportable report templates, design dashboard widgets for velocity metrics, and ensure mobile-friendly visualizations. Acceptance criteria: Visualizations render correctly across devices and accurately represent the underlying data.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Integrate Velocity Tracking with Existing Task Management",
+          "description": "Connect velocity tracking with the current task management workflow",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Update task completion handlers to record timestamps, modify task status changes to trigger velocity calculations, ensure real-time updates of metrics, and maintain performance with increased data tracking. Acceptance criteria: Task completion automatically updates velocity metrics without user intervention.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Implement User Preferences for Velocity Settings",
+          "description": "Add user configuration options for velocity tracking and reporting",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Create settings interface for default time periods, preferred visualization types, notification preferences for velocity changes, and personal goals tracking. Acceptance criteria: Users can customize their velocity tracking experience through settings interface.",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "title": "Conduct Comprehensive Testing",
+          "description": "Perform unit, integration, and performance testing of the velocity system",
+          "dependencies": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "details": "Write automated tests for all velocity components, perform load testing with large datasets, validate calculation accuracy against manual calculations, test backward compatibility, and ensure CI/CD pipeline passes with all tests enabled. Acceptance criteria: 90%+ test coverage, performance within acceptable parameters, no regression in existing functionality.",
+          "status": "pending"
+        },
+        {
+          "id": 8,
+          "title": "Create Documentation and Training Materials",
+          "description": "Develop comprehensive documentation for users and developers",
+          "dependencies": [
+            7
+          ],
+          "details": "Write user guides for velocity features, create developer documentation for API integration, record tutorial videos for common workflows, and update help system with new commands. Acceptance criteria: Documentation reviewed and approved by stakeholders, help system updated, and training materials available for rollout.",
+          "status": "pending"
+        },
+        {
+          "id": 9,
+          "title": "CI/merge verification",
+          "description": "Verify the velocity tracking system works correctly after merging to master",
+          "dependencies": [
+            7,
+            8
+          ],
+          "details": "Verify the velocity tracking system works correctly after merging to master, including all tests passing and no regressions in existing functionality. Verify that the system is properly deployed and configured, and that all dependencies are correctly resolved. Verify that the system is properly monitored and that alerts are correctly triggered. Verify that the system is properly documented and that all stakeholders are aware of the changes. Verify that the system meets the following specific criteria: all tests pass, no regressions, system is properly deployed, dependencies are resolved, system is monitored, alerts are triggered, and documentation is updated.",
+          "status": "pending"
+        }
+      ]
     }
   ]
 }

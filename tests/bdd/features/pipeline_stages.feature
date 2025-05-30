@@ -53,7 +53,8 @@ Feature: Pipeline Stages
 
   @e2e @real_api
   Scenario: Full lead processed and email delivered
-    Given a test lead is queued
+    Given the database is initialized
+    And a test lead is queued
     When the pipeline runs with real API keys
     Then a screenshot and mockup are generated
     And a real email is sent via SendGrid to EMAIL_OVERRIDE

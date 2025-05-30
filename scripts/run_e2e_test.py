@@ -85,10 +85,10 @@ def run_e2e_test():
 
     # Run the BDD test with the e2e tag and direct to a log file
     cmd = [
-        "python",
+        "python3",
         "-m",
         "pytest",
-        "tests/bdd/features/pipeline_stages.feature::Scenario:\ Full\ lead\ processed\ and\ email\ delivered",
+        "tests/bdd/features/pipeline_stages.feature::Full lead processed and email delivered",
         "-v",
         "--no-header",
         "--capture=tee-sys",  # Capture output but also show it
