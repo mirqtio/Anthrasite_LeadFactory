@@ -9,6 +9,8 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
+# Import tier service
+from leadfactory.services.tier_service import APICallResult, get_tier_service
 from leadfactory.utils.e2e_db_connector import db_connection
 
 # Set up logging using unified logging system
@@ -49,7 +51,7 @@ def get_businesses_needing_mockups(limit: Optional[int] = None) -> list[dict]:
             return businesses
 
     except Exception as e:
-        logger.exception(f"Error getting businesses for mockups: {e}")
+        logger.error(f"Error getting businesses needing mockups: {e}")
         return []
 
 
@@ -72,13 +74,13 @@ def create_mockup_asset(business_id: int, mockup_path: str, mockup_url: str) -> 
             return True
 
     except Exception as e:
-        logger.exception(f"Error creating mockup asset for business {business_id}: {e}")
+        logger.error(f"Error creating mockup asset for business {business_id}: {e}")
         return False
 
 
 # Mock implementation of generate_business_mockup
 def generate_business_mockup(
-    business_id: int, options: Optional[dict[str, Any]] = None
+    business_id: int, options: Optional[dict[str, Any]] = None, tier: int = 1
 ) -> dict[str, Any]:
     """
     Generate a mockup of a business website.
@@ -86,13 +88,27 @@ def generate_business_mockup(
     Args:
         business_id: ID of the business to generate a mockup for
         options: Optional configuration options
+        tier: Tier level (1, 2, or 3) for tier-based features
 
     Returns:
         Dictionary containing mockup details
     """
+    # Initialize tier service
+    tier_service = get_tier_service(tier)
+
     logger.info(
-        f"Generating mockup for business ID {business_id} with options {options}"
+        f"Generating mockup for business ID {business_id} with options {options} (Tier {tier})"
     )
+
+    # Check if mockup generation is available for this tier
+    if not tier_service.can_use_feature("basic_mockup", "mockup"):
+        logger.warning(f"Mockup generation not available for tier {tier}")
+        return {
+            "business_id": business_id,
+            "status": "failed",
+            "error": f"Mockup generation not available for tier {tier}",
+            "tier_limited": True,
+        }
 
     try:
         # Create mockups directory if it doesn't exist
@@ -132,28 +148,49 @@ def generate_business_mockup(
             )
             screenshot_row = cursor.fetchone()
 
-        # Generate the mockup file
-        from PIL import Image, ImageDraw, ImageFont
+        # Tier-based mockup generation logic
+        mockup_img = None
 
-        if screenshot_row and os.path.exists(screenshot_row[0]):
-            # Use existing screenshot as base for mockup
-            logger.info(f"Creating mockup based on screenshot: {screenshot_row[0]}")
-            try:
-                base_img = Image.open(screenshot_row[0])
-                # Resize to mockup dimensions if needed
-                mockup_img = base_img.resize((1200, 800), Image.Resampling.LANCZOS)
-            except Exception as e:
-                logger.error(f"Could not load screenshot {screenshot_row[0]}: {e}")
-                raise Exception(f"Failed to load screenshot for mockup generation: {e}")
-        else:
-            # No real screenshot available - cannot create meaningful mockup
-            logger.error(f"No real screenshot available for business {business_id}")
-            logger.error(
-                "Cannot create mockup without real screenshot - failing pipeline"
-            )
-            raise Exception(
-                f"Mockup generation requires real screenshot, but none found for business {business_id}"
-            )
+        # Basic mockup generation (available to all tiers)
+        if tier_service.can_use_feature("basic_mockup", "mockup"):
+            from PIL import Image, ImageDraw, ImageFont
+
+            if screenshot_row and os.path.exists(screenshot_row[0]):
+                # Use existing screenshot as base for mockup
+                logger.info(f"Creating mockup based on screenshot: {screenshot_row[0]}")
+                try:
+                    base_img = Image.open(screenshot_row[0])
+                    # Resize to mockup dimensions if needed
+                    mockup_img = base_img.resize((1200, 800), Image.Resampling.LANCZOS)
+                except Exception as e:
+                    logger.error(f"Could not load screenshot {screenshot_row[0]}: {e}")
+                    raise Exception(
+                        f"Failed to load screenshot for mockup generation: {e}"
+                    )
+            else:
+                # No real screenshot available - cannot create meaningful mockup
+                logger.error(f"No real screenshot available for business {business_id}")
+                logger.error(
+                    "Cannot create mockup without real screenshot - failing pipeline"
+                )
+                raise Exception(
+                    f"Mockup generation requires real screenshot, but none found for business {business_id}"
+                )
+
+        # Enhanced mockup features for higher tiers
+        if tier_service.can_use_feature("enhanced_mockup", "mockup") and mockup_img:
+            logger.info(f"Applying enhanced mockup features for tier {tier}")
+            # Add enhanced features like filters, overlays, etc.
+            # This is a placeholder for future enhanced mockup functionality
+
+        # AI-powered mockup generation for tier 3
+        if tier_service.can_use_feature("ai_mockup", "mockup") and mockup_img:
+            logger.info(f"Applying AI-powered mockup enhancements for tier {tier}")
+            # This would integrate with OpenAI or other AI services for advanced mockup generation
+            # Placeholder for future AI-powered mockup functionality
+
+        if not mockup_img:
+            raise Exception("Failed to generate mockup image")
 
         # Save the mockup
         mockup_img.save(mockup_path, "PNG")
@@ -163,21 +200,36 @@ def generate_business_mockup(
         success = create_mockup_asset(business_id, mockup_path, mockup_url)
 
         if success:
-            return {
+            result = {
                 "business_id": business_id,
                 "mockup_url": mockup_url,
                 "status": "generated",
                 "timestamp": "2025-05-25T08:57:00Z",
+                "tier": tier,
             }
+
+            # Add tier-specific metadata
+            if tier >= 2:
+                result["enhanced_features"] = tier_service.get_enabled_features(
+                    "mockup"
+                )
+
+            return result
         else:
             return {
                 "business_id": business_id,
                 "status": "failed",
                 "error": "Failed to create mockup asset",
+                "tier": tier,
             }
     except Exception as e:
-        logger.exception(f"Error generating mockup for business {business_id}: {e}")
-        return {"business_id": business_id, "status": "failed", "error": str(e)}
+        logger.error(f"Error generating mockup for business {business_id}: {e}")
+        return {
+            "business_id": business_id,
+            "status": "failed",
+            "error": str(e),
+            "tier": tier,
+        }
 
 
 def generate_mockups_for_all_businesses(limit: Optional[int] = None) -> bool:
