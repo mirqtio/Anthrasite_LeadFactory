@@ -3,530 +3,129 @@
     {
       "id": 1,
       "title": "Implement Scoring Rule Evaluation Engine",
-      "description": "Full implementation of YAML-driven scoring, including tests and CI verification",
       "status": "done",
-      "priority": "high",
-      "type": "feature",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "high",
+      "description": "Full implementation of YAML-driven scoring, including tests and CI verification",
       "details": "Implement a comprehensive scoring rule evaluation engine that:\n- Reads scoring rules from YAML configuration files\n- Evaluates businesses against defined scoring criteria\n- Supports multiple scoring dimensions (quality, engagement, conversion potential)\n- Provides weighted scoring calculations\n- Includes comprehensive unit tests\n- Ensures CI pipeline verification passes\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for rule parsing and evaluation logic\n2. Integration tests with sample business data\n3. Performance tests for large datasets\n4. CI pipeline must pass all tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Implement YAML parsing and validation module",
-          "description": "Create a module to parse YAML configuration files that define scoring rules, dimensions, and weights. Include validation to ensure the YAML structure meets the required schema.",
-          "dependencies": [],
-          "details": "Implement a parser that can read YAML files containing scoring rules. Add validation to check for required fields, proper data types, and logical consistency. Handle edge cases like malformed YAML, missing required fields, and invalid value ranges. Use a schema validation approach to ensure all required components are present before processing.",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Develop core rule evaluation logic",
-          "description": "Build the central engine that evaluates individual rules against input data and calculates scores based on rule matches.",
-          "dependencies": [
-            1
-          ],
-          "details": "Create a rule evaluation system that can process different rule types (exact match, range, pattern, etc.). Implement logical operators (AND, OR, NOT) for complex rule combinations. Design the system to be extensible for future rule types. Include performance optimizations for efficient evaluation of large rule sets.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Implement scoring dimensions and weighted calculations",
-          "description": "Create the framework for multiple scoring dimensions and implement the weighted calculation system to produce final scores.",
-          "dependencies": [
-            2
-          ],
-          "details": "Design a system to organize rules into different scoring dimensions (e.g., quality, compliance, performance). Implement the weighted calculation logic that applies dimension-specific weights to produce aggregate scores. Include normalization functions to ensure consistent scoring across dimensions with different scales. Add support for dimension-specific thresholds and scoring curves.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Develop comprehensive test suite",
-          "description": "Create unit and integration tests for all components of the scoring engine, including edge cases and performance tests.",
-          "dependencies": [
-            1,
-            2,
-            3
-          ],
-          "details": "Develop unit tests for each component (YAML parsing, rule evaluation, scoring calculations). Create integration tests that verify end-to-end functionality with sample YAML configurations and input data. Include performance tests to ensure the engine scales with large rule sets. Add specific tests for edge cases like conflicting rules, boundary conditions, and error handling.",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Implement CI integration and documentation",
-          "description": "Set up continuous integration for the scoring engine and create comprehensive documentation for users and developers.",
-          "dependencies": [
-            4
-          ],
-          "details": "Configure CI pipeline to run tests automatically on code changes. Create user documentation explaining the YAML configuration format, available rule types, and scoring dimension setup. Write developer documentation covering the architecture, extension points, and contribution guidelines. Include examples of common use cases and configuration patterns. Add performance guidelines and optimization tips.",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Implement a parser that can read YAML files containing scoring rules. Add validation to check for required fields, proper data types, and logical consistency. Handle edge cases like malformed YAML, missing required fields, and invalid value ranges. Use a schema validation approach to ensure all required components are present before processing.\nCreate a rule evaluation system that can process different rule types (exact match, range, pattern, etc.). Implement logical operators (AND, OR, NOT) for complex rule combinations. Design the system to be extensible for future rule types. Include performance optimizations for efficient evaluation of large rule sets.\nDesign a system to organize rules into different scoring dimensions (e.g., quality, compliance, performance). Implement the weighted calculation logic that applies dimension-specific weights to produce aggregate scores. Include normalization functions to ensure consistent scoring across dimensions with different scales. Add support for dimension-specific thresholds and scoring curves.\nDevelop unit tests for each component (YAML parsing, rule evaluation, scoring calculations). Create integration tests that verify end-to-end functionality with sample YAML configurations and input data. Include performance tests to ensure the engine scales with large rule sets. Add specific tests for edge cases like conflicting rules, boundary conditions, and error handling.\nConfigure CI pipeline to run tests automatically on code changes. Create user documentation explaining the YAML configuration format, available rule types, and scoring dimension setup. Write developer documentation covering the architecture, extension points, and contribution guidelines. Include examples of common use cases and configuration patterns. Add performance guidelines and optimization tips.",
+      "subtasks": []
     },
     {
       "id": 2,
       "title": "Automate IP/Subuser Rotation for Bounce Thresholds",
-      "description": "Automate IP rotation based on bounce rates, with tests",
       "status": "deferred",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "medium",
+      "description": "Automate IP rotation based on bounce rates, with tests",
       "details": "Implement automatic IP and subuser rotation when bounce thresholds are exceeded:\n- Monitor bounce rates per IP/subuser\n- Define configurable bounce rate thresholds\n- Automatically rotate to next available IP/subuser when threshold exceeded\n- Implement cooldown periods for rotated IPs\n- Add comprehensive logging and alerting\n- Include unit and integration tests\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for threshold monitoring logic\n2. Integration tests with SendGrid API\n3. Simulate bounce scenarios and verify rotation\n4. Test alerting mechanisms\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "test_strategy": "",
       "subtasks": []
     },
     {
       "id": 3,
       "title": "Finalize Dedupe Integration with Unified Postgres Connector",
-      "description": "Remove legacy references and ensure proper duplicate handling",
       "status": "done",
-      "priority": "high",
-      "type": "feature",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "high",
+      "description": "Remove legacy references and ensure proper duplicate handling",
       "details": "Complete the deduplication integration:\n- Remove all legacy dedupe code references\n- Ensure unified Postgres connector handles all deduplication\n- Implement proper conflict resolution for duplicate businesses\n- Preserve data from multiple sources during deduplication\n- Add comprehensive logging for dedupe operations\n- Include performance optimizations for large datasets\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for dedupe logic\n2. Integration tests with real duplicate scenarios\n3. Performance tests with large datasets\n4. Verify data preservation during merges\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Legacy Code Removal",
-          "description": "Identify and remove outdated deduplication code from the codebase",
-          "dependencies": [],
-          "details": "Analyze the existing codebase to identify all legacy deduplication functions, methods, and modules. Create a comprehensive inventory of code to be removed. Ensure proper documentation of removed functionality. Verify that removal doesn't break existing dependencies. Update relevant documentation to reflect changes.",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Postgres Connector Integration",
-          "description": "Implement deduplication functionality within the Postgres connector",
-          "dependencies": [
-            1
-          ],
-          "details": "Extend the existing Postgres connector to support deduplication operations. Implement database queries and functions for identifying duplicate records. Create interfaces for deduplication operations that align with connector architecture. Add configuration options for deduplication settings. Write unit tests to verify connector integration.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Conflict Resolution Implementation",
-          "description": "Develop algorithms to handle data conflicts during deduplication",
-          "dependencies": [
-            2
-          ],
-          "details": "Design conflict resolution strategies for different data scenarios. Implement rule-based resolution for automatic conflict handling. Create user interfaces for manual conflict resolution when needed. Develop transaction management to ensure data integrity during resolution. Test with various conflict scenarios to ensure robustness.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Data Preservation Mechanisms",
-          "description": "Implement safeguards to prevent data loss during deduplication",
-          "dependencies": [
-            2,
-            3
-          ],
-          "details": "Create backup mechanisms before deduplication operations. Implement transaction rollback capabilities for failed operations. Design audit trails for tracking all deduplication actions. Develop recovery procedures for restoring data if needed. Test data preservation under various failure scenarios.",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Logging Enhancements",
-          "description": "Improve logging system to track deduplication operations",
-          "dependencies": [
-            2,
-            3,
-            4
-          ],
-          "details": "Extend logging framework to capture detailed deduplication events. Implement structured logging for deduplication operations. Create log analysis tools for monitoring deduplication performance. Add configurable verbosity levels for different environments. Ensure logs contain sufficient information for troubleshooting.",
-          "status": "done"
-        },
-        {
-          "id": 6,
-          "title": "Performance Optimization",
-          "description": "Optimize deduplication processes for large datasets",
-          "dependencies": [
-            2,
-            3,
-            4,
-            5
-          ],
-          "details": "Profile deduplication operations to identify performance bottlenecks. Implement batch processing for handling large datasets efficiently. Optimize database queries with proper indexing strategies. Add caching mechanisms to improve repeated operations. Develop performance testing suite to validate optimizations with large datasets.",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Analyze the existing codebase to identify all legacy deduplication functions, methods, and modules. Create a comprehensive inventory of code to be removed. Ensure proper documentation of removed functionality. Verify that removal doesn't break existing dependencies. Update relevant documentation to reflect changes.\nExtend the existing Postgres connector to support deduplication operations. Implement database queries and functions for identifying duplicate records. Create interfaces for deduplication operations that align with connector architecture. Add configuration options for deduplication settings. Write unit tests to verify connector integration.\nDesign conflict resolution strategies for different data scenarios. Implement rule-based resolution for automatic conflict handling. Create user interfaces for manual conflict resolution when needed. Develop transaction management to ensure data integrity during resolution. Test with various conflict scenarios to ensure robustness.\nCreate backup mechanisms before deduplication operations. Implement transaction rollback capabilities for failed operations. Design audit trails for tracking all deduplication actions. Develop recovery procedures for restoring data if needed. Test data preservation under various failure scenarios.\nExtend logging framework to capture detailed deduplication events. Implement structured logging for deduplication operations. Create log analysis tools for monitoring deduplication performance. Add configurable verbosity levels for different environments. Ensure logs contain sufficient information for troubleshooting.\nProfile deduplication operations to identify performance bottlenecks. Implement batch processing for handling large datasets efficiently. Optimize database queries with proper indexing strategies. Add caching mechanisms to improve repeated operations. Develop performance testing suite to validate optimizations with large datasets.",
+      "subtasks": []
     },
     {
       "id": 4,
       "title": "Replace Legacy bin/ Scripts with CLI Wrappers",
-      "description": "Consolidate execution logic and remove old scripts",
       "status": "done",
-      "priority": "medium",
-      "type": "refactor",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "medium",
+      "description": "Consolidate execution logic and remove old scripts",
       "details": "Modernize script execution:\n- Create CLI wrappers for all bin/ scripts\n- Consolidate common functionality into shared modules\n- Remove deprecated bin/ scripts\n- Update documentation to reference new CLI commands\n- Ensure backward compatibility where needed\n- Add proper argument parsing and validation\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for CLI commands\n2. Integration tests for each wrapper\n3. Verify all functionality is preserved\n4. Test backward compatibility\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Evaluate and select CLI framework",
-          "description": "Research and select an appropriate CLI framework for modernizing bin/ scripts",
-          "dependencies": [],
-          "details": "Compare options like argparse, click, typer, or docopt based on project needs. Consider factors like ease of use, documentation quality, maintenance status, and compatibility with existing codebase. Create a decision document with pros/cons of each option and final recommendation.",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Identify common functionality across scripts",
-          "description": "Analyze existing bin/ scripts to identify shared functionality that can be consolidated",
-          "dependencies": [
-            1
-          ],
-          "details": "Review all bin/ scripts to identify patterns, duplicate code, and common operations. Document shared functionality like argument parsing, logging, error handling, configuration loading, and API interactions. Create a design for a common utilities module that can be reused across all scripts.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Implement wrapper and utilities library",
-          "description": "Create a common wrapper and utilities library based on the selected CLI framework",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Develop a shared library that implements the common functionality identified in subtask 2 using the CLI framework selected in subtask 1. Include standardized argument parsing, error handling, logging, and other shared operations. Create unit tests for the library to ensure reliability.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Refactor individual bin/ scripts",
-          "description": "Update each bin/ script to use the new wrapper and utilities library",
-          "dependencies": [
-            3
-          ],
-          "details": "Systematically refactor each bin/ script to use the new common library while maintaining existing functionality. Ensure consistent argument handling, help text, and error reporting across all scripts. Add appropriate type hints and docstrings. Implement unit tests for each refactored script.",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Update documentation and verify backward compatibility",
-          "description": "Update documentation and test backward compatibility of refactored scripts",
-          "dependencies": [
-            4
-          ],
-          "details": "Update user documentation to reflect any changes in script usage. Create regression tests to verify that refactored scripts maintain backward compatibility with existing workflows. Test edge cases and error conditions. Collect feedback from team members who regularly use these scripts to ensure no functionality was lost.",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Compare options like argparse, click, typer, or docopt based on project needs. Consider factors like ease of use, documentation quality, maintenance status, and compatibility with existing codebase. Create a decision document with pros/cons of each option and final recommendation.\nReview all bin/ scripts to identify patterns, duplicate code, and common operations. Document shared functionality like argument parsing, logging, error handling, configuration loading, and API interactions. Create a design for a common utilities module that can be reused across all scripts.\nDevelop a shared library that implements the common functionality identified in subtask 2 using the CLI framework selected in subtask 1. Include standardized argument parsing, error handling, logging, and other shared operations. Create unit tests for the library to ensure reliability.\nSystematically refactor each bin/ script to use the new common library while maintaining existing functionality. Ensure consistent argument handling, help text, and error reporting across all scripts. Add appropriate type hints and docstrings. Implement unit tests for each refactored script.\nUpdate user documentation to reflect any changes in script usage. Create regression tests to verify that refactored scripts maintain backward compatibility with existing workflows. Test edge cases and error conditions. Collect feedback from team members who regularly use these scripts to ensure no functionality was lost.",
+      "subtasks": []
     },
     {
       "id": 5,
       "title": "Refactor PipelineValidator to Check Actual Stages",
-      "description": "Update validation logic and add tests",
       "status": "done",
-      "priority": "high",
-      "type": "refactor",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "high",
+      "description": "Update validation logic and add tests",
       "details": "Refactor the pipeline validator to validate actual pipeline stages:\n- Check each pipeline stage's requirements before execution\n- Validate API keys, database connections, file permissions\n- Ensure all dependencies are met for each stage\n- Add stage-specific validation rules\n- Implement proper error reporting\n- Add comprehensive test coverage\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for each validation check\n2. Integration tests with full pipeline\n3. Test failure scenarios and error handling\n4. Verify all stages are properly validated\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Stage Requirement Analysis",
-          "description": "Analyze and document the specific validation requirements for each pipeline stage",
-          "dependencies": [],
-          "details": "Identify all pipeline stages and their specific validation needs. Document required resources, permissions, and dependencies for each stage. Create a comprehensive mapping between stages and their validation requirements. Include edge cases and special conditions that need validation.",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Validation Rule Implementation",
-          "description": "Implement the core validation rules for different resource types",
-          "dependencies": [
-            1
-          ],
-          "details": "Develop validation logic for API keys, database connections, file permissions, and other resource types. Create modular validation functions that can be composed for different stages. Implement parameter validation for each rule type. Ensure validation rules are extensible for future requirements.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Dependency Checking System",
-          "description": "Build a system to validate dependencies between pipeline stages",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Implement logic to verify that prerequisites for each stage are met. Create a dependency graph representation for validation sequencing. Add checks for circular dependencies. Develop a mechanism to validate cross-stage resource availability.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Error Reporting Enhancement",
-          "description": "Improve error reporting to provide clear, actionable validation feedback",
-          "dependencies": [
-            2,
-            3
-          ],
-          "details": "Design a structured error format with error codes, messages, and remediation steps. Implement context-aware error messages that reference specific validation failures. Add severity levels to validation errors. Create a logging system for validation errors that facilitates debugging.",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Test Coverage Development",
-          "description": "Create comprehensive test suite for the refactored PipelineValidator",
-          "dependencies": [
-            2,
-            3,
-            4
-          ],
-          "details": "Develop unit tests for individual validation rules. Create integration tests for the complete validation process. Implement test cases for edge cases and error conditions. Add performance tests to ensure validation efficiency. Create documentation for test scenarios and expected outcomes.",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Identify all pipeline stages and their specific validation needs. Document required resources, permissions, and dependencies for each stage. Create a comprehensive mapping between stages and their validation requirements. Include edge cases and special conditions that need validation.\nDevelop validation logic for API keys, database connections, file permissions, and other resource types. Create modular validation functions that can be composed for different stages. Implement parameter validation for each rule type. Ensure validation rules are extensible for future requirements.\nImplement logic to verify that prerequisites for each stage are met. Create a dependency graph representation for validation sequencing. Add checks for circular dependencies. Develop a mechanism to validate cross-stage resource availability.\nDesign a structured error format with error codes, messages, and remediation steps. Implement context-aware error messages that reference specific validation failures. Add severity levels to validation errors. Create a logging system for validation errors that facilitates debugging.\nDevelop unit tests for individual validation rules. Create integration tests for the complete validation process. Implement test cases for edge cases and error conditions. Add performance tests to ensure validation efficiency. Create documentation for test scenarios and expected outcomes.",
+      "subtasks": []
     },
     {
       "id": 6,
       "title": "Enable Disabled Tests and Resolve Failures",
-      "description": "Identify and fix disabled tests, ensuring CI passes",
       "status": "done",
-      "priority": "high",
-      "type": "bug",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "high",
+      "description": "Identify and fix disabled tests, ensuring CI passes",
       "details": "Re-enable and fix all disabled tests:\n- Audit all test files for disabled/skipped tests\n- Identify root causes of test failures\n- Fix underlying issues causing test failures\n- Re-enable all tests\n- Ensure CI pipeline passes with all tests enabled\n- Add documentation for any complex fixes\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Run full test suite locally\n2. Fix each failing test\n3. Verify CI pipeline passes\n4. Monitor for flaky tests\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Conduct Test Audit and Inventory",
-          "description": "Create a comprehensive inventory of all failing tests across the codebase",
-          "dependencies": [],
-          "details": "Identify all failing tests in the codebase. Document each test's location, purpose, and current failure pattern. Categorize tests by component or functionality. Create a spreadsheet or tracking document with test names, file locations, and failure frequency. Prioritize tests based on importance and impact on the CI pipeline.",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Perform Failure Analysis",
-          "description": "Analyze root causes of test failures and document patterns",
-          "dependencies": [
-            1
-          ],
-          "details": "For each failing test, reproduce the failure locally. Use debugging tools to identify the exact point of failure. Determine if failures are due to code bugs, environment issues, race conditions, or test implementation problems. Group tests by common failure patterns. Document findings for each test including stack traces, error messages, and potential causes.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Implement Test Fixes",
-          "description": "Fix identified issues in tests or application code",
-          "dependencies": [
-            2
-          ],
-          "details": "Address each failing test based on the root cause analysis. Update test code for implementation issues. Fix application code for actual bugs. Refactor flaky tests to make them more reliable. Add better error handling and logging to tests. Ensure tests run consistently in local environment before committing changes. Create separate branches for different categories of fixes.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Verify Fixes in CI Environment",
-          "description": "Ensure all test fixes pass consistently in the CI pipeline",
-          "dependencies": [
-            3
-          ],
-          "details": "Submit pull requests with test fixes to trigger CI pipeline. Monitor test runs in the CI environment to verify fixes. Address any environment-specific issues that appear only in CI. Run multiple CI builds to check for consistency and eliminate flakiness. Document any remaining issues that couldn't be resolved. Update the test inventory with the status of each fixed test.",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Identify all failing tests in the codebase. Document each test's location, purpose, and current failure pattern. Categorize tests by component or functionality. Create a spreadsheet or tracking document with test names, file locations, and failure frequency. Prioritize tests based on importance and impact on the CI pipeline.\nFor each failing test, reproduce the failure locally. Use debugging tools to identify the exact point of failure. Determine if failures are due to code bugs, environment issues, race conditions, or test implementation problems. Group tests by common failure patterns. Document findings for each test including stack traces, error messages, and potential causes.\nAddress each failing test based on the root cause analysis. Update test code for implementation issues. Fix application code for actual bugs. Refactor flaky tests to make them more reliable. Add better error handling and logging to tests. Ensure tests run consistently in local environment before committing changes. Create separate branches for different categories of fixes.\nSubmit pull requests with test fixes to trigger CI pipeline. Monitor test runs in the CI environment to verify fixes. Address any environment-specific issues that appear only in CI. Run multiple CI builds to check for consistency and eliminate flakiness. Document any remaining issues that couldn't be resolved. Update the test inventory with the status of each fixed test.",
+      "subtasks": []
     },
     {
       "id": 7,
       "title": "Finalize Supabase PNG Upload Integration",
-      "description": "Ensure mockup images upload correctly with error handling",
       "status": "deferred",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "medium",
+      "description": "Ensure mockup images upload correctly with error handling",
       "details": "Complete Supabase integration for PNG uploads:\n- Implement reliable PNG upload to Supabase storage\n- Add proper error handling and retry logic\n- Ensure mockup images are correctly linked to businesses\n- Implement CDN URL generation for uploaded images\n- Add cleanup for orphaned images\n- Include comprehensive error logging\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for upload logic\n2. Integration tests with Supabase\n3. Test error scenarios and retries\n4. Verify CDN URL generation\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
+      "test_strategy": "",
       "subtasks": []
     },
     {
       "id": 8,
       "title": "Add Unit and Integration Tests for Bounce Handling Logic",
-      "description": "Simulate bounce scenarios and verify system responses",
       "status": "done",
-      "priority": "high",
-      "type": "test",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "high",
+      "description": "Simulate bounce scenarios and verify system responses",
       "details": "Implement comprehensive bounce handling tests:\n- Unit tests for bounce detection logic\n- Integration tests with SendGrid webhooks\n- Simulate various bounce types (hard, soft, block)\n- Test bounce threshold calculations\n- Verify proper email status updates\n- Test alerting and reporting mechanisms\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Mock SendGrid webhook payloads\n2. Test all bounce types\n3. Verify database updates\n4. Test threshold triggers\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Develop unit tests for bounce handling",
-          "description": "Create comprehensive unit tests for the bounce handling functionality",
-          "dependencies": [],
-          "details": "Implement unit tests that cover the core bounce handling logic, including test cases for different bounce scenarios, edge cases, and error conditions. Ensure tests are isolated and don't depend on external services. Include mocking of dependencies and verification of expected behaviors.",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Implement webhook simulation for bounce events",
-          "description": "Create a simulation framework for email service provider webhook events",
-          "dependencies": [
-            1
-          ],
-          "details": "Develop a mechanism to simulate incoming webhook notifications from email service providers (ESP). This should include the ability to generate properly formatted webhook payloads with various bounce information. The simulation should be configurable to test different ESP formats and response scenarios.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Test handling of different bounce types",
-          "description": "Verify system correctly processes and categorizes different bounce types",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Test how the system handles different bounce categories (hard bounces, soft bounces, complaints, etc.). Verify that each type is properly identified, logged, and processed according to business rules. Include tests for unusual or malformed bounce notifications.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Verify bounce threshold functionality",
-          "description": "Test the bounce rate threshold monitoring and triggered actions",
-          "dependencies": [
-            3
-          ],
-          "details": "Validate that the system correctly tracks bounce rates and applies appropriate thresholds. Test scenarios where bounce rates approach and exceed configured thresholds, and verify that the correct actions are triggered (notifications, sending pauses, etc.). Include tests for threshold resets and recovery scenarios.",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Implement unit tests that cover the core bounce handling logic, including test cases for different bounce scenarios, edge cases, and error conditions. Ensure tests are isolated and don't depend on external services. Include mocking of dependencies and verification of expected behaviors.\nDevelop a mechanism to simulate incoming webhook notifications from email service providers (ESP). This should include the ability to generate properly formatted webhook payloads with various bounce information. The simulation should be configurable to test different ESP formats and response scenarios.\nTest how the system handles different bounce categories (hard bounces, soft bounces, complaints, etc.). Verify that each type is properly identified, logged, and processed according to business rules. Include tests for unusual or malformed bounce notifications.\nValidate that the system correctly tracks bounce rates and applies appropriate thresholds. Test scenarios where bounce rates approach and exceed configured thresholds, and verify that the correct actions are triggered (notifications, sending pauses, etc.). Include tests for threshold resets and recovery scenarios.",
+      "subtasks": []
     },
     {
       "id": 9,
       "title": "Improve Error Propagation and Partial Failure Handling",
-      "description": "Ensure failures are logged without breaking the batch process",
       "status": "done",
-      "priority": "high",
-      "type": "improvement",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "high",
+      "description": "Ensure failures are logged without breaking the batch process",
       "details": "Enhance error handling across the pipeline:\n- Implement proper error propagation between pipeline stages\n- Handle partial failures gracefully\n- Continue processing valid items when some fail\n- Add detailed error logging with context\n- Implement error aggregation and reporting\n- Add retry mechanisms for transient failures\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for error handling logic\n2. Integration tests with failure scenarios\n3. Test partial batch processing\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Design Error Propagation Mechanism",
-          "description": "Create a standardized error propagation mechanism across the pipeline",
-          "dependencies": [],
-          "details": "Design and implement a consistent error type hierarchy that can carry contextual information. Define error interfaces that allow errors to propagate through pipeline stages while maintaining their original context. Include error categorization (e.g., transient vs. permanent, user error vs. system error).",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Implement Partial Failure Handling",
-          "description": "Develop a system to handle partial failures without aborting the entire pipeline",
-          "dependencies": [
-            1
-          ],
-          "details": "Create mechanisms to isolate failures to specific pipeline segments. Implement fallback strategies for non-critical failures. Design data structures to track which parts of a job succeeded and which failed. Ensure downstream stages can operate with partial data when appropriate.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Enhance Error Logging System",
-          "description": "Improve error logging with contextual information and structured formats",
-          "dependencies": [
-            1
-          ],
-          "details": "Implement structured logging for errors with consistent fields. Add context-aware logging that captures the state at the time of failure. Create log correlation IDs to track errors across distributed components. Ensure logs include actionable information for troubleshooting.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Develop Error Aggregation and Reporting",
-          "description": "Create a system to aggregate and summarize errors for analysis",
-          "dependencies": [
-            3
-          ],
-          "details": "Build an error aggregation mechanism to collect errors across pipeline runs. Implement error categorization and frequency analysis. Create dashboards or reports to visualize error patterns. Design alerting thresholds for different error categories.",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Implement Retry Mechanisms for Transient Failures",
-          "description": "Add intelligent retry logic for recoverable errors",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Design configurable retry policies with exponential backoff. Implement circuit breakers to prevent cascading failures during retry attempts. Create mechanisms to identify which errors are retryable. Add monitoring for retry attempts and success rates.",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Design and implement a consistent error type hierarchy that can carry contextual information. Define error interfaces that allow errors to propagate through pipeline stages while maintaining their original context. Include error categorization (e.g., transient vs. permanent, user error vs. system error).\nCreate mechanisms to isolate failures to specific pipeline segments. Implement fallback strategies for non-critical failures. Design data structures to track which parts of a job succeeded and which failed. Ensure downstream stages can operate with partial data when appropriate.\nImplement structured logging for errors with consistent fields. Add context-aware logging that captures the state at the time of failure. Create log correlation IDs to track errors across distributed components. Ensure logs include actionable information for troubleshooting.\nBuild an error aggregation mechanism to collect errors across pipeline runs. Implement error categorization and frequency analysis. Create dashboards or reports to visualize error patterns. Design alerting thresholds for different error categories.\nDesign configurable retry policies with exponential backoff. Implement circuit breakers to prevent cascading failures during retry attempts. Create mechanisms to identify which errors are retryable. Add monitoring for retry attempts and success rates.",
+      "subtasks": []
     },
     {
       "id": 10,
       "title": "Add Test for Preflight Sequence",
-      "description": "Write tests for the preflight check functionality",
       "status": "done",
-      "priority": "medium",
-      "type": "test",
-      "created_at": "2025-05-28T09:00:00Z",
       "dependencies": [],
+      "priority": "medium",
+      "description": "Write tests for the preflight check functionality",
       "details": "Create comprehensive tests for preflight checks:\n- Test all preflight validation steps\n- Mock various failure scenarios\n- Verify proper error messages\n- Test environment variable validation\n- Test API connectivity checks\n- Test database connection validation\n- All tests must be created, run, and pass successfully\n- All test failures and issues must be resolved\n- Code must be merged to master branch\n- Monitor CI logs to confirm successful merge and all tests passing",
-      "test_strategy": "1. Unit tests for each preflight check\n2. Integration tests for full sequence\n3. Test various failure modes\n4. Verify error reporting\n5. Run all tests locally and fix any failures\n6. Create PR and ensure CI passes\n7. Merge to master and verify CI logs show success",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Develop individual preflight check tests",
-          "description": "Create unit tests for each individual preflight check to verify they function correctly in isolation",
-          "dependencies": [],
-          "details": "Identify all preflight checks in the system, create test cases for each check covering both pass and fail conditions, ensure proper error messages are displayed for failed checks, and verify that each check correctly validates its specific requirement",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Implement failure scenario simulations",
-          "description": "Develop tests that simulate various failure scenarios to ensure the preflight sequence handles errors appropriately",
-          "dependencies": [
-            1
-          ],
-          "details": "Create test cases for common failure scenarios, test edge cases like partial failures, simulate network issues, resource constraints, and permission problems, verify error handling and recovery mechanisms work as expected",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Develop integration tests for the complete preflight sequence",
-          "description": "Create end-to-end tests that verify the entire preflight sequence functions correctly as an integrated process",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Develop tests that run the complete preflight sequence from start to finish, verify correct execution order of checks, test that the overall pass/fail determination is accurate, and ensure proper logging and reporting of the sequence results",
-          "status": "done"
-        }
-      ]
+      "test_strategy": "Identify all preflight checks in the system, create test cases for each check covering both pass and fail conditions, ensure proper error messages are displayed for failed checks, and verify that each check correctly validates its specific requirement\nCreate test cases for common failure scenarios, test edge cases like partial failures, simulate network issues, resource constraints, and permission problems, verify error handling and recovery mechanisms work as expected\nDevelop tests that run the complete preflight sequence from start to finish, verify correct execution order of checks, test that the overall pass/fail determination is accurate, and ensure proper logging and reporting of the sequence results",
+      "subtasks": []
     },
     {
       "id": 11,
       "title": "Implement Web Interface for HTML and LLM Logs Browsing",
-      "description": "Create a user-friendly web interface that allows users to browse, search, filter, and export stored HTML and LLM logs, providing easy access to historical data.",
-      "details": "Implement a comprehensive web interface for log browsing with the following components:\n\n1. Frontend Development:\n   - Create a responsive web interface using a modern framework (React, Vue, or Angular)\n   - Implement a clean, intuitive UI with appropriate navigation and layout\n   - Design dashboard views for quick access to recent logs\n   - Build advanced filtering components for date ranges, business ID, request type, etc.\n   - Implement search functionality with highlighting of matching content\n   - Create data visualization components (charts, graphs) for log analytics\n\n2. Backend API Development:\n   - Design and implement RESTful API endpoints for log retrieval\n   - Create efficient database queries with proper indexing for performance\n   - Implement pagination to handle large volumes of log data\n   - Build sorting capabilities (by date, type, status, etc.)\n   - Develop filtering logic for all required parameters\n   - Create export functionality for common formats (CSV, JSON, PDF)\n\n3. Authentication and Security:\n   - Implement proper authentication for accessing log data\n   - Add role-based authorization to control access to sensitive logs\n   - Ensure secure API endpoints with appropriate validation\n   - Implement audit logging for tracking who accessed what data\n\n4. User Experience Features:\n   - Add user preferences for default views and filters\n   - Implement persistent settings across sessions\n   - Create keyboard shortcuts for power users\n   - Add responsive design for mobile and tablet access\n   - Implement real-time updates for new logs when appropriate\n\n5. Performance Considerations:\n   - Optimize for handling large log datasets\n   - Implement caching strategies for frequently accessed logs\n   - Use lazy loading and virtualization for long lists\n   - Ensure fast search response times with proper indexing",
-      "testStrategy": "1. Unit Testing:\n   - Write unit tests for all frontend components (filters, search, pagination)\n   - Test backend API endpoints with various query parameters\n   - Verify authentication and authorization logic\n   - Test data export functionality for all supported formats\n\n2. Integration Testing:\n   - Test the complete flow from log storage to retrieval and display\n   - Verify filtering works correctly with backend queries\n   - Test search functionality with various query types\n   - Ensure pagination works correctly with large datasets\n\n3. Performance Testing:\n   - Benchmark API response times with various query complexities\n   - Test UI performance with large log datasets\n   - Verify memory usage remains acceptable during extended use\n   - Test concurrent user access scenarios\n\n4. User Acceptance Testing:\n   - Create test scenarios for common user workflows\n   - Verify all filtering options work as expected\n   - Test across different browsers and devices\n   - Validate that exported data is complete and correctly formatted\n\n5. Security Testing:\n   - Verify unauthorized users cannot access log data\n   - Test role-based access controls\n   - Ensure sensitive data is properly protected\n   - Validate input sanitization for search and filter parameters\n\n6. Regression Testing:\n   - Ensure existing log storage functionality continues to work\n   - Verify integration with any existing systems",
       "status": "deferred",
       "dependencies": [
         9
       ],
       "priority": "medium",
+      "description": "Create a user-friendly web interface that allows users to browse, search, filter, and export stored HTML and LLM logs, providing easy access to historical data.",
+      "details": "Implement a comprehensive web interface for log browsing with the following components:\n1. Frontend Development:\n- Create a responsive web interface using a modern framework (React, Vue, or Angular)\n- Implement a clean, intuitive UI with appropriate navigation and layout\n- Design dashboard views for quick access to recent logs\n- Build advanced filtering components for date ranges, business ID, request type, etc.\n- Implement search functionality with highlighting of matching content\n- Create data visualization components (charts, graphs) for log analytics\n2. Backend API Development:\n- Design and implement RESTful API endpoints for log retrieval\n- Create efficient database queries with proper indexing for performance\n- Implement pagination to handle large volumes of log data\n- Build sorting capabilities (by date, type, status, etc.)\n- Develop filtering logic for all required parameters\n- Create export functionality for common formats (CSV, JSON, PDF)\n3. Authentication and Security:\n- Implement proper authentication for accessing log data\n- Add role-based authorization to control access to sensitive logs\n- Ensure secure API endpoints with appropriate validation\n- Implement audit logging for tracking who accessed what data\n4. User Experience Features:\n- Add user preferences for default views and filters\n- Implement persistent settings across sessions\n- Create keyboard shortcuts for power users\n- Add responsive design for mobile and tablet access\n- Implement real-time updates for new logs when appropriate\n5. Performance Considerations:\n- Optimize for handling large log datasets\n- Implement caching strategies for frequently accessed logs\n- Use lazy loading and virtualization for long lists\n- Ensure fast search response times with proper indexing",
+      "test_strategy": "1. Unit Testing:\n- Write unit tests for all frontend components (filters, search, pagination)\n- Test backend API endpoints with various query parameters\n- Verify authentication and authorization logic\n- Test data export functionality for all supported formats\n2. Integration Testing:\n- Test the complete flow from log storage to retrieval and display\n- Verify filtering works correctly with backend queries\n- Test search functionality with various query types\n- Ensure pagination works correctly with large datasets\n3. Performance Testing:\n- Benchmark API response times with various query complexities\n- Test UI performance with large log datasets\n- Verify memory usage remains acceptable during extended use\n- Test concurrent user access scenarios\n4. User Acceptance Testing:\n- Create test scenarios for common user workflows\n- Verify all filtering options work as expected\n- Test across different browsers and devices\n- Validate that exported data is complete and correctly formatted\n5. Security Testing:\n- Verify unauthorized users cannot access log data\n- Test role-based access controls\n- Ensure sensitive data is properly protected\n- Validate input sanitization for search and filter parameters\n6. Regression Testing:\n- Ensure existing log storage functionality continues to work\n- Verify integration with any existing systems",
       "subtasks": []
     },
     {
       "id": 12,
       "title": "Implement Advanced Analytics for Lead Generation Optimization",
-      "description": "Develop a comprehensive analytics system that leverages machine learning to analyze lead quality, conversion rates, and ROI, providing actionable insights through predictive models and automated reporting.",
-      "details": "Implement an advanced analytics system with the following components:\n\n1. Data Integration Layer:\n   - Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n   - Implement data normalization and cleaning processes\n   - Design a unified data schema optimized for analytics\n   - Set up real-time data streaming for continuous analysis\n\n2. Machine Learning Models:\n   - Develop lead quality scoring algorithms using supervised learning\n   - Implement pattern recognition for lead behavior analysis\n   - Create conversion prediction models with feature importance analysis\n   - Build ROI optimization algorithms with A/B testing capabilities\n   - Implement model training pipelines with validation frameworks\n\n3. Analytics Dashboard:\n   - Design an intuitive UI with key performance indicators\n   - Create interactive visualizations for lead funnel analysis\n   - Implement drill-down capabilities for detailed insights\n   - Add customizable reporting views for different stakeholders\n   - Ensure mobile responsiveness for on-the-go access\n\n4. Automated Reporting System:\n   - Implement scheduled report generation\n   - Create natural language generation for insight summaries\n   - Design alert mechanisms for anomaly detection\n   - Develop export functionality in multiple formats (PDF, CSV, Excel)\n   - Implement email delivery with customizable templates\n\n5. Scalable Architecture:\n   - Design for horizontal scaling to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Create data partitioning for efficient query processing\n   - Set up appropriate security measures for sensitive data\n   - Implement logging and monitoring for system health\n\n6. Integration with Existing Systems:\n   - Connect with current lead generation workflows\n   - Implement API endpoints for third-party tool integration\n   - Ensure backward compatibility with existing reporting tools\n   - Create documentation for integration points",
-      "testStrategy": "Verify the implementation through the following testing approach:\n\n1. Data Integration Testing:\n   - Validate data completeness and accuracy from all sources\n   - Test ETL processes with various data scenarios (clean, dirty, missing)\n   - Measure data processing performance under load\n   - Verify data consistency across the system\n\n2. Machine Learning Model Validation:\n   - Implement cross-validation for all predictive models\n   - Measure model accuracy, precision, recall, and F1 scores\n   - Conduct A/B testing to compare model performance against baseline\n   - Test model retraining processes with historical data\n   - Validate feature importance analysis with domain experts\n\n3. Dashboard and UI Testing:\n   - Perform usability testing with actual stakeholders\n   - Conduct cross-browser and cross-device compatibility testing\n   - Validate visualization accuracy against raw data\n   - Test performance with large datasets and concurrent users\n   - Verify export functionality for all supported formats\n\n4. Automated Reporting Testing:\n   - Validate report generation accuracy and completeness\n   - Test scheduling functionality across different time zones\n   - Verify email delivery and formatting across mail clients\n   - Test natural language generation for accuracy and readability\n   - Validate alert thresholds and notification delivery\n\n5. System Integration Testing:\n   - Test end-to-end workflows from data ingestion to reporting\n   - Validate API endpoints with various request scenarios\n   - Measure system performance under expected and peak loads\n   - Conduct security testing including penetration testing\n   - Verify system resilience with chaos engineering techniques\n\n6. User Acceptance Testing:\n   - Create test scenarios based on real business use cases\n   - Collect feedback from stakeholders on insights quality\n   - Validate ROI calculations against manual analysis\n   - Measure system adoption and usage metrics",
       "status": "deferred",
       "dependencies": [
         5,
@@ -534,14 +133,14 @@
         11
       ],
       "priority": "medium",
+      "description": "Develop a comprehensive analytics system that leverages machine learning to analyze lead quality, conversion rates, and ROI, providing actionable insights through predictive models and automated reporting.",
+      "details": "Implement an advanced analytics system with the following components:\n1. Data Integration Layer:\n- Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n- Implement data normalization and cleaning processes\n- Design a unified data schema optimized for analytics\n- Set up real-time data streaming for continuous analysis\n2. Machine Learning Models:\n- Develop lead quality scoring algorithms using supervised learning\n- Implement pattern recognition for lead behavior analysis\n- Create conversion prediction models with feature importance analysis\n- Build ROI optimization algorithms with A/B testing capabilities\n- Implement model training pipelines with validation frameworks\n3. Analytics Dashboard:\n- Design an intuitive UI with key performance indicators\n- Create interactive visualizations for lead funnel analysis\n- Implement drill-down capabilities for detailed insights\n- Add customizable reporting views for different stakeholders\n- Ensure mobile responsiveness for on-the-go access\n4. Automated Reporting System:\n- Implement scheduled report generation\n- Create natural language generation for insight summaries\n- Design alert mechanisms for anomaly detection\n- Develop export functionality in multiple formats (PDF, CSV, Excel)\n- Implement email delivery with customizable templates\n5. Scalable Architecture:\n- Design for horizontal scaling to handle growing data volumes\n- Implement caching strategies for performance optimization\n- Create data partitioning for efficient query processing\n- Set up appropriate security measures for sensitive data\n- Implement logging and monitoring for system health\n6. Integration with Existing Systems:\n- Connect with current lead generation workflows\n- Implement API endpoints for third-party tool integration\n- Ensure backward compatibility with existing reporting tools\n- Create documentation for integration points",
+      "test_strategy": "Verify the implementation through the following testing approach:\n1. Data Integration Testing:\n- Validate data completeness and accuracy from all sources\n- Test ETL processes with various data scenarios (clean, dirty, missing)\n- Measure data processing performance under load\n- Verify data consistency across the system\n2. Machine Learning Model Validation:\n- Implement cross-validation for all predictive models\n- Measure model accuracy, precision, recall, and F1 scores\n- Conduct A/B testing to compare model performance against baseline\n- Test model retraining processes with historical data\n- Validate feature importance analysis with domain experts\n3. Dashboard and UI Testing:\n- Perform usability testing with actual stakeholders\n- Conduct cross-browser and cross-device compatibility testing\n- Validate visualization accuracy against raw data\n- Test performance with large datasets and concurrent users\n- Verify export functionality for all supported formats\n4. Automated Reporting Testing:\n- Validate report generation accuracy and completeness\n- Test scheduling functionality across different time zones\n- Verify email delivery and formatting across mail clients\n- Test natural language generation for accuracy and readability\n- Validate alert thresholds and notification delivery\n5. System Integration Testing:\n- Test end-to-end workflows from data ingestion to reporting\n- Validate API endpoints with various request scenarios\n- Measure system performance under expected and peak loads\n- Conduct security testing including penetration testing\n- Verify system resilience with chaos engineering techniques\n6. User Acceptance Testing:\n- Create test scenarios based on real business use cases\n- Collect feedback from stakeholders on insights quality\n- Validate ROI calculations against manual analysis\n- Measure system adoption and usage metrics",
       "subtasks": []
     },
     {
       "id": 13,
       "title": "Implement Scalable Architecture for High-Volume Lead Processing",
-      "description": "Implement a scalable architecture for the Anthrasite LeadFactory system to efficiently process increased lead volumes, targeting at least 10x the current capacity without performance degradation.",
-      "details": "Implement a comprehensive scalable architecture with the following components:\n\n1. Horizontal Scaling Implementation:\n   - Refactor application components to be stateless\n   - Implement containerization using Docker for all services\n   - Configure Kubernetes for orchestration and auto-scaling\n   - Set up load balancing with health checks and failover\n   - Implement distributed session management if applicable\n\n2. Database Optimization:\n   - Implement database sharding for lead data\n   - Set up read replicas for high-volume queries\n   - Optimize database indexes based on query patterns\n   - Implement connection pooling\n   - Add database query caching where appropriate\n   - Consider NoSQL solutions for specific high-volume data types\n\n3. Caching Layer Implementation:\n   - Implement Redis or similar distributed caching\n   - Cache frequently accessed lead data and scoring rules\n   - Implement cache invalidation strategies\n   - Set up tiered caching (memory, distributed, disk)\n   - Configure TTL policies based on data volatility\n\n4. Message Queue System:\n   - Implement RabbitMQ or Kafka for asynchronous processing\n   - Design queue topology for lead processing workflows\n   - Implement dead letter queues for failed processing\n   - Configure retry policies and backoff strategies\n   - Add monitoring for queue depths and processing rates\n\n5. Microservices Architecture:\n   - Decompose monolithic components into microservices\n   - Define service boundaries based on business capabilities\n   - Implement API gateway for service orchestration\n   - Design inter-service communication protocols\n   - Implement circuit breakers for fault tolerance\n\n6. Monitoring and Observability:\n   - Implement distributed tracing (Jaeger or similar)\n   - Set up metrics collection with Prometheus\n   - Configure dashboards in Grafana for real-time monitoring\n   - Implement alerting for performance thresholds\n   - Add structured logging across all services\n\n7. Performance Testing Framework:\n   - Develop load testing scripts simulating 10x current volume\n   - Implement performance benchmarking tools\n   - Create automated performance regression tests\n   - Set up continuous performance testing in CI/CD pipeline",
-      "testStrategy": "1. Component-Level Testing:\n   - Unit test all new scalable components\n   - Test each service independently with mock dependencies\n   - Verify proper configuration of each infrastructure component\n   - Test failure scenarios and recovery mechanisms\n\n2. Integration Testing:\n   - Test communication between microservices\n   - Verify message queue producers and consumers\n   - Test database sharding and read replica functionality\n   - Validate caching behavior and invalidation\n   - Test service discovery and load balancing\n\n3. Load Testing:\n   - Create baseline performance metrics at current load\n   - Incrementally increase load to 2x, 5x, and 10x current volume\n   - Measure response times, throughput, and resource utilization\n   - Identify and resolve bottlenecks\n   - Test auto-scaling triggers and behavior\n\n4. Chaos Testing:\n   - Simulate infrastructure failures (network, instances, databases)\n   - Test system resilience during component outages\n   - Verify data consistency during recovery scenarios\n   - Validate circuit breaker functionality\n\n5. Monitoring Validation:\n   - Verify all metrics are properly collected and displayed\n   - Test alerting thresholds and notifications\n   - Validate distributed tracing for complex transactions\n   - Ensure logs provide adequate information for troubleshooting\n\n6. Acceptance Criteria:\n   - System must handle 10x current load with <10% performance degradation\n   - Recovery from component failures must be automatic\n   - No data loss during scaling or component failures\n   - All monitoring dashboards must accurately reflect system state",
       "status": "deferred",
       "dependencies": [
         1,
@@ -550,14 +149,14 @@
         9
       ],
       "priority": "high",
+      "description": "Implement a scalable architecture for the Anthrasite LeadFactory system to efficiently process increased lead volumes, targeting at least 10x the current capacity without performance degradation.",
+      "details": "Implement a comprehensive scalable architecture with the following components:\n1. Horizontal Scaling Implementation:\n- Refactor application components to be stateless\n- Implement containerization using Docker for all services\n- Configure Kubernetes for orchestration and auto-scaling\n- Set up load balancing with health checks and failover\n- Implement distributed session management if applicable\n2. Database Optimization:\n- Implement database sharding for lead data\n- Set up read replicas for high-volume queries\n- Optimize database indexes based on query patterns\n- Implement connection pooling\n- Add database query caching where appropriate\n- Consider NoSQL solutions for specific high-volume data types\n3. Caching Layer Implementation:\n- Implement Redis or similar distributed caching\n- Cache frequently accessed lead data and scoring rules\n- Implement cache invalidation strategies\n- Set up tiered caching (memory, distributed, disk)\n- Configure TTL policies based on data volatility\n4. Message Queue System:\n- Implement RabbitMQ or Kafka for asynchronous processing\n- Design queue topology for lead processing workflows\n- Implement dead letter queues for failed processing\n- Configure retry policies and backoff strategies\n- Add monitoring for queue depths and processing rates\n5. Microservices Architecture:\n- Decompose monolithic components into microservices\n- Define service boundaries based on business capabilities\n- Implement API gateway for service orchestration\n- Design inter-service communication protocols\n- Implement circuit breakers for fault tolerance\n6. Monitoring and Observability:\n- Implement distributed tracing (Jaeger or similar)\n- Set up metrics collection with Prometheus\n- Configure dashboards in Grafana for real-time monitoring\n- Implement alerting for performance thresholds\n- Add structured logging across all services\n7. Performance Testing Framework:\n- Develop load testing scripts simulating 10x current volume\n- Implement performance benchmarking tools\n- Create automated performance regression tests\n- Set up continuous performance testing in CI/CD pipeline",
+      "test_strategy": "1. Component-Level Testing:\n- Unit test all new scalable components\n- Test each service independently with mock dependencies\n- Verify proper configuration of each infrastructure component\n- Test failure scenarios and recovery mechanisms\n2. Integration Testing:\n- Test communication between microservices\n- Verify message queue producers and consumers\n- Test database sharding and read replica functionality\n- Validate caching behavior and invalidation\n- Test service discovery and load balancing\n3. Load Testing:\n- Create baseline performance metrics at current load\n- Incrementally increase load to 2x, 5x, and 10x current volume\n- Measure response times, throughput, and resource utilization\n- Identify and resolve bottlenecks\n- Test auto-scaling triggers and behavior\n4. Chaos Testing:\n- Simulate infrastructure failures (network, instances, databases)\n- Test system resilience during component outages\n- Verify data consistency during recovery scenarios\n- Validate circuit breaker functionality\n5. Monitoring Validation:\n- Verify all metrics are properly collected and displayed\n- Test alerting thresholds and notifications\n- Validate distributed tracing for complex transactions\n- Ensure logs provide adequate information for troubleshooting\n6. Acceptance Criteria:\n- System must handle 10x current load with <10% performance degradation\n- Recovery from component failures must be automatic\n- No data loss during scaling or component failures\n- All monitoring dashboards must accurately reflect system state",
       "subtasks": []
     },
     {
       "id": 14,
       "title": "CI Pipeline Test Re-enablement Strategy",
-      "description": "Develop and implement a comprehensive strategy to systematically re-enable all disabled tests in the CI pipeline, ensuring they pass reliably and contribute to code quality without causing false failures.",
-      "details": "Implement a comprehensive test re-enablement strategy with the following components:\n\n1. Audit and Inventory:\n   - Create a complete inventory of all disabled tests in the CI pipeline\n   - Document each test's purpose, failure patterns, and reason for disablement\n   - Categorize tests by subsystem, failure type, and estimated complexity to fix\n   - Establish a centralized tracking system for disabled test status\n\n2. Root Cause Analysis:\n   - Analyze each disabled test to determine underlying failure causes\n   - Classify issues into categories (flaky tests, environment dependencies, timing issues, etc.)\n   - Document dependencies between tests and system components\n   - Identify common patterns across multiple failing tests\n\n3. Prioritization Framework:\n   - Develop a scoring system to prioritize test re-enablement based on:\n     * Business impact of the functionality being tested\n     * Historical frequency of regressions in the area\n     * Complexity of the fix required\n     * Dependencies on other system components\n   - Create a phased re-enablement roadmap with clear milestones\n\n4. Test Stability Improvements:\n   - Implement test isolation techniques to prevent cross-test contamination\n   - Add proper setup/teardown procedures for all test environments\n   - Replace time-dependent assertions with more reliable approaches\n   - Implement retry mechanisms for tests with external dependencies\n   - Add detailed logging to capture test execution context\n\n5. Monitoring and Prevention:\n   - Implement metrics collection for test reliability (pass rate, execution time)\n   - Create dashboards to track re-enablement progress and test stability\n   - Establish alerts for newly unstable tests\n   - Develop guidelines for writing stable tests\n   - Create a review process to prevent disabling tests without proper documentation\n\n6. Implementation Plan:\n   - Begin with quick wins (simple fixes for high-value tests)\n   - Implement fixes in batches, grouped by root cause\n   - Validate fixes in a staging environment before re-enabling in production CI\n   - Document all changes and improvements for knowledge sharing\n   - Provide regular status updates to stakeholders",
-      "testStrategy": "The test re-enablement strategy will be verified through the following steps:\n\n1. Audit Verification:\n   - Confirm all disabled tests are properly inventoried\n   - Validate that categorization is accurate and comprehensive\n   - Verify that the tracking system contains complete metadata for each test\n\n2. Re-enablement Process Testing:\n   - For each batch of re-enabled tests:\n     * Run tests in isolation to verify individual test stability\n     * Run tests as part of the full test suite to verify no interference\n     * Execute tests multiple times (10+ runs) to detect any remaining flakiness\n     * Verify tests pass consistently across different environments\n\n3. Metrics Validation:\n   - Confirm test reliability metrics are being properly collected\n   - Verify dashboards accurately reflect current test status\n   - Test alert mechanisms by deliberately introducing unstable tests\n   - Validate that the system correctly identifies newly unstable tests\n\n4. Documentation Review:\n   - Ensure all re-enabled tests have proper documentation\n   - Verify root cause analysis is thorough and actionable\n   - Confirm that fixes are well-documented for future reference\n\n5. Success Criteria:\n   - At least 95% of previously disabled tests are successfully re-enabled\n   - Re-enabled tests maintain a 99.9% pass rate over 30 days\n   - No tests are newly disabled without following the established process\n   - Test execution time does not increase by more than 10%\n   - All stakeholders confirm improved confidence in the test suite",
       "status": "deferred",
       "dependencies": [
         1,
@@ -565,6 +164,121 @@
         10
       ],
       "priority": "high",
+      "description": "Develop and implement a comprehensive strategy to systematically re-enable all disabled tests in the CI pipeline, ensuring they pass reliably and contribute to code quality without causing false failures.",
+      "details": "Implement a comprehensive test re-enablement strategy with the following components:\n1. Audit and Inventory:\n- Create a complete inventory of all disabled tests in the CI pipeline\n- Document each test's purpose, failure patterns, and reason for disablement\n- Categorize tests by subsystem, failure type, and estimated complexity to fix\n- Establish a centralized tracking system for disabled test status\n2. Root Cause Analysis:\n- Analyze each disabled test to determine underlying failure causes\n- Classify issues into categories (flaky tests, environment dependencies, timing issues, etc.)\n- Document dependencies between tests and system components\n- Identify common patterns across multiple failing tests\n3. Prioritization Framework:\n- Develop a scoring system to prioritize test re-enablement based on:\n* Business impact of the functionality being tested\n* Historical frequency of regressions in the area\n* Complexity of the fix required\n* Dependencies on other system components\n- Create a phased re-enablement roadmap with clear milestones\n4. Test Stability Improvements:\n- Implement test isolation techniques to prevent cross-test contamination\n- Add proper setup/teardown procedures for all test environments\n- Replace time-dependent assertions with more reliable approaches\n- Implement retry mechanisms for tests with external dependencies\n- Add detailed logging to capture test execution context\n5. Monitoring and Prevention:\n- Implement metrics collection for test reliability (pass rate, execution time)\n- Create dashboards to track re-enablement progress and test stability\n- Establish alerts for newly unstable tests\n- Develop guidelines for writing stable tests\n- Create a review process to prevent disabling tests without proper documentation\n6. Implementation Plan:\n- Begin with quick wins (simple fixes for high-value tests)\n- Implement fixes in batches, grouped by root cause\n- Validate fixes in a staging environment before re-enabling in production CI\n- Document all changes and improvements for knowledge sharing\n- Provide regular status updates to stakeholders",
+      "test_strategy": "The test re-enablement strategy will be verified through the following steps:\n1. Audit Verification:\n- Confirm all disabled tests are properly inventoried\n- Validate that categorization is accurate and comprehensive\n- Verify that the tracking system contains complete metadata for each test\n2. Re-enablement Process Testing:\n- For each batch of re-enabled tests:\n* Run tests in isolation to verify individual test stability\n* Run tests as part of the full test suite to verify no interference\n* Execute tests multiple times (10+ runs) to detect any remaining flakiness\n* Verify tests pass consistently across different environments\n3. Metrics Validation:\n- Confirm test reliability metrics are being properly collected\n- Verify dashboards accurately reflect current test status\n- Test alert mechanisms by deliberately introducing unstable tests\n- Validate that the system correctly identifies newly unstable tests\n4. Documentation Review:\n- Ensure all re-enabled tests have proper documentation\n- Verify root cause analysis is thorough and actionable\n- Confirm that fixes are well-documented for future reference\n5. Success Criteria:\n- At least 95% of previously disabled tests are successfully re-enabled\n- Re-enabled tests maintain a 99.9% pass rate over 30 days\n- No tests are newly disabled without following the established process\n- Test execution time does not increase by more than 10%\n- All stakeholders confirm improved confidence in the test suite",
+      "subtasks": []
+    },
+    {
+      "id": 15,
+      "title": "Implement Comprehensive Velocity Tracking System",
+      "status": "done",
+      "dependencies": [],
+      "priority": "medium",
+      "description": "Add velocity tracking capabilities to task-master CLI with timestamps, metrics, and reporting",
+      "details": "Implement comprehensive velocity tracking system for task-master CLI that includes:\n- Add completed_at and started_at timestamps to task lifecycle\n- Create velocity command for detailed velocity reports and analytics\n- Enhance existing list command with velocity metrics and ETA display\n- Track complexity points per day and provide accurate completion estimates\n- Include historical velocity analysis and trend reporting\n- All features must be tested and integrated into existing CLI workflow\n- Maintain backward compatibility with existing task.json format\n- Provide clear documentation for new velocity tracking features",
+      "test_strategy": "Create database schema changes to store task completion timestamps, add fields for start/end times, ensure backward compatibility with existing data, and define velocity calculation formulas. Acceptance criteria: Database migration scripts ready, entity models updated, and data access layer supports new fields.\nDevelop algorithms to calculate velocity based on completed tasks over time periods (daily, weekly, monthly), implement methods for individual and team velocity, and create utility functions for trend analysis. Acceptance criteria: Unit tests pass for all calculation methods with various test datasets.\nImplement new CLI command 'velocity' with appropriate parameters (--user, --team, --period, etc.), add help documentation, ensure proper error handling, and implement output formatting. Acceptance criteria: Command successfully retrieves and displays velocity data in various formats (text, JSON).\nImplement charts and graphs for velocity trends, create exportable report templates, design dashboard widgets for velocity metrics, and ensure mobile-friendly visualizations. Acceptance criteria: Visualizations render correctly across devices and accurately represent the underlying data.\nUpdate task completion handlers to record timestamps, modify task status changes to trigger velocity calculations, ensure real-time updates of metrics, and maintain performance with increased data tracking. Acceptance criteria: Task completion automatically updates velocity metrics without user intervention.\nCreate settings interface for default time periods, preferred visualization types, notification preferences for velocity changes, and personal goals tracking. Acceptance criteria: Users can customize their velocity tracking experience through settings interface.\nWrite automated tests for all velocity components, perform load testing with large datasets, validate calculation accuracy against manual calculations, test backward compatibility, and ensure CI/CD pipeline passes with all tests enabled. Acceptance criteria: 90%+ test coverage, performance within acceptable parameters, no regression in existing functionality.\nWrite user guides for velocity features, create developer documentation for API integration, record tutorial videos for common workflows, and update help system with new commands. Acceptance criteria: Documentation reviewed and approved by stakeholders, help system updated, and training materials available for rollout.\nVerify the velocity tracking system works correctly after merging to master, including all tests passing and no regressions in existing functionality. Verify that the system is properly deployed and configured, and that all dependencies are correctly resolved. Verify that the system is properly monitored and that alerts are correctly triggered. Verify that the system is properly documented and that all stakeholders are aware of the changes. Verify that the system meets the following specific criteria: all tests pass, no regressions, system is properly deployed, dependencies are resolved, system is monitored, alerts are triggered, and documentation is updated.",
+      "subtasks": []
+    },
+    {
+      "id": 16,
+      "title": "Add CLI Commands for Score and Mockup Pipeline Stages",
+      "status": "done",
+      "dependencies": [
+        4,
+        5
+      ],
+      "priority": "high",
+      "description": "Implement CLI commands for the score and mockup pipeline stages in leadfactory/cli/commands/pipeline_commands.py, following the established pattern of existing commands like scrape, enrich, dedupe, and email.",
+      "details": "Implement CLI commands for score and mockup pipeline stages with the following requirements:\n1. Add new commands to leadfactory/cli/commands/pipeline_commands.py:\n- Create a `score` command that executes the scoring pipeline stage\n- Create a `mockup` command that executes the mockup generation pipeline stage\n2. Follow the established pattern of existing commands:\n- Use consistent argument structure (input/output directories, configuration options)\n- Implement proper error handling and logging\n- Include help text and documentation for each command\n- Ensure backward compatibility with legacy bin scripts\n3. Implementation details for score command:\n- Add command that processes lead data through scoring rules\n- Include options for scoring threshold configuration\n- Implement progress reporting during execution\n- Add support for different scoring models/configurations\n4. Implementation details for mockup command:\n- Add command that generates visual mockups for qualified leads\n- Include options for mockup template selection\n- Add support for customizing mockup parameters\n- Ensure proper integration with Supabase for image storage\n5. Refactor any shared functionality from legacy bin scripts into reusable modules\n- Extract common validation logic\n- Create helper functions for repeated operations\n- Ensure consistent error handling across commands\n6. Update documentation to reflect the new CLI commands:\n- Update README.md with command usage examples\n- Add detailed command help text\n- Document all command options and arguments\n7. Ensure the commands integrate properly with the existing pipeline validation framework",
+      "test_strategy": "1. Unit Tests:\n- Create unit tests for each new command in tests/cli/commands/test_pipeline_commands.py\n- Test argument parsing and validation for both commands\n- Mock dependencies to test command execution paths\n- Test error handling and edge cases\n2. Integration Tests:\n- Create integration tests that verify the commands work with actual pipeline data\n- Test the score command with sample lead data and verify scoring results\n- Test the mockup command with scored leads and verify mockup generation\n- Verify proper integration with Supabase for mockup storage\n3. End-to-End Tests:\n- Create an end-to-end test that runs a complete pipeline including the new commands\n- Verify that the commands can be chained together in sequence\n- Test with realistic data sets to ensure performance and reliability\n4. Manual Testing:\n- Execute the commands with various arguments and configurations\n- Verify help text and documentation accuracy\n- Test backward compatibility with workflows that used legacy bin scripts\n5. Regression Testing:\n- Ensure existing pipeline commands continue to function correctly\n- Verify backward compatibility with existing code and configurations\n- Check that no unintended side effects occur in related systems\n6. Documentation Verification:\n- Verify that README.md and help text accurately describe the new commands\n- Ensure examples in documentation work as expected\nDevelop the 'score' command with appropriate arguments, options, and help text. Ensure it properly interfaces with the scoring functionality in the pipeline. Include error handling and validation of inputs. Follow the existing CLI command patterns for consistency.\nDevelop the 'mockup' command with appropriate arguments, options, and help text. Ensure it properly interfaces with the mockup generation functionality in the pipeline. Include error handling and validation of inputs. Follow the existing CLI command patterns for consistency.\nDevelop unit tests to verify command registration, argument parsing, option handling, and integration with pipeline components. Include tests for error cases and edge conditions. Ensure test coverage meets project standards. Update any existing test suites that might be affected by the new commands.\nUpdate user guides, README files, and help text to include information about the new commands. Include examples of usage, available options, and expected outputs. Ensure the documentation follows the project's documentation standards and style. Update any command overview sections to include the new pipeline stages.",
+      "subtasks": []
+    },
+    {
+      "id": 17,
+      "title": "Refactor Pipeline Architecture to DAG-Centric Model",
+      "status": "done",
+      "dependencies": [
+        5,
+        16
+      ],
+      "priority": "high",
+      "description": "Refactor the entire pipeline to use a DAG-centric architecture, removing tier-based logic and implementing dynamic dependency evaluation through topological sorting of the pipeline graph.",
+      "details": "Refactor the pipeline to implement a clean DAG-centric architecture:\n1. Remove Tier-Based Logic:\n- Remove all tier-based conditional logic from all pipeline stages\n- Delete tier configuration system and TierService class\n- Replace tier-based logic with node capability flags and dependency requirements\n- Remove tier parameters from pipeline stage functions\n2. Implement True DAG Traversal:\n- Implement topological sorting for pipeline graph traversal\n- Each node checks for required inputs and proceeds only if available\n- Implement graceful degradation when optional dependencies are missing\n- Add validation logic to ensure required inputs for final GPT-4o call are available\n3. Unify Mockup and Email Generation:\n- Consolidate mockup and email generation into a single terminal GPT-4o node\n- Ensure all required inputs flow to this final node\n- Implement validation for required inputs before execution\n- Optimize prompt construction for the unified terminal node\n4. Single Exit Point Model:\n- Ensure all leads reach the final unified GPT-4o node\n- Validate that required inputs for the final GPT-4o call are available\n- Flag or fail early if critical dependencies are missing\n- Implement clear error reporting for incomplete pipeline execution\n5. Simplify Cost Control:\n- Replace tier-based cost control with budget/cost constraints per run\n- Implement cost simulation and validation before execution\n- Add cost tracking and reporting for each pipeline node\n- Implement budget limits that prevent execution when costs would exceed limits\n6. Abstract Storage Layer:\n- Abstract file storage from Supabase-specific logic\n- Create a generic storage interface that can be implemented for different backends\n- Ensure all pipeline nodes use the abstracted storage interface\n- Implement the Supabase storage provider as the default implementation\n7. Pipeline Optimization:\n- Streamline pipeline execution flow\n- Improve error handling and recovery mechanisms\n- Add comprehensive logging for pipeline traversal and decision points\n- Implement performance monitoring for each node",
+      "test_strategy": "Implement comprehensive testing for the refactored pipeline:\n1. Unit Tests:\n- Test topological sorting implementation\n- Verify node capability and dependency evaluation logic\n- Test cost calculation and budget validation\n- Test graceful degradation when dependencies are missing\n- Validate single exit point enforcement\n- Test the unified GPT-4o node for mockup and email generation\n- Test storage abstraction layer with mock implementations\n2. Integration Tests:\n- Test complete pipeline execution with various dependency scenarios\n- Verify cost tracking across all pipeline nodes\n- Test budget limit enforcement\n- Validate final GPT-4o call input requirements\n- Test error handling and early failure scenarios\n- Verify storage abstraction works with actual implementations\n3. Performance Tests:\n- Benchmark pipeline execution with DAG-based traversal\n- Test cost simulation performance\n- Validate unified GPT-4o node efficiency\n- Test pipeline scalability with the new architecture\n4. Regression Tests:\n- Ensure existing functionality works with the new DAG architecture\n- Verify backward compatibility for existing leads\n- Test that cost controls work as expected\n- Validate output quality remains consistent\n5. End-to-End Tests:\n- Test complete lead processing from scraping to final GPT-4o node\n- Verify single exit point model works correctly\n- Test cost budget scenarios with real pipeline execution\n- Validate error reporting for incomplete pipelines\nDelete TierService class, tier_config.py, and all tier-based conditional logic in all pipeline stages. Remove tier parameters from function signatures and replace with node capability flags and dependency requirements.\nImplement a topological sorting algorithm for the pipeline DAG. Add dependency checking logic that evaluates required inputs at runtime. Add graceful degradation for missing optional dependencies and validation for critical dependencies needed for final GPT-4o call.\nCreate a unified terminal node that generates both mockup and email content using GPT-4o. Ensure all required inputs flow to this node and implement validation before execution. Optimize prompt construction for the combined task.\nCreate budget constraint system with cost simulation, validation before execution, and budget limits that prevent execution when costs would exceed limits. Add cost tracking and reporting for each pipeline node.\nDesign and implement a storage abstraction layer that can work with different backends. Create a default implementation for Supabase storage. Update all pipeline nodes to use the abstracted interface instead of direct Supabase calls.",
+      "subtasks": []
+    },
+    {
+      "id": 18,
+      "title": "Implement Pipeline Variant A/B Testing System",
+      "status": "pending",
+      "dependencies": [
+        3,
+        12,
+        13
+      ],
+      "priority": "high",
+      "description": "Implement a complete A/B testing system for pipeline variants, utilizing the existing variant_id field in the email_queue table to support variant selection, tracking, and reporting.",
+      "details": "Implement a comprehensive A/B testing system for pipeline variants with the following components:\n1. Pipeline Variant Definition:\n- Create a `PipelineVariant` class that defines alternative pipeline configurations\n- Implement a registry system for managing multiple pipeline variants\n- Support different node configurations, parameters, and flow paths per variant\n- Ensure variants maintain the DAG structure and validation requirements\n- Integrate with the existing email_queue table's variant_id field\n2. Variant Selection Mechanism:\n- Create a `VariantSelector` class that implements logic for assigning leads to different pipeline variants\n- Implement configurable distribution strategies (equal split, percentage-based, etc.)\n- Add support for multiple variants (A/B/n testing) beyond just two options\n- Ensure deterministic variant assignment for consistent user experiences\n- Integrate with the existing email_queue table's variant_id field\n3. Tracking Implementation:\n- Add tracking parameters to identify pipeline variants throughout processing\n- Implement event tracking for opens, clicks, and conversions per variant\n- Create a data storage schema for variant performance metrics\n- Implement aggregation logic for real-time and historical performance data\n4. Reporting System:\n- Develop a reporting API for variant performance metrics\n- Implement statistical significance calculations for variant comparison\n- Create visualization components for performance comparison\n- Add export functionality for variant performance data\n- Implement automated winner selection based on configurable metrics\n5. Integration with DAG Pipeline:\n- Modify the pipeline execution engine to support variant-specific DAG configurations\n- Update the pipeline traversal logic to handle variant-specific nodes and edges\n- Integrate with the unified terminal GPT-4o node for consistent output handling\n- Ensure proper tracking of variant data throughout the pipeline\n6. Configuration and Management:\n- Create a configuration interface for defining variant parameters\n- Implement test duration controls and automatic completion\n- Add manual override capabilities for test management\n- Implement safeguards against invalid configurations\nThe implementation should follow best practices for A/B testing, including proper randomization, statistical validity, and isolation of variables.",
+      "test_strategy": "Verify the A/B testing implementation with the following test strategy:\n1. Unit Tests:\n- Test the `PipelineVariant` class with different node configurations\n- Test the `VariantSelector` class with mock email_queue table data\n- Verify deterministic variant assignment for consistent user experiences\n- Test variant-specific DAG traversal with different configurations\n- Validate tracking parameter generation and parsing\n- Test statistical significance calculations with known datasets\n2. Integration Tests:\n- Create a test email_queue table with sample data\n- Verify the complete variant selection and tracking workflow\n- Test the reporting API with simulated variant performance data\n- Validate the pipeline execution with different variants\n- Verify proper handling of variant data throughout the pipeline\n3. Performance Tests:\n- Benchmark variant selection performance under high load\n- Test reporting system with large datasets\n- Verify tracking system can handle concurrent events\n- Compare performance between different pipeline variants\n4. Functional Tests:\n- Create test campaigns with multiple variants and verify correct distribution\n- Validate that tracking correctly attributes actions to specific variants\n- Test the reporting interface with real campaign data\n- Verify that statistical calculations correctly identify winning variants\n- Test automatic winner selection based on different metrics\n5. Regression Tests:\n- Ensure existing pipeline functionality works with variant testing enabled\n- Verify backward compatibility with non-variant pipeline configurations\n- Test that existing analytics are not affected by the new tracking\n6. User Acceptance Tests:\n- Create a test campaign with marketing team to validate usability\n- Verify that reporting provides actionable insights\n- Test the configuration interface for ease of use\nDocument all test cases and results in the project wiki, including screenshots of the reporting interface and example variant performance data.\nDevelop a `PipelineVariant` class that allows defining alternative DAG configurations, node parameters, and flow paths. Implement a registry system for managing multiple variants. Ensure variants maintain proper DAG structure and validation requirements.\nDevelop a statistically sound randomization algorithm that ensures even distribution across variants. Include support for weighted distributions, cohort-based assignments, and persistent user assignments. Implement safeguards to prevent bias in selection. Create unit tests to verify distribution accuracy.\nImplement unique tracking identifiers for each variant. Track open rates, click rates, conversion rates, and other relevant metrics. Create a data storage solution optimized for quick retrieval and analysis. Ensure proper user privacy compliance in tracking implementation.\nBuild visualizations for key metrics comparing variants. Implement statistical significance calculations with confidence intervals. Create exportable reports for stakeholders. Include recommendations based on test results. Design filters for viewing results by time period, user segment, and other relevant dimensions.\nUpdate the pipeline traversal logic to handle variant-specific nodes and edges. Integrate with the unified terminal GPT-4o node for consistent output handling. Ensure proper tracking of variant data throughout the pipeline execution.\nDesign an interface for creating new variants, defining node configurations, setting distribution rules, and scheduling test duration. Implement validation for variant parameters. Create preview functionality for variants. Add capabilities for pausing, resuming, or stopping tests. Include permissions management for test creation and analysis.",
+      "subtasks": []
+    },
+    {
+      "id": 19,
+      "title": "Implement LLM Fallback Mechanism",
+      "status": "pending",
+      "dependencies": [
+        5,
+        9,
+        13,
+        17
+      ],
+      "priority": "high",
+      "description": "Implement a robust fallback mechanism for LLM failures that uses GPT-4o as default and Claude as fallback on rate-limit or cost spike, with pipeline pausing if both hosted LLMs are unavailable.",
+      "details": "Implement a comprehensive LLM fallback mechanism with the following components:\n1. LLM Provider Abstraction Layer:\n- Create an abstract `LLMProvider` interface that standardizes interactions with different LLM services\n- Implement concrete provider classes for GPT-4o and Claude that conform to this interface\n- Ensure consistent input/output handling across providers to maintain compatibility\n2. Fallback Strategy Implementation:\n- Develop a `FallbackManager` class that orchestrates LLM provider selection and fallback logic\n- Implement primary provider (GPT-4o) as default with configurable retry attempts\n- Add detection for rate-limit errors and cost threshold breaches\n- Implement automatic fallback to secondary provider (Claude) when primary fails\n- Add pipeline pause mechanism when both providers are unavailable\n- Include configurable timeout periods before retrying failed providers\n3. Cost Monitoring System:\n- Implement real-time cost tracking for LLM API calls\n- Create configurable cost thresholds that trigger fallback when exceeded\n- Add daily/monthly budget limits with appropriate alerts\n- Store cost metrics in database for analysis and reporting\n4. Health Check and Status Monitoring:\n- Implement periodic health checks for LLM providers\n- Create a status dashboard for monitoring provider availability\n- Add logging for all provider transitions and failure events\n- Implement alerting for extended provider outages\n5. Configuration Management:\n- Create YAML configuration for fallback settings (retry attempts, timeouts, cost thresholds)\n- Implement dynamic configuration updates without service restart\n- Add environment-specific default configurations (dev, staging, production)\n- Document all configuration options thoroughly\n6. Integration with DAG Pipeline:\n- Refactor LLM nodes in the DAG to use the new fallback system\n- Ensure backward compatibility with existing code\n- Add appropriate error handling and recovery mechanisms\n- Implement graceful degradation for non-critical LLM features\n- Focus on the unified terminal GPT-4o node for mockup and email generation\n7. Performance Optimization:\n- Implement request caching to reduce duplicate API calls\n- Add request batching where appropriate to optimize costs\n- Implement asynchronous processing for non-blocking operations\nCode structure example:\n```python\nclass LLMProvider(ABC):\n@abstractmethod\nasync def generate_response(self, prompt, parameters):\npass\n@abstractmethod\nasync def check_health(self):\npass\nclass GPT4oProvider(LLMProvider):\nclass ClaudeProvider(LLMProvider):\nclass FallbackManager:\ndef __init__(self, config):\nself.providers = self._initialize_providers(config)\nself.cost_tracker = CostTracker()\nasync def execute_with_fallback(self, prompt, parameters):\ndef _should_fallback(self, provider, error):\ndef pause_pipeline(self):\n```",
+      "test_strategy": "Implement a comprehensive testing strategy to verify the LLM fallback mechanism:\n1. Unit Tests:\n- Test each LLM provider implementation in isolation with mocked API responses\n- Verify the FallbackManager correctly handles different error scenarios (rate limits, timeouts, cost thresholds)\n- Test cost tracking functionality with simulated API usage\n- Verify pipeline pause mechanism activates when all providers are unavailable\n- Test configuration loading and validation with various input scenarios\n2. Integration Tests:\n- Create end-to-end tests that verify the complete fallback flow\n- Test actual API interactions with sandbox/test accounts for both providers\n- Verify correct provider selection based on availability and cost constraints\n- Test the system's behavior when transitioning between providers\n- Verify logging and monitoring systems capture all relevant events\n3. Failure Scenario Testing:\n- Simulate rate limiting by making rapid API calls to trigger provider restrictions\n- Test cost threshold breaches by simulating high-volume, high-token requests\n- Simulate complete provider outages and verify pipeline pause behavior\n- Test recovery scenarios when providers become available again\n- Verify proper error messages and alerts are generated for each failure type\n4. Performance Testing:\n- Measure response time differences between primary and fallback providers\n- Test system behavior under high concurrency with multiple simultaneous requests\n- Verify caching mechanisms reduce duplicate API calls\n- Measure cost efficiency improvements from batching optimizations\n5. Manual Verification:\n- Create a test dashboard to manually trigger different failure scenarios\n- Verify the system's behavior matches the expected fallback sequence\n- Test the admin interface for monitoring provider status\n- Verify alerts and notifications are properly delivered\n6. Regression Testing:\n- Ensure existing pipeline functionality continues to work with the new fallback system\n- Verify no performance degradation in normal operation scenarios\n- Test backward compatibility with existing code that uses LLM services\n7. Acceptance Criteria:\n- System automatically falls back to Claude when GPT-4o encounters rate limits or cost spikes\n- Pipeline pauses when both providers are unavailable\n- All fallback events are properly logged with detailed error information\n- Cost tracking accurately monitors usage across providers\n- Configuration changes take effect without requiring service restart\n- System recovers automatically when providers become available again\nDevelop an abstraction layer that standardizes interactions with different LLM providers (OpenAI, Anthropic, etc.). Include methods for sending prompts, handling responses, and managing provider-specific parameters. Ensure the interface is consistent regardless of the underlying provider.\nCreate a fallback orchestrator that can detect failures from the primary LLM provider and seamlessly switch to backup providers. Implement retry logic, timeout handling, and error classification to determine when fallback should be triggered. Design the system to maintain context and state during provider transitions.\nDevelop a system to track API usage costs across all LLM providers. Include real-time cost calculation, budget thresholds, usage reporting, and alerting mechanisms. Ensure the system can inform fallback decisions based on cost considerations and provide detailed cost analytics.\nBuild a health check system that regularly tests each LLM provider's availability, response time, and quality. Implement circuit breaker patterns to temporarily disable underperforming providers. Create dashboards for monitoring provider health metrics and configure automated alerts for degraded performance.\nImplement a configuration management system that allows defining provider preferences, fallback order, retry policies, and provider-specific settings. Support both static configuration files and dynamic runtime configuration updates. Include validation logic to ensure configurations are valid.\nIntegrate the fallback system with the DAG pipeline architecture. Focus on the unified terminal GPT-4o node for mockup and email generation. Ensure that all LLM nodes in the pipeline use the fallback system consistently. Update logging, monitoring, and analytics systems to track fallback events and their impact on overall system performance.",
+      "subtasks": []
+    },
+    {
+      "id": 20,
+      "title": "Implement Node Capability Flags for Pipeline Configuration",
+      "status": "in-progress",
+      "dependencies": [
+        16,
+        17
+      ],
+      "priority": "high",
+      "description": "Implement a node capability flag system to replace the MOCKUP_ENABLED configuration flag, allowing fine-grained control of node behavior in the DAG-based pipeline.",
+      "details": "Implement a comprehensive node capability flag system with the following components:\n1. Node Capability Definition:\n- Create a `NodeCapability` enum or class to define possible node capabilities\n- Implement standard capabilities like `MOCKUP_GENERATION`, `EMAIL_GENERATION`, etc.\n- Support custom capability definitions for specialized nodes\n- Create a registry of all available capabilities with documentation\n2. Configuration System:\n- Implement a configuration system for enabling/disabling capabilities at different levels:\n- Global level (system-wide defaults)\n- Pipeline level (per pipeline configuration)\n- Node level (specific node instances)\n- Support both static configuration files and dynamic runtime updates\n- Implement configuration inheritance and override rules\n3. Node Implementation:\n- Update the base Node class to support capability flags\n- Implement capability checking in node execution logic\n- Add graceful degradation when capabilities are disabled\n- Ensure nodes properly advertise their required and optional capabilities\n4. Pipeline Integration:\n- Modify the pipeline execution engine to respect capability flags\n- Implement validation to ensure required capabilities are available\n- Add capability-based routing in the DAG traversal\n- Ensure the unified terminal GPT-4o node respects capability settings\n5. CLI and API Support:\n- Update the CLI to support capability flag configuration\n- Add API endpoints for querying and updating capability settings\n- Implement capability override options for testing and debugging\n- Ensure CLI help documentation clearly explains capability behavior\n6. Documentation and Migration:\n- Update developer documentation to explain the capability flag system\n- Document all standard capabilities and their effects\n- Add examples of configuration for different scenarios\n- Provide migration guide for updating from MOCKUP_ENABLED flag to capability system",
+      "test_strategy": "1. Unit Testing:\n- Create unit tests for the NodeCapability class and registry\n- Test capability configuration loading and validation\n- Verify capability inheritance and override rules\n- Test node execution with various capability configurations\n- Verify graceful degradation when capabilities are disabled\n2. Integration Testing:\n- Test end-to-end pipeline execution with different capability configurations\n- Verify that the DAG traversal correctly respects capability settings\n- Test the unified terminal GPT-4o node with different capability combinations\n- Verify that capability-based routing works correctly in complex DAGs\n- Test capability configuration changes at runtime\n3. Configuration Testing:\n- Test configuration file loading with different capability settings\n- Verify environment variable overrides work correctly\n- Test configuration inheritance and precedence rules\n- Verify dynamic configuration updates take effect properly\n4. CLI and API Testing:\n- Test CLI commands for capability configuration\n- Verify API endpoints for capability management\n- Test capability override options for debugging\n- Verify help documentation is accurate and comprehensive\n5. Performance Testing:\n- Measure and compare pipeline performance with different capability configurations\n- Verify resource usage is appropriately reduced when capabilities are disabled\n- Test with large DAGs to ensure capability checking doesn't create bottlenecks\n6. Regression Testing:\n- Verify that existing functionality continues to work with the new capability system\n- Ensure backward compatibility with existing code and configurations\n- Check that no unintended side effects occur in related systems\n7. Documentation Verification:\n- Review updated documentation for clarity and completeness\n- Verify examples match the implemented behavior\n- Ensure migration guidelines are accurate and comprehensive\nDefine the core concepts of node capabilities, including capability types, inheritance rules, and configuration options. Create a `NodeCapability` enum or class with standard capabilities. Design the configuration schema for different levels (global, pipeline, node). Document the design with clear examples.\nCreate a configuration system that supports capability settings at global, pipeline, and node levels. Implement configuration loading from files and environment variables. Add validation logic to ensure capability configurations are valid. Support dynamic runtime updates to capability settings.\nUpdate the base Node class to include capability checking logic. Implement methods for querying capability status and handling disabled capabilities gracefully. Add capability requirements declaration for nodes. Ensure proper documentation of capability usage in each node.\nModify the DAG traversal algorithm to check node capabilities during execution. Implement capability-based routing and decision making. Update the unified terminal GPT-4o node to respect capability settings for mockup and email generation. Add validation to ensure required capabilities are available for critical paths.",
+      "subtasks": []
+    },
+    {
+      "id": 21,
+      "title": "Implement Automatic IP Pool Switching on Bounce Threshold",
+      "status": "pending",
+      "dependencies": [
+        2,
+        13
+      ],
+      "priority": "high",
+      "description": "Implement an automated mechanism to switch to a dedicated sub-user IP pool when bounce rates exceed 2%, as specified in section 2 of the requirements, replacing the current manual SendGrid configuration process.",
+      "details": "Implement a comprehensive automatic IP pool switching system with the following components:\n1. Bounce Rate Monitoring:\n- Create a `BounceRateMonitor` class that interfaces with SendGrid API to retrieve bounce statistics\n- Implement scheduled jobs to check bounce rates at regular intervals (hourly by default)\n- Calculate rolling 24-hour bounce rate percentage for each IP pool/sub-user\n- Add configurable threshold setting (default 2% per spec section 2)\n- Implement proper error handling for API failures with retry logic\n2. IP Pool Management:\n- Create an `IPPoolManager` class to handle IP pool switching operations\n- Implement methods to retrieve available IP pools and their current status\n- Add capability to switch active sending IP pool programmatically\n- Implement cooldown period for previously high-bounce IP pools (default 72 hours)\n- Add rotation strategy to ensure even distribution when multiple backup pools are available\n3. Notification System:\n- Implement real-time alerts when bounce thresholds are approached (80% of threshold)\n- Send critical notifications when automatic switching occurs\n- Log all IP pool changes with timestamp, reason, and before/after state\n- Create a dashboard component to display current and historical bounce rates\n4. Configuration Interface:\n- Add new configuration parameters to settings:\n- `BOUNCE_RATE_THRESHOLD`: Configurable bounce rate threshold (default 2.0)\n- `BOUNCE_CHECK_INTERVAL`: Frequency of bounce rate checks (default 60 minutes)\n- `IP_POOL_COOLDOWN_PERIOD`: Hours before a switched pool can be used again (default 72)\n- `AUTO_SWITCH_ENABLED`: Master toggle for the feature (default True)\n- Implement admin interface to manually override automatic decisions if needed\n5. SendGrid Integration:\n- Extend existing SendGrid connector to support the new IP pool switching functionality\n- Implement proper authentication and authorization for the required SendGrid API endpoints\n- Add rate limiting and backoff strategies to prevent API abuse\n- Create abstraction layer to support other email providers in the future\n6. Database Schema Updates:\n- Add new tables to track:\n- IP pool status history\n- Bounce rate metrics over time\n- Switching events with reasons\n- Implement data retention policies for historical metrics\n7. Failsafe Mechanisms:\n- Implement circuit breaker pattern to prevent excessive switching\n- Add fallback logic if all available IP pools exceed threshold\n- Create emergency manual override capability for critical situations\n- Implement dry-run mode for testing without affecting production sending",
+      "test_strategy": "Implement a comprehensive testing strategy with the following components:\n1. Unit Tests:\n- Test the `BounceRateMonitor` class with mock SendGrid API responses\n- Verify threshold calculation logic with various bounce rate scenarios\n- Test IP pool switching logic with different configurations\n- Validate cooldown period enforcement\n- Test notification triggers at different threshold levels\n2. Integration Tests:\n- Create a SendGrid API sandbox environment for testing\n- Implement tests that verify the complete switching workflow\n- Test the system's response to various API error conditions\n- Verify database logging of switching events and metrics\n- Test the notification system's integration with alerting channels\n3. Load and Performance Tests:\n- Verify the system can handle checking multiple IP pools simultaneously\n- Test performance under high email volume conditions\n- Measure and optimize API call frequency to SendGrid\n4. Mocked Scenario Tests:\n- Create simulated bounce rate scenarios to trigger switching\n- Test edge cases like all pools exceeding threshold\n- Verify behavior when SendGrid API is temporarily unavailable\n- Test recovery after system downtime\n5. Manual Verification:\n- Create a test plan for QA to verify the switching behavior\n- Implement a SendGrid bounce simulation tool for manual testing\n- Document expected behavior for various threshold configurations\n6. Monitoring Tests:\n- Verify metrics are correctly recorded for monitoring\n- Test dashboard displays with various data scenarios\n- Validate alert generation and delivery\n7. Regression Tests:\n- Ensure existing email sending functionality works correctly after implementation\n- Verify no impact on other SendGrid-related features\n- Test backward compatibility with existing configuration\n8. End-to-End Tests:\n- Create a complete test workflow from bounce detection to IP switching\n- Verify all system components interact correctly\n- Test the full recovery cycle after a switching event\nDevelop a service that collects email delivery data, calculates bounce rates per IP pool, and maintains historical metrics. Include functionality to set configurable thresholds for different bounce types (hard bounces, soft bounces). Implement a data storage solution for bounce statistics with appropriate retention policies.\nBuild a component that can evaluate bounce rate data against thresholds, make intelligent decisions about when to switch IP pools, implement cooldown periods for problematic pools, and maintain a registry of available IP pools with their current status and health metrics. Include safeguards to prevent rapid switching and ensure graceful degradation.\nCreate a service layer that interfaces with SendGrid's API to retrieve IP pool information, monitor delivery metrics, and execute IP pool switching commands. Implement proper error handling, rate limiting compliance, authentication management, and retry logic for API failures. Document all API endpoints used and their response handling.\nCreate a flexible notification system that alerts administrators about IP pool switches, high bounce rates, and system errors. Implement multiple notification channels (email, Slack, SMS) with configurable severity levels. Include detailed contextual information in notifications to aid troubleshooting and provide actionable insights.\nBuild a web-based interface that allows administrators to configure bounce rate thresholds, manage IP pools, view historical performance metrics, and adjust notification settings. Include dashboards for real-time monitoring, manual override capabilities for IP pool switching, and audit logs of all system actions and configuration changes.",
+      "subtasks": []
+    },
+    {
+      "id": 22,
+      "title": "Implement GPU Auto-Spin for Large Personalisation Queue",
+      "status": "pending",
+      "dependencies": [
+        13,
+        19
+      ],
+      "priority": "high",
+      "description": "Implement an automatic GPU provisioning mechanism that spins up Hetzner GPU instances when the personalisation queue exceeds 2000 items, as specified in section 2 of the requirements.",
+      "details": "Implement a comprehensive GPU auto-scaling system with the following components:\n1. Queue Monitoring Service:\n- Create a dedicated service that monitors the personalisation_queue table size\n- Implement configurable thresholds (default: 2000) for triggering GPU provisioning\n- Set up periodic checks (every 5 minutes) to evaluate queue size\n- Add logging for all threshold checks and provisioning decisions\n2. Hetzner API Integration:\n- Implement a `HetznerGPUManager` class that handles all interactions with Hetzner's API\n- Create methods for spinning up GPU instances with appropriate specifications\n- Implement authentication and secure credential management\n- Add proper error handling and retry logic for API failures\n- Include methods for instance status checking and health monitoring\n3. Auto-Scaling Logic:\n- Implement rules for determining the number of GPU instances needed based on queue size\n- Create logic for graceful shutdown when queue size decreases below threshold\n- Add cooldown periods to prevent rapid spin-up/spin-down cycles\n- Implement cost optimization by selecting appropriate instance types\n4. Integration with DAG Pipeline:\n- Connect the GPU provisioning system to the DAG-based pipeline architecture\n- Modify the task distribution logic to utilize available GPU resources\n- Implement load balancing across multiple GPU instances if needed\n- Ensure the system falls back to CPU processing if GPU provisioning fails\n- Focus on optimizing the unified terminal GPT-4o node for GPU acceleration\n5. Monitoring and Alerting:\n- Add metrics for GPU utilization, cost, and processing efficiency\n- Implement alerts for failed provisioning attempts\n- Create dashboards for visualizing GPU usage and queue processing rates\n- Set up cost tracking and reporting\n6. Configuration Management:\n- Add new configuration parameters for GPU auto-scaling in the system config\n- Include options for threshold adjustment, instance types, and scaling limits\n- Implement environment-specific configurations (dev, staging, production)\n- Document all configuration options thoroughly\n7. Security Considerations:\n- Ensure secure handling of Hetzner API credentials\n- Implement proper network security for GPU instances\n- Add access controls for GPU management functions\n- Follow security best practices for cloud resource provisioning",
+      "test_strategy": "1. Unit Testing:\n- Create unit tests for the `HetznerGPUManager` class using mocked API responses\n- Test queue monitoring logic with various queue sizes above and below threshold\n- Verify auto-scaling logic correctly determines instance counts\n- Test error handling and retry mechanisms\n2. Integration Testing:\n- Set up a test environment with a simulated personalisation queue\n- Verify the system correctly detects when queue size exceeds threshold\n- Confirm API calls to Hetzner are properly formatted and authenticated\n- Test the complete flow from queue monitoring to GPU provisioning\n- Verify integration with the DAG-based pipeline architecture\n3. Performance Testing:\n- Measure the impact of GPU processing on queue throughput\n- Compare processing times with and without GPU acceleration\n- Test system behavior under various queue growth rates\n- Verify the system can handle multiple GPU instances efficiently\n- Test performance of the unified terminal GPT-4o node with GPU acceleration\n4. Failure Mode Testing:\n- Simulate API failures and verify proper error handling\n- Test behavior when GPU instances fail to provision\n- Verify fallback to CPU processing works correctly\n- Confirm alerts are triggered appropriately for failures\n5. Cost Optimization Testing:\n- Verify instances are shut down when no longer needed\n- Test cooldown periods prevent unnecessary provisioning cycles\n- Measure actual costs against expected costs\n- Verify cost reporting is accurate\n6. Security Testing:\n- Audit credential handling for potential vulnerabilities\n- Verify network security configurations for GPU instances\n- Test access controls for GPU management functions\n- Ensure compliance with security policies\n7. End-to-End Testing:\n- Create a test scenario with a rapidly growing personalisation queue\n- Verify the entire system from queue growth to GPU provisioning works correctly\n- Confirm personalisation tasks are processed efficiently on GPU\n- Test the complete cycle including shutdown when queue is processed\nCreate a service that monitors the job queue depth and processing times. Implement thresholds for triggering scale-up events. Include metrics collection for queue length, job wait times, and resource utilization. Design the service to be fault-tolerant with proper error handling and logging.\nImplement authentication with Hetzner API. Create modules for server creation, deletion, status checking, and configuration. Build retry mechanisms for API failures. Implement rate limiting to avoid API throttling. Document all API endpoints used and their response handling.\nImplement rules for when to scale up (provision new GPUs) and scale down (decommission idle GPUs). Create cost optimization logic to select appropriate GPU types based on workload. Develop cooldown periods to prevent thrashing. Implement gradual scaling to avoid sudden resource changes. Include predictive scaling based on historical patterns if possible.\nModify the DAG pipeline to utilize the auto-provisioned GPU resources. Focus on optimizing the unified terminal GPT-4o node for GPU acceleration. Implement job distribution logic to efficiently allocate tasks to available GPUs. Create fallback mechanisms for when auto-provisioning fails. Update pipeline configuration to be aware of dynamic resources.\nConfigure metrics collection for GPU utilization, provisioning times, costs, and system health. Set up dashboards to visualize system performance. Implement alerts for failures, unusual scaling events, and cost thresholds. Create detailed logging for troubleshooting. Develop regular reporting on resource usage and efficiency.\nImplement secure API key management for Hetzner credentials. Set up network security for provisioned GPUs including firewalls and access controls. Create secure channels for communication between components. Implement audit logging for all provisioning actions. Develop a security incident response plan for the auto-provisioning system.",
       "subtasks": []
     }
   ]
