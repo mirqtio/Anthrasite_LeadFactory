@@ -11,11 +11,7 @@ import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from leadfactory.utils.e2e_db_connector import (
-    db_connection,
-    db_cursor,
-    get_business_details,
-)
+from leadfactory.storage.factory import get_storage
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +19,15 @@ logger = logging.getLogger(__name__)
 class DataPreservationManager:
     """Manages data preservation for deduplication operations."""
 
-    def __init__(self, backup_dir: str = None):
+    def __init__(self, storage=None, backup_dir: str = None):
         """
         Initialize data preservation manager.
 
         Args:
+            storage: Storage interface for database operations
             backup_dir: Directory for storing backups (defaults to ./dedupe_backups)
         """
+        self.storage = storage or get_storage()
         self.backup_dir = backup_dir or os.path.join(os.getcwd(), "dedupe_backups")
         self._ensure_backup_dir()
         self._ensure_audit_tables()
@@ -42,47 +40,9 @@ class DataPreservationManager:
 
     def _ensure_audit_tables(self):
         """Ensure audit tables exist in the database."""
-        create_audit_tables_sql = [
-            """
-            CREATE TABLE IF NOT EXISTS dedupe_audit_log (
-                id SERIAL PRIMARY KEY,
-                operation_type VARCHAR(50) NOT NULL,
-                business1_id INTEGER,
-                business2_id INTEGER,
-                operation_data JSONB,
-                user_id VARCHAR(255),
-                status VARCHAR(50) NOT NULL,
-                error_message TEXT,
-                created_at TIMESTAMP DEFAULT NOW()
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS dedupe_backup_metadata (
-                id SERIAL PRIMARY KEY,
-                backup_id VARCHAR(255) UNIQUE NOT NULL,
-                operation_type VARCHAR(50) NOT NULL,
-                business_ids INTEGER[],
-                backup_path TEXT NOT NULL,
-                backup_size BIGINT,
-                checksum VARCHAR(64),
-                created_at TIMESTAMP DEFAULT NOW(),
-                restored_at TIMESTAMP,
-                restored_by VARCHAR(255)
-            )
-            """,
-            "CREATE INDEX IF NOT EXISTS idx_audit_log_business1 ON dedupe_audit_log(business1_id)",
-            "CREATE INDEX IF NOT EXISTS idx_audit_log_business2 ON dedupe_audit_log(business2_id)",
-            "CREATE INDEX IF NOT EXISTS idx_audit_log_created ON dedupe_audit_log(created_at)",
-            "CREATE INDEX IF NOT EXISTS idx_backup_metadata_backup_id ON dedupe_backup_metadata(backup_id)",
-        ]
-
         try:
-            with db_connection() as conn:
-                with conn.cursor() as cursor:
-                    for sql in create_audit_tables_sql:
-                        cursor.execute(sql)
-                conn.commit()
-                logger.info("Audit tables verified/created")
+            self.storage.ensure_audit_tables()
+            logger.info("Audit tables verified/created")
         except Exception as e:
             logger.error(f"Failed to create audit tables: {e}")
 
@@ -112,7 +72,7 @@ class DataPreservationManager:
             }
 
             for business_id in business_ids:
-                business_data = get_business_details(business_id)
+                business_data = self.storage.get_business_details(business_id)
                 if business_data:
                     # Include all related data
                     backup_data["businesses"][str(business_id)] = {
@@ -155,25 +115,7 @@ class DataPreservationManager:
 
     def _get_related_data(self, business_id: int) -> dict[str, Any]:
         """Get related data for a business (e.g., responses, metadata)."""
-        related_data = {}
-
-        try:
-            with db_cursor() as cursor:
-                # Get any related data from other tables
-                # This is a placeholder - adjust based on your schema
-                cursor.execute(
-                    """
-                    SELECT 'placeholder' as data
-                    WHERE 1=0  -- Placeholder query
-                """
-                )
-                # related_data['other_table'] = cursor.fetchall()
-        except Exception as e:
-            logger.warning(
-                f"Failed to get related data for business {business_id}: {e}"
-            )
-
-        return related_data
+        return self.storage.get_related_business_data(business_id)
 
     def _record_backup_metadata(
         self,
@@ -185,25 +127,11 @@ class DataPreservationManager:
         checksum: str,
     ):
         """Record backup metadata in the database."""
-        try:
-            with db_cursor() as cursor:
-                cursor.execute(
-                    """
-                    INSERT INTO dedupe_backup_metadata
-                    (backup_id, operation_type, business_ids, backup_path, backup_size, checksum)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """,
-                    (
-                        backup_id,
-                        operation_type,
-                        business_ids,
-                        backup_path,
-                        backup_size,
-                        checksum,
-                    ),
-                )
-        except Exception as e:
-            logger.error(f"Failed to record backup metadata: {e}")
+        success = self.storage.record_backup_metadata(
+            backup_id, operation_type, business_ids, backup_path, backup_size, checksum
+        )
+        if not success:
+            logger.error(f"Failed to record backup metadata for {backup_id}")
 
     def restore_backup(self, backup_id: str, user_id: str = None) -> bool:
         """
@@ -218,22 +146,14 @@ class DataPreservationManager:
         """
         try:
             # Get backup metadata
-            with db_cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT backup_path, checksum
-                    FROM dedupe_backup_metadata
-                    WHERE backup_id = %s
-                """,
-                    (backup_id,),
-                )
-                result = cursor.fetchone()
+            backup_metadata = self.storage.get_backup_metadata(backup_id)
 
-                if not result:
-                    logger.error(f"Backup {backup_id} not found")
-                    return False
+            if not backup_metadata:
+                logger.error(f"Backup {backup_id} not found")
+                return False
 
-                backup_path, expected_checksum = result
+            backup_path = backup_metadata["backup_path"]
+            expected_checksum = backup_metadata["checksum"]
 
             # Verify backup integrity
             import hashlib
@@ -256,14 +176,10 @@ class DataPreservationManager:
                     restored_count += 1
 
             # Update backup metadata
-            with db_cursor() as cursor:
-                cursor.execute(
-                    """
-                    UPDATE dedupe_backup_metadata
-                    SET restored_at = NOW(), restored_by = %s
-                    WHERE backup_id = %s
-                """,
-                    (user_id, backup_id),
+            success = self.storage.update_backup_restored(backup_id, user_id)
+            if not success:
+                logger.warning(
+                    f"Failed to update backup restored status for {backup_id}"
                 )
 
             logger.info(f"Restored {restored_count} businesses from backup {backup_id}")
@@ -306,27 +222,17 @@ class DataPreservationManager:
             error_message: Error message if failed
             user_id: User performing the operation
         """
-        try:
-            with db_cursor() as cursor:
-                cursor.execute(
-                    """
-                    INSERT INTO dedupe_audit_log
-                    (operation_type, business1_id, business2_id, operation_data,
-                     user_id, status, error_message)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """,
-                    (
-                        operation_type,
-                        business1_id,
-                        business2_id,
-                        json.dumps(operation_data),
-                        user_id,
-                        status,
-                        error_message,
-                    ),
-                )
-        except Exception as e:
-            logger.error(f"Failed to log operation: {e}")
+        success = self.storage.log_dedupe_operation(
+            operation_type,
+            business1_id,
+            business2_id,
+            operation_data,
+            status,
+            error_message,
+            user_id,
+        )
+        if not success:
+            logger.error(f"Failed to log {operation_type} operation")
 
     def get_audit_trail(
         self,
@@ -349,36 +255,9 @@ class DataPreservationManager:
         Returns:
             List of audit trail entries
         """
-        query = "SELECT * FROM dedupe_audit_log WHERE 1=1"
-        params = []
-
-        if business_id:
-            query += " AND (business1_id = %s OR business2_id = %s)"
-            params.extend([business_id, business_id])
-
-        if operation_type:
-            query += " AND operation_type = %s"
-            params.append(operation_type)
-
-        if start_date:
-            query += " AND created_at >= %s"
-            params.append(start_date)
-
-        if end_date:
-            query += " AND created_at <= %s"
-            params.append(end_date)
-
-        query += " ORDER BY created_at DESC LIMIT %s"
-        params.append(limit)
-
-        try:
-            with db_cursor() as cursor:
-                cursor.execute(query, params)
-                columns = [desc[0] for desc in cursor.description]
-                return [dict(zip(columns, row)) for row in cursor.fetchall()]
-        except Exception as e:
-            logger.error(f"Failed to get audit trail: {e}")
-            return []
+        return self.storage.get_audit_trail(
+            business_id, operation_type, start_date, end_date, limit
+        )
 
     def create_transaction_savepoint(self, savepoint_name: str) -> bool:
         """
@@ -390,15 +269,7 @@ class DataPreservationManager:
         Returns:
             True if successful, False otherwise
         """
-        try:
-            with db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(f"SAVEPOINT {savepoint_name}")
-                logger.debug(f"Created savepoint: {savepoint_name}")
-                return True
-        except Exception as e:
-            logger.error(f"Failed to create savepoint {savepoint_name}: {e}")
-            return False
+        return self.storage.create_savepoint(savepoint_name)
 
     def rollback_to_savepoint(self, savepoint_name: str) -> bool:
         """
@@ -410,15 +281,7 @@ class DataPreservationManager:
         Returns:
             True if successful, False otherwise
         """
-        try:
-            with db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
-                logger.info(f"Rolled back to savepoint: {savepoint_name}")
-                return True
-        except Exception as e:
-            logger.error(f"Failed to rollback to savepoint {savepoint_name}: {e}")
-            return False
+        return self.storage.rollback_to_savepoint(savepoint_name)
 
     def release_savepoint(self, savepoint_name: str) -> bool:
         """
@@ -430,15 +293,7 @@ class DataPreservationManager:
         Returns:
             True if successful, False otherwise
         """
-        try:
-            with db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(f"RELEASE SAVEPOINT {savepoint_name}")
-                logger.debug(f"Released savepoint: {savepoint_name}")
-                return True
-        except Exception as e:
-            logger.error(f"Failed to release savepoint {savepoint_name}: {e}")
-            return False
+        return self.storage.release_savepoint(savepoint_name)
 
 
 def with_data_preservation(operation_type: str):

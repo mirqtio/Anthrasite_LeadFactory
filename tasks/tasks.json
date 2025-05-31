@@ -2443,7 +2443,7 @@
       "id": 17,
       "title": "Refactor Pipeline Architecture to DAG-Centric Model",
       "description": "Refactor the entire pipeline to use a DAG-centric architecture, removing tier-based logic and implementing dynamic dependency evaluation through topological sorting of the pipeline graph.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         5,
         16
@@ -2478,7 +2478,7 @@
             2
           ],
           "details": "Create a unified terminal node that generates both mockup and email content using GPT-4o. Ensure all required inputs flow to this node and implement validation before execution. Optimize prompt construction for the combined task.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 4,
@@ -2488,7 +2488,7 @@
             1
           ],
           "details": "Create budget constraint system with cost simulation, validation before execution, and budget limits that prevent execution when costs would exceed limits. Add cost tracking and reporting for each pipeline node.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -2498,7 +2498,7 @@
             1
           ],
           "details": "Design and implement a storage abstraction layer that can work with different backends. Create a default implementation for Supabase storage. Update all pipeline nodes to use the abstracted interface instead of direct Supabase calls.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

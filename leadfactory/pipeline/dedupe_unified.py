@@ -36,14 +36,13 @@ from leadfactory.pipeline.dedupe_logging import (
     log_dedupe_performance,
 )
 
+# Import storage abstraction
+from leadfactory.storage.factory import get_storage
+
 # Import from unified connector
 from leadfactory.utils.e2e_db_connector import (
-    add_to_review_queue,
     check_dedupe_tables_exist,
     create_dedupe_tables,
-    db_connection,
-    db_cursor,
-    get_business_details,
     get_potential_duplicate_pairs,
     merge_business_records,
     update_business_fields,
@@ -239,7 +238,8 @@ def get_potential_duplicates(limit: Optional[int] = None) -> list[dict[str, Any]
 
 def get_business_by_id(business_id: int) -> Optional[dict[str, Any]]:
     """Get business details by ID."""
-    return get_business_details(business_id)
+    storage = get_storage()
+    return storage.get_business_by_id(business_id)
 
 
 def merge_businesses(
@@ -342,7 +342,8 @@ def merge_businesses(
                 )
 
                 # Add to review queue
-                review_id = add_to_review_queue(
+                storage = get_storage()
+                review_id = storage.add_to_review_queue(
                     business1_id=primary_id,
                     business2_id=secondary_id,
                     reason=f"Manual review required for fields: {', '.join(conflict_report['manual_review_required'])}",
@@ -508,7 +509,14 @@ def flag_for_review(
     business1_id: int, business2_id: int, reason: str, similarity_score: float = 0.0
 ) -> bool:
     """Flag a potential duplicate pair for manual review."""
-    return add_to_review_queue(business1_id, business2_id, reason, similarity_score)
+    storage = get_storage()
+    review_id = storage.add_to_review_queue(
+        business1_id=business1_id,
+        business2_id=business2_id,
+        reason=reason,
+        details=json.dumps({"similarity_score": similarity_score}),
+    )
+    return review_id is not None
 
 
 def process_duplicate_pair(

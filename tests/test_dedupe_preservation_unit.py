@@ -69,7 +69,7 @@ class TestDedupePreservationUnit(unittest.TestCase):
         self.assertEqual(result, 1)
 
         # Verify preservation lifecycle
-        mock_preservation.create_backup.assert_called_once_with([1, 2], "merge")
+        mock_preservation.create_backup.assert_called_once_with(business_ids=[1, 2], operation="merge")
         mock_preservation.create_transaction_savepoint.assert_called_once()
         mock_preservation.release_savepoint.assert_called_once()
         mock_preservation.rollback_to_savepoint.assert_not_called()
@@ -132,7 +132,7 @@ class TestDedupePreservationUnit(unittest.TestCase):
         self.assertIsNone(result)
 
         # Verify backup was created but no savepoint operations
-        mock_preservation.create_backup.assert_called_once_with([1, 2], "merge")
+        mock_preservation.create_backup.assert_called_once_with(business_ids=[1, 2], operation="merge")
         mock_preservation.rollback_to_savepoint.assert_not_called()
         mock_preservation.release_savepoint.assert_not_called()
 

@@ -17,12 +17,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from leadfactory.config.dedupe_config import DedupeConfig
 from leadfactory.pipeline.dedupe_logging import DedupeLogger, dedupe_operation
+from leadfactory.storage.factory import get_storage
 from leadfactory.utils.e2e_db_connector import (
-    db_connection,
-    db_cursor,
-    get_business_details,
     get_potential_duplicate_pairs,
-    merge_business_records,
 )
 
 logger = logging.getLogger(__name__)
@@ -130,23 +127,13 @@ class OptimizedDeduplicator:
 
         # Fetch missing businesses in batch
         if missing_ids:
-            with db_connection() as conn, db_cursor(conn) as cursor:
-                # Use IN clause for batch fetch
-                placeholders = ",".join(["%s"] * len(missing_ids))
-                query = f"""
-                        SELECT id, name, address, zip, phone, email, website,
-                               vertical, source, google_response, yelp_response,
-                               manual_response, created_at, updated_at
-                        FROM businesses
-                        WHERE id IN ({placeholders})
-                    """
-                cursor.execute(query, missing_ids)
+            storage = get_storage()
+            businesses = storage.get_businesses(missing_ids)
 
-                for row in cursor.fetchall():
-                    business_data = dict(row)
-                    business_id = business_data["id"]
-                    cached_businesses[business_id] = business_data
-                    self.business_cache.put(business_id, business_data)
+            for business in businesses:
+                business_id = business["id"]
+                cached_businesses[business_id] = business
+                self.business_cache.put(business_id, business)
 
         return cached_businesses
 
@@ -315,7 +302,8 @@ class OptimizedDeduplicator:
         """Optimized business merge with minimal database operations."""
         try:
             # Use the existing merge function but with optimizations
-            result = merge_business_records(primary_id, secondary_id)
+            storage = get_storage()
+            result = storage.merge_businesses(primary_id, secondary_id)
             return result is not None
         except Exception as e:
             logger.error(f"Error merging businesses {primary_id}, {secondary_id}: {e}")
@@ -333,15 +321,13 @@ class OptimizedDeduplicator:
         ]
 
         try:
-            with db_connection() as conn, db_cursor(conn) as cursor:
-                for index_sql in indexes:
-                    try:
-                        cursor.execute(index_sql)
-                        logger.info(f"Created index: {index_sql}")
-                    except Exception as e:
-                        logger.warning(
-                            f"Index creation failed (may already exist): {e}"
-                        )
+            storage = get_storage()
+            for index_sql in indexes:
+                try:
+                    storage.execute(index_sql)
+                    logger.info(f"Created index: {index_sql}")
+                except Exception as e:
+                    logger.warning(f"Index creation failed (may already exist): {e}")
             return True
         except Exception as e:
             logger.error(f"Error creating indexes: {e}")

@@ -27,9 +27,19 @@ LOGS_DIR = get_env("LOGS_DIR", str(BASE_DIR / "logs"))
 Path(DATA_DIR).mkdir(exist_ok=True)
 Path(LOGS_DIR).mkdir(exist_ok=True)
 
-# Environment
+# Environment configuration
 ENVIRONMENT = get_env("ENVIRONMENT", "development")
+
+# Legacy tier support (deprecated - use budget constraints instead)
 TIER = get_int_env("TIER", 1)
+
+# Budget constraint configuration
+DAILY_BUDGET_LIMIT = get_float_env("DAILY_BUDGET_LIMIT", 50.0)
+MONTHLY_BUDGET_LIMIT = get_float_env("MONTHLY_BUDGET_LIMIT", 1000.0)
+DAILY_WARNING_THRESHOLD = get_float_env("DAILY_WARNING_THRESHOLD", 0.8)
+DAILY_CRITICAL_THRESHOLD = get_float_env("DAILY_CRITICAL_THRESHOLD", 0.95)
+MONTHLY_WARNING_THRESHOLD = get_float_env("MONTHLY_WARNING_THRESHOLD", 0.8)
+MONTHLY_CRITICAL_THRESHOLD = get_float_env("MONTHLY_CRITICAL_THRESHOLD", 0.95)
 
 # ==================
 # API Keys
@@ -122,11 +132,59 @@ ALERT_GPU_BURST_THRESHOLD = get_float_env("ALERT_GPU_BURST_THRESHOLD", 25.0)
 # ==================
 # Helper functions
 # ==================
+def get_budget_limit(period: str = "daily") -> float:
+    """
+    Get the budget limit for the specified period.
+
+    Args:
+        period: Budget period ('daily' or 'monthly')
+
+    Returns:
+        The budget limit for the specified period
+    """
+    if period == "daily":
+        return DAILY_BUDGET_LIMIT
+    elif period == "monthly":
+        return MONTHLY_BUDGET_LIMIT
+    else:
+        raise ValueError(f"Unknown budget period: {period}")
+
+
+def get_budget_threshold(
+    period: str = "daily", threshold_type: str = "warning"
+) -> float:
+    """
+    Get the budget threshold for the specified period and type.
+
+    Args:
+        period: Budget period ('daily' or 'monthly')
+        threshold_type: Threshold type ('warning' or 'critical')
+
+    Returns:
+        The threshold value (0.0 to 1.0)
+    """
+    if period == "daily":
+        if threshold_type == "warning":
+            return DAILY_WARNING_THRESHOLD
+        elif threshold_type == "critical":
+            return DAILY_CRITICAL_THRESHOLD
+    elif period == "monthly":
+        if threshold_type == "warning":
+            return MONTHLY_WARNING_THRESHOLD
+        elif threshold_type == "critical":
+            return MONTHLY_CRITICAL_THRESHOLD
+
+    raise ValueError(f"Unknown period '{period}' or threshold type '{threshold_type}'")
+
+
+# Legacy functions for backward compatibility
 def get_tiered_value(
     tier1_value: Any, tier2_value: Any = None, tier3_value: Any = None
 ) -> Any:
     """
     Return value based on the configured tier level.
+
+    DEPRECATED: Use budget constraints instead of tier-based logic.
 
     Args:
         tier1_value: Value to use for tier 1
@@ -153,6 +211,8 @@ def get_tiered_value(
 def get_alert_threshold(tier: Optional[int] = None) -> float:
     """
     Get the cost alert threshold for the specified tier or current tier.
+
+    DEPRECATED: Use budget constraints instead of tier-based logic.
 
     Args:
         tier: Tier level (1, 2, or 3). If None, uses TIER
@@ -201,6 +261,8 @@ def get_all_settings() -> dict[str, Any]:
             settings[name] = getattr(current_module, name)
 
     # Add helper functions
+    settings["get_budget_limit"] = get_budget_limit
+    settings["get_budget_threshold"] = get_budget_threshold
     settings["get_tiered_value"] = get_tiered_value
     settings["get_alert_threshold"] = get_alert_threshold
     settings["is_production"] = is_production

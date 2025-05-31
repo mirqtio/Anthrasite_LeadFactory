@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from leadfactory.utils.e2e_db_connector import db_connection
+from leadfactory.storage.factory import get_storage
 from leadfactory.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -395,44 +395,60 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
             True if successful, False otherwise
         """
         try:
-            with db_connection() as conn:
-                cursor = conn.cursor()
+            storage = get_storage()
 
-                # Save mockup concept
-                mockup_data = content.get("mockup_concept", {})
-                cursor.execute(
+            # Prepare queries for transaction
+            queries = []
+
+            # Save mockup concept
+            mockup_data = content.get("mockup_concept", {})
+            queries.append(
+                (
                     """
-                    INSERT INTO assets (business_id, asset_type, asset_data, created_at)
-                    VALUES (?, 'unified_mockup', ?, datetime('now'))
+                INSERT INTO assets (business_id, asset_type, asset_data, created_at)
+                VALUES (%s, 'unified_mockup', %s, NOW())
                 """,
                     (business_id, json.dumps(mockup_data)),
                 )
+            )
 
-                # Save email content
-                email_data = content.get("email_content", {})
-                cursor.execute(
+            # Save email content
+            email_data = content.get("email_content", {})
+            queries.append(
+                (
                     """
-                    INSERT INTO assets (business_id, asset_type, asset_data, created_at)
-                    VALUES (?, 'unified_email', ?, datetime('now'))
+                INSERT INTO assets (business_id, asset_type, asset_data, created_at)
+                VALUES (%s, 'unified_email', %s, NOW())
                 """,
                     (business_id, json.dumps(email_data)),
                 )
+            )
 
-                # Save metadata
-                metadata = content.get("metadata", {})
-                cursor.execute(
+            # Save metadata
+            metadata = content.get("metadata", {})
+            queries.append(
+                (
                     """
-                    INSERT INTO pipeline_results (business_id, stage, result_data, created_at)
-                    VALUES (?, 'unified_gpt4o', ?, datetime('now'))
+                INSERT INTO pipeline_results (business_id, stage, result_data, created_at)
+                VALUES (%s, 'unified_gpt4o', %s, NOW())
                 """,
                     (business_id, json.dumps(metadata)),
                 )
+            )
 
-                conn.commit()
+            # Execute all queries in a transaction
+            success = storage.execute_transaction(queries)
+
+            if success:
                 logger.info(
                     f"Successfully saved unified results for business {business_id}"
                 )
                 return True
+            else:
+                logger.error(
+                    f"Failed to save unified results for business {business_id}"
+                )
+                return False
 
         except Exception as e:
             logger.error(
@@ -473,70 +489,53 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
     def _fetch_business_data(self, business_id: int) -> Optional[Dict[str, Any]]:
         """Fetch business data from the database."""
         try:
-            with db_connection() as conn:
-                cursor = conn.cursor()
+            storage = get_storage()
 
-                # Fetch basic business information
-                cursor.execute(
-                    """
-                    SELECT id, name, website, description, contact_email, phone, address, industry
-                    FROM businesses
-                    WHERE id = ?
-                """,
-                    (business_id,),
-                )
+            # Fetch basic business information
+            business_query = """
+            SELECT id, name, website, description, contact_email, phone, address, industry
+            FROM businesses
+            WHERE id = %s
+            """
 
-                row = cursor.fetchone()
-                if not row:
-                    return None
+            business_results = storage.execute_query(business_query, (business_id,))
+            if not business_results:
+                return None
 
-                business_data = {
-                    "id": row[0],
-                    "name": row[1],
-                    "website": row[2],
-                    "description": row[3],
-                    "contact_email": row[4],
-                    "phone": row[5],
-                    "address": row[6],
-                    "industry": row[7],
-                }
+            business_data = business_results[0]
 
-                # Fetch enrichment data if available
-                cursor.execute(
-                    """
-                    SELECT asset_data
-                    FROM assets
-                    WHERE business_id = ? AND asset_type = 'enrichment'
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                """,
-                    (business_id,),
-                )
+            # Fetch enrichment data if available
+            enrichment_query = """
+            SELECT asset_data
+            FROM assets
+            WHERE business_id = %s AND asset_type = 'enrichment'
+            ORDER BY created_at DESC
+            LIMIT 1
+            """
 
-                enrichment_row = cursor.fetchone()
-                if enrichment_row:
-                    try:
-                        business_data["enrichment_data"] = json.loads(enrichment_row[0])
-                    except json.JSONDecodeError:
-                        business_data["enrichment_data"] = {}
+            enrichment_results = storage.execute_query(enrichment_query, (business_id,))
+            if enrichment_results:
+                try:
+                    business_data["enrichment_data"] = json.loads(
+                        enrichment_results[0]["asset_data"]
+                    )
+                except json.JSONDecodeError:
+                    business_data["enrichment_data"] = {}
 
-                # Fetch screenshot URL if available
-                cursor.execute(
-                    """
-                    SELECT asset_url
-                    FROM assets
-                    WHERE business_id = ? AND asset_type = 'screenshot'
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                """,
-                    (business_id,),
-                )
+            # Fetch screenshot URL if available
+            screenshot_query = """
+            SELECT asset_url
+            FROM assets
+            WHERE business_id = %s AND asset_type = 'screenshot'
+            ORDER BY created_at DESC
+            LIMIT 1
+            """
 
-                screenshot_row = cursor.fetchone()
-                if screenshot_row:
-                    business_data["screenshot_url"] = screenshot_row[0]
+            screenshot_results = storage.execute_query(screenshot_query, (business_id,))
+            if screenshot_results:
+                business_data["screenshot_url"] = screenshot_results[0]["asset_url"]
 
-                return business_data
+            return business_data
 
         except Exception as e:
             logger.error(f"Error fetching business data for {business_id}: {e}")
@@ -556,37 +555,28 @@ def get_businesses_needing_unified_processing(
         List of business dictionaries
     """
     try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
+        storage = get_storage()
 
-            # Get businesses that have required dependencies but no unified processing
-            query = """
-            SELECT DISTINCT b.id, b.name, b.website
-            FROM businesses b
-            INNER JOIN assets enrichment ON b.id = enrichment.business_id
-                AND enrichment.asset_type = 'enrichment'
-            LEFT JOIN assets unified_mockup ON b.id = unified_mockup.business_id
-                AND unified_mockup.asset_type = 'unified_mockup'
-            LEFT JOIN assets unified_email ON b.id = unified_email.business_id
-                AND unified_email.asset_type = 'unified_email'
-            WHERE unified_mockup.id IS NULL OR unified_email.id IS NULL
-            ORDER BY b.id
-            """
+        # Get businesses that have required dependencies but no unified processing
+        query = """
+        SELECT DISTINCT b.id, b.name, b.website
+        FROM businesses b
+        INNER JOIN assets enrichment ON b.id = enrichment.business_id
+            AND enrichment.asset_type = 'enrichment'
+        LEFT JOIN assets unified_mockup ON b.id = unified_mockup.business_id
+            AND unified_mockup.asset_type = 'unified_mockup'
+        LEFT JOIN assets unified_email ON b.id = unified_email.business_id
+            AND unified_email.asset_type = 'unified_email'
+        WHERE unified_mockup.id IS NULL OR unified_email.id IS NULL
+        ORDER BY b.id
+        """
 
-            if limit:
-                query += f" LIMIT {limit}"
+        if limit:
+            query += f" LIMIT {limit}"
 
-            cursor.execute(query)
-            rows = cursor.fetchall()
-
-            businesses = []
-            for row in rows:
-                businesses.append({"id": row[0], "name": row[1], "website": row[2]})
-
-            logger.info(
-                f"Found {len(businesses)} businesses needing unified processing"
-            )
-            return businesses
+        businesses = storage.execute_query(query)
+        logger.info(f"Found {len(businesses)} businesses needing unified processing")
+        return businesses
 
     except Exception as e:
         logger.error(f"Error fetching businesses for unified processing: {e}")

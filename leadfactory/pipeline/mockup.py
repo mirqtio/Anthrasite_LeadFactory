@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-from leadfactory.utils.e2e_db_connector import db_connection
+from leadfactory.storage import get_storage
 
 # Set up logging using unified logging system
 from leadfactory.utils.logging import get_logger
@@ -20,33 +20,13 @@ logger = get_logger(__name__)
 def get_businesses_needing_mockups(limit: Optional[int] = None) -> list[dict]:
     """Get businesses that need mockups generated."""
     try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
+        storage = get_storage()
 
-            # Get businesses that have screenshot assets but no mockup assets
-            query = """
-            SELECT DISTINCT b.id, b.name, b.website
-            FROM businesses b
-            INNER JOIN assets screenshot_asset ON b.id = screenshot_asset.business_id
-                AND screenshot_asset.asset_type = 'screenshot'
-            LEFT JOIN assets mockup_asset ON b.id = mockup_asset.business_id
-                AND mockup_asset.asset_type = 'mockup'
-            WHERE mockup_asset.id IS NULL
-            ORDER BY b.id
-            """
+        # Get businesses that have screenshot assets but no mockup assets
+        businesses = storage.get_businesses_needing_mockups(limit=limit)
 
-            if limit:
-                query += f" LIMIT {limit}"
-
-            cursor.execute(query)
-            rows = cursor.fetchall()
-
-            businesses = []
-            for row in rows:
-                businesses.append({"id": row[0], "name": row[1], "website": row[2]})
-
-            logger.info(f"Found {len(businesses)} businesses needing mockups")
-            return businesses
+        logger.info(f"Found {len(businesses)} businesses needing mockups")
+        return businesses
 
     except Exception as e:
         logger.error(f"Error getting businesses needing mockups: {e}")
@@ -56,20 +36,19 @@ def get_businesses_needing_mockups(limit: Optional[int] = None) -> list[dict]:
 def create_mockup_asset(business_id: int, mockup_path: str, mockup_url: str) -> bool:
     """Create a mockup asset record in the database."""
     try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
+        storage = get_storage()
 
-            cursor.execute(
-                """
-                INSERT INTO assets (business_id, asset_type, file_path, url)
-                VALUES (%s, 'mockup', %s, %s)
-            """,
-                (business_id, mockup_path, mockup_url),
-            )
+        success = storage.create_asset(
+            business_id=business_id,
+            asset_type="mockup",
+            file_path=mockup_path,
+            url=mockup_url,
+        )
 
-            conn.commit()
+        if success:
             logger.info(f"Created mockup asset for business {business_id}")
-            return True
+
+        return success
 
     except Exception as e:
         logger.error(f"Error creating mockup asset for business {business_id}: {e}")
@@ -95,63 +74,34 @@ def validate_mockup_dependencies(business_id: int) -> dict[str, Any]:
     }
 
     try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
+        storage = get_storage()
 
-            # Check if business exists and has required data
-            cursor.execute(
-                "SELECT id, name, website FROM businesses WHERE id = %s", (business_id,)
-            )
-            business_row = cursor.fetchone()
+        # Check if business exists and has required data
+        business_data = storage.get_business_by_id(business_id)
+        if not business_data:
+            missing_deps.append("business_data")
+        else:
+            validation_result["business_data"] = business_data
 
-            if not business_row:
-                missing_deps.append("business_record")
-            else:
-                validation_result["business_data"] = {
-                    "id": business_row[0],
-                    "name": business_row[1],
-                    "website": business_row[2],
-                }
+        # Check if screenshot asset exists
+        screenshot_asset = storage.get_business_asset(business_id, "screenshot")
+        if not screenshot_asset:
+            missing_deps.append("screenshot_asset")
+        else:
+            validation_result["screenshot_path"] = screenshot_asset.get("file_path")
 
-                # Validate website is present
-                if not business_row[2] or not business_row[2].strip():
-                    missing_deps.append("website_url")
+        validation_result["missing_dependencies"] = missing_deps
+        validation_result["valid"] = len(missing_deps) == 0
 
-            # Check for screenshot asset (required for mockup generation)
-            cursor.execute(
-                """
-                SELECT file_path FROM assets
-                WHERE business_id = %s AND asset_type = 'screenshot'
-                ORDER BY created_at DESC LIMIT 1
-                """,
-                (business_id,),
-            )
-            screenshot_row = cursor.fetchone()
-
-            if not screenshot_row:
-                missing_deps.append("screenshot_asset")
-            else:
-                screenshot_path = screenshot_row[0]
-                if not os.path.exists(screenshot_path):
-                    missing_deps.append("screenshot_file")
-                else:
-                    validation_result["screenshot_path"] = screenshot_path
-
-            # Update validation result
-            validation_result["missing_dependencies"] = missing_deps
-            validation_result["valid"] = len(missing_deps) == 0
-
-            return validation_result
+        return validation_result
 
     except Exception as e:
         logger.error(
             f"Error validating mockup dependencies for business {business_id}: {e}"
         )
-        return {
-            "valid": False,
-            "missing_dependencies": ["validation_error"],
-            "error": str(e),
-        }
+        validation_result["valid"] = False
+        validation_result["missing_dependencies"] = ["validation_error"]
+        return validation_result
 
 
 # Mock implementation of generate_business_mockup

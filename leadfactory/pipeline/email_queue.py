@@ -21,44 +21,16 @@ from typing import Any, Optional
 import requests
 
 from leadfactory.config import load_config
+from leadfactory.storage.factory import get_storage
 
 # Use typing.Type for creating a type variable that can accept multiple class types
 # This avoids type checking errors when assigning different class types to the same variable
 T = type
 
+logger = logging.getLogger(__name__)
 
-# Define our own base connection class for testing scenarios
-class _EmailDBConnectionBase:
-    def __init__(self, db_path: Optional[str] = None) -> None:
-        pass
-
-    def __enter__(self) -> "_EmailDBConnectionBase":
-        return self
-
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        pass
-
-    def execute(self, *args: Any, **kwargs: Any) -> None:
-        pass
-
-    def fetchall(self) -> list[Any]:
-        return []
-
-    def fetchone(self) -> Optional[Any]:
-        return None
-
-    def commit(self) -> None:
-        pass
-
-
-# Type variable for our database connection class
-EmailDBConnection: Any = None
-
-# Try to import the real database connection class
-try:
-    from leadfactory.utils.e2e_db_connector import db_connection as EmailDBConnection
-except ImportError:
-    EmailDBConnection = _EmailDBConnectionBase  # Use our base class if import fails
+# Initialize storage interface
+storage = get_storage()
 
 # Import logging utilities with conditional imports for testing
 has_logger = False
@@ -527,8 +499,7 @@ def load_email_template() -> str:
     """
     try:
         # Load the template file
-        with open(EMAIL_TEMPLATE_PATH, encoding="utf-8") as f:
-            template = f.read()
+        template = storage.read_text(EMAIL_TEMPLATE_PATH)
         return template
     except Exception as e:
         logger.exception(f"Error loading email template: {str(e)}")
@@ -592,48 +563,9 @@ def get_businesses_for_email(
         list of dictionaries containing business information.
     """
     try:
-        # Connect to the database
-        with EmailDBConnection() as conn:
-            cursor = conn.cursor()
-            # Build the query - join with assets table to get mockup URLs
-            query = """
-            SELECT b.id, b.name, b.email, b.phone, b.address, b.city, b.state, b.zip,
-                   b.website, a.url as mockup_url, '' as contact_name, 0 as score, '' as notes
-            FROM businesses b
-            LEFT JOIN emails e ON b.id = e.business_id
-            LEFT JOIN assets a ON b.id = a.business_id AND a.asset_type = 'mockup'
-            WHERE b.email IS NOT NULL
-              AND b.email != ''
-              AND a.url IS NOT NULL
-              AND a.url != ''
-            """
-
-            # Add filters
-            params = []
-            if not force:
-                # Only include businesses that haven't been emailed yet
-                query += " AND e.id IS NULL"
-
-            if business_id is not None:
-                # Filter by business ID
-                query += " AND b.id = %s"
-                params.append(business_id)
-
-            # Order by ID and limit
-            query += " ORDER BY b.id"
-            if limit is not None:
-                query += " LIMIT %s"
-                params.append(limit)
-
-            # Execute the query
-            cursor.execute(query, params)
-            rows = cursor.fetchall()
-
-            # Convert to list of dictionaries - get column names
-            column_names = [desc[0] for desc in cursor.description]
-            businesses = [dict(zip(column_names, row)) for row in rows]
-            logger.info(f"Found {len(businesses)} businesses for email sending")
-            return businesses
+        return storage.get_businesses_for_email(
+            force=force, business_id=business_id, limit=limit
+        )
     except Exception as e:
         logger.exception(f"Error getting businesses for email: {str(e)}")
         return []
@@ -649,14 +581,7 @@ def is_email_unsubscribed(email: str) -> bool:
         True if the email is unsubscribed, False otherwise.
     """
     try:
-        with EmailDBConnection() as conn:
-            cursor = conn.cursor()
-            # Check if the email is in the unsubscribe table
-            cursor.execute(
-                "SELECT id FROM unsubscribes WHERE email = %s LIMIT 1", [email.lower()]
-            )
-            result = cursor.fetchone()
-            return result is not None
+        return storage.is_email_unsubscribed(email)
     except Exception as e:
         # If unsubscribes table doesn't exist, assume email is not unsubscribed
         if "does not exist" in str(e):
@@ -686,25 +611,9 @@ def add_unsubscribe(
         True if successful, False otherwise.
     """
     try:
-        # Connect to the database
-        with EmailDBConnection() as conn:
-            cursor = conn.cursor()
-            # Check if already unsubscribed
-            cursor.execute("SELECT id FROM unsubscribes WHERE email = %s", [email])
-            if cursor.fetchone() is not None:
-                logger.info(f"Email already unsubscribed: {email}")
-                return True
-
-            cursor.execute(
-                """
-                INSERT INTO unsubscribes (email, reason, ip_address, user_agent, created_at)
-                VALUES (%s, %s, %s, %s, NOW())
-                """,
-                [email, reason or "", ip_address or "", user_agent or ""],
-            )
-            conn.commit()
-            logger.info(f"Added unsubscribe for email: {email}")
-            return True
+        return storage.add_unsubscribe(
+            email, reason=reason, ip_address=ip_address, user_agent=user_agent
+        )
     except Exception as e:
         logger.exception(f"Error adding unsubscribe for {email}: {str(e)}")
         return False
@@ -734,30 +643,15 @@ def log_email_sent(
         True if successful, False otherwise.
     """
     try:
-        with EmailDBConnection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT INTO emails (
-                    business_id, recipient_email, recipient_name, subject,
-                    message_id, status, error_message, sent_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
-                """,
-                [
-                    business_id,
-                    recipient_email,
-                    recipient_name,
-                    subject,
-                    message_id,
-                    status,
-                    error_message,
-                ],
-            )
-            conn.commit()
-            logger.info(
-                f"Logged email sent to {recipient_email} for business {business_id}"
-            )
-            return True
+        return storage.log_email_sent(
+            business_id,
+            recipient_email,
+            recipient_name,
+            subject,
+            message_id,
+            status=status,
+            error_message=error_message,
+        )
     except Exception as e:
         logger.exception(f"Error logging email: {str(e)}")
         return False
@@ -787,27 +681,15 @@ def save_email_record(
         True if successful, False otherwise.
     """
     try:
-        # Connect to the database
-        with EmailDBConnection() as conn:
-            cursor = conn.cursor()
-            # Insert the email record - match actual table structure
-            cursor.execute(
-                """
-                INSERT INTO emails (
-                    business_id, to_email, template, status, sendgrid_message_id, sent_at
-                ) VALUES (%s, %s, %s, %s, %s, NOW())
-                """,
-                [
-                    business_id,
-                    to_email,
-                    f"{subject} (to: {to_name})",  # Store subject and name in template field
-                    status,
-                    message_id or "",
-                ],
-            )
-            conn.commit()
-            logger.info(f"Saved email record for business {business_id}")
-            return True
+        return storage.save_email_record(
+            business_id,
+            to_email,
+            to_name,
+            subject,
+            message_id,
+            status,
+            error_message=error_message,
+        )
     except Exception as e:
         logger.exception(f"Error saving email record: {str(e)}")
         return False
@@ -973,31 +855,13 @@ def send_business_email(
         # Get mockup file path from assets table
         mockup_path = None
         try:
-            from leadfactory.utils.e2e_db_connector import db_connection
-
-            with db_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    """
-                    SELECT file_path FROM assets
-                    WHERE business_id = %s AND asset_type = 'mockup'
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                """,
-                    (business["id"],),
-                )
-                result = cursor.fetchone()
-                if result:
-                    mockup_path = result[0]
-                    logger.info(
-                        f"Found mockup for business {business['id']}: {mockup_path}"
-                    )
-                else:
-                    logger.info(
-                        f"No mockup found in assets for business {business['id']}"
-                    )
+            asset = storage.get_business_asset(business["id"], "mockup")
+            if asset:
+                mockup_path = asset.get("file_path")
         except Exception as e:
-            logger.warning(f"Failed to query mockup from assets table: {str(e)}")
+            logger.exception(
+                f"Error getting mockup asset for business {business['id']}: {str(e)}"
+            )
 
         if is_dry_run:
             logger.info(f"Dry run: would send email to {recipient_email}")

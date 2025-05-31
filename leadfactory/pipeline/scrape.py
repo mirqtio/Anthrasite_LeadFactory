@@ -15,6 +15,9 @@ from typing import Any, Optional, Union
 # Use dict instead of Dict for Python 3.9 compatibility
 from leadfactory.config import load_config
 
+# Import storage abstraction
+from leadfactory.storage import get_storage_instance
+
 # Import the unified logging system
 from leadfactory.utils.logging import get_logger
 
@@ -386,204 +389,154 @@ def save_business(
     try:
         import json
 
-        import psycopg2.extras
+        storage = get_storage_instance()
 
-        from leadfactory.utils.e2e_db_connector import db_connection
+        # Check for existing business using multiple criteria for deduplication
+        existing_business_id = None
 
-        with db_connection() as conn:
-            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-            # Check for existing business using multiple criteria for deduplication
-            existing_business_id = None
-
-            # 1. Check by source_id if provided (exact match from same source)
-            if source_id and source_id.strip():
-                cursor.execute(
-                    """
-                    SELECT id, source, source_id FROM businesses
-                    WHERE source_id = %s AND source = %s
-                """,
-                    (source_id.strip(), source),
+        # 1. Check by source_id if provided (exact match from same source)
+        if source_id and source_id.strip():
+            existing_business = storage.get_business_by_source_id(source_id, source)
+            if existing_business:
+                existing_business_id = existing_business["id"]
+                logger.info(
+                    f"Found existing business {existing_business_id} by source_id: {source_id} from {source}"
                 )
+                return existing_business_id
 
-                result = cursor.fetchone()
-                if result:
-                    existing_business_id = result["id"]
-                    logger.info(
-                        f"Found existing business {existing_business_id} by source_id: {source_id} from {source}"
-                    )
-                    return existing_business_id
-
-            # 2. Check by website (strong deduplication signal)
-            if website and website.strip():
-                cursor.execute(
-                    """
-                    SELECT id, source, source_id FROM businesses
-                    WHERE website = %s AND website IS NOT NULL AND website != ''
-                """,
-                    (website.strip(),),
+        # 2. Check by website (strong deduplication signal)
+        if website and website.strip():
+            existing_business = storage.get_business_by_website(website)
+            if existing_business:
+                existing_business_id = existing_business["id"]
+                # Update source information and resolve conflicts
+                new_data = {
+                    "name": name,
+                    "address": address,
+                    "phone": phone,
+                    "email": email,
+                    "website": website,
+                    "vertical": category,
+                    "yelp_response_json": yelp_response_json,
+                    "google_response_json": google_response_json,
+                }
+                _update_business_with_conflict_resolution(
+                    storage,
+                    existing_business_id,
+                    new_data,
+                    source,
+                    existing_business["source"],
                 )
-
-                result = cursor.fetchone()
-                if result:
-                    existing_business_id = result["id"]
-                    # Update source information and resolve conflicts
-                    new_data = {
-                        "name": name,
-                        "address": address,
-                        "phone": phone,
-                        "email": email,
-                        "website": website,
-                        "vertical": category,
-                        "yelp_response_json": yelp_response_json,
-                        "google_response_json": google_response_json,
-                    }
-                    _update_business_with_conflict_resolution(
-                        cursor, existing_business_id, new_data, source, result["source"]
-                    )
-                    _update_business_source(
-                        cursor,
-                        existing_business_id,
-                        source,
-                        source_id,
-                        result["source"],
-                        yelp_response_json,
-                        google_response_json,
-                    )
-                    conn.commit()
-                    logger.info(
-                        f"Found existing business {existing_business_id} by website: {website} (merged source: {source})"
-                    )
-                    return existing_business_id
-
-            # 3. Check by phone number (good deduplication signal)
-            if phone and phone.strip():
-                cursor.execute(
-                    """
-                    SELECT id, source, source_id FROM businesses
-                    WHERE phone = %s AND phone IS NOT NULL AND phone != ''
-                """,
-                    (phone.strip(),),
-                )
-
-                result = cursor.fetchone()
-                if result:
-                    existing_business_id = result["id"]
-                    # Update source information and resolve conflicts
-                    new_data = {
-                        "name": name,
-                        "address": address,
-                        "phone": phone,
-                        "email": email,
-                        "website": website,
-                        "vertical": category,
-                        "yelp_response_json": yelp_response_json,
-                        "google_response_json": google_response_json,
-                    }
-                    _update_business_with_conflict_resolution(
-                        cursor, existing_business_id, new_data, source, result["source"]
-                    )
-                    _update_business_source(
-                        cursor,
-                        existing_business_id,
-                        source,
-                        source_id,
-                        result["source"],
-                        yelp_response_json,
-                        google_response_json,
-                    )
-                    conn.commit()
-                    logger.info(
-                        f"Found existing business {existing_business_id} by phone: {phone} (merged source: {source})"
-                    )
-                    return existing_business_id
-
-            # 4. Check by name + ZIP (weaker signal, but still useful)
-            if name and zip_code:
-                cursor.execute(
-                    """
-                    SELECT id, source, source_id FROM businesses
-                    WHERE LOWER(name) = LOWER(%s) AND zip = %s
-                """,
-                    (name.strip(), zip_code.strip()),
-                )
-
-                result = cursor.fetchone()
-                if result:
-                    existing_business_id = result["id"]
-                    # Update source information and resolve conflicts
-                    new_data = {
-                        "name": name,
-                        "address": address,
-                        "phone": phone,
-                        "email": email,
-                        "website": website,
-                        "vertical": category,
-                        "yelp_response_json": yelp_response_json,
-                        "google_response_json": google_response_json,
-                    }
-                    _update_business_with_conflict_resolution(
-                        cursor, existing_business_id, new_data, source, result["source"]
-                    )
-                    _update_business_source(
-                        cursor,
-                        existing_business_id,
-                        source,
-                        source_id,
-                        result["source"],
-                        yelp_response_json,
-                        google_response_json,
-                    )
-                    conn.commit()
-                    logger.info(
-                        f"Found existing business {existing_business_id} by name+ZIP: {name} in {zip_code} (merged source: {source})"
-                    )
-                    return existing_business_id
-
-            # No existing business found, create new one
-            insert_query = """
-                INSERT INTO businesses (
-                    name, address, city, state, zip, phone, email, website,
-                    vertical_id, created_at, updated_at, status, processed,
-                    source, source_id, yelp_response_json, google_response_json
-                ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s,
-                    (SELECT id FROM verticals WHERE name = %s LIMIT 1),
-                    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'pending', FALSE,
-                    %s, %s, %s, %s
-                ) RETURNING id
-            """
-
-            cursor.execute(
-                insert_query,
-                (
-                    name,
-                    address,
-                    None,
-                    None,
-                    zip_code,
-                    phone,
-                    email,
-                    website,
-                    category.lower(),
+                _update_business_source(
+                    storage,
+                    existing_business_id,
                     source,
                     source_id,
-                    json.dumps(yelp_response_json) if yelp_response_json else None,
-                    json.dumps(google_response_json) if google_response_json else None,
-                ),
-            )
-
-            result = cursor.fetchone()
-            if result:
-                business_id = result["id"]
-                conn.commit()
-                logger.info(
-                    f"Created new business {business_id}: {name} in {zip_code} (source: {source}, source_id: {source_id})"
+                    existing_business["source"],
+                    yelp_response_json,
+                    google_response_json,
                 )
-                return business_id
-            else:
-                logger.error(f"Failed to create business: {name} in {zip_code}")
-                return None
+                logger.info(
+                    f"Found existing business {existing_business_id} by website: {website} (merged source: {source})"
+                )
+                return existing_business_id
+
+        # 3. Check by phone number (good deduplication signal)
+        if phone and phone.strip():
+            existing_business = storage.get_business_by_phone(phone)
+            if existing_business:
+                existing_business_id = existing_business["id"]
+                # Update source information and resolve conflicts
+                new_data = {
+                    "name": name,
+                    "address": address,
+                    "phone": phone,
+                    "email": email,
+                    "website": website,
+                    "vertical": category,
+                    "yelp_response_json": yelp_response_json,
+                    "google_response_json": google_response_json,
+                }
+                _update_business_with_conflict_resolution(
+                    storage,
+                    existing_business_id,
+                    new_data,
+                    source,
+                    existing_business["source"],
+                )
+                _update_business_source(
+                    storage,
+                    existing_business_id,
+                    source,
+                    source_id,
+                    existing_business["source"],
+                    yelp_response_json,
+                    google_response_json,
+                )
+                logger.info(
+                    f"Found existing business {existing_business_id} by phone: {phone} (merged source: {source})"
+                )
+                return existing_business_id
+
+        # 4. Check by name + ZIP (weaker signal, but still useful)
+        if name and zip_code:
+            existing_business = storage.get_business_by_name_and_zip(name, zip_code)
+            if existing_business:
+                existing_business_id = existing_business["id"]
+                # Update source information and resolve conflicts
+                new_data = {
+                    "name": name,
+                    "address": address,
+                    "phone": phone,
+                    "email": email,
+                    "website": website,
+                    "vertical": category,
+                    "yelp_response_json": yelp_response_json,
+                    "google_response_json": google_response_json,
+                }
+                _update_business_with_conflict_resolution(
+                    storage,
+                    existing_business_id,
+                    new_data,
+                    source,
+                    existing_business["source"],
+                )
+                _update_business_source(
+                    storage,
+                    existing_business_id,
+                    source,
+                    source_id,
+                    existing_business["source"],
+                    yelp_response_json,
+                    google_response_json,
+                )
+                logger.info(
+                    f"Found existing business {existing_business_id} by name+ZIP: {name} in {zip_code} (merged source: {source})"
+                )
+                return existing_business_id
+
+        # No existing business found, create new one
+        business_id = storage.create_business(
+            name,
+            address,
+            zip_code,
+            category,
+            phone,
+            email,
+            website,
+            source,
+            source_id,
+            yelp_response_json,
+            google_response_json,
+        )
+        if business_id:
+            logger.info(
+                f"Created new business {business_id}: {name} in {zip_code} (source: {source}, source_id: {source_id})"
+            )
+            return business_id
+        else:
+            logger.error(f"Failed to create business: {name} in {zip_code}")
+            return None
 
     except Exception as e:
         logger.error(f"Error saving business {name}: {str(e)}")
@@ -591,7 +544,7 @@ def save_business(
 
 
 def _update_business_source(
-    cursor,
+    storage,
     business_id: int,
     new_source: str,
     new_source_id: Optional[str],
@@ -603,7 +556,7 @@ def _update_business_source(
     """Update business source information when merging duplicates from different sources.
 
     Args:
-        cursor: Database cursor
+        storage: Storage instance
         business_id: ID of the existing business
         new_source: Source of the duplicate business being merged
         new_source_id: Source ID of the duplicate business being merged
@@ -653,7 +606,7 @@ def _update_business_source(
             params.append(business_id)
 
             # Update the business record with combined source and JSON data
-            cursor.execute(update_query, params)
+            storage.update_business(business_id, update_query, params)
 
             logger.info(
                 f"Updated business {business_id} source from '{existing_source}' to '{combined_source}'"
@@ -661,28 +614,20 @@ def _update_business_source(
 
 
 def _update_business_with_conflict_resolution(
-    cursor, business_id: int, new_data: dict, source: str, existing_source: str
+    storage, business_id: int, new_data: dict, source: str, existing_source: str
 ):
     """Update business record with smart conflict resolution for overlapping data.
 
     Args:
-        cursor: Database cursor
+        storage: Storage instance
         business_id: ID of existing business to update
         new_data: Dictionary with new data fields
         source: Source of new data (yelp, google, manual)
         existing_source: Existing source(s) of the business
     """
     # Get current business data
-    cursor.execute(
-        """
-        SELECT name, address, phone, email, website, vertical_id
-        FROM businesses WHERE id = %s
-    """,
-        (business_id,),
-    )
-
-    current = cursor.fetchone()
-    if not current:
+    existing_business = storage.get_business(business_id)
+    if not existing_business:
         return
 
     (
@@ -692,7 +637,14 @@ def _update_business_with_conflict_resolution(
         current_email,
         current_website,
         current_vertical_id,
-    ) = current
+    ) = (
+        existing_business["name"],
+        existing_business["address"],
+        existing_business["phone"],
+        existing_business["email"],
+        existing_business["website"],
+        existing_business["vertical_id"],
+    )
 
     # Resolve conflicts for each field
     updates = {}
@@ -740,21 +692,10 @@ def _update_business_with_conflict_resolution(
     # Vertical conflict resolution (convert category to vertical_id)
     if new_data.get("vertical"):
         # Get vertical_id for the new category
-        cursor.execute(
-            "SELECT id FROM verticals WHERE name = %s", (new_data["vertical"],)
-        )
-        new_vertical_result = cursor.fetchone()
-        new_vertical_id = new_vertical_result[0] if new_vertical_result else None
-
-        if new_vertical_id and new_vertical_id != current_vertical_id:
+        vertical_id = storage.get_vertical_id(new_data["vertical"])
+        if vertical_id and vertical_id != current_vertical_id:
             # Get current vertical name for comparison
-            cursor.execute(
-                "SELECT name FROM verticals WHERE id = %s", (current_vertical_id,)
-            )
-            current_vertical_result = cursor.fetchone()
-            current_vertical_name = (
-                current_vertical_result[0] if current_vertical_result else None
-            )
+            current_vertical_name = storage.get_vertical_name(current_vertical_id)
 
             resolved_vertical = _resolve_field_conflict(
                 current_vertical_name, new_data["vertical"], source, existing_source
@@ -762,12 +703,7 @@ def _update_business_with_conflict_resolution(
 
             # Convert resolved vertical back to ID
             if resolved_vertical != current_vertical_name:
-                cursor.execute(
-                    "SELECT id FROM verticals WHERE name = %s", (resolved_vertical,)
-                )
-                resolved_vertical_result = cursor.fetchone()
-                if resolved_vertical_result:
-                    updates["vertical_id"] = resolved_vertical_result[0]
+                updates["vertical_id"] = vertical_id
 
     # Apply updates if any
     if updates:
@@ -788,7 +724,7 @@ def _update_business_with_conflict_resolution(
             WHERE id = %s
         """  # nosec B608
 
-        cursor.execute(update_query, values)
+        storage.update_business(business_id, update_query, values)
         logger.info(
             f"Business {business_id}: Applied conflict resolution updates from {source}"
         )
@@ -812,7 +748,7 @@ def _update_business_with_conflict_resolution(
             SET {', '.join(json_updates)}, updated_at = CURRENT_TIMESTAMP
             WHERE id = %s
         """  # nosec B608
-        cursor.execute(json_query, json_values)
+        storage.update_business(business_id, json_query, json_values)
         logger.info(f"Business {business_id}: Updated JSON responses from {source}")
 
 
@@ -1065,12 +1001,13 @@ def process_yelp_business(business: dict, category: str) -> Optional[int]:
             email = extract_email_from_website(website, business_id)
             if email:
                 # Update business with email
-                with has_io_imports and EmailDBConnection() as conn:
-                    conn.execute(
-                        "UPDATE businesses SET email = ? WHERE id = ?",
-                        [email, business_id],
-                    )
-                    conn.commit()
+                storage = get_storage_instance()
+                storage.update_business(
+                    business_id,
+                    "UPDATE businesses SET email = %s WHERE id = %s",
+                    [email, business_id],
+                )
+                logger.info(f"Updated business {business_id} with email: {email}")
 
         return business_id
     except Exception as e:
@@ -1148,12 +1085,13 @@ def process_google_place(
             email = extract_email_from_website(website, business_id)
             if email:
                 # Update business with email
-                with has_io_imports and EmailDBConnection() as conn:
-                    conn.execute(
-                        "UPDATE businesses SET email = ? WHERE id = ?",
-                        [email, business_id],
-                    )
-                    conn.commit()
+                storage = get_storage_instance()
+                storage.update_business(
+                    business_id,
+                    "UPDATE businesses SET email = %s WHERE id = %s",
+                    [email, business_id],
+                )
+                logger.info(f"Updated business {business_id} with email: {email}")
 
         return business_id
     except Exception as e:

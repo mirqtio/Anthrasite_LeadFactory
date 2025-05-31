@@ -10,12 +10,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from leadfactory.utils.e2e_db_connector import (
-    add_to_review_queue,
-    db_cursor,
-    get_review_queue_items,
-    update_review_status,
-)
+from leadfactory.storage import get_storage
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +21,7 @@ class ManualReviewManager:
     def __init__(self):
         """Initialize the manual review manager."""
         self.pending_reviews = []
+        self.storage = get_storage()
 
     def create_review_request(
         self,
@@ -60,7 +56,7 @@ class ManualReviewManager:
         details = json.dumps(review_data)
 
         try:
-            review_id = add_to_review_queue(
+            review_id = self.storage.add_to_review_queue(
                 primary_id, secondary_id, reason=reason, details=details
             )
             logger.info(f"Created manual review request {review_id}")
@@ -80,7 +76,7 @@ class ManualReviewManager:
             List of pending review requests
         """
         try:
-            reviews = get_review_queue_items(status="pending", limit=limit)
+            reviews = self.storage.get_review_queue_items(status="pending", limit=limit)
 
             # Parse the details JSON for each review
             for review in reviews:
@@ -155,7 +151,7 @@ class ManualReviewManager:
 
             status = "resolved" if merge_decision != "defer" else "deferred"
 
-            success = update_review_status(
+            success = self.storage.update_review_status(
                 review_id, status=status, resolution=json.dumps(resolution_data)
             )
 
@@ -180,51 +176,7 @@ class ManualReviewManager:
             Dictionary of review statistics
         """
         try:
-            with db_cursor() as cursor:
-                # Get counts by status
-                cursor.execute(
-                    """
-                    SELECT status, COUNT(*) as count
-                    FROM dedupe_review_queue
-                    GROUP BY status
-                """
-                )
-                status_counts = dict(cursor.fetchall())
-
-                # Get average resolution time
-                cursor.execute(
-                    """
-                    SELECT AVG(EXTRACT(EPOCH FROM (updated_at - created_at))) as avg_seconds
-                    FROM dedupe_review_queue
-                    WHERE status = 'resolved'
-                """
-                )
-                result = cursor.fetchone()
-                avg_resolution_time = result[0] if result and result[0] else 0
-
-                # Get conflict type distribution
-                cursor.execute(
-                    """
-                    SELECT reason, COUNT(*) as count
-                    FROM dedupe_review_queue
-                    GROUP BY reason
-                    ORDER BY count DESC
-                    LIMIT 10
-                """
-                )
-                top_reasons = cursor.fetchall()
-
-                return {
-                    "status_counts": status_counts,
-                    "avg_resolution_time_seconds": avg_resolution_time,
-                    "avg_resolution_time_readable": self._format_duration(
-                        avg_resolution_time
-                    ),
-                    "top_reasons": [
-                        {"reason": r[0], "count": r[1]} for r in top_reasons
-                    ],
-                }
-
+            return self.storage.get_review_statistics()
         except Exception as e:
             logger.error(f"Failed to get review statistics: {e}")
             return {}

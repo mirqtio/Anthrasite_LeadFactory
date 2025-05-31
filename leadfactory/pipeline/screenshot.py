@@ -8,7 +8,7 @@ import os
 import tempfile
 from typing import Optional
 
-from leadfactory.utils.e2e_db_connector import db_connection
+from leadfactory.storage import get_storage
 
 logger = logging.getLogger(__name__)
 
@@ -16,32 +16,13 @@ logger = logging.getLogger(__name__)
 def get_businesses_needing_screenshots(limit: Optional[int] = None) -> list[dict]:
     """Get businesses that need screenshots taken."""
     try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
+        storage = get_storage()
 
-            # Get businesses that have websites but no screenshot assets
-            query = """
-            SELECT DISTINCT b.id, b.name, b.website
-            FROM businesses b
-            LEFT JOIN assets a ON b.id = a.business_id AND a.asset_type = 'screenshot'
-            WHERE b.website IS NOT NULL
-              AND b.website != ''
-              AND a.id IS NULL
-            ORDER BY b.id
-            """
+        # Get businesses that have websites but no screenshot assets
+        businesses = storage.get_businesses_needing_screenshots(limit=limit)
 
-            if limit:
-                query += f" LIMIT {limit}"
-
-            cursor.execute(query)
-            rows = cursor.fetchall()
-
-            businesses = []
-            for row in rows:
-                businesses.append({"id": row[0], "name": row[1], "website": row[2]})
-
-            logger.info(f"Found {len(businesses)} businesses needing screenshots")
-            return businesses
+        logger.info(f"Found {len(businesses)} businesses needing screenshots")
+        return businesses
 
     except Exception as e:
         logger.exception(f"Error getting businesses for screenshots: {e}")
@@ -53,20 +34,19 @@ def create_screenshot_asset(
 ) -> bool:
     """Create a screenshot asset record in the database."""
     try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
+        storage = get_storage()
 
-            cursor.execute(
-                """
-                INSERT INTO assets (business_id, asset_type, file_path, url)
-                VALUES (%s, 'screenshot', %s, %s)
-            """,
-                (business_id, screenshot_path, screenshot_url),
-            )
+        success = storage.create_asset(
+            business_id=business_id,
+            asset_type="screenshot",
+            file_path=screenshot_path,
+            url=screenshot_url,
+        )
 
-            conn.commit()
+        if success:
             logger.info(f"Created screenshot asset for business {business_id}")
-            return True
+
+        return success
 
     except Exception as e:
         logger.exception(
@@ -165,20 +145,14 @@ def main():
     if args.id:
         # Process single business
         try:
-            with db_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    "SELECT id, name, website FROM businesses WHERE id = %s", (args.id,)
-                )
-                row = cursor.fetchone()
-
-                if row:
-                    business = {"id": row[0], "name": row[1], "website": row[2]}
-                    success = generate_business_screenshot(business)
-                    return 0 if success else 1
-                else:
-                    logger.error(f"Business with ID {args.id} not found")
-                    return 1
+            storage = get_storage()
+            business = storage.get_business(args.id)
+            if business:
+                success = generate_business_screenshot(business)
+                return 0 if success else 1
+            else:
+                logger.error(f"Business with ID {args.id} not found")
+                return 1
         except Exception as e:
             logger.exception(f"Error processing business {args.id}: {e}")
             return 1
