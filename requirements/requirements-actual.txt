@@ -5,4 +5,4 @@ pytest_cov==4.1.0
 pytest_json_report==1.5.0
 seaborn==0.13.2
 sendgrid==6.12.2
-setuptools==78.1.0
+setuptools==80.9.0
