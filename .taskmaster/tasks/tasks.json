@@ -3200,7 +3200,7 @@
             1
           ],
           "details": "Implement a configuration class that loads budget settings from environment variables, config files, or a database. Include validation logic for configuration values. Support different budget tiers and alert thresholds (warning at 80%, critical at 95%). Allow runtime updates to budget configurations.",
-          "status": "in-progress",
+          "status": "done",
           "testStrategy": "Unit test configuration loading from different sources, validation of inputs, and proper application of defaults when values are missing."
         },
         {
@@ -3212,7 +3212,7 @@
             2
           ],
           "details": "Create a throttling service that makes decisions based on current usage and configured budgets. Implement multiple throttling strategies: soft throttling (delaying requests), hard throttling (rejecting requests), and graceful degradation (using smaller models when budget is tight). Include retry logic with exponential backoff for temporary throttling.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test throttling decisions under various usage scenarios. Test the behavior of different throttling strategies and verify proper handling of retry logic."
         },
         {
@@ -3224,7 +3224,7 @@
             3
           ],
           "details": "Implement a notification service that integrates with email, Slack, and other messaging platforms. Create templates for different alert levels. Include rate limiting for notifications to prevent alert storms. Add support for custom alert messages and thresholds based on configuration.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test alert triggering logic and message formatting. Mock notification services to verify proper integration."
         },
         {
@@ -3238,7 +3238,7 @@
             4
           ],
           "details": "Create middleware factory functions that initialize the budget guard with appropriate configuration. Ensure proper error handling and logging. Implement middleware registration helpers for popular frameworks. Write comprehensive documentation with examples for different use cases and frameworks. Include performance optimization to minimize overhead.",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Integration tests with Express.js to verify middleware correctly intercepts requests and applies budget controls. End-to-end tests simulating budget exhaustion scenarios to verify system behavior."
         }
       ]
