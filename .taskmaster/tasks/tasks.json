@@ -3582,7 +3582,7 @@
           "description": "Set up dedicated IP allocation and configuration with SendGrid",
           "dependencies": [],
           "details": "Integrate with SendGrid API to provision dedicated IP(s). Configure IP authentication and DNS records. Set up IP pool management for multiple IPs if needed. Implement IP health monitoring and status tracking. Create fallback mechanisms for IP provisioning failures.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 3,
@@ -3593,7 +3593,7 @@
             2
           ],
           "details": "Build throttling system that enforces daily send caps based on current warm-up stage. Implement rate limiting to distribute sends throughout the day. Create queue management for email batches. Add monitoring for send rates and cap adherence. Include emergency stop mechanisms for compliance.",
-          "status": "pending"
+          "status": "in-progress"
         },
         {
           "id": 4,
