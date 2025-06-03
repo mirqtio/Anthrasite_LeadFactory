@@ -33,9 +33,17 @@ def setup_imports() -> Any:
 
     # Now we can import our local modules
     global get_logger, check_batch_completion, get_batch_status
-    from utils.batch_tracker import check_batch_completion as check_func
-    from utils.batch_tracker import get_batch_status as status_func
-    from utils.logging_config import get_logger as logger_func
+    from utils_legacy.batch_tracker import check_batch_completion as check_func
+    from utils_legacy.batch_tracker import get_batch_status as status_func
+
+    try:
+        from leadfactory.utils.logging import get_logger as logger_func
+    except ImportError:
+        # Fallback for legacy compatibility
+        import logging
+
+        def logger_func(name):
+            return logging.getLogger(name)
 
     # Assign to global variables
     globals()["get_logger"] = logger_func

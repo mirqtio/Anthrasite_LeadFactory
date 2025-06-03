@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from bin.batch_completion_monitor import (
     check_and_alert,
 )
-from utils.batch_tracker import (
+from utils_legacy.batch_tracker import (
     check_batch_completion,
     record_batch_end,
     record_batch_stage_completion,
@@ -196,7 +196,7 @@ def step_impl(context):
 def step_impl(context):
     """Set the current time to be after the completion deadline."""
     # Mock datetime.now to return a time after the deadline
-    context.mock_now_patcher = patch("utils.batch_tracker.datetime")
+    context.mock_now_patcher = patch("utils_legacy.batch_tracker.datetime")
     context.mock_now = context.mock_now_patcher.start()
 
     # Set to 6 AM EST (after the 5 AM deadline)
@@ -248,7 +248,7 @@ def step_impl(context):
     record_batch_start()
 
     # Set the time to after the deadline
-    context.mock_now_patcher = patch("utils.batch_tracker.datetime")
+    context.mock_now_patcher = patch("utils_legacy.batch_tracker.datetime")
     context.mock_now = context.mock_now_patcher.start()
 
     # Set to 6 AM EST (after the 5 AM deadline)

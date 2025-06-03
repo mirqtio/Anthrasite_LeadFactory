@@ -20,7 +20,15 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import logging configuration
-from utils.logging_config import get_logger  # noqa: E402
+try:
+    from leadfactory.utils.logging import get_logger  # noqa: E402
+except ImportError:
+    # Fallback for legacy compatibility
+    import logging
+
+    def get_logger(name):
+        return logging.getLogger(name)
+
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -39,7 +47,11 @@ BATCH_COMPLETION_TIMEZONE = os.getenv(
 )  # EST
 
 # Import metrics for updating batch completion gauge
-from utils.metrics import BATCH_COMPLETION_GAUGE  # noqa: E402
+try:
+    from utils_legacy.metrics import BATCH_COMPLETION_GAUGE  # noqa: E402
+except ImportError:
+    # Fallback if metrics not available
+    BATCH_COMPLETION_GAUGE = None
 
 
 def ensure_tracker_file_exists(tracker_file: Path = BATCH_TRACKER_FILE) -> None:
@@ -117,7 +129,8 @@ def record_batch_start() -> bool:
 
         # Reset batch completion gauge for all stages
         for stage in ["scrape", "enrich", "dedupe", "score", "mockup", "email"]:
-            BATCH_COMPLETION_GAUGE.labels(stage=stage).set(0)
+            if BATCH_COMPLETION_GAUGE:
+                BATCH_COMPLETION_GAUGE.labels(stage=stage).set(0)
 
         # Save updated data
         success = save_tracker_data(data)
@@ -156,7 +169,8 @@ def record_batch_stage_completion(stage: str, completion_percentage: float) -> b
         }
 
         # Update batch completion gauge
-        BATCH_COMPLETION_GAUGE.labels(stage=stage).set(completion_percentage)
+        if BATCH_COMPLETION_GAUGE:
+            BATCH_COMPLETION_GAUGE.labels(stage=stage).set(completion_percentage)
 
         # Save updated data
         success = save_tracker_data(data)
@@ -197,7 +211,8 @@ def record_batch_end() -> bool:
                     "timestamp": current_time,
                     "completion_percentage": 100.0,
                 }
-            BATCH_COMPLETION_GAUGE.labels(stage=stage).set(100.0)
+            if BATCH_COMPLETION_GAUGE:
+                BATCH_COMPLETION_GAUGE.labels(stage=stage).set(100.0)
 
         # Save updated data
         success = save_tracker_data(data)
