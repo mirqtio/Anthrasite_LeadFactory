@@ -1,0 +1,840 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Stripe Fees"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Gross Revenue"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Net Revenue"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, gross_revenue_cents / 100.0 as \"Gross Revenue\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, net_revenue_cents / 100.0 as \"Net Revenue\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, stripe_fees_cents / 100.0 as \"Stripe Fees\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "C"
+        }
+      ],
+      "title": "Revenue and Fees Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, gross_margin_percent as \"Gross Margin %\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, net_margin_percent as \"Net Margin %\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "B"
+        }
+      ],
+      "title": "Gross vs. Net Margin Comparison",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily Stripe Fees"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Fee Rate %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, stripe_fees_cents / 100.0 as \"Daily Stripe Fees\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, CASE WHEN gross_revenue_cents > 0 THEN (stripe_fees_cents * 100.0 / gross_revenue_cents) ELSE 0 END as \"Fee Rate %\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "B"
+        }
+      ],
+      "title": "Daily Stripe Fees Analysis",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Fee Impact"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Net Profit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Gross Profit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, gross_profit_cents / 100.0 as \"Gross Profit\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, net_profit_cents / 100.0 as \"Net Profit\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT date as time, (stripe_fees_cents + tax_amount_cents) / 100.0 as \"Fee Impact\" FROM daily_cost_revenue_summary WHERE $__timeFilter(date) ORDER BY date",
+          "refId": "C"
+        }
+      ],
+      "title": "Profit Impact Analysis - Fee Effects",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 16
+      },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT SUM(gross_revenue_cents) / 100.0 as \"Total Gross Revenue\" FROM daily_cost_revenue_summary WHERE date >= date('now', '-30 days')",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Gross Revenue (30 days)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT SUM(stripe_fees_cents) / 100.0 as \"Total Stripe Fees\" FROM daily_cost_revenue_summary WHERE date >= date('now', '-30 days')",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Stripe Fees (30 days)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 16
+      },
+      "id": 5,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT SUM(net_profit_cents) / 100.0 as \"Total Net Profit\" FROM daily_cost_revenue_summary WHERE date >= date('now', '-30 days')",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Net Profit (30 days)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "sqlite",
+        "uid": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "sqlite",
+            "uid": "sqlite"
+          },
+          "rawSql": "SELECT SUM(transaction_count) as \"Total Transactions\" FROM daily_cost_revenue_summary WHERE date >= date('now', '-30 days')",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Transactions (30 days)",
+      "type": "gauge"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": [
+    "financial",
+    "stripe",
+    "revenue"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Financial Tracking Dashboard",
+  "uid": "financial_tracking",
+  "version": 1,
+  "description": "Dashboard for tracking Stripe fees, revenue, and profit margins"
+}
