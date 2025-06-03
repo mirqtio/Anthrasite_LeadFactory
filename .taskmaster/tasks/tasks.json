@@ -3177,7 +3177,7 @@
       "id": 28,
       "title": "GPT BudgetGuard Middleware",
       "description": "Implement middleware to monitor and cap GPT API usage with configurable budget limits and automatic throttling",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [],
       "priority": "high",
       "details": "",
@@ -3238,7 +3238,7 @@
             4
           ],
           "details": "Create middleware factory functions that initialize the budget guard with appropriate configuration. Ensure proper error handling and logging. Implement middleware registration helpers for popular frameworks. Write comprehensive documentation with examples for different use cases and frameworks. Include performance optimization to minimize overhead.",
-          "status": "in-progress",
+          "status": "done",
           "testStrategy": "Integration tests with Express.js to verify middleware correctly intercepts requests and applies budget controls. End-to-end tests simulating budget exhaustion scenarios to verify system behavior."
         }
       ]
@@ -3491,7 +3491,7 @@
       "id": 33,
       "title": "Stripe fee & tax tracking in BudgetGuard",
       "description": "Implement comprehensive Stripe fee and tax tracking for profit reporting in the audit-first business model",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "type": "feature",
       "created_at": "2025-06-03T11:02:00Z",
@@ -3508,7 +3508,7 @@
           "description": "Set up webhook endpoint to receive and process Stripe payment events",
           "dependencies": [],
           "details": "Create secure webhook endpoint to receive Stripe payment_intent.succeeded events. Implement signature verification for security. Parse webhook payload to extract transaction details including fees, taxes, and net amounts. Handle webhook retries and idempotency. Add comprehensive error handling and logging.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -3518,7 +3518,7 @@
             1
           ],
           "details": "Update the existing cost tracking system to incorporate Stripe transaction fees and taxes. Modify database schema if needed to store fee breakdowns. Ensure fee data is properly categorized and aggregated in daily reports. Maintain backward compatibility with existing cost tracking.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -3528,7 +3528,7 @@
             2
           ],
           "details": "Modify profit reporting logic to display subtotal revenue & cost before agency fees, space for incremental agency revenue & cost (future), and grand totals. Ensure accurate net margin calculations. Update report formats and APIs to include new breakdown structure.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -3539,7 +3539,7 @@
             3
           ],
           "details": "Create two new Grafana dashboard panels: (a) Stripe fees per day showing daily fee trends, (b) Gross vs. Net margin comparison showing the impact of fees on profitability. Configure proper time ranges, aggregations, and visual styling consistent with existing dashboards.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -3552,7 +3552,7 @@
             4
           ],
           "details": "Create comprehensive unit tests for webhook processing and fee calculations. Develop integration tests with Stripe test environment. Implement e2e tests covering complete payment flow and reporting. Run all tests and resolve any issues. Update CI pipeline with new tests. Merge to master and confirm successful deployment via GitHub CLI logs.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -3560,7 +3560,7 @@
       "id": 34,
       "title": "SendGrid dedicated-IP warm-up scheduler",
       "description": "Implement dedicated IP warm-up system for 110k daily cold email volume with automated throttling and bounce integration",
-      "status": "pending",
+      "status": "in-progress",
       "priority": "high",
       "type": "feature",
       "created_at": "2025-06-03T11:02:00Z",
@@ -3574,7 +3574,7 @@
           "description": "Create the core warm-up scheduling and progression logic",
           "dependencies": [],
           "details": "Design 14-day warm-up schedule with progressive send caps (5k, 15k, 35k, 50k, 75k, 100k, 110k). Implement scheduling system that automatically advances through warm-up stages. Create configuration system for send caps and timing. Include safety mechanisms to prevent exceeding daily limits and handle schedule interruptions.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,

@@ -25,6 +25,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
+# Import financial tracking
+from leadfactory.cost.financial_tracking import financial_tracker
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -191,6 +194,10 @@ class StripePaymentService:
                 return self._handle_payment_failed(event["data"]["object"])
             elif event["type"] == "checkout.session.completed":
                 return self._handle_checkout_completed(event["data"]["object"])
+            elif event["type"] == "charge.dispute.created":
+                return self._handle_chargeback_created(event["data"]["object"])
+            elif event["type"] in ["refund.created", "charge.refunded"]:
+                return self._handle_refund_created(event["data"]["object"])
             else:
                 logger.info(f"Unhandled webhook event type: {event['type']}")
                 return {"status": "ignored", "event_type": event["type"]}
@@ -222,6 +229,95 @@ class StripePaymentService:
                 db.commit()
 
                 logger.info(f"Payment succeeded: {payment_intent_id}")
+
+                # Extract fee information from Stripe charge
+                try:
+                    # Get the charge details to extract fee information
+                    charges = stripe.Charge.list(
+                        payment_intent=payment_intent_id, limit=1
+                    )
+
+                    if charges.data:
+                        charge = charges.data[0]
+
+                        # Extract financial data
+                        gross_amount_cents = charge.get("amount", 0)
+                        net_amount_cents = charge.get(
+                            "amount_captured", gross_amount_cents
+                        )
+
+                        # Extract Stripe fees from balance transaction
+                        balance_transaction_id = charge.get("balance_transaction")
+                        stripe_fee_cents = 0
+                        application_fee_cents = 0
+
+                        if balance_transaction_id:
+                            try:
+                                balance_txn = stripe.BalanceTransaction.retrieve(
+                                    balance_transaction_id
+                                )
+                                stripe_fee_cents = balance_txn.get("fee", 0)
+                                net_amount_cents = balance_txn.get(
+                                    "net", gross_amount_cents - stripe_fee_cents
+                                )
+
+                                # Extract fee details
+                                fee_details = balance_txn.get("fee_details", [])
+                                for fee_detail in fee_details:
+                                    if fee_detail.get("type") == "application_fee":
+                                        application_fee_cents += fee_detail.get(
+                                            "amount", 0
+                                        )
+
+                            except Exception as e:
+                                logger.warning(
+                                    f"Could not retrieve balance transaction {balance_transaction_id}: {e}"
+                                )
+
+                        # Extract tax information (if available)
+                        tax_amount_cents = 0
+                        if "metadata" in charge and "tax_amount" in charge["metadata"]:
+                            try:
+                                tax_amount_cents = int(charge["metadata"]["tax_amount"])
+                            except (ValueError, TypeError):
+                                pass
+
+                        # Record in financial tracking system
+                        financial_tracker.record_stripe_payment(
+                            stripe_payment_intent_id=payment_intent_id,
+                            stripe_charge_id=charge["id"],
+                            customer_email=payment.customer_email,
+                            customer_name=payment.customer_name,
+                            gross_amount_cents=gross_amount_cents,
+                            net_amount_cents=net_amount_cents,
+                            stripe_fee_cents=stripe_fee_cents,
+                            application_fee_cents=application_fee_cents,
+                            tax_amount_cents=tax_amount_cents,
+                            currency=charge.get("currency", "usd"),
+                            audit_type=payment.audit_type,
+                            metadata={
+                                "charge_id": charge["id"],
+                                "balance_transaction_id": balance_transaction_id,
+                                "payment_method": charge.get(
+                                    "payment_method_details", {}
+                                ).get("type"),
+                                "receipt_url": charge.get("receipt_url"),
+                                "stripe_metadata": charge.get("metadata", {}),
+                            },
+                        )
+
+                        logger.info(
+                            f"Recorded financial data for payment {payment_intent_id}: "
+                            f"gross=${gross_amount_cents/100:.2f}, "
+                            f"fee=${stripe_fee_cents/100:.2f}, "
+                            f"net=${net_amount_cents/100:.2f}"
+                        )
+
+                except Exception as e:
+                    logger.error(
+                        f"Error extracting fee information for payment {payment_intent_id}: {e}"
+                    )
+                    # Continue with payment processing even if fee extraction fails
 
                 # Trigger audit report generation
                 self._trigger_audit_generation(payment)
@@ -288,6 +384,116 @@ class StripePaymentService:
                     db.commit()
 
         return {"status": "completed", "session_id": session_id}
+
+    def _handle_chargeback_created(self, dispute: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle chargeback created."""
+        charge_id = dispute["charge"]
+        payment_intent_id = dispute["payment_intent"]
+
+        logger.info(f"Chargeback created for payment intent: {payment_intent_id}")
+
+        with self.SessionLocal() as db:
+            payment = (
+                db.query(Payment)
+                .filter(Payment.stripe_payment_intent_id == payment_intent_id)
+                .first()
+            )
+
+            if payment:
+                payment.status = PaymentStatus.FAILED.value
+                payment.updated_at = datetime.utcnow()
+                db.commit()
+
+                logger.info(f"Updated payment status to failed: {payment_intent_id}")
+
+                return {
+                    "status": "chargeback",
+                    "payment_id": payment.id,
+                    "customer_email": payment.customer_email,
+                }
+            else:
+                logger.warning(
+                    f"Payment record not found for intent: {payment_intent_id}"
+                )
+                return {"status": "not_found", "payment_intent_id": payment_intent_id}
+
+    def _handle_refund_created(self, refund: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle refund created."""
+        charge_id = refund["charge"]
+        payment_intent_id = refund["payment_intent"]
+
+        logger.info(f"Refund created for payment intent: {payment_intent_id}")
+
+        with self.SessionLocal() as db:
+            payment = (
+                db.query(Payment)
+                .filter(Payment.stripe_payment_intent_id == payment_intent_id)
+                .first()
+            )
+
+            if payment:
+                payment.status = PaymentStatus.REFUNDED.value
+                payment.updated_at = datetime.utcnow()
+                db.commit()
+
+                logger.info(f"Updated payment status to refunded: {payment_intent_id}")
+
+                # Record refund in financial tracking system
+                try:
+                    refund_amount_cents = refund.get("amount", 0)
+                    reason = refund.get("reason", "requested_by_customer")
+
+                    # Get balance transaction for fee refund information
+                    stripe_fee_refund_cents = 0
+                    balance_transaction_id = refund.get("balance_transaction")
+
+                    if balance_transaction_id:
+                        try:
+                            balance_txn = stripe.BalanceTransaction.retrieve(
+                                balance_transaction_id
+                            )
+                            # For refunds, the fee is typically negative (refunded)
+                            stripe_fee_refund_cents = abs(balance_txn.get("fee", 0))
+                        except Exception as e:
+                            logger.warning(
+                                f"Could not retrieve refund balance transaction {balance_transaction_id}: {e}"
+                            )
+
+                    financial_tracker.record_stripe_refund(
+                        stripe_payment_intent_id=payment_intent_id,
+                        stripe_charge_id=charge_id,
+                        refund_amount_cents=refund_amount_cents,
+                        stripe_fee_refund_cents=stripe_fee_refund_cents,
+                        reason=reason,
+                        metadata={
+                            "refund_id": refund["id"],
+                            "balance_transaction_id": balance_transaction_id,
+                            "refund_status": refund.get("status"),
+                            "refund_metadata": refund.get("metadata", {}),
+                        },
+                    )
+
+                    logger.info(
+                        f"Recorded refund financial data for payment {payment_intent_id}: "
+                        f"refund=${refund_amount_cents/100:.2f}, "
+                        f"fee_refund=${stripe_fee_refund_cents/100:.2f}"
+                    )
+
+                except Exception as e:
+                    logger.error(
+                        f"Error recording refund financial data for payment {payment_intent_id}: {e}"
+                    )
+
+                return {
+                    "status": "refunded",
+                    "payment_id": payment.id,
+                    "customer_email": payment.customer_email,
+                }
+            else:
+                logger.warning(
+                    f"Payment record not found for intent: {payment_intent_id}"
+                )
+                return {"status": "not_found", "payment_intent_id": payment_intent_id}
 
     def _trigger_audit_generation(self, payment: Payment) -> None:
         """Trigger audit report generation after successful payment."""
