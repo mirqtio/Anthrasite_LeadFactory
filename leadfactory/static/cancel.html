@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Cancelled - LeadFactory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .cancel-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .cancel-icon {
+            width: 80px;
+            height: 80px;
+            background: #ed8936;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .cancel-icon::after {
+            content: '⚠';
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .cancel-container h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .cancel-container p {
+            color: #718096;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .info-box h3 {
+            color: #c53030;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .info-box p {
+            color: #742a2a;
+            margin-bottom: 0;
+            font-size: 1rem;
+        }
+
+        .reasons-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .reasons-box h3 {
+            color: #2d3748;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .reasons-box ul {
+            color: #4a5568;
+            padding-left: 20px;
+        }
+
+        .reasons-box li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .help-box {
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .help-box h3 {
+            color: #2b6cb0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .help-box p {
+            color: #2c5282;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .contact-info {
+            background: #edf2f7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .contact-info strong {
+            color: #2d3748;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #ed8936;
+            border: 2px solid #ed8936;
+        }
+
+        .btn-outline:hover {
+            background: #ed8936;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 640px) {
+            .cancel-container {
+                padding: 40px 20px;
+            }
+
+            .cancel-container h1 {
+                font-size: 2rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cancel-container">
+        <div class="cancel-icon"></div>
+
+        <h1>Payment Cancelled</h1>
+        <p>Your payment was cancelled and no charges were made to your account.</p>
+
+        <div class="info-box">
+            <h3>What happened?</h3>
+            <p>The payment process was interrupted and your transaction was not completed. This could happen for several reasons.</p>
+        </div>
+
+        <div class="reasons-box">
+            <h3>Common reasons for payment cancellation:</h3>
+            <ul>
+                <li>You clicked the "Back" or "Cancel" button during checkout</li>
+                <li>Your browser session timed out</li>
+                <li>There was an issue with your payment method</li>
+                <li>You decided not to complete the purchase</li>
+                <li>Network connectivity issues occurred</li>
+            </ul>
+        </div>
+
+        <div class="help-box">
+            <h3>Need help completing your purchase?</h3>
+            <p>If you experienced technical difficulties or have questions about our audit services, we're here to help!</p>
+
+            <div class="contact-info">
+                <strong>Contact Support:</strong><br>
+                Email: support@anthrasite.com<br>
+                Response time: Within 24 hours
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/checkout" class="btn btn-primary">Try Again</a>
+            <button class="btn btn-secondary" onclick="goBack()">Go Back</button>
+            <a href="mailto:support@anthrasite.com" class="btn btn-outline">Contact Support</a>
+        </div>
+    </div>
+
+    <script>
+        // Get session ID from URL parameters if available
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+
+        // Log cancellation for analytics (optional)
+        document.addEventListener('DOMContentLoaded', function() {
+            if (sessionId) {
+                console.log('Payment cancelled for session:', sessionId);
+                // You could send this to your analytics service
+                // trackEvent('payment_cancelled', { session_id: sessionId });
+            }
+        });
+
+        function goBack() {
+            // Try to go back in browser history, fallback to checkout page
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/checkout';
+            }
+        }
+
+        // Auto-redirect to checkout after 30 seconds (optional)
+        setTimeout(function() {
+            const redirectBanner = document.createElement('div');
+            redirectBanner.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #4299e1;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                font-size: 14px;
+                text-align: center;
+            `;
+            redirectBanner.innerHTML = `
+                <div>Redirecting to checkout in <span id="countdown">10</span> seconds...</div>
+                <button onclick="this.parentElement.remove()" style="
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    margin-left: 10px;
+                    cursor: pointer;
+                    font-size: 16px;
+                ">×</button>
+            `;
+            document.body.appendChild(redirectBanner);
+
+            let countdown = 10;
+            const countdownElement = document.getElementById('countdown');
+
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+                }
+
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = '/checkout';
+                }
+            }, 1000);
+        }, 30000); // Show banner after 30 seconds
+    </script>
+</body>
+</html>

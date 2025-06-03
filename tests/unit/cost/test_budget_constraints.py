@@ -217,7 +217,8 @@ class TestBudgetConstraints:
         assert estimate.operation == "gpt-4o"
         assert estimate.estimated_cost > 0
         assert 0 <= estimate.confidence <= 1
-        assert "tokens" in estimate.details
+        assert "parameters" in estimate.details
+        assert "tokens" in estimate.details["parameters"]
 
     def test_estimate_openai_operation_cost_from_prompt(self):
         """Test estimating OpenAI costs from prompt length."""
@@ -232,7 +233,8 @@ class TestBudgetConstraints:
         assert estimate.service == "openai"
         assert estimate.operation == "gpt-4o"
         assert estimate.estimated_cost > 0
-        assert "estimated_tokens" in estimate.details
+        assert "parameters" in estimate.details
+        assert "prompt" in estimate.details["parameters"]
 
     def test_estimate_semrush_operation_cost(self):
         """Test estimating SEMrush operation costs."""

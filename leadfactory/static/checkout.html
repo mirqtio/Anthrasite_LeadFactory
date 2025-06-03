@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Report Checkout - LeadFactory</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .checkout-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .audit-selector {
+            margin-bottom: 30px;
+        }
+
+        .audit-selector label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .audit-options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .audit-option {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .audit-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .audit-option.selected {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .audit-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .audit-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .audit-details h3 {
+            color: #2d3748;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .audit-details p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .audit-price {
+            color: #667eea;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .customer-form {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkout-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checkout-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .checkout-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="header">
+            <h1>🚀 Audit Report</h1>
+            <p>Professional website audit reports delivered instantly</p>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+
+        <form id="checkout-form">
+            <div class="audit-selector">
+                <label>Select Your Audit Type:</label>
+                <div class="audit-options">
+                    <div class="audit-option" data-type="seo" data-price="9900">
+                        <input type="radio" name="audit_type" value="seo" id="seo">
+                        <div class="audit-info">
+                            <div class="audit-details">
+                                <h3>SEO Audit</h3>
+                                <p>Comprehensive SEO analysis and recommendations</p>
+                            </div>
+                            <div class="audit-price">$99</div>
+                        </div>
+                    </div>
+
+                    <div class="audit-option" data-type="security" data-price="14900">
+                        <input type="radio" name="audit_type" value="security" id="security">
+                        <div class="audit-info">
+                            <div class="audit-details">
+                                <h3>Security Audit</h3>
+                                <p>Website security vulnerability assessment</p>
+                            </div>
+                            <div class="audit-price">$149</div>
+                        </div>
+                    </div>
+
+                    <div class="audit-option" data-type="performance" data-price="7900">
+                        <input type="radio" name="audit_type" value="performance" id="performance">
+                        <div class="audit-info">
+                            <div class="audit-details">
+                                <h3>Performance Audit</h3>
+                                <p>Website speed and performance optimization</p>
+                            </div>
+                            <div class="audit-price">$79</div>
+                        </div>
+                    </div>
+
+                    <div class="audit-option" data-type="comprehensive" data-price="24900">
+                        <input type="radio" name="audit_type" value="comprehensive" id="comprehensive">
+                        <div class="audit-info">
+                            <div class="audit-details">
+                                <h3>Comprehensive Audit</h3>
+                                <p>Complete website audit covering all areas</p>
+                            </div>
+                            <div class="audit-price">$249</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="customer-form">
+                <div class="form-group">
+                    <label for="customer_name">Full Name</label>
+                    <input type="text" id="customer_name" name="customer_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_email">Email Address</label>
+                    <input type="email" id="customer_email" name="customer_email" required>
+                </div>
+            </div>
+
+            <button type="submit" class="checkout-button" id="checkout-button">
+                <span class="button-text">Proceed to Payment</span>
+                <span class="loading">Processing...</span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Handle audit option selection
+        document.querySelectorAll('.audit-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                document.querySelectorAll('.audit-option').forEach(opt => opt.classList.remove('selected'));
+
+                // Add selected class to clicked option
+                this.classList.add('selected');
+
+                // Check the radio button
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const button = document.getElementById('checkout-button');
+            const buttonText = button.querySelector('.button-text');
+            const loading = button.querySelector('.loading');
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+
+            // Hide previous messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            // Validate form
+            const selectedAudit = document.querySelector('input[name="audit_type"]:checked');
+            const customerName = document.getElementById('customer_name').value;
+            const customerEmail = document.getElementById('customer_email').value;
+
+            if (!selectedAudit) {
+                showError('Please select an audit type');
+                return;
+            }
+
+            if (!customerName || !customerEmail) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            // Show loading state
+            button.disabled = true;
+            buttonText.style.display = 'none';
+            loading.style.display = 'inline';
+
+            try {
+                // Get the selected audit option details
+                const auditOption = selectedAudit.closest('.audit-option');
+                const auditType = auditOption.dataset.type;
+                const amount = parseInt(auditOption.dataset.price);
+
+                // Create checkout session
+                const response = await fetch('/api/v1/payments/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customer_email: customerEmail,
+                        customer_name: customerName,
+                        audit_type: auditType,
+                        amount: amount,
+                        metadata: {
+                            source: 'web_checkout'
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to create checkout session');
+                }
+
+                // Redirect to Stripe checkout
+                window.location.href = data.session_url;
+
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showError(error.message || 'An error occurred during checkout');
+
+                // Reset button state
+                button.disabled = false;
+                buttonText.style.display = 'inline';
+                loading.style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

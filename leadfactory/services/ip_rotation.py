@@ -23,6 +23,19 @@ except ImportError:
 
     logger = logging.getLogger(__name__)
 
+# Import alerting system
+try:
+    from leadfactory.services.ip_rotation_alerting import (
+        AlertSeverity,
+        AlertType,
+        IPRotationAlerting,
+    )
+except ImportError:
+    logger.warning("IP rotation alerting not available")
+    AlertSeverity = None
+    AlertType = None
+    IPRotationAlerting = None
+
 
 class RotationReason(Enum):
     """Reasons for IP/subuser rotation."""
@@ -129,7 +142,11 @@ class IPRotationService:
     """
 
     def __init__(
-        self, config: RotationConfig, bounce_monitor=None, threshold_detector=None
+        self,
+        config: RotationConfig,
+        bounce_monitor=None,
+        threshold_detector=None,
+        alerting_service: IPRotationAlerting = None,
     ):
         """
         Initialize the IP rotation service.
@@ -138,6 +155,7 @@ class IPRotationService:
             config: Rotation configuration
             bounce_monitor: BounceRateMonitor instance
             threshold_detector: ThresholdDetector instance
+            alerting_service: IPRotationAlerting instance
         """
         self.config = config
         self.bounce_monitor = bounce_monitor
@@ -148,6 +166,7 @@ class IPRotationService:
             {}
         )  # Track ongoing rotations
         self.consecutive_failures: Dict[Tuple[str, str], int] = {}
+        self.alerting_service = alerting_service
 
         logger.info("IP rotation service initialized")
 
@@ -379,6 +398,22 @@ class IPRotationService:
             if not self._check_rotation_rate_limit():
                 raise Exception("Rotation rate limit exceeded")
 
+            # Check if source IP/subuser is in cooldown
+            from_entry = self.get_ip_subuser_pool(from_ip, from_subuser)
+            if from_entry and from_entry.status == IPSubuserStatus.COOLDOWN:
+                error_msg = f"Source IP/subuser {from_ip}/{from_subuser} is in cooldown until {from_entry.cooldown_until}"
+                logger.warning(error_msg)
+                if self.alerting_service:
+                    self.alerting_service.record_system_error(
+                        error_msg,
+                        {
+                            "source_ip": from_ip,
+                            "source_subuser": from_subuser,
+                            "cooldown_until": str(from_entry.cooldown_until),
+                        },
+                    )
+                raise ValueError(error_msg)
+
             # Check if target IP/subuser is available
             to_entry = self.get_ip_subuser_pool(to_ip, to_subuser)
             if to_entry and not to_entry.is_available():
@@ -397,27 +432,62 @@ class IPRotationService:
                 )
                 time.sleep(self.config.rotation_delay_seconds)
 
-            # Update pool entries
-            from_entry = self.get_ip_subuser_pool(from_ip, from_subuser)
-            to_entry = self.get_ip_subuser_pool(to_ip, to_subuser)
+            # Check if target is available (not in cooldown)
+            target_entry = None
+            for pool_entry in self.ip_pool:
+                if pool_entry.ip_address == to_ip and pool_entry.subuser == to_subuser:
+                    target_entry = pool_entry
+                    break
 
-            if from_entry:
-                from_entry.status = IPSubuserStatus.COOLDOWN
-                from_entry.cooldown_until = datetime.now() + timedelta(
-                    hours=self.config.default_cooldown_hours
+            if target_entry and target_entry.status == IPSubuserStatus.COOLDOWN:
+                error_msg = f"Target IP/subuser {to_ip}/{to_subuser} is in cooldown until {target_entry.cooldown_until}"
+                logger.warning(error_msg)
+                if self.alerting_service:
+                    self.alerting_service.record_system_error(
+                        error_msg,
+                        {
+                            "target_ip": to_ip,
+                            "target_subuser": to_subuser,
+                            "cooldown_until": str(target_entry.cooldown_until),
+                        },
+                    )
+                raise ValueError(error_msg)
+
+            logger.info(
+                f"Executing rotation: {from_ip}/{from_subuser} -> {to_ip}/{to_subuser} "
+                f"(reason: {reason.value})"
+            )
+
+            # Record the rotation event
+            rotation_event = RotationEvent(
+                timestamp=datetime.now(),
+                from_ip=from_ip,
+                from_subuser=from_subuser,
+                to_ip=to_ip,
+                to_subuser=to_subuser,
+                reason=reason,
+                success=True,
+            )
+
+            self.rotation_history.append(rotation_event)
+
+            # Update last used timestamp for target
+            for pool_entry in self.ip_pool:
+                if pool_entry.ip_address == to_ip and pool_entry.subuser == to_subuser:
+                    pool_entry.last_used = datetime.now()
+                    break
+
+            # Apply cooldown to source IP/subuser
+            self._apply_cooldown(from_ip, from_subuser)
+
+            # Track the rotation
+            self.active_rotations[(from_ip, from_subuser)] = datetime.now()
+
+            # Record successful rotation in alerting system
+            if self.alerting_service:
+                self.alerting_service.record_rotation(
+                    f"{from_ip}/{from_subuser}", f"{to_ip}/{to_subuser}", reason.value
                 )
-                from_entry.last_used = datetime.now()
-
-            if to_entry:
-                to_entry.last_used = datetime.now()
-                to_entry.status = IPSubuserStatus.ACTIVE
-
-            # Here you would implement the actual rotation logic
-            # This might involve:
-            # - Updating email service configuration
-            # - Notifying other services
-            # - Updating load balancer settings
-            # - etc.
 
             rotation_event.success = True
             logger.info(
@@ -426,6 +496,38 @@ class IPRotationService:
 
             # Reset consecutive failures
             self.consecutive_failures.pop(rotation_key, None)
+
+        except ValueError as e:
+            # Re-raise ValueError for cooldown violations and other validation errors
+            rotation_event.success = False
+            rotation_event.error_message = str(e)
+            logger.error(f"Failed to execute rotation: {e}")
+
+            # Track consecutive failures
+            rotation_key = (from_ip, from_subuser)
+            self.consecutive_failures[rotation_key] = (
+                self.consecutive_failures.get(rotation_key, 0) + 1
+            )
+
+            # Record error in alerting system
+            if self.alerting_service:
+                self.alerting_service.record_system_error(
+                    f"Rotation failed: {from_ip}/{from_subuser} -> {to_ip}/{to_subuser}: {str(e)}",
+                    {
+                        "from_ip": from_ip,
+                        "from_subuser": from_subuser,
+                        "to_ip": to_ip,
+                        "to_subuser": to_subuser,
+                        "reason": reason.value,
+                        "error": str(e),
+                    },
+                )
+
+            # Remove from active rotations before re-raising
+            rotation_key = (from_ip, from_subuser)
+            self.active_rotations.pop(rotation_key, None)
+
+            raise e  # Re-raise the ValueError
 
         except Exception as e:
             rotation_event.success = False
@@ -438,12 +540,25 @@ class IPRotationService:
                 self.consecutive_failures.get(rotation_key, 0) + 1
             )
 
+            # Record error in alerting system
+            if self.alerting_service:
+                self.alerting_service.record_system_error(
+                    f"Rotation failed: {from_ip}/{from_subuser} -> {to_ip}/{to_subuser}: {str(e)}",
+                    {
+                        "from_ip": from_ip,
+                        "from_subuser": from_subuser,
+                        "to_ip": to_ip,
+                        "to_subuser": to_subuser,
+                        "reason": reason.value,
+                        "error": str(e),
+                    },
+                )
+
         finally:
             # Remove from active rotations
             rotation_key = (from_ip, from_subuser)
             self.active_rotations.pop(rotation_key, None)
 
-        self.rotation_history.append(rotation_event)
         return rotation_event
 
     def handle_threshold_breach(self, breach) -> Optional[RotationEvent]:
@@ -463,6 +578,12 @@ class IPRotationService:
         current_ip = breach.ip_address
         current_subuser = breach.subuser
 
+        # Record threshold breach in alerting system
+        if self.alerting_service:
+            self.alerting_service.record_threshold_breach(
+                current_ip, breach.threshold_value, breach.current_value
+            )
+
         # Check if already rotating
         rotation_key = (current_ip, current_subuser)
         if rotation_key in self.active_rotations:
@@ -481,6 +602,12 @@ class IPRotationService:
             pool_entry = self.get_ip_subuser_pool(current_ip, current_subuser)
             if pool_entry:
                 pool_entry.status = IPSubuserStatus.DISABLED
+
+                # Record IP disabling in alerting system
+                if self.alerting_service:
+                    self.alerting_service.record_ip_disabled(
+                        current_ip, f"Max consecutive failures reached ({failures})"
+                    )
             return None
 
         # Find best alternative
@@ -488,6 +615,10 @@ class IPRotationService:
         if not alternative:
             logger.warning(
                 f"No suitable alternative found for {current_ip}/{current_subuser}"
+            )
+            # Increment consecutive failures
+            self.consecutive_failures[rotation_key] = (
+                self.consecutive_failures.get(rotation_key, 0) + 1
             )
             return None
 
@@ -566,6 +697,19 @@ class IPRotationService:
             logger.info(f"Cleaned up {removed_count} old rotation events")
 
         return removed_count
+
+    def _apply_cooldown(self, ip_address: str, subuser: str) -> None:
+        """Apply cooldown to an IP/subuser combination."""
+        for pool_entry in self.ip_pool:
+            if pool_entry.ip_address == ip_address and pool_entry.subuser == subuser:
+                pool_entry.status = IPSubuserStatus.COOLDOWN
+                pool_entry.cooldown_until = datetime.now() + timedelta(
+                    hours=self.config.default_cooldown_hours
+                )
+                logger.info(
+                    f"Applied cooldown to {ip_address}/{subuser} until {pool_entry.cooldown_until}"
+                )
+                break
 
 
 def create_default_rotation_config() -> RotationConfig:

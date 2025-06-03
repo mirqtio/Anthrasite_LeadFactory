@@ -146,7 +146,7 @@
       "velocity_metadata": {
         "complexity_score": 9,
         "estimated_hours": null,
-        "actual_hours": 5.555555555555555e-07,
+        "actual_hours": 5.555555555555555e-7,
         "velocity_points": 9,
         "blocked_time": 0,
         "status_history": [
@@ -158,7 +158,7 @@
           {
             "status": "in-progress",
             "timestamp": "2025-05-29T23:20:36.858Z",
-            "duration_hours": 5.555555555555555e-07
+            "duration_hours": 5.555555555555555e-7
           },
           {
             "status": "done",
@@ -175,7 +175,7 @@
       "id": 2,
       "title": "Automate IP/Subuser Rotation for Bounce Thresholds",
       "description": "Automate IP rotation based on bounce rates, with tests",
-      "status": "in-progress",
+      "status": "done",
       "priority": "medium",
       "type": "feature",
       "created_at": "2025-05-28T09:00:00Z",
@@ -270,7 +270,7 @@
             3
           ],
           "details": "Implement detailed logging for all rotation events, threshold breaches, and system decisions. Create an alerting system that notifies administrators of rotations, critical threshold breaches, and system issues. Develop a dashboard for visualizing current IP/subuser status, bounce rates, and rotation history. Integrate the complete system with existing email sending infrastructure. Add API endpoints for manual control and configuration updates. Implement a circuit breaker to disable automatic rotation in emergency situations.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "End-to-end tests of the complete system. Verification of logging and alerting functionality. Load testing to ensure system stability under production conditions. User acceptance testing of dashboard and control interfaces.",
           "velocity_metadata": {
             "complexity_score": 6,
@@ -294,7 +294,7 @@
           "title": "Comprehensive Testing Suite",
           "description": "Unit tests for IP rotation logic, integration tests with bounce monitoring, e2e tests for rotation behavior, run all tests and resolve issues, update CI with rotation tests, merge to master and confirm successful CI via GitHub CLI logs.",
           "details": "",
-          "status": "in-progress",
+          "status": "done",
           "dependencies": [],
           "parentTaskId": 2
         }
@@ -2827,7 +2827,7 @@
       "id": 23,
       "title": "Report Commerce & Delivery Epic",
       "description": "Epic capturing everything needed to support direct-to-SMB audit sales including Stripe checkout, PDF rendering, email delivery, and secure storage",
-      "status": "pending",
+      "status": "in-progress",
       "dependencies": [],
       "priority": "high",
       "details": "",
@@ -2839,7 +2839,7 @@
           "description": "Create the necessary backend and frontend components to integrate Stripe checkout for direct-to-SMB audit sales. This includes setting up Stripe API connections, creating payment intents, handling webhooks, and designing the checkout UI flow.",
           "dependencies": [],
           "details": "1. Set up Stripe API keys and SDK in the application\n2. Create payment intent endpoints in the backend\n3. Implement webhook handlers for payment events\n4. Design and implement checkout UI components\n5. Handle success/failure payment flows\n6. Store transaction records in the database",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Unit test the payment service and webhook handlers. Mock Stripe API responses for testing."
         },
         {

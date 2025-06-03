@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - LeadFactory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #48bb78;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: checkmark 0.6s ease-in-out;
+        }
+
+        .success-icon::after {
+            content: '✓';
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-container h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .success-container p {
+            color: #718096;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .details-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .details-box h3 {
+            color: #2d3748;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .next-steps {
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .next-steps h3 {
+            color: #2b6cb0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .next-steps ul {
+            color: #2c5282;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .next-steps li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status-message.info {
+            background: #ebf8ff;
+            color: #2b6cb0;
+            border: 1px solid #bee3f8;
+        }
+
+        .status-message.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        @media (max-width: 640px) {
+            .success-container {
+                padding: 40px 20px;
+            }
+
+            .success-container h1 {
+                font-size: 2rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon"></div>
+
+        <h1>Payment Successful!</h1>
+        <p>Thank you for your purchase. Your audit report is being generated and will be delivered to your email shortly.</p>
+
+        <div class="details-box">
+            <h3>Order Details</h3>
+            <div class="detail-item">
+                <span class="detail-label">Order ID:</span>
+                <span class="detail-value" id="order-id">Loading...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Audit Type:</span>
+                <span class="detail-value" id="audit-type">Loading...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Amount Paid:</span>
+                <span class="detail-value" id="amount-paid">Loading...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value" id="customer-email">Loading...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value" style="color: #48bb78;">✓ Paid</span>
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h3>What happens next?</h3>
+            <ul>
+                <li>Your audit report is being generated automatically</li>
+                <li>You'll receive an email confirmation within 5 minutes</li>
+                <li>The complete audit report will be delivered within 24 hours</li>
+                <li>You can track your order status using the Order ID above</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="checkOrderStatus()">
+                <span class="button-text">Check Order Status</span>
+                <div class="loading"></div>
+            </button>
+            <a href="/checkout" class="btn btn-secondary">Order Another Audit</a>
+        </div>
+
+        <div id="status-message" class="status-message"></div>
+    </div>
+
+    <script>
+        // Get session ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+
+        // Load order details on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (sessionId) {
+                loadOrderDetails(sessionId);
+            } else {
+                showMessage('No session ID found. Please contact support if you completed a payment.', 'error');
+            }
+        });
+
+        async function loadOrderDetails(sessionId) {
+            try {
+                const response = await fetch(`/api/v1/payments/session/${sessionId}/status`);
+                const data = await response.json();
+
+                if (response.ok && data.payment) {
+                    const payment = data.payment;
+                    document.getElementById('order-id').textContent = payment.stripe_payment_id || sessionId;
+                    document.getElementById('audit-type').textContent = payment.audit_type || 'Standard Audit';
+                    document.getElementById('amount-paid').textContent = `$${(payment.amount / 100).toFixed(2)}`;
+                    document.getElementById('customer-email').textContent = payment.customer_email;
+                } else {
+                    // Use fallback values if API call fails
+                    document.getElementById('order-id').textContent = sessionId;
+                    document.getElementById('audit-type').textContent = 'Audit Report';
+                    document.getElementById('amount-paid').textContent = 'Paid';
+                    document.getElementById('customer-email').textContent = 'Confirmed';
+                }
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                // Use fallback values
+                document.getElementById('order-id').textContent = sessionId || 'Unknown';
+                document.getElementById('audit-type').textContent = 'Audit Report';
+                document.getElementById('amount-paid').textContent = 'Paid';
+                document.getElementById('customer-email').textContent = 'Confirmed';
+            }
+        }
+
+        async function checkOrderStatus() {
+            const button = document.querySelector('.btn-primary');
+            const buttonText = button.querySelector('.button-text');
+            const loading = button.querySelector('.loading');
+
+            // Show loading state
+            button.disabled = true;
+            buttonText.style.display = 'none';
+            loading.style.display = 'inline';
+
+            try {
+                if (!sessionId) {
+                    throw new Error('No session ID available');
+                }
+
+                const response = await fetch(`/api/v1/payments/session/${sessionId}/status`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.payment && data.payment.status === 'completed') {
+                        showMessage('✓ Your payment has been processed successfully. Audit report generation is in progress.', 'info');
+                    } else {
+                        showMessage('Your order is being processed. Please check back in a few minutes.', 'info');
+                    }
+                } else {
+                    throw new Error(data.detail || 'Failed to check order status');
+                }
+            } catch (error) {
+                console.error('Error checking order status:', error);
+                showMessage('Unable to check order status. Please contact support if you have concerns.', 'error');
+            } finally {
+                // Reset button state
+                button.disabled = false;
+                buttonText.style.display = 'inline';
+                loading.style.display = 'none';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('status-message');
+            messageDiv.textContent = message;
+            messageDiv.className = `status-message ${type}`;
+            messageDiv.style.display = 'block';
+
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 10000);
+        }
+    </script>
+</body>
+</html>
