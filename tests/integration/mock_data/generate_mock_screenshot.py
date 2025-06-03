@@ -27,7 +27,7 @@ try:
     # Add text
     try:
         font = ImageFont.truetype("Arial", 24)
-    except IOError:
+    except OSError:
         font = ImageFont.load_default()
 
     draw.text((20, 15), "Mock Website - ScreenshotOne API Test", fill=(255, 255, 255), font=font)
@@ -37,7 +37,6 @@ try:
     output_path = Path(__file__).parent / "mock_screenshot.png"
     image.save(output_path)
 
-    print(f"Mock screenshot saved to {output_path}")
 
 except ImportError:
     # If PIL is not available, create a 1x1 transparent PNG
@@ -63,7 +62,6 @@ except ImportError:
         )
         f.write(png_data)
 
-    print("Created minimal PNG file (PIL not available)")
 
 if __name__ == "__main__":
-    print("Generating mock screenshot...")
+    pass

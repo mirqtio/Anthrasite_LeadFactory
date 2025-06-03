@@ -21,6 +21,12 @@ from tests.bdd.step_defs.common_step_definitions import *
 # Import the modules being tested
 try:
     from leadfactory.pipeline import scrape, enrich, score, email_queue, budget_gate
+    from leadfactory.pipeline.email_queue import (
+        load_email_template,
+        send_business_email,
+        SendGridEmailSender,
+        save_email_record
+    )
 except ImportError:
     # Create mock modules for testing
     class MockScrape:
@@ -30,24 +36,9 @@ except ImportError:
 
     class MockEnrich:
         @staticmethod
-        def enrich_business(db_conn, business_id):
-            # Update the database with mock enriched data
-            cursor = db_conn.cursor()
-            cursor.execute(
-                """UPDATE businesses SET
-                   email = ?, phone = ?, contact_info = ?, tech_stack = ?, performance = ?, enriched_at = datetime('now'), updated_at = datetime('now')
-                   WHERE id = ?""",
-                (
-                    "contact@example.com",
-                    "555-123-4567",
-                    '{"name": "John Doe", "position": "CEO"}',
-                    '{"cms": "WordPress", "analytics": "Google Analytics"}',
-                    '{"page_speed": 85, "mobile_friendly": true}',
-                    business_id
-                )
-            )
-            db_conn.commit()
-            return {"enriched": True, "business_id": business_id}
+        def enrich_business(business, tier=1):
+            # Mock enrichment - just return success
+            return {"enriched": True, "business_id": business.get("id"), "tier": tier}
 
     class MockScore:
         @staticmethod
@@ -63,6 +54,22 @@ except ImportError:
         @staticmethod
         def get_current_month_costs(db_conn):
             return {"total": 100.0, "breakdown": {"model1": 50.0, "model2": 50.0}}
+
+    # Mock email functions
+    def load_email_template():
+        return {"subject": "Test Subject", "body": "Test Body"}
+
+    def send_business_email(business, sender, template):
+        return True, "mock_message_id", None
+
+    class SendGridEmailSender:
+        def __init__(self, api_key, from_email, from_name):
+            self.api_key = api_key
+            self.from_email = from_email
+            self.from_name = from_name
+
+    def save_email_record(business_id, message_id, status):
+        return True
 
     scrape = MockScrape()
     enrich = MockEnrich()
@@ -396,7 +403,7 @@ def enrich_business_data(db_conn, mock_apis, context):
     }
 
     # Perform enrichment
-    result = enrich.enrich_business(db_conn, context['business_id'])
+    result = enrich.enrich_business(context['business_id'], tier=1)
 
     # If result is a MagicMock (from graceful import), ensure database is updated
     if isinstance(result, MagicMock):
@@ -1279,20 +1286,12 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
 
         # 3. Process through each pipeline stage
         # Enrich the business
-        result["enrich"] = enrich.enrich_business(business)
+        result["enrich"] = enrich.enrich_business(business, tier=1)
 
         # Score the business
         result["score"] = score.score_business(business)
 
         # Generate and send email
-        # Commented out problematic imports
-        # from leadfactory.pipeline.email_queue import (
-        #     load_email_template,
-        #     send_business_email,
-        #     SendGridEmailSender,
-        #     save_email_record
-        # )
-
         # Initialize SendGrid sender
         sender = SendGridEmailSender(
             api_key=os.getenv("SENDGRID_API_KEY"),

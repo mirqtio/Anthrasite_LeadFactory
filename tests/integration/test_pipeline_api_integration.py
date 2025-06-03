@@ -5,19 +5,21 @@ These tests verify that the LeadFactory pipeline modules correctly interact with
 They will run with mocks by default, but can use real APIs when --use-real-apis is specified.
 """
 
-import os
-import pytest
-import tempfile
-import sqlite3
 import json
 import logging
+import os
+import sqlite3
+import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from tests.integration.api_metrics_fixture import api_metric_decorator
 
 # Import our API test configuration and metrics
 from tests.integration.api_test_config import APITestConfig
-from tests.integration.api_metrics_fixture import api_metric_decorator
 
 
 @pytest.fixture
@@ -150,8 +152,8 @@ def temp_pipeline_db():
 def test_scrape_api_integration(temp_pipeline_db, yelp_api, google_places_api, api_metrics_logger, metrics_report, api_test_config, vertical_name):
     """Test integration between scrape module and external APIs."""
     # Import here to avoid circular imports
-    from leadfactory.pipeline.scrape import scrape_businesses
     from leadfactory.data.verticals import get_vertical_by_name
+    from leadfactory.pipeline.scrape import scrape_businesses
 
     # Get test data
     conn, test_zip = temp_pipeline_db
@@ -523,12 +525,12 @@ def test_full_pipeline_api_integration(temp_pipeline_db, yelp_api, google_places
                                        api_metrics_logger, metrics_report, api_test_config):
     """Test full pipeline integration with all external APIs."""
     # Import pipeline modules
-    from leadfactory.pipeline.scrape import scrape_businesses
-    from leadfactory.pipeline.enrich import enrich_business
-    from leadfactory.pipeline.score import score_business
-    from leadfactory.pipeline.mockup import create_mockup
-    from leadfactory.pipeline.email_queue import send_email_to_business
     from leadfactory.data.verticals import get_vertical_by_name
+    from leadfactory.pipeline.email_queue import send_email_to_business
+    from leadfactory.pipeline.enrich import enrich_business
+    from leadfactory.pipeline.mockup import create_mockup
+    from leadfactory.pipeline.score import score_business
+    from leadfactory.pipeline.scrape import scrape_businesses
 
     # Get test data
     conn, test_zip = temp_pipeline_db
@@ -613,7 +615,7 @@ def test_full_pipeline_api_integration(temp_pipeline_db, yelp_api, google_places
         # 3. Enrich business
         with patch("leadfactory.pipeline.enrich.ScreenshotOneAPI", return_value=screenshotone_api):
             start_time = datetime.now()
-            enriched_business = enrich_business(business_id)
+            enrich_business(business_id)
             pipeline_metrics["enrich_time"] = (datetime.now() - start_time).total_seconds()
 
         # 4. Score business

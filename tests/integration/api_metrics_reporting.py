@@ -13,15 +13,15 @@ import statistics
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 
 
 class APIMetricsReport:
     """Generate reports and visualizations from API metrics data."""
 
-    def __init__(self, metrics_data: List[Dict[str, Any]] = None):
+    def __init__(self, metrics_data: list[dict[str, Any]] = None):
         """
         Initialize the reporter with metrics data.
 
@@ -29,8 +29,8 @@ class APIMetricsReport:
             metrics_data: List of metric dictionaries to analyze
         """
         self.metrics_data = metrics_data or []
-        self.metrics_dir = Path(os.environ.get('METRICS_DIR', 'metrics'))
-        self.report_dir = self.metrics_dir / 'reports'
+        self.metrics_dir = Path(os.environ.get("METRICS_DIR", "metrics"))
+        self.report_dir = self.metrics_dir / "reports"
         self.report_dir.mkdir(parents=True, exist_ok=True)
 
         # Initialize data storage
@@ -50,7 +50,7 @@ class APIMetricsReport:
             raise FileNotFoundError(f"Metrics file not found: {filepath}")
 
         metrics = []
-        with open(path, 'r') as f:
+        with open(path) as f:
             for line in f:
                 try:
                     metric = json.loads(line.strip())
@@ -71,7 +71,7 @@ class APIMetricsReport:
         if not dir_path.exists():
             raise FileNotFoundError(f"Metrics directory not found: {dir_path}")
 
-        for file in dir_path.glob('*.jsonl'):
+        for file in dir_path.glob("*.jsonl"):
             self.load_metrics_from_file(str(file))
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -92,30 +92,30 @@ class APIMetricsReport:
         df = pd.DataFrame(self.metrics_data)
 
         # Convert timestamp to datetime
-        if 'timestamp' in df.columns:
-            df['datetime'] = pd.to_datetime(df['timestamp'], unit='s')
-            df['date'] = df['datetime'].dt.date
+        if "timestamp" in df.columns:
+            df["datetime"] = pd.to_datetime(df["timestamp"], unit="s")
+            df["date"] = df["datetime"].dt.date
 
         # Add hour and weekday columns for time-based analysis
-        if 'datetime' in df.columns:
-            df['hour'] = df['datetime'].dt.hour
-            df['weekday'] = df['datetime'].dt.day_name()
+        if "datetime" in df.columns:
+            df["hour"] = df["datetime"].dt.hour
+            df["weekday"] = df["datetime"].dt.day_name()
 
         # Fill missing values
-        df['cost'] = df['cost'].fillna(0)
-        df['token_count'] = df['token_count'].fillna(0)
+        df["cost"] = df["cost"].fillna(0)
+        df["token_count"] = df["token_count"].fillna(0)
 
         # Identify unique APIs and endpoints
-        self._api_names = set(df['api'].unique())
+        self._api_names = set(df["api"].unique())
         self._endpoints = {
-            api: set(df[df['api'] == api]['endpoint'].unique())
+            api: set(df[df["api"] == api]["endpoint"].unique())
             for api in self._api_names
         }
 
         self._df = df
         return df
 
-    def generate_summary_statistics(self) -> Dict[str, Any]:
+    def generate_summary_statistics(self) -> dict[str, Any]:
         """
         Generate summary statistics for all API calls.
 
@@ -130,39 +130,39 @@ class APIMetricsReport:
         stats = {
             "total_calls": len(df),
             "unique_apis": len(self._api_names),
-            "total_cost": df['cost'].sum(),
-            "total_tokens": int(df['token_count'].sum()),
+            "total_cost": df["cost"].sum(),
+            "total_tokens": int(df["token_count"].sum()),
             "time_period": {
-                "start": df['datetime'].min().strftime('%Y-%m-%d %H:%M:%S') if 'datetime' in df else None,
-                "end": df['datetime'].max().strftime('%Y-%m-%d %H:%M:%S') if 'datetime' in df else None,
+                "start": df["datetime"].min().strftime("%Y-%m-%d %H:%M:%S") if "datetime" in df else None,
+                "end": df["datetime"].max().strftime("%Y-%m-%d %H:%M:%S") if "datetime" in df else None,
             },
             "request_time": {
-                "mean": df['request_time'].mean(),
-                "median": df['request_time'].median(),
-                "min": df['request_time'].min(),
-                "max": df['request_time'].max(),
-                "p95": df['request_time'].quantile(0.95),
+                "mean": df["request_time"].mean(),
+                "median": df["request_time"].median(),
+                "min": df["request_time"].min(),
+                "max": df["request_time"].max(),
+                "p95": df["request_time"].quantile(0.95),
             },
             "api_breakdown": {}
         }
 
         # Per-API statistics
         for api in self._api_names:
-            api_df = df[df['api'] == api]
+            api_df = df[df["api"] == api]
             stats["api_breakdown"][api] = {
                 "calls": len(api_df),
-                "cost": api_df['cost'].sum(),
-                "tokens": int(api_df['token_count'].sum()),
+                "cost": api_df["cost"].sum(),
+                "tokens": int(api_df["token_count"].sum()),
                 "request_time": {
-                    "mean": api_df['request_time'].mean(),
-                    "median": api_df['request_time'].median(),
-                    "min": api_df['request_time'].min(),
-                    "max": api_df['request_time'].max(),
-                    "p95": api_df['request_time'].quantile(0.95),
+                    "mean": api_df["request_time"].mean(),
+                    "median": api_df["request_time"].median(),
+                    "min": api_df["request_time"].min(),
+                    "max": api_df["request_time"].max(),
+                    "p95": api_df["request_time"].quantile(0.95),
                 },
-                "success_rate": len(api_df[api_df['status_code'] < 400]) / len(api_df) if len(api_df) > 0 else 0,
+                "success_rate": len(api_df[api_df["status_code"] < 400]) / len(api_df) if len(api_df) > 0 else 0,
                 "endpoints": {
-                    endpoint: len(api_df[api_df['endpoint'] == endpoint])
+                    endpoint: len(api_df[api_df["endpoint"] == endpoint])
                     for endpoint in self._endpoints[api]
                 }
             }
@@ -182,13 +182,13 @@ class APIMetricsReport:
         stats = self.generate_summary_statistics()
 
         if filepath is None:
-            date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+            date_str = datetime.datetime.now().strftime("%Y-%m-%d")
             filepath = self.report_dir / f"summary_{date_str}.json"
 
         # Ensure directory exists
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(stats, f, indent=2)
 
         return str(filepath)
@@ -211,25 +211,25 @@ class APIMetricsReport:
         sns.set_style("whitegrid")
 
         # Create boxplot
-        ax = sns.boxplot(x='api', y='request_time', data=df)
+        sns.boxplot(x="api", y="request_time", data=df)
 
         # Add points for individual measurements
-        sns.stripplot(x='api', y='request_time', data=df,
+        sns.stripplot(x="api", y="request_time", data=df,
                      size=4, color=".3", linewidth=0, alpha=0.3)
 
         # Add titles and labels
-        plt.title('API Request Times (seconds)', fontsize=16)
-        plt.xlabel('API', fontsize=14)
-        plt.ylabel('Request Time (s)', fontsize=14)
+        plt.title("API Request Times (seconds)", fontsize=16)
+        plt.xlabel("API", fontsize=14)
+        plt.ylabel("Request Time (s)", fontsize=14)
         plt.xticks(rotation=45)
 
         # Add summary statistics as text
         stats_text = "Summary Statistics:\n"
         for api in sorted(self._api_names):
-            api_df = df[df['api'] == api]
-            mean_time = api_df['request_time'].mean()
-            median_time = api_df['request_time'].median()
-            p95_time = api_df['request_time'].quantile(0.95)
+            api_df = df[df["api"] == api]
+            mean_time = api_df["request_time"].mean()
+            median_time = api_df["request_time"].median()
+            p95_time = api_df["request_time"].quantile(0.95)
             stats_text += f"{api}: mean={mean_time:.4f}s, median={median_time:.4f}s, p95={p95_time:.4f}s\n"
 
         plt.figtext(0.1, -0.05, stats_text, fontsize=10)
@@ -237,13 +237,13 @@ class APIMetricsReport:
 
         # Save the plot
         if filepath is None:
-            date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+            date_str = datetime.datetime.now().strftime("%Y-%m-%d")
             filepath = self.report_dir / f"request_times_{date_str}.png"
 
         # Ensure directory exists
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-        plt.savefig(filepath, bbox_inches='tight', dpi=300)
+        plt.savefig(filepath, bbox_inches="tight", dpi=300)
         plt.close()
 
         return str(filepath)
@@ -263,41 +263,41 @@ class APIMetricsReport:
             raise ValueError("No metrics data available for plotting")
 
         # Group by API and sum costs
-        cost_by_api = df.groupby('api')['cost'].sum().reset_index()
-        if cost_by_api['cost'].sum() == 0:
+        cost_by_api = df.groupby("api")["cost"].sum().reset_index()
+        if cost_by_api["cost"].sum() == 0:
             return "No cost data available"
 
         plt.figure(figsize=(12, 8))
         sns.set_style("whitegrid")
 
         # Create bar chart
-        ax = sns.barplot(x='api', y='cost', data=cost_by_api)
+        ax = sns.barplot(x="api", y="cost", data=cost_by_api)
 
         # Add titles and labels
-        plt.title('API Costs (USD)', fontsize=16)
-        plt.xlabel('API', fontsize=14)
-        plt.ylabel('Cost ($)', fontsize=14)
+        plt.title("API Costs (USD)", fontsize=16)
+        plt.xlabel("API", fontsize=14)
+        plt.ylabel("Cost ($)", fontsize=14)
         plt.xticks(rotation=45)
 
         # Add total cost as text
-        total_cost = cost_by_api['cost'].sum()
-        plt.figtext(0.5, 0.01, f"Total Cost: ${total_cost:.6f}", fontsize=12, ha='center')
+        total_cost = cost_by_api["cost"].sum()
+        plt.figtext(0.5, 0.01, f"Total Cost: ${total_cost:.6f}", fontsize=12, ha="center")
 
         # Add cost values on bars
-        for i, cost in enumerate(cost_by_api['cost']):
-            ax.text(i, cost + 0.0001, f"${cost:.6f}", ha='center', fontsize=10)
+        for i, cost in enumerate(cost_by_api["cost"]):
+            ax.text(i, cost + 0.0001, f"${cost:.6f}", ha="center", fontsize=10)
 
         plt.tight_layout()
 
         # Save the plot
         if filepath is None:
-            date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+            date_str = datetime.datetime.now().strftime("%Y-%m-%d")
             filepath = self.report_dir / f"costs_{date_str}.png"
 
         # Ensure directory exists
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-        plt.savefig(filepath, bbox_inches='tight', dpi=300)
+        plt.savefig(filepath, bbox_inches="tight", dpi=300)
         plt.close()
 
         return str(filepath)
@@ -313,36 +313,36 @@ class APIMetricsReport:
             Path to the saved plot
         """
         df = self.to_dataframe()
-        if df.empty or 'datetime' not in df.columns:
+        if df.empty or "datetime" not in df.columns:
             raise ValueError("No time-series metrics data available for plotting")
 
         # Prepare time-series data
-        df_time = df.set_index('datetime').sort_index()
-        requests_by_time = df_time.groupby([pd.Grouper(freq='1H'), 'api']).size().unstack(fill_value=0)
+        df_time = df.set_index("datetime").sort_index()
+        requests_by_time = df_time.groupby([pd.Grouper(freq="1H"), "api"]).size().unstack(fill_value=0)
 
         plt.figure(figsize=(15, 8))
         sns.set_style("whitegrid")
 
         # Create line chart
-        ax = requests_by_time.plot(kind='line', marker='o', ax=plt.gca())
+        requests_by_time.plot(kind="line", marker="o", ax=plt.gca())
 
         # Add titles and labels
-        plt.title('API Requests Over Time', fontsize=16)
-        plt.xlabel('Time', fontsize=14)
-        plt.ylabel('Number of Requests', fontsize=14)
-        plt.legend(title='API')
+        plt.title("API Requests Over Time", fontsize=16)
+        plt.xlabel("Time", fontsize=14)
+        plt.ylabel("Number of Requests", fontsize=14)
+        plt.legend(title="API")
 
         plt.tight_layout()
 
         # Save the plot
         if filepath is None:
-            date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+            date_str = datetime.datetime.now().strftime("%Y-%m-%d")
             filepath = self.report_dir / f"requests_time_{date_str}.png"
 
         # Ensure directory exists
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-        plt.savefig(filepath, bbox_inches='tight', dpi=300)
+        plt.savefig(filepath, bbox_inches="tight", dpi=300)
         plt.close()
 
         return str(filepath)
@@ -444,7 +444,7 @@ class APIMetricsReport:
         """
 
         # Add rows for each API
-        for api, api_stats in stats['api_breakdown'].items():
+        for api, api_stats in stats["api_breakdown"].items():
             html += f"""
                         <tr>
                             <td>{api}</td>
@@ -495,13 +495,13 @@ class APIMetricsReport:
 
         # Save the HTML report
         if filepath is None:
-            date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+            date_str = datetime.datetime.now().strftime("%Y-%m-%d")
             filepath = self.report_dir / f"api_report_{date_str}.html"
 
         # Ensure directory exists
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(html)
 
         return str(filepath)
@@ -534,7 +534,5 @@ if __name__ == "__main__":
 
     try:
         report_path = generate_report_from_files(args.dir, args.output)
-        print(f"Report generated: {report_path}")
-    except Exception as e:
-        print(f"Error generating report: {e}")
+    except Exception:
         sys.exit(1)

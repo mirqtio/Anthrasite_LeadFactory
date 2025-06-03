@@ -94,7 +94,7 @@ IMPORT_MAPPING = [
 
 def process_file(
     file_path: Path, dry_run: bool = True
-) -> Tuple[int, List[Tuple[str, str]]]:
+) -> tuple[int, list[tuple[str, str]]]:
     """Process a single Python file to update imports.
 
     Args:
@@ -105,10 +105,9 @@ def process_file(
         Tuple of (number of changes, list of (old_line, new_line) changes)
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
     except UnicodeDecodeError:
-        print(f"Skipping binary file {file_path}")
         return 0, []
 
     original_content = content
@@ -152,10 +151,10 @@ def process_file(
 
 def process_directory(
     directory: Path,
-    extensions: List[str] = [".py"],
+    extensions: list[str] = None,
     dry_run: bool = True,
-    exclude_dirs: List[str] = ["__pycache__", ".git", "venv", "env", ".env"],
-) -> Dict[str, List[Tuple[str, str]]]:
+    exclude_dirs: list[str] = None,
+) -> dict[str, list[tuple[str, str]]]:
     """Process Python files in a directory to update imports.
 
     Args:
@@ -167,6 +166,10 @@ def process_directory(
     Returns:
         Dictionary mapping file paths to lists of (old_line, new_line) changes
     """
+    if exclude_dirs is None:
+        exclude_dirs = ["__pycache__", ".git", "venv", "env", ".env"]
+    if extensions is None:
+        extensions = [".py"]
     changes_by_file = {}
 
     for root, dirs, files in os.walk(directory):
@@ -201,20 +204,16 @@ def main():
 
     args = parser.parse_args()
 
-    print(f"Processing Python files in {args.directory}...")
     changes_by_file = process_directory(Path(args.directory), dry_run=args.dry_run)
 
-    total_changes = sum(len(changes) for changes in changes_by_file.values())
-    print(f"Found {total_changes} changes in {len(changes_by_file)} files")
+    sum(len(changes) for changes in changes_by_file.values())
 
     if args.dry_run:
-        for file_path, changes in sorted(changes_by_file.items()):
-            print(f"\n{file_path} ({len(changes)} changes):")
-            for old_line, new_line in changes:
-                print(f"  - {old_line}")
-                print(f"  + {new_line}")
+        for _file_path, changes in sorted(changes_by_file.items()):
+            for _old_line, _new_line in changes:
+                pass
     else:
-        print(f"Updated {len(changes_by_file)} files with {total_changes} changes")
+        pass
 
 
 if __name__ == "__main__":

@@ -74,7 +74,7 @@ def find_latest_metrics_file(metrics_dir):
 
 def load_metrics(metrics_file):
     """Load metrics from a JSON file."""
-    with open(metrics_file, "r") as f:
+    with open(metrics_file) as f:
         return json.load(f)
 
 
@@ -209,26 +209,19 @@ def verify_success_criteria(metrics, args):
 
 def display_results(success_criteria):
     """Display the verification results."""
-    print("\n=== Validation Success Criteria ===\n")
 
     all_passed = True
     for criteria in success_criteria:
-        status = "✅ PASS" if criteria["success"] else "❌ FAIL"
-        print(
-            f"{status} | {criteria['name']}: {criteria['value']} (Threshold: {criteria['threshold']})"
-        )
+        "✅ PASS" if criteria["success"] else "❌ FAIL"
 
         if not criteria["success"]:
             all_passed = False
-            print(f"       Error: {criteria.get('message', 'Failed to meet criteria')}")
 
-    print("\n=== Summary ===\n")
     if all_passed:
-        print("✅ ALL CRITERIA PASSED: The validation meets all success criteria.")
+        pass
     else:
-        print("❌ VALIDATION FAILED: One or more success criteria were not met.")
+        pass
 
-    print("")
     return all_passed
 
 

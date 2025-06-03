@@ -22,34 +22,31 @@ def run_command(command, cwd=None, env=None):
 
 def fix_formatting(project_root):
     """Fix formatting issues in the codebase."""
-    print("🔧 Fixing formatting issues...")
 
     # Fix import sorting with ruff
     success, output = run_command(
         ["ruff", "check", "--select=I", "--fix", "."], cwd=project_root
     )
     if not success:
-        print(f"❌ Failed to fix imports: {output}")
+        pass
     else:
-        print("✅ Fixed imports with ruff")
+        pass
 
     # Format code with black
     success, output = run_command(
         ["black", ".", "--config", ".black.toml"], cwd=project_root
     )
     if not success:
-        print(f"❌ Failed to format code: {output}")
+        pass
     else:
-        print("✅ Formatted code with black")
+        pass
 
 
 def fix_test_imports(project_root):
     """Fix import issues in test files."""
-    print("🔧 Fixing test import issues...")
 
     test_dir = os.path.join(project_root, "tests")
     if not os.path.exists(test_dir):
-        print("❌ Tests directory not found")
         return
 
     # Add __init__.py to tests directory if it doesn't exist
@@ -57,7 +54,6 @@ def fix_test_imports(project_root):
     if not os.path.exists(init_file):
         with open(init_file, "w") as f:
             f.write("# This file is required for pytest to discover tests correctly\n")
-        print(f"✅ Created {init_file}")
 
     # Fix conftest.py if it exists
     conftest_file = os.path.join(test_dir, "conftest.py")
@@ -74,12 +70,10 @@ def fix_test_imports(project_root):
                     "sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\n\n"
                 )
                 f.write(content)
-            print(f"✅ Fixed {conftest_file}")
 
 
 def create_env_file(project_root):
     """Create or update .env file with test values."""
-    print("🔧 Creating/updating .env file for tests...")
 
     env_file = os.path.join(project_root, ".env")
     env_example = os.path.join(project_root, ".env.example")
@@ -105,30 +99,24 @@ def create_env_file(project_root):
         with open(env_file, "w") as dest:
             dest.write(content)
 
-        print(f"✅ Created {env_file} with mock values")
-
 
 def create_missing_directories(project_root):
     """Create any missing directories required for tests."""
-    print("🔧 Creating missing directories...")
 
     # Ensure data directory exists
     data_dir = os.path.join(project_root, "data")
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-        print(f"✅ Created {data_dir}")
 
     # Ensure html_storage directory exists
     html_storage = os.path.join(data_dir, "html_storage")
     if not os.path.exists(html_storage):
         os.makedirs(html_storage)
-        print(f"✅ Created {html_storage}")
 
     # Ensure tasks directory exists
     tasks_dir = os.path.join(project_root, "tasks")
     if not os.path.exists(tasks_dir):
         os.makedirs(tasks_dir)
-        print(f"✅ Created {tasks_dir}")
 
 
 def main():
@@ -148,7 +136,6 @@ def main():
     # Create missing directories
     create_missing_directories(project_root)
 
-    print("\n✅ CI pipeline fixes completed!")
     return 0
 
 

@@ -42,8 +42,6 @@ def fix_test_mockup_unit():
     with open(file_path, "w") as f:
         f.writelines(fixed_lines)
 
-    print("Fixed all issues in test_mockup_unit.py")
-
 
 if __name__ == "__main__":
     fix_test_mockup_unit()

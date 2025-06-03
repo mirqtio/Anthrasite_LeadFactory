@@ -11,7 +11,6 @@ from pathlib import Path
 
 def process_file(file_path):
     """Process a single Python file to fix typing issues."""
-    print(f"Processing {file_path}")
     with open(file_path) as f:
         content = f.read()
 

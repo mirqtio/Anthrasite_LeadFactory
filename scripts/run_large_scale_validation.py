@@ -20,9 +20,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from leadfactory.pipeline import Pipeline
 from leadfactory.utils.logging import setup_logger
 from leadfactory.utils.metrics import (
+    PIPELINE_FAILURE_RATE,
     initialize_metrics,
     record_metric,
-    PIPELINE_FAILURE_RATE,
 )
 
 # Configure logging
@@ -187,7 +187,7 @@ def run_validation(args):
 
                 # Store stage
                 stage_start = time.time()
-                stored = pipeline.store(validated)
+                pipeline.store(validated)
                 stage_time = time.time() - stage_start
                 performance_metrics["stage_metrics"]["store"]["time"] += stage_time
                 performance_metrics["stage_metrics"]["store"]["count"] += 1

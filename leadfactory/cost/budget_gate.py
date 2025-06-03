@@ -113,7 +113,7 @@ class BudgetGate:
 
         return False
 
-    def get_skipped_operations(self) -> Dict[str, int]:
+    def get_skipped_operations(self) -> dict[str, int]:
         """Get a dictionary of skipped operations and their counts.
 
         Returns:
@@ -223,16 +223,11 @@ def main():
     )
 
     if args.check:
-        is_active = budget_gate.is_active()
-        print(f"Budget gate is {'active' if is_active else 'inactive'}")
-        print(f"  Enabled: {budget_gate.enabled}")
-        print(f"  Override: {budget_gate.override}")
-        print(f"  Threshold: ${budget_gate.threshold:.2f}")
+        budget_gate.is_active()
         if cost_tracker:
-            monthly_cost = cost_tracker.get_monthly_cost()
-            print(f"  Monthly cost: ${monthly_cost:.2f}")
+            cost_tracker.get_monthly_cost()
         else:
-            print("  Monthly cost: Unknown (cost tracker not available)")
+            pass
 
     if args.set_enabled is not None:
         budget_gate.set_enabled(args.set_enabled.lower() == "true")
@@ -246,10 +241,9 @@ def main():
     if args.skipped:
         skipped = budget_gate.get_skipped_operations()
         if skipped:
-            print("Skipped operations:")
-            for op, count in skipped.items():
-                print(f"  {op}: {count}")
+            for _op, _count in skipped.items():
+                pass
         else:
-            print("No operations have been skipped")
+            pass
 
     return 0

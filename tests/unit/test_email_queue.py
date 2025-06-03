@@ -2,10 +2,10 @@
 Unit tests for the email_queue module.
 """
 
-import os
-import sys
-import sqlite3
 import json
+import os
+import sqlite3
+import sys
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 

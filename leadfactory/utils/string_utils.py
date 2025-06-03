@@ -1,25 +1,43 @@
 """
-String utility functions for LeadFactory.
+String utility functions for text processing and normalization.
 
-This module provides utility functions for string manipulation and processing.
+This module provides a compatibility layer for string utilities,
+importing functions from the original location in bin/utils/string_utils.py
 """
 
-# This is a stub file that will be populated when the actual code is migrated
-# For now, we'll re-export everything from the original module for compatibility
+import re
+from urllib.parse import urlparse
 
-import sys
-from pathlib import Path
+# Import specific functions instead of star import
+try:
+    from bin.utils.string_utils import clean_html, extract_domain, normalize_text
+except ImportError:
+    # Fallback implementations if import fails
+    def normalize_text(text):
+        """Normalize text by removing extra whitespace and converting to lowercase."""
+        if not text:
+            return ""
+        return re.sub(r"\s+", " ", text.strip().lower())
 
-# Add the parent directory to the path so we can import from bin
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+    def clean_html(text):
+        """Remove HTML tags from text."""
+        if not text:
+            return ""
+        return re.sub(r"<[^>]+>", "", text)
 
-# Import from the original location
-from leadfactory.utils.string_utils import *
+    def extract_domain(url):
+        """Extract domain from URL."""
+        if not url:
+            return ""
+        try:
+            return urlparse(url).netloc
+        except Exception:
+            return ""
+
 
 # Re-export everything from the original module
 __all__ = [
     "normalize_text",
     "clean_html",
     "extract_domain",
-    # Add other exported symbols here
 ]

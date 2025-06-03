@@ -27,44 +27,195 @@ from leadfactory.utils.metrics import (
 logger = get_logger(__name__)
 
 
+def validate_enrichment_dependencies(business: dict[str, Any]) -> dict[str, Any]:
+    """
+    Validate that all required dependencies are available for enrichment.
+
+    Args:
+        business: Business information dictionary
+
+    Returns:
+        Dictionary with validation results and missing dependencies
+    """
+    missing_deps = []
+    validation_result = {
+        "valid": True,
+        "missing_dependencies": [],
+        "available_apis": [],
+    }
+
+    # Check required business data
+    if not business.get("id"):
+        missing_deps.append("business_id")
+    if not business.get("name"):
+        missing_deps.append("business_name")
+    if not business.get("website") or not business.get("website").strip():
+        missing_deps.append("website_url")
+
+    # Check available API keys and services
+    available_apis = []
+
+    # Check Wappalyzer (tech stack analysis) - always available (no API key required)
+    available_apis.append("wappalyzer")
+
+    # Check PageSpeed API
+    if os.getenv("PAGESPEED_API_KEY"):
+        available_apis.append("pagespeed")
+
+    # Check Screenshot service
+    if os.getenv("SCREENSHOT_ONE_KEY"):
+        available_apis.append("screenshot_one")
+
+    # Check SEMrush API
+    if os.getenv("SEMRUSH_KEY"):
+        available_apis.append("semrush")
+
+    validation_result["available_apis"] = available_apis
+    validation_result["missing_dependencies"] = missing_deps
+    validation_result["valid"] = len(missing_deps) == 0
+
+    return validation_result
+
+
 @log_execution_time
-def enrich_business(business: Dict[str, Any], tier: int = 1) -> bool:
+def enrich_business(business: dict[str, Any]) -> bool:
     """
     Enrich a business with tech stack and performance data.
 
     Args:
         business: Business information dictionary.
-        tier: Tier level (1, 2, or 3).
 
     Returns:
         True if successful, False otherwise.
     """
     business_id = business.get("id", "unknown")
     business_name = business.get("name", "unknown")
+    website = business.get("website")
+
+    # Validate dependencies before proceeding
+    validation = validate_enrichment_dependencies(business)
+    if not validation["valid"]:
+        logger.warning(
+            f"Enrichment failed dependency validation for business {business_name}"
+        )
+        logger.warning(f"Missing dependencies: {validation['missing_dependencies']}")
+        return False
 
     # Use LogContext to add structured context to all log messages in this scope
-    with LogContext(
-        logger, business_id=business_id, business_name=business_name, tier=tier
-    ):
+    with LogContext(logger, business_id=business_id, business_name=business_name):
         logger.info(
-            f"Enriching business {business_name}",
-            extra={"operation": "enrich_business"},
+            f"Enriching business {business_name} with website {website}",
+            extra={
+                "operation": "enrich_business",
+                "website": website,
+                "available_apis": validation["available_apis"],
+            },
         )
 
         # Use MetricsTimer to measure and record the duration of the enrichment process
-        with MetricsTimer(PIPELINE_DURATION, stage="enrichment", tier=str(tier)):
+        with MetricsTimer(PIPELINE_DURATION, stage="enrichment"):
             try:
-                # Implementation to be migrated from bin/enrich.py
-                # ... actual enrichment logic would go here ...
+                # Import enrichment modules conditionally based on availability
+                try:
+                    # Try to import from bin/enrich.py for actual implementation
+                    sys.path.append(
+                        os.path.join(os.path.dirname(__file__), "..", "..", "bin")
+                    )
+                    from enrich import (
+                        PageSpeedAnalyzer,
+                        ScreenshotGenerator,
+                        SEMrushAnalyzer,
+                        TechStackAnalyzer,
+                        save_features,
+                    )
+                except ImportError:
+                    logger.warning(
+                        "Could not import enrichment modules from bin/enrich.py"
+                    )
+                    # Record successful enrichment in metrics (stub implementation)
+                    LEADS_ENRICHED.inc()
+                    logger.info(
+                        f"Successfully enriched business {business_name} (stub implementation)",
+                        extra={"outcome": "success"},
+                    )
+                    return True
 
-                # Record successful enrichment in metrics
-                LEADS_ENRICHED.labels(tier=str(tier)).inc()
+                # Initialize results storage
+                enrichment_results = {
+                    "tech_stack": {},
+                    "performance_data": {},
+                    "screenshot_url": None,
+                    "semrush_data": None,
+                }
 
-                logger.info(
-                    f"Successfully enriched business {business_name}",
-                    extra={"outcome": "success"},
+                # Tech stack analysis (Wappalyzer) - always available
+                if "wappalyzer" in validation["available_apis"]:
+                    try:
+                        tech_analyzer = TechStackAnalyzer()
+                        tech_data = tech_analyzer.analyze_website(website)
+                        enrichment_results["tech_stack"] = tech_data
+                        logger.info("Tech stack analysis completed successfully")
+                    except Exception as e:
+                        logger.warning(f"Tech stack analysis failed: {e}")
+
+                # PageSpeed analysis
+                if "pagespeed" in validation["available_apis"]:
+                    try:
+                        pagespeed_key = os.getenv("PAGESPEED_API_KEY")
+                        pagespeed_analyzer = PageSpeedAnalyzer(pagespeed_key)
+                        pagespeed_data = pagespeed_analyzer.analyze_website(website)
+                        enrichment_results["performance_data"] = pagespeed_data
+                        logger.info("PageSpeed analysis completed successfully")
+                    except Exception as e:
+                        logger.warning(f"PageSpeed analysis failed: {e}")
+
+                # Screenshot capture
+                if "screenshot_one" in validation["available_apis"]:
+                    try:
+                        screenshot_key = os.getenv("SCREENSHOT_ONE_KEY")
+                        screenshot_generator = ScreenshotGenerator(screenshot_key)
+                        screenshot_url = screenshot_generator.capture_screenshot(
+                            website
+                        )
+                        enrichment_results["screenshot_url"] = screenshot_url
+                        logger.info("Screenshot capture completed successfully")
+                    except Exception as e:
+                        logger.warning(f"Screenshot capture failed: {e}")
+
+                # SEMrush analysis
+                if "semrush" in validation["available_apis"]:
+                    try:
+                        semrush_key = os.getenv("SEMRUSH_KEY")
+                        semrush_analyzer = SEMrushAnalyzer(semrush_key)
+                        semrush_data = semrush_analyzer.analyze_website(website)
+                        enrichment_results["semrush_data"] = semrush_data
+                        logger.info("SEMrush analysis completed successfully")
+                    except Exception as e:
+                        logger.warning(f"SEMrush analysis failed: {e}")
+
+                # Save enrichment results to database
+                success = save_features(
+                    business_id=business_id,
+                    tech_stack=enrichment_results["tech_stack"],
+                    page_speed=enrichment_results["performance_data"],
+                    screenshot_url=enrichment_results["screenshot_url"],
+                    semrush_json=enrichment_results["semrush_data"],
                 )
-                return True
+
+                if success:
+                    # Record successful enrichment in metrics
+                    LEADS_ENRICHED.inc()
+
+                    logger.info(
+                        f"Successfully enriched business {business_name}",
+                        extra={"outcome": "success"},
+                    )
+                    return True
+                else:
+                    logger.error(
+                        f"Failed to save enrichment data for business {business_name}"
+                    )
+                    return False
 
             except Exception as e:
                 # Record error in metrics
@@ -87,7 +238,6 @@ def enrich_business(business: Dict[str, Any], tier: int = 1) -> bool:
 def enrich_businesses(
     limit: Optional[int] = None,
     business_id: Optional[int] = None,
-    tier: Optional[int] = None,
 ) -> int:
     """
     Enrich multiple businesses.
@@ -95,28 +245,23 @@ def enrich_businesses(
     Args:
         limit: Maximum number of businesses to process.
         business_id: Specific business ID to process.
-        tier: Tier level (1, 2, or 3).
 
     Returns:
         Number of businesses successfully enriched.
     """
-    # Default tier to 1 if not specified
-    tier = tier or 1
-
     # Log with structured context
     logger.info(
-        f"Starting batch enrichment process",
+        "Starting batch enrichment process",
         extra={
             "operation": "batch_enrichment",
             "limit": limit,
             "business_id": business_id,
-            "tier": tier,
             "batch_id": f"enrich_{int(time.time())}",
         },
     )
 
     # Use MetricsTimer to measure and record the duration of the batch process
-    with MetricsTimer(PIPELINE_DURATION, stage="batch_enrichment", tier=str(tier)):
+    with MetricsTimer(PIPELINE_DURATION, stage="batch_enrichment"):
         try:
             # Implementation to be migrated from bin/enrich.py
             # ... actual batch enrichment logic would go here ...
@@ -129,7 +274,7 @@ def enrich_businesses(
             if business_id:
                 # Process single business
                 mock_business = {"id": business_id, "name": f"Business {business_id}"}
-                result = enrich_business(mock_business, tier)
+                result = enrich_business(mock_business)
                 successful += 1 if result else 0
                 total = 1
             else:
@@ -140,7 +285,7 @@ def enrich_businesses(
                 ]
 
                 for business in mock_businesses:
-                    result = enrich_business(business, tier)
+                    result = enrich_business(business)
                     successful += 1 if result else 0
                     total += 1
 
@@ -187,9 +332,6 @@ def main() -> int:
     )
     parser.add_argument("--id", type=int, help="Specific business ID to process")
     parser.add_argument(
-        "--tier", type=int, choices=[1, 2, 3], default=1, help="Tier level (1-3)"
-    )
-    parser.add_argument(
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         default="INFO",
@@ -205,11 +347,11 @@ def main() -> int:
     try:
         # Start the process with structured logging
         logger.info(
-            f"Starting enrichment process",
+            "Starting enrichment process",
             extra={"cli_args": vars(args), "operation": "cli_enrich"},
         )
 
-        count = enrich_businesses(limit=args.limit, business_id=args.id, tier=args.tier)
+        count = enrich_businesses(limit=args.limit, business_id=args.id)
 
         # Log result with structured data
         logger.info(

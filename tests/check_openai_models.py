@@ -3,10 +3,11 @@
 Check available OpenAI models with the API key in .env
 """
 
-import os
 import json
+import os
 import sys
 from pathlib import Path
+
 import requests
 from dotenv import load_dotenv
 
@@ -16,7 +17,6 @@ load_dotenv()
 # Get the API key
 api_key = os.environ.get("OPENAI_API_KEY")
 if not api_key:
-    print("OpenAI API key not found in environment variables")
     sys.exit(1)
 
 # Set up headers
@@ -41,20 +41,16 @@ try:
     # Sort models by id
     completion_models.sort(key=lambda x: x["id"])
 
-    print(f"Found {len(completion_models)} completion models:")
-    for model in completion_models:
-        print(f"- {model['id']}")
+    for _model in completion_models:
+        pass
 
-    print("\nFull list of all models:")
     all_models = sorted([model["id"] for model in models["data"]])
-    for model in all_models:
-        print(f"- {model}")
+    for _model in all_models:
+        pass
 
 except requests.exceptions.HTTPError as e:
-    print(f"Error: {e}")
     if e.response.status_code == 401:
-        print("Authentication error: Please check your API key")
+        pass
     sys.exit(1)
-except Exception as e:
-    print(f"Unexpected error: {e}")
+except Exception:
     sys.exit(1)

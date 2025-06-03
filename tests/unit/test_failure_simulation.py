@@ -5,21 +5,22 @@ These tests verify that the logging and metrics systems correctly capture
 and report various failure scenarios that could occur in the pipeline.
 """
 
+import contextlib
 import os
 import time
+from unittest.mock import MagicMock, call, patch
+
 import pytest
-from unittest.mock import patch, MagicMock, call
-import contextlib
 from prometheus_client import Counter, Gauge
 
-from leadfactory.utils.logging import get_logger, LogContext
+from leadfactory.utils.logging import LogContext, get_logger
 from leadfactory.utils.metrics import (
-    PIPELINE_ERRORS,
     PIPELINE_DURATION,
+    PIPELINE_ERRORS,
     PIPELINE_FAILURE_RATE,
     MetricsTimer,
+    push_to_gateway,
     record_metric,
-    push_to_gateway
 )
 
 
@@ -59,17 +60,17 @@ class TestFailureSimulation:
 
         # Simulate an exception scenario
         try:
-            with LogContext(logger, operation='test_operation', entity_id=123):
+            with LogContext(logger, operation="test_operation", entity_id=123):
                 raise ValueError("Simulated failure")
         except ValueError as e:
             # Manually log the exception as LogContext would
             logger.error(
                 f"Exception occurred: {str(e)}",
                 extra={
-                    'operation': 'test_operation',
-                    'entity_id': 123,
-                    'exception': str(e),
-                    'traceback': 'mock_traceback'
+                    "operation": "test_operation",
+                    "entity_id": 123,
+                    "exception": str(e),
+                    "traceback": "mock_traceback"
                 }
             )
 
@@ -78,11 +79,11 @@ class TestFailureSimulation:
         # Extract the call arguments
         args, kwargs = mock_logger.error.call_args
         assert "Exception occurred:" in args[0]
-        assert 'extra' in kwargs
-        assert kwargs['extra']['operation'] == 'test_operation'
-        assert kwargs['extra']['entity_id'] == 123
-        assert 'exception' in kwargs['extra']
-        assert 'traceback' in kwargs['extra']
+        assert "extra" in kwargs
+        assert kwargs["extra"]["operation"] == "test_operation"
+        assert kwargs["extra"]["entity_id"] == 123
+        assert "exception" in kwargs["extra"]
+        assert "traceback" in kwargs["extra"]
 
     def test_network_failure_logging(self, mock_logger):
         """Test logging of network failures."""
@@ -98,10 +99,10 @@ class TestFailureSimulation:
             logger.error(
                 "Network failure occurred",
                 extra={
-                    'error_type': 'network_error',
-                    'retry_count': 3,
-                    'operation': 'api_call',
-                    'endpoint': 'test_api'
+                    "error_type": "network_error",
+                    "retry_count": 3,
+                    "operation": "api_call",
+                    "endpoint": "test_api"
                 }
             )
 
@@ -109,10 +110,10 @@ class TestFailureSimulation:
         mock_logger.error.assert_called_with(
             "Network failure occurred",
             extra={
-                'error_type': 'network_error',
-                'retry_count': 3,
-                'operation': 'api_call',
-                'endpoint': 'test_api'
+                "error_type": "network_error",
+                "retry_count": 3,
+                "operation": "api_call",
+                "endpoint": "test_api"
             }
         )
 
@@ -129,9 +130,9 @@ class TestFailureSimulation:
             logger.error(
                 f"Resource exhaustion: {str(e)}",
                 extra={
-                    'operation': 'data_processing',
-                    'data_size': 'large',
-                    'error_type': 'memory_error'
+                    "operation": "data_processing",
+                    "data_size": "large",
+                    "error_type": "memory_error"
                 }
             )
 
@@ -139,8 +140,8 @@ class TestFailureSimulation:
         mock_logger.error.assert_called()
         args, kwargs = mock_logger.error.call_args
         assert "Resource exhaustion" in args[0]
-        assert kwargs['extra']['operation'] == 'data_processing'
-        assert kwargs['extra']['data_size'] == 'large'
+        assert kwargs["extra"]["operation"] == "data_processing"
+        assert kwargs["extra"]["data_size"] == "large"
 
     def test_timeout_handling(self, mock_logger):
         """Test logging of timeout scenarios."""
@@ -155,8 +156,8 @@ class TestFailureSimulation:
             logger.warning(
                 "Operation timed out and will be retried",
                 extra={
-                    'retry_attempt': 1,
-                    'operation': 'long_running_task'
+                    "retry_attempt": 1,
+                    "operation": "long_running_task"
                 }
             )
 
@@ -164,8 +165,8 @@ class TestFailureSimulation:
         mock_logger.warning.assert_called_with(
             "Operation timed out and will be retried",
             extra={
-                'retry_attempt': 1,
-                'operation': 'long_running_task'
+                "retry_attempt": 1,
+                "operation": "long_running_task"
             }
         )
 
@@ -174,7 +175,7 @@ class TestFailureSimulation:
         logger = mock_logger
 
         # Mock the record_metric function directly
-        with patch('leadfactory.utils.metrics.record_metric') as mock_record_metric:
+        with patch("leadfactory.utils.metrics.record_metric") as mock_record_metric:
             # Simulate an error
             try:
                 raise RuntimeError("Processing error")
@@ -183,30 +184,30 @@ class TestFailureSimulation:
                 logger.error(
                     f"Error during data processing: {str(e)}",
                     extra={
-                        'operation': 'data_processing',
-                        'stage': 'enrich',
-                        'error_type': 'runtime_error'
+                        "operation": "data_processing",
+                        "stage": "enrich",
+                        "error_type": "runtime_error"
                     }
                 )
 
                 # Call the actual record_metric function with our mocked version
-                mock_record_metric(PIPELINE_ERRORS, increment=1, stage='enrich', error_type='runtime_error')
+                mock_record_metric(PIPELINE_ERRORS, increment=1, stage="enrich", error_type="runtime_error")
 
             # Verify the record_metric function was called with the correct arguments
             mock_record_metric.assert_called_once_with(
                 PIPELINE_ERRORS,
                 increment=1,
-                stage='enrich',
-                error_type='runtime_error'
+                stage="enrich",
+                error_type="runtime_error"
             )
 
-    @patch('leadfactory.utils.metrics.push_to_gateway')
+    @patch("leadfactory.utils.metrics.push_to_gateway")
     def test_error_metrics_pushed_to_gateway(self, mock_push, mock_logger, mock_counter):
         """Test that error metrics are pushed to the Prometheus Pushgateway."""
         logger = mock_logger
 
         # Need to patch the push_metrics function instead of calling push_to_gateway directly
-        with patch('leadfactory.utils.metrics.push_metrics') as mock_push_metrics:
+        with patch("leadfactory.utils.metrics.push_metrics") as mock_push_metrics:
             # Configure the mock to return success
             mock_push_metrics.return_value = True
 
@@ -218,15 +219,15 @@ class TestFailureSimulation:
                 counter.inc()
 
                 # Call the push_metrics function
-                result = mock_push_metrics('localhost:9091', 'test_job')
+                result = mock_push_metrics("localhost:9091", "test_job")
                 assert result is True
             except Exception as e:
                 logger.error(f"Failed to push metrics: {str(e)}")
 
             # Verify the push_metrics function was called correctly
-            mock_push_metrics.assert_called_once_with('localhost:9091', 'test_job')
+            mock_push_metrics.assert_called_once_with("localhost:9091", "test_job")
 
-    @patch('leadfactory.utils.metrics.MetricsTimer')
+    @patch("leadfactory.utils.metrics.MetricsTimer")
     def test_metrics_timer_records_failure_duration(self, mock_timer_class, mock_logger):
         """Test that MetricsTimer correctly records duration even when exceptions occur."""
         # Create a mock timer instance
@@ -239,7 +240,7 @@ class TestFailureSimulation:
 
         # Use timer in a failing operation
         try:
-            with mock_timer_class(PIPELINE_DURATION, stage='process'):
+            with mock_timer_class(PIPELINE_DURATION, stage="process"):
                 # This will trigger the __exit__ method with exception info
                 raise ValueError("Operation failed")
         except ValueError:
@@ -247,7 +248,7 @@ class TestFailureSimulation:
             pass
 
         # Verify timer was called with the right arguments
-        mock_timer_class.assert_called_once_with(PIPELINE_DURATION, stage='process')
+        mock_timer_class.assert_called_once_with(PIPELINE_DURATION, stage="process")
         # Verify __enter__ was called
         mock_timer.__enter__.assert_called_once()
         # Verify __exit__ was called with the exception info
@@ -275,18 +276,18 @@ class TestFailureSimulation:
             logger.error(
                 f"Error in component: {str(e)}",
                 extra={
-                    'operation': 'cascade_test',  # From the outermost context
-                    'component': 'C',            # From the innermost context
-                    'exception': str(e)
+                    "operation": "cascade_test",  # From the outermost context
+                    "component": "C",            # From the innermost context
+                    "exception": str(e)
                 }
             )
 
         # Verify the logging captured the context correctly
         mock_logger.error.assert_called()
         args, kwargs = mock_logger.error.call_args
-        assert 'extra' in kwargs
-        assert kwargs['extra']['operation'] == 'cascade_test'
-        assert kwargs['extra']['component'] == 'C'  # The most recent context
+        assert "extra" in kwargs
+        assert kwargs["extra"]["operation"] == "cascade_test"
+        assert kwargs["extra"]["component"] == "C"  # The most recent context
 
     def test_repeated_failures(self, mock_logger):
         """Test handling of repeated failures with backoff."""
@@ -304,10 +305,10 @@ class TestFailureSimulation:
                     logger.warning(
                         f"Attempt {attempt}/{max_retries} failed, retrying...",
                         extra={
-                            'backoff_seconds': 2 ** attempt,
-                            'operation': 'retry_operation',
-                            'attempt': attempt,
-                            'max_retries': max_retries
+                            "backoff_seconds": 2 ** attempt,
+                            "operation": "retry_operation",
+                            "attempt": attempt,
+                            "max_retries": max_retries
                         }
                     )
                 else:
@@ -315,10 +316,10 @@ class TestFailureSimulation:
                     logger.error(
                         f"All {max_retries} attempts failed",
                         extra={
-                            'final_outcome': 'failure',
-                            'operation': 'retry_operation',
-                            'attempt': max_retries,
-                            'max_retries': max_retries
+                            "final_outcome": "failure",
+                            "operation": "retry_operation",
+                            "attempt": max_retries,
+                            "max_retries": max_retries
                         }
                     )
 
@@ -329,17 +330,17 @@ class TestFailureSimulation:
         mock_logger.error.assert_called_with(
             f"All {max_retries} attempts failed",
             extra={
-                'final_outcome': 'failure',
-                'operation': 'retry_operation',
-                'attempt': max_retries,
-                'max_retries': max_retries
+                "final_outcome": "failure",
+                "operation": "retry_operation",
+                "attempt": max_retries,
+                "max_retries": max_retries
             }
         )
 
-    @patch('leadfactory.utils.metrics.PIPELINE_FAILURE_RATE')
+    @patch("leadfactory.utils.metrics.PIPELINE_FAILURE_RATE")
     def test_failure_rate_metrics(self, mock_failure_rate, mock_logger):
         """Test that failure rates are correctly recorded in metrics."""
-        logger = get_logger('test_failure_rate')
+        logger = get_logger("test_failure_rate")
 
         # Configure mock
         mock_failure_rate.labels.return_value = mock_failure_rate
@@ -348,7 +349,7 @@ class TestFailureSimulation:
         total_operations = 10
         failed_operations = 3
 
-        with LogContext(logger, operation='batch_process', total=total_operations):
+        with LogContext(logger, operation="batch_process", total=total_operations):
             # Process batch with simulated failures
             for i in range(total_operations):
                 try:
@@ -360,10 +361,10 @@ class TestFailureSimulation:
             # Record the failure rate
             failure_rate = failed_operations / total_operations
             mock_failure_rate.set.return_value = None
-            mock_failure_rate.labels(operation='batch_process').set(failure_rate)
+            mock_failure_rate.labels(operation="batch_process").set(failure_rate)
 
         # Verify failure rate was set correctly
-        mock_failure_rate.labels.assert_called_with(operation='batch_process')
+        mock_failure_rate.labels.assert_called_with(operation="batch_process")
         mock_failure_rate.set.assert_called_with(failed_operations / total_operations)
 
 

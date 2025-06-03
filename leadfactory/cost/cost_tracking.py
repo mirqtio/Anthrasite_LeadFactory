@@ -79,22 +79,28 @@ class CostTracker:
         # Initialize batch tracking
         self.current_batch_id: Optional[str] = None
         self.current_batch_start_time: Optional[datetime] = None
-        self.current_batch_costs: Dict[str, float] = {}
+        self.current_batch_costs: dict[str, float] = {}
 
-        # Load tier thresholds
-        self.tier_thresholds = {
-            "1": {"warning": 3.0, "critical": 4.0},
-            "2": {"warning": 5.0, "critical": 7.0},
-            "3": {"warning": 8.0, "critical": 10.0},
-        }
+        # Load budget constraints integration
+        self.budget_constraints = self._get_budget_constraints()
 
-        # Load budget gate threshold
+        # Load budget gate threshold (legacy compatibility)
         self.budget_gate_threshold = float(
             os.environ.get("BUDGET_GATE_THRESHOLD", "1000.0")
         )
         self.budget_gate_active = False
 
         logger.info(f"Cost tracker initialized (db_path={db_path})")
+
+    def _get_budget_constraints(self):
+        """Get budget constraints instance."""
+        try:
+            from leadfactory.cost.budget_constraints import budget_constraints
+
+            return budget_constraints
+        except ImportError:
+            logger.warning("Budget constraints not available")
+            return None
 
     def _init_db(self) -> None:
         """Initialize the cost tracking database."""
@@ -166,7 +172,7 @@ class CostTracker:
         amount: float,
         service: str,
         operation: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        details: Optional[dict[str, Any]] = None,
         batch_id: Optional[str] = None,
     ) -> None:
         """Add a cost entry.
@@ -283,7 +289,7 @@ class CostTracker:
 
     def get_monthly_costs(
         self, year: Optional[int] = None, month: Optional[int] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get costs for a specific month.
 
         Args:
@@ -373,7 +379,7 @@ class CostTracker:
             "operations": operations,
         }
 
-    def get_daily_cost_breakdown(self) -> Dict[str, Dict[str, float]]:
+    def get_daily_cost_breakdown(self) -> dict[str, dict[str, float]]:
         """Get cost breakdown by service and operation for the current day.
 
         Returns:
@@ -409,7 +415,7 @@ class CostTracker:
 
         return breakdown
 
-    def get_monthly_cost_breakdown(self) -> Dict[str, Dict[str, float]]:
+    def get_monthly_cost_breakdown(self) -> dict[str, dict[str, float]]:
         """Get cost breakdown by service and operation for the current month.
 
         Returns:
@@ -558,7 +564,7 @@ class CostTracker:
 
         return is_active
 
-    def export_cost_report(self, report_data: Dict[str, Any], output_file: str) -> bool:
+    def export_cost_report(self, report_data: dict[str, Any], output_file: str) -> bool:
         """Export a cost report to a file.
 
         Args:
@@ -576,7 +582,7 @@ class CostTracker:
             logger.error(f"Failed to export cost report: {e}")
             return False
 
-    def get_daily_cost_report(self) -> Dict[str, Any]:
+    def get_daily_cost_report(self) -> dict[str, Any]:
         """Get a cost report for the current day.
 
         Returns:
@@ -594,7 +600,7 @@ class CostTracker:
 
         return report
 
-    def get_monthly_cost_report(self) -> Dict[str, Any]:
+    def get_monthly_cost_report(self) -> dict[str, Any]:
         """Get a cost report for the current month.
 
         Returns:
@@ -653,8 +659,8 @@ def track_cost(
     service: str,
     operation: str,
     cost_dollars: float,
-    tier: int = 1,
     business_id: Optional[int] = None,
+    details: Optional[dict] = None,
 ) -> None:
     """Track a cost for an API call or operation.
 
@@ -662,16 +668,14 @@ def track_cost(
         service: Service name (e.g., openai, semrush)
         operation: Operation name (e.g., gpt-4, domain-overview)
         cost_dollars: Cost in USD
-        tier: Tier level (1, 2, or 3)
         business_id: Optional business ID for cost attribution
+        details: Optional additional details dictionary
     """
-    details = {}
-    if tier is not None:
-        details["tier"] = tier
+    cost_details = details or {}
     if business_id is not None:
-        details["business_id"] = business_id
+        cost_details["business_id"] = business_id
 
-    cost_tracker.add_cost(cost_dollars, service, operation, details)
+    cost_tracker.add_cost(cost_dollars, service, operation, cost_details)
 
 
 def main() -> int:
@@ -730,7 +734,7 @@ def main() -> int:
                     extra={"export_path": args.export},
                 )
             else:
-                logger.error(f"Failed to export daily cost report")
+                logger.error("Failed to export daily cost report")
                 return 1
 
     elif args.command == "monthly":
@@ -778,7 +782,7 @@ def main() -> int:
                     extra={"export_path": args.export},
                 )
             else:
-                logger.error(f"Failed to export monthly cost report")
+                logger.error("Failed to export monthly cost report")
                 return 1
 
     elif args.command == "budget":
@@ -792,7 +796,7 @@ def main() -> int:
                 extra={"budget": args.amount},
             )
         else:
-            logger.error(f"Failed to set monthly budget")
+            logger.error("Failed to set monthly budget")
             return 1
 
     else:

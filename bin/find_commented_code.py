@@ -30,10 +30,7 @@ EXCLUDE_FILES = [
 
 def is_excluded(path):
     """Check if a path should be excluded from analysis."""
-    for excluded in EXCLUDE_FILES:
-        if excluded in path:
-            return True
-    return False
+    return any(excluded in path for excluded in EXCLUDE_FILES)
 
 
 def find_commented_code():
@@ -59,11 +56,10 @@ def find_commented_code():
                     continue
 
                 # Process the file
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     try:
                         lines = f.readlines()
                     except UnicodeDecodeError:
-                        print(f"Error reading {file_path} - skipping")
                         continue
 
                 # Look for commented code patterns
@@ -125,21 +121,13 @@ def find_commented_code():
 
 def main():
     """Main function."""
-    print("Searching for commented-out code blocks...")
     results = find_commented_code()
 
     if not results:
-        print("No commented-out code blocks found.")
         return 0
 
-    print(f"\nFound {len(results)} potential commented-out code blocks:")
-    for i, result in enumerate(results, 1):
-        print(
-            f"\n{i}. {result['file']} (lines {result['start_line']}-{result['end_line']}):"
-        )
-        print("-" * 80)
-        print(result["content"].strip())
-        print("-" * 80)
+    for _i, _result in enumerate(results, 1):
+        pass
 
     return 0
 

@@ -5,27 +5,25 @@ This module provides fixtures for tracking API metrics during integration tests,
 allowing validation of API call patterns and performance metrics.
 """
 
-import pytest
-import time
 import json
 import logging
 import os
+import time
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Union, Callable
-from dataclasses import dataclass, field, asdict
 from functools import wraps
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Union
+
+import pytest
 
 # Import prometheus metrics if available
 try:
-    from leadfactory.utils.metrics import (
-        API_LATENCY, COST_COUNTER,
-        METRICS_AVAILABLE
-    )
+    from leadfactory.utils.metrics import API_LATENCY, COST_COUNTER, METRICS_AVAILABLE
 except ImportError:
     METRICS_AVAILABLE = False
 
-from tests.integration.api_test_config import use_real_apis, should_test_api
+from tests.integration.api_test_config import should_test_api, use_real_apis
 
 
 @dataclass
@@ -39,7 +37,7 @@ class APIMetric:
     token_count: Optional[int] = None
     timestamp: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for storage."""
         return asdict(self)
 
@@ -54,11 +52,11 @@ class APIMetricsLogger:
     def __init__(self, enabled: bool = True):
         """Initialize the logger."""
         self.enabled = enabled
-        self.metrics: List[Dict[str, Any]] = []
+        self.metrics: list[dict[str, Any]] = []
         self.logger = logging.getLogger("api_metrics")
 
         # Set up metrics storage directory
-        self.metrics_dir = Path(os.environ.get('METRICS_DIR', 'metrics'))
+        self.metrics_dir = Path(os.environ.get("METRICS_DIR", "metrics"))
         self.metrics_dir.mkdir(parents=True, exist_ok=True)
 
         # Configure log file handler
@@ -66,7 +64,7 @@ class APIMetricsLogger:
         if self.log_to_file:
             self.metrics_file = self.metrics_dir / f"api_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
             file_handler = logging.FileHandler(self.metrics_file)
-            file_handler.setFormatter(logging.Formatter('%(message)s'))
+            file_handler.setFormatter(logging.Formatter("%(message)s"))
             self.logger.addHandler(file_handler)
             self.logger.setLevel(logging.INFO)
 
@@ -118,11 +116,11 @@ class APIMetricsLogger:
             if cost is not None and cost > 0:
                 COST_COUNTER.labels(api_name=api).inc(cost)
 
-    def get_metrics_for_api(self, api: str) -> List[Dict[str, Any]]:
+    def get_metrics_for_api(self, api: str) -> list[dict[str, Any]]:
         """Get all metrics for a specific API."""
         return [m for m in self.metrics if m["api"] == api]
 
-    def get_metrics_for_endpoint(self, api: str, endpoint: str) -> List[Dict[str, Any]]:
+    def get_metrics_for_endpoint(self, api: str, endpoint: str) -> list[dict[str, Any]]:
         """Get all metrics for a specific API endpoint."""
         return [m for m in self.metrics
                 if m["api"] == api and m["endpoint"] == endpoint]
@@ -158,7 +156,7 @@ class APIMetricsLogger:
         """Clear all collected metrics."""
         self.metrics = []
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Generate a summary of all metrics."""
         apis = {m["api"] for m in self.metrics}
 
@@ -190,22 +188,15 @@ def api_metrics_logger():
 
     # Print metrics summary after test if enabled
     if enabled and logger.metrics:
-        print("\nAPI Metrics Summary:")
         summary = logger.summary()
-        print(f"Total API calls: {summary['total_calls']}")
-        print(f"Total cost: ${summary['total_cost']:.6f}")
-        if summary['total_tokens'] > 0:
-            print(f"Total tokens: {summary['total_tokens']}")
-        print(f"Average request time: {summary['average_request_time']*1000:.2f}ms")
+        if summary["total_tokens"] > 0:
+            pass
 
-        for api, api_stats in summary['apis'].items():
-            print(f"\n{api.upper()} API:")
-            print(f"  Calls: {api_stats['calls']}")
-            if api_stats['cost'] > 0:
-                print(f"  Cost: ${api_stats['cost']:.6f}")
-            if api_stats['tokens'] > 0:
-                print(f"  Tokens: {api_stats['tokens']}")
-            print(f"  Avg request time: {api_stats['average_request_time']*1000:.2f}ms")
+        for _api, api_stats in summary["apis"].items():
+            if api_stats["cost"] > 0:
+                pass
+            if api_stats["tokens"] > 0:
+                pass
 
 
 def calculate_openai_cost(model: str, token_count: int) -> float:
@@ -221,31 +212,31 @@ def calculate_openai_cost(model: str, token_count: int) -> float:
     # Pricing as of 2025 (simplified)
     model_prices = {
         # GPT-3.5 Turbo
-        'gpt-3.5-turbo': {
-            'input': 0.0015,   # $0.0015 per 1K input tokens
-            'output': 0.002    # $0.002 per 1K output tokens
+        "gpt-3.5-turbo": {
+            "input": 0.0015,   # $0.0015 per 1K input tokens
+            "output": 0.002    # $0.002 per 1K output tokens
         },
         # GPT-4
-        'gpt-4': {
-            'input': 0.03,     # $0.03 per 1K input tokens
-            'output': 0.06     # $0.06 per 1K output tokens
+        "gpt-4": {
+            "input": 0.03,     # $0.03 per 1K input tokens
+            "output": 0.06     # $0.06 per 1K output tokens
         },
-        'gpt-4-turbo': {
-            'input': 0.01,     # $0.01 per 1K input tokens
-            'output': 0.03     # $0.03 per 1K output tokens
+        "gpt-4-turbo": {
+            "input": 0.01,     # $0.01 per 1K input tokens
+            "output": 0.03     # $0.03 per 1K output tokens
         },
         # Default fallback
-        'default': {
-            'input': 0.01,
-            'output': 0.03
+        "default": {
+            "input": 0.01,
+            "output": 0.03
         }
     }
 
     # Get pricing for the model, use default if not found
-    pricing = model_prices.get(model.lower(), model_prices['default'])
+    pricing = model_prices.get(model.lower(), model_prices["default"])
 
     # Calculate average price per token (simplified approach)
-    avg_price_per_token = (pricing['input'] + pricing['output']) / 2 / 1000
+    avg_price_per_token = (pricing["input"] + pricing["output"]) / 2 / 1000
 
     # Calculate cost
     return token_count * avg_price_per_token
@@ -268,11 +259,11 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Extract metrics_logger if provided
-            metrics_logger = kwargs.pop('metrics_logger', None)
+            metrics_logger = kwargs.pop("metrics_logger", None)
             if metrics_logger is None:
                 # Look for it in args that might be self or have it as attribute
                 for arg in args:
-                    if hasattr(arg, 'metrics_logger'):
+                    if hasattr(arg, "metrics_logger"):
                         metrics_logger = arg.metrics_logger
                         break
 
@@ -284,7 +275,7 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
             start_time = time.time()
             try:
                 result = func(*args, **kwargs)
-                status_code = getattr(result, 'status_code', 200)
+                status_code = getattr(result, "status_code", 200)
 
                 # Extract cost and token count if available
                 cost = None
@@ -292,18 +283,18 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
                 model = None
 
                 # Check different result types to extract metrics
-                if hasattr(result, 'usage') and result.usage:
+                if hasattr(result, "usage") and result.usage:
                     # OpenAI style response
-                    token_count = getattr(result.usage, 'total_tokens', None)
+                    token_count = getattr(result.usage, "total_tokens", None)
 
                     # Try to determine the model used
-                    if hasattr(result, 'model'):
+                    if hasattr(result, "model"):
                         model = result.model
-                    elif api_name == 'openai' and 'model' in kwargs:
-                        model = kwargs['model']
+                    elif api_name == "openai" and "model" in kwargs:
+                        model = kwargs["model"]
 
                     # Calculate cost based on token count and model
-                    if token_count and api_name == 'openai':
+                    if token_count and api_name == "openai":
                         if model:
                             cost = calculate_openai_cost(model, token_count)
                         else:
@@ -311,9 +302,9 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
                             cost = token_count * 0.00002  # $0.02 per 1K tokens
 
                 # Check for Anthropic Claude API calls
-                elif api_name == 'anthropic' and hasattr(result, 'usage'):
-                    input_tokens = getattr(result.usage, 'input_tokens', 0)
-                    output_tokens = getattr(result.usage, 'output_tokens', 0)
+                elif api_name == "anthropic" and hasattr(result, "usage"):
+                    input_tokens = getattr(result.usage, "input_tokens", 0)
+                    output_tokens = getattr(result.usage, "output_tokens", 0)
                     token_count = input_tokens + output_tokens
 
                     # Claude pricing (estimated for 2025)
@@ -322,8 +313,8 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
                     cost = input_cost + output_cost
 
                 # Google Vertex AI API (estimated)
-                elif api_name == 'google_vertex' and hasattr(result, 'usage_metadata'):
-                    token_count = getattr(result.usage_metadata, 'total_token_count', 0)
+                elif api_name == "google_vertex" and hasattr(result, "usage_metadata"):
+                    token_count = getattr(result.usage_metadata, "total_token_count", 0)
                     cost = token_count * 0.00001  # Approximate cost
 
                 # Log the API call

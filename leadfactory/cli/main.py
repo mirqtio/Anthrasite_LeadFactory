@@ -65,6 +65,7 @@ def dev():
 
 
 # Import command modules
+from .capabilities import capabilities
 from .commands import admin_commands, dev_commands, pipeline_commands
 
 # Register command groups
@@ -72,6 +73,8 @@ pipeline.add_command(pipeline_commands.scrape)
 pipeline.add_command(pipeline_commands.enrich)
 pipeline.add_command(pipeline_commands.dedupe)
 pipeline.add_command(pipeline_commands.email)
+pipeline.add_command(pipeline_commands.score)
+pipeline.add_command(pipeline_commands.mockup)
 
 admin.add_command(admin_commands.db_setup)
 admin.add_command(admin_commands.migrate)
@@ -80,6 +83,9 @@ admin.add_command(admin_commands.backup)
 dev.add_command(dev_commands.test)
 dev.add_command(dev_commands.lint)
 dev.add_command(dev_commands.format_code)
+
+# Add capabilities management
+cli.add_command(capabilities)
 
 
 if __name__ == "__main__":

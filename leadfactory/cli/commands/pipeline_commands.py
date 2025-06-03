@@ -148,3 +148,95 @@ def email(ctx, limit: Optional[int], business_id: Optional[str], force: bool):
         if force:
             cmd.append("--force")
         subprocess.run(cmd)
+
+
+@click.command()
+@click.option("--limit", help="Limit number of businesses to process")
+@click.option("--id", "business_id", help="Process only the specified business ID")
+@click.option("--force", is_flag=True, help="Force processing even if already scored")
+@click.pass_context
+def score(ctx, limit: Optional[int], business_id: Optional[str], force: bool):
+    """Score businesses based on configurable rules from scoring engine"""
+    click.echo("Scoring businesses")
+    if limit:
+        click.echo(f"Limit: {limit}")
+    if business_id:
+        click.echo(f"Business ID: {business_id}")
+    if force:
+        click.echo("Force mode: ON")
+
+    if ctx.obj["dry_run"]:
+        click.echo("DRY RUN: Would execute scoring logic")
+        return
+
+    # Import and execute scoring logic
+    try:
+        # Convert CLI args to argparse style
+        import sys
+
+        from leadfactory.pipeline.score import main as score_main
+
+        sys.argv = ["score.py"]
+        if limit:
+            sys.argv.extend(["--limit", str(limit)])
+        if business_id:
+            sys.argv.extend(["--id", business_id])
+
+        score_main()
+    except ImportError:
+        click.echo("Warning: Scoring module not found, using legacy bin/score.py")
+        import subprocess
+        import sys
+
+        cmd = [sys.executable, "bin/score.py"]
+        if limit:
+            cmd.extend(["--limit", str(limit)])
+        if business_id:
+            cmd.extend(["--id", business_id])
+        subprocess.run(cmd)
+
+
+@click.command()
+@click.option("--id", "business_id", help="Business ID to generate mockup for")
+@click.option("--output", help="Output directory for mockups")
+@click.option(
+    "--tier",
+    type=click.Choice(["1", "2", "3"]),
+    help="Override tier level for mockup generation",
+)
+@click.pass_context
+def mockup(ctx, business_id: Optional[str], output: Optional[str], tier: Optional[str]):
+    """Generate AI-powered website mockups for businesses"""
+    if not business_id:
+        click.echo("Error: --id is required for mockup generation")
+        ctx.exit(1)
+
+    click.echo(f"Generating mockup for business ID: {business_id}")
+    if output:
+        click.echo(f"Output directory: {output}")
+    if tier:
+        click.echo(f"Tier override: {tier}")
+
+    if ctx.obj["dry_run"]:
+        click.echo("DRY RUN: Would execute mockup generation")
+        return
+
+    # Import and execute mockup logic
+    try:
+        from leadfactory.pipeline.mockup import generate_business_mockup
+
+        result = generate_business_mockup(int(business_id))
+        if result:
+            click.echo(f"Successfully generated mockup: {result}")
+        else:
+            click.echo("Failed to generate mockup")
+            ctx.exit(1)
+    except ImportError:
+        click.echo("Warning: Mockup module not found, using legacy bin/mockup.py")
+        import subprocess
+        import sys
+
+        cmd = [sys.executable, "bin/mockup.py", "--id", business_id]
+        if output:
+            cmd.extend(["--output", output])
+        subprocess.run(cmd)

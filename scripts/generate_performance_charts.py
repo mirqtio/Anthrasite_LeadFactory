@@ -65,7 +65,7 @@ def find_latest_metrics_file(input_dir):
 
 def load_metrics(metrics_file):
     """Load metrics from a JSON file."""
-    with open(metrics_file, "r") as f:
+    with open(metrics_file) as f:
         return json.load(f)
 
 

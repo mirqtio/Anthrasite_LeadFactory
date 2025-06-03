@@ -1,9 +1,9 @@
 {
   "meta": {
-    "generatedAt": "2025-05-28T09:24:57.198Z",
-    "tasksAnalyzed": 8,
-    "totalTasks": 10,
-    "analysisCount": 24,
+    "generatedAt": "2025-05-31T02:20:36.296Z",
+    "tasksAnalyzed": 5,
+    "totalTasks": 22,
+    "analysisCount": 29,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
     "usedResearch": true
@@ -200,6 +200,46 @@
       "recommendedSubtasks": 3,
       "expansionPrompt": "Break down this task with a focus on add test for preflight sequence.",
       "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": 18,
+      "taskTitle": "Implement Pipeline Variant A/B Testing System",
+      "complexityScore": 9,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the implementation of the Pipeline Variant A/B Testing System into detailed subtasks covering: 1) Pipeline Variant Definition, 2) Variant Selection Mechanism, 3) Tracking Implementation, 4) Reporting System, 5) Integration with DAG Pipeline, and 6) Configuration and Management. For each subtask, include specific deliverables, technical requirements, and testing criteria.",
+      "reasoning": "This task involves creating a comprehensive A/B testing system with multiple complex components including variant definition, selection mechanisms, tracking, reporting, DAG integration, and configuration management. The task requires deep understanding of statistical methods, pipeline architecture, and data analysis. The extensive details and test strategy indicate significant complexity requiring careful decomposition."
+    },
+    {
+      "taskId": 19,
+      "taskTitle": "Implement LLM Fallback Mechanism",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the implementation of the LLM Fallback Mechanism into detailed subtasks covering: 1) LLM Provider Abstraction Layer, 2) Fallback Strategy Implementation, 3) Cost Monitoring System, 4) Health Check and Status Monitoring, and 5) Integration with DAG Pipeline. For each subtask, include specific deliverables, technical requirements, and testing criteria.",
+      "reasoning": "This task requires creating a sophisticated fallback system between different LLM providers with error handling, cost monitoring, and health checks. It involves multiple integration points, API interactions, and complex decision logic. The task has significant dependencies and requires careful error handling and performance considerations across different LLM services."
+    },
+    {
+      "taskId": 20,
+      "taskTitle": "Implement Node Capability Flags for Pipeline Configuration",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the implementation of Node Capability Flags into detailed subtasks covering: 1) Node Capability Definition and Registry, 2) Multi-level Configuration System, 3) Node Class Implementation and Integration, and 4) CLI/API Support and Documentation. For each subtask, include specific deliverables, technical requirements, and testing criteria.",
+      "reasoning": "This task involves creating a flexible configuration system for node capabilities across multiple levels (global, pipeline, node). It requires modifications to core pipeline components, configuration inheritance rules, and updates to existing interfaces. The task is already in progress and has moderate complexity with well-defined requirements."
+    },
+    {
+      "taskId": 21,
+      "taskTitle": "Implement Automatic IP Pool Switching on Bounce Threshold",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the implementation of Automatic IP Pool Switching into detailed subtasks covering: 1) Bounce Rate Monitoring Service, 2) IP Pool Management System, 3) SendGrid API Integration, 4) Notification and Alerting System, and 5) Admin Interface and Configuration. For each subtask, include specific deliverables, technical requirements, and testing criteria.",
+      "reasoning": "This task requires integrating with external APIs (SendGrid), implementing monitoring systems, and creating automated decision logic for IP pool switching. It involves database schema updates, notification systems, and failsafe mechanisms. The complexity comes from handling external dependencies and implementing robust error handling."
+    },
+    {
+      "taskId": 22,
+      "taskTitle": "Implement GPU Auto-Spin for Large Personalisation Queue",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the implementation of GPU Auto-Spin for Large Personalisation Queue into detailed subtasks covering: 1) Queue Monitoring Service, 2) Hetzner API Integration, 3) Auto-Scaling Logic, 4) DAG Pipeline Integration, and 5) Monitoring and Security Implementation. For each subtask, include specific deliverables, technical requirements, and testing criteria.",
+      "reasoning": "This task involves cloud infrastructure provisioning, API integration with Hetzner, complex auto-scaling logic, and integration with the existing pipeline. It requires handling infrastructure as code, cost optimization, security considerations, and performance monitoring. The task has significant technical complexity and operational implications."
     }
   ]
 }

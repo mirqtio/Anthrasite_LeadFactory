@@ -3,8 +3,9 @@ Test the centralized configuration module.
 """
 
 import os
-import pytest
 from unittest import mock
+
+import pytest
 
 # The following import will be used once we start using the config module in the codebase
 # from leadfactory import config
@@ -23,6 +24,7 @@ def test_config_loads_environment_variables():
     with mock.patch.dict(os.environ, test_env):
         # Re-import to load the mocked environment variables
         from importlib import reload
+
         from leadfactory import config
 
         reload(config)
@@ -42,6 +44,7 @@ def test_config_provides_default_values():
     with mock.patch.dict(os.environ, test_env, clear=True):
         # Re-import to load the mocked environment variables
         from importlib import reload
+
         from leadfactory import config
 
         reload(config)

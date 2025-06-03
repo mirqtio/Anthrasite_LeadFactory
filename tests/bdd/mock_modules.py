@@ -32,10 +32,10 @@ class MockModule(MagicMock):
         return mock
 
 # Create the main leadfactory module
-leadfactory = MockModule.mock_module('leadfactory')
+leadfactory = MockModule.mock_module("leadfactory")
 
 # Create the pipeline submodule
-pipeline = MockModule.mock_module('leadfactory.pipeline')
+pipeline = MockModule.mock_module("leadfactory.pipeline")
 pipeline.scrape = mock_scrape
 pipeline.enrich = mock_enrich
 pipeline.dedupe = mock_dedupe
@@ -44,11 +44,11 @@ pipeline.email_queue = mock_email_queue
 pipeline.budget_gate = mock_budget_gate
 
 # Create the cost submodule
-cost = MockModule.mock_module('leadfactory.cost')
+cost = MockModule.mock_module("leadfactory.cost")
 cost.budget_gate = mock_budget_gate
 
 # Create the utils submodule
-utils = MockModule.mock_module('leadfactory.utils')
+utils = MockModule.mock_module("leadfactory.utils")
 utils.db = MagicMock()
 utils.metrics = MagicMock()
 utils.logging = MagicMock()

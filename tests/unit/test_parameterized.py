@@ -3,9 +3,9 @@ Examples of parameterized tests for the LeadFactory application.
 This file demonstrates how to use pytest's parameterization features.
 """
 
+import json
 import os
 import sys
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
