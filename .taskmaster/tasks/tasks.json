@@ -2827,7 +2827,7 @@
       "id": 23,
       "title": "Report Commerce & Delivery Epic",
       "description": "Epic capturing everything needed to support direct-to-SMB audit sales including Stripe checkout, PDF rendering, email delivery, and secure storage",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [],
       "priority": "high",
       "details": "",
@@ -2839,7 +2839,7 @@
           "description": "Create the necessary backend and frontend components to integrate Stripe checkout for direct-to-SMB audit sales. This includes setting up Stripe API connections, creating payment intents, handling webhooks, and designing the checkout UI flow.",
           "dependencies": [],
           "details": "1. Set up Stripe API keys and SDK in the application\n2. Create payment intent endpoints in the backend\n3. Implement webhook handlers for payment events\n4. Design and implement checkout UI components\n5. Handle success/failure payment flows\n6. Store transaction records in the database",
-          "status": "in-progress",
+          "status": "done",
           "testStrategy": "Unit test the payment service and webhook handlers. Mock Stripe API responses for testing."
         },
         {
@@ -2848,7 +2848,7 @@
           "description": "Create a system to generate professional PDF audit reports based on customer data and audit results. The system should support templating, styling, and dynamic content insertion.",
           "dependencies": [],
           "details": "1. Select and integrate a PDF generation library\n2. Design report templates with proper styling\n3. Create a service to populate templates with audit data\n4. Implement image and chart embedding if needed\n5. Add pagination, headers, and footers\n6. Ensure generated PDFs are accessible and properly formatted",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test the PDF generation service with sample data. Visually inspect generated PDFs for formatting issues."
         },
         {
@@ -2859,7 +2859,7 @@
             2
           ],
           "details": "1. Set up secure cloud storage (S3 or equivalent)\n2. Implement access control and time-limited URLs\n3. Create database schema for tracking report access\n4. Build API endpoints for report retrieval\n5. Implement client-side report viewing components\n6. Add logging for all access attempts",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test storage and retrieval with various file sizes. Verify access controls prevent unauthorized access."
         },
         {
@@ -2870,7 +2870,7 @@
             3
           ],
           "details": "1. Set up email service provider integration\n2. Design email templates for report delivery\n3. Implement email sending service with retry logic\n4. Create tracking for email opens and link clicks\n5. Handle bounce notifications and delivery failures\n6. Implement scheduled/delayed sending capabilities",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test email delivery to various providers. Verify tracking works correctly. Test bounce handling."
         },
         {
@@ -2884,7 +2884,7 @@
             4
           ],
           "details": "1. Write unit tests for all core services\n2. Create integration tests for service interactions\n3. Implement E2E tests including browser-based BDD tests for frontend\n4. Set up test data generators and fixtures\n5. Update CI configuration to run all test suites\n6. Add GitHub CLI integration to verify successful test runs before merging",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Meta-testing: verify test coverage meets standards. Ensure tests run successfully in CI environment. Document any flaky tests and stabilize them."
         }
       ]
@@ -2893,7 +2893,7 @@
       "id": 24,
       "title": "Implement Stripe Checkout Flow",
       "description": "Build one-time purchase flow for  audit reports with Stripe integration, payment processing, and order confirmation",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         23
       ],
@@ -2907,7 +2907,7 @@
           "description": "Initialize Stripe integration by setting up API keys, configuring the development environment, and implementing the necessary client and server-side libraries.",
           "dependencies": [],
           "details": "1. Register for Stripe account and obtain API keys (test and production)\n2. Install Stripe SDK/libraries for both frontend and backend\n3. Create configuration files for storing API keys securely using environment variables\n4. Set up basic Stripe client initialization in the application\n5. Implement a simple test endpoint to verify connectivity with Stripe API",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests to verify Stripe client initialization and connection to API. Create a mock for Stripe API responses to test the integration without making actual API calls."
         },
         {
@@ -2918,7 +2918,7 @@
             1
           ],
           "details": "1. Set up audit report products in Stripe dashboard with appropriate pricing\n2. Create API endpoint to initiate checkout process\n3. Implement session creation logic that generates a unique checkout session with the selected audit report product\n4. Add frontend component to trigger checkout and handle redirect to Stripe\n5. Store checkout session information in database for tracking",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test the checkout session creation endpoint with various product configurations. Verify the correct parameters are passed to Stripe and proper session objects are returned."
         },
         {
@@ -2929,7 +2929,7 @@
             2
           ],
           "details": "1. Create webhook endpoint to receive Stripe events\n2. Implement signature verification for webhook security\n3. Handle payment_intent.succeeded events to confirm successful payments\n4. Handle payment_intent.failed events for failed payments\n5. Implement database updates based on payment status changes\n6. Set up logging for all webhook events for debugging and auditing",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Create test suite for webhook handling with mock Stripe events. Test signature verification, event processing logic, and database updates. Use Stripe CLI to simulate webhook events locally."
         },
         {
@@ -2940,7 +2940,7 @@
             3
           ],
           "details": "1. Create order record in database upon successful payment\n2. Implement PDF generation or delivery mechanism for audit reports\n3. Send confirmation emails to customers with order details\n4. Develop error handling for payment failures with appropriate user messaging\n5. Implement retry mechanisms for failed payments\n6. Create admin dashboard for monitoring payment issues",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test the complete order fulfillment flow with mock successful payments. Verify PDF generation, email sending, and database updates. Test error scenarios to ensure proper handling of payment failures."
         },
         {
@@ -2951,7 +2951,7 @@
             4
           ],
           "details": "1. Review and implement PCI compliance requirements\n2. Add input validation for all payment-related forms\n3. Implement CSRF protection for checkout endpoints\n4. Create end-to-end tests for the complete checkout flow\n5. Develop integration tests with Stripe API sandbox\n6. Set up automated testing in CI pipeline\n7. Perform security audit of the payment implementation",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Create end-to-end tests simulating user checkout flow. Implement integration tests with Stripe test mode. Perform security testing including penetration testing and vulnerability scanning. Update CI pipeline to include payment-related tests."
         },
         {
@@ -2959,7 +2959,7 @@
           "title": "Security Implementation",
           "description": "Implement PCI compliance measures, input validation, secure token handling, and payment data protection according to Stripe security best practices.",
           "details": "",
-          "status": "pending",
+          "status": "done",
           "dependencies": [],
           "parentTaskId": 24
         },
@@ -2968,7 +2968,7 @@
           "title": "Error Handling & Recovery",
           "description": "Implement comprehensive error handling for payment failures, network issues, webhook delivery failures, and user-friendly error messaging with retry mechanisms.",
           "details": "",
-          "status": "pending",
+          "status": "done",
           "dependencies": [],
           "parentTaskId": 24
         }
@@ -3177,7 +3177,7 @@
       "id": 28,
       "title": "GPT BudgetGuard Middleware",
       "description": "Implement middleware to monitor and cap GPT API usage with configurable budget limits and automatic throttling",
-      "status": "pending",
+      "status": "in-progress",
       "dependencies": [],
       "priority": "high",
       "details": "",
@@ -3189,7 +3189,7 @@
           "description": "Create a module that tracks and logs GPT API usage, including token counts, request frequency, and associated costs. This module will serve as the foundation for budget monitoring.",
           "dependencies": [],
           "details": "Develop a class that intercepts GPT API calls, counts tokens for both input and output, calculates costs based on current pricing, and stores usage data in a persistent store. Implement methods for retrieving current usage statistics and historical trends. Use the decorator pattern to wrap API calls without modifying existing code.",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Unit test with mock API responses to verify token counting accuracy and cost calculations. Test persistence of usage data across multiple requests."
         },
         {

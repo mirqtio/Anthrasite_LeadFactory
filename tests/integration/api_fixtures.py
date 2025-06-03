@@ -14,6 +14,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from tests.integration.api_test_config import APITestConfig, api_call_metrics
+from leadfactory.cost.gpt_usage_tracker import gpt_usage_tracker
 
 # Mock response data directory
 MOCK_DATA_DIR = Path(__file__).parent / "mock_data"
@@ -224,6 +225,7 @@ def openai_api(api_metrics_logger):
                     self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
                 @api_call_metrics("openai", "chat_completion")
+                @gpt_usage_tracker(model="gpt-4o", operation="chat_completion")
                 def chat_completion(self, messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs) -> dict[str, Any]:
                     """Generate a chat completion using OpenAI API."""
                     response = self.client.chat.completions.create(
