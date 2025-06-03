@@ -11,21 +11,20 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Create a MagicMock object instead of a regular function
+# Create a mock for track_api_cost that will be used in tests
 mock_track_api_cost = MagicMock(return_value=True)
 mock_track_api_cost.__name__ = "mock_track_api_cost"
 
 
-# Create a mock for the Wappalyzer module
 class MockWappalyzer:
     def __init__(self, *args, **kwargs):
         pass
 
     def analyze(self, *args, **kwargs):
-        return {"technologies": []}
+        return {}
 
     def analyze_with_categories(self, *args, **kwargs):
-        return {"technologies": []}
+        return {}
 
     @classmethod
     def latest(cls):
@@ -44,25 +43,31 @@ class MockWebPage:
 # Patch the Wappalyzer module
 sys.modules["wappalyzer"] = type("wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage})
 
-# Create directory structure in the module namespace for proper mocking
-if "leadfactory" not in sys.modules:
-    sys.modules["leadfactory"] = type("leadfactory", (), {})()
-if "leadfactory.utils" not in sys.modules:
-    sys.modules["leadfactory.utils"] = type("utils", (), {})()
-if "leadfactory.utils.io" not in sys.modules:
-    sys.modules["leadfactory.utils.io"] = type("io", (), {"track_api_cost": mock_track_api_cost})()
+# Create mock modules for utils.io to avoid import issues
+# This handles the legacy utils.io module structure
+sys.modules["utils"] = type("utils", (), {})()
+sys.modules["utils.io"] = type("io", (), {"track_api_cost": mock_track_api_cost})()
 
-# Direct patch of the module attributes instead of using patch()
-sys.modules["leadfactory.utils.io"].track_api_cost = mock_track_api_cost
+# Also create the leadfactory.utils.io mock for consistency
+sys.modules["leadfactory.utils.io"] = type("io", (), {"track_api_cost": mock_track_api_cost})()
+
+# Apply the mock to any existing modules
+sys.modules["utils"].io = sys.modules["utils.io"]
+sys.modules["utils.io"].track_api_cost = mock_track_api_cost
 
 # Try importing using relative imports for the CI environment
 try:
     from leadfactory import utils  # noqa: E402
-    # Apply the mock to the imported module
-    utils.io.track_api_cost = mock_track_api_cost
+    # Create an io attribute if it doesn't exist
+    if not hasattr(utils, 'io'):
+        utils.io = type("io", (), {"track_api_cost": mock_track_api_cost})()
+    else:
+        # Apply the mock to the imported module
+        utils.io.track_api_cost = mock_track_api_cost
 except ImportError:
     # In case the above import fails, we'll just use our mock modules defined above
     pass
+
 # Make sure to clean up after tests
 atexit.register(patch.stopall)
 
@@ -70,7 +75,6 @@ atexit.register(patch.stopall)
 # Fixture to reset mocks between tests
 @pytest.fixture(autouse=True)
 def reset_mocks():
-    """Reset all mocks before each test."""
     mock_track_api_cost.reset_mock()
     yield
     mock_track_api_cost.reset_mock()

@@ -146,7 +146,7 @@
       "velocity_metadata": {
         "complexity_score": 9,
         "estimated_hours": null,
-        "actual_hours": 5.555555555555555e-7,
+        "actual_hours": 5.555555555555555e-07,
         "velocity_points": 9,
         "blocked_time": 0,
         "status_history": [
@@ -158,7 +158,7 @@
           {
             "status": "in-progress",
             "timestamp": "2025-05-29T23:20:36.858Z",
-            "duration_hours": 5.555555555555555e-7
+            "duration_hours": 5.555555555555555e-07
           },
           {
             "status": "done",
@@ -175,7 +175,7 @@
       "id": 2,
       "title": "Automate IP/Subuser Rotation for Bounce Thresholds",
       "description": "Automate IP rotation based on bounce rates, with tests",
-      "status": "deferred",
+      "status": "in-progress",
       "priority": "medium",
       "type": "feature",
       "created_at": "2025-05-28T09:00:00Z",
@@ -189,7 +189,7 @@
           "description": "Create a service to continuously monitor bounce rates for each IP/subuser combination in the system",
           "dependencies": [],
           "details": "Develop a monitoring service that connects to the email delivery metrics API to track bounce rates in real-time. Implement a data structure to store and update bounce rate statistics per IP/subuser. Create a configuration module to define sampling periods (e.g., hourly, daily) and calculation methods (e.g., rolling average vs. point-in-time). Ensure the monitoring runs as a background process with appropriate error handling and retry logic.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit tests for bounce rate calculation logic. Mock API responses for testing different bounce scenarios. Integration tests with a test email provider account to verify accurate bounce detection.",
           "velocity_metadata": {
             "complexity_score": 6,
@@ -216,7 +216,7 @@
             1
           ],
           "details": "Implement a configuration module that allows setting different bounce thresholds (e.g., 5%, 8%, 10%) with different severity levels. Create a detection service that compares current bounce rates from the monitoring system against these thresholds. Implement a notification mechanism that triggers when thresholds are exceeded. Add support for different threshold types (absolute values vs. relative increases). Include configuration for different thresholds based on email volume or recipient domains.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit tests for threshold detection logic with various configurations. Integration tests to verify threshold breach detection works correctly with the monitoring system.",
           "velocity_metadata": {
             "complexity_score": 7,
@@ -243,7 +243,7 @@
             2
           ],
           "details": "Develop a rotation service that maintains a pool of available IPs/subusers. Implement logic to select the next best IP/subuser based on current performance metrics. Create a rotation execution mechanism that gracefully transitions traffic. Implement cooldown period tracking for rotated IPs/subusers, preventing their reuse until a configurable time has passed. Add a fallback mechanism for scenarios where no suitable alternatives are available. Include transaction safety to prevent partial rotations.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit tests for rotation selection logic. Integration tests with mock email provider to verify rotation execution. Stress tests to ensure system handles multiple simultaneous rotation events correctly.",
           "velocity_metadata": {
             "complexity_score": 6,
@@ -288,6 +288,15 @@
           },
           "created_at": "2025-05-29T22:47:34.763Z",
           "last_updated": "2025-05-29T22:47:34.763Z"
+        },
+        {
+          "id": 5,
+          "title": "Comprehensive Testing Suite",
+          "description": "Unit tests for IP rotation logic, integration tests with bounce monitoring, e2e tests for rotation behavior, run all tests and resolve issues, update CI with rotation tests, merge to master and confirm successful CI via GitHub CLI logs.",
+          "details": "",
+          "status": "in-progress",
+          "dependencies": [],
+          "parentTaskId": 2
         }
       ],
       "velocity_metadata": {
@@ -1450,13 +1459,13 @@
       "id": 11,
       "title": "Implement Web Interface for HTML and LLM Logs Browsing",
       "description": "Create a user-friendly web interface that allows users to browse, search, filter, and export stored HTML and LLM logs, providing easy access to historical data.",
-      "details": "Implement an advanced analytics system with the following components:\n\n1. Data Integration Layer:\n   - Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n   - Implement data normalization and cleaning processes\n   - Design a unified data schema optimized for analytics\n   - Set up real-time data streaming for continuous analysis\n\n2. Machine Learning Models:\n   - Develop lead quality scoring algorithms using supervised learning\n   - Implement pattern recognition for lead behavior analysis\n   - Create conversion prediction models with feature importance analysis\n   - Build ROI optimization algorithms with A/B testing capabilities\n   - Implement model training pipelines with validation frameworks\n\n3. Analytics Dashboard:\n   - Design an intuitive UI with key performance indicators\n   - Create interactive visualizations for lead funnel analysis\n   - Implement drill-down capabilities for detailed insights\n   - Add customizable reporting views for different stakeholders\n   - Ensure mobile responsiveness for on-the-go access\n\n4. Automated Reporting System:\n   - Implement scheduled report generation\n   - Create natural language generation for insight summaries\n   - Design alert mechanisms for anomaly detection\n   - Develop export functionality in multiple formats (PDF, CSV, Excel)\n   - Implement email delivery with customizable templates\n\n5. Scalable Architecture:\n   - Design for horizontal scaling to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Create data partitioning for efficient query processing\n   - Set up appropriate security measures for sensitive data\n   - Implement logging and monitoring for system health\n\n6. Integration with Existing Systems:\n   - Connect with current lead generation workflows\n   - Implement API endpoints for third-party tool integration\n   - Ensure backward compatibility with existing reporting tools\n   - Create documentation for integration points",
-      "testStrategy": "1. Unit Testing:\n   - Write unit tests for all frontend components (filters, search, pagination)\n   - Test backend API endpoints with various query parameters\n   - Verify authentication and authorization logic\n   - Test data export functionality for all supported formats\n\n2. Integration Testing:\n   - Test the complete flow from log storage to retrieval and display\n   - Verify filtering works correctly with backend queries\n   - Test search functionality with various query types\n   - Ensure pagination works correctly with large datasets\n\n3. Performance Testing:\n   - Benchmark API response times with various query complexities\n   - Test UI performance with large log datasets\n   - Verify memory usage remains acceptable during extended use\n   - Test concurrent user access scenarios\n\n4. User Acceptance Testing:\n   - Create test scenarios for common user workflows\n   - Verify all filtering options work as expected\n   - Test across different browsers and devices\n   - Validate that exported data is complete and correctly formatted\n\n5. Security Testing:\n   - Verify unauthorized users cannot access log data\n   - Test role-based access controls\n   - Ensure sensitive data is properly protected\n   - Validate input sanitization for search and filter parameters\n\n6. Regression Testing:\n   - Ensure existing log storage functionality continues to work\n   - Verify integration with any existing systems",
       "status": "deferred",
       "dependencies": [
         9
       ],
       "priority": "medium",
+      "details": "Implement an advanced analytics system with the following components:\n\n1. Data Integration Layer:\n   - Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n   - Implement data normalization and cleaning processes\n   - Design a unified data schema optimized for analytics\n   - Set up real-time data streaming for continuous analysis\n\n2. Machine Learning Models:\n   - Develop lead quality scoring algorithms using supervised learning\n   - Implement pattern recognition for lead behavior analysis\n   - Create conversion prediction models with feature importance analysis\n   - Build ROI optimization algorithms with A/B testing capabilities\n   - Implement model training pipelines with validation frameworks\n\n3. Analytics Dashboard:\n   - Design an intuitive UI with key performance indicators\n   - Create interactive visualizations for lead funnel analysis\n   - Implement drill-down capabilities for detailed insights\n   - Add customizable reporting views for different stakeholders\n   - Ensure mobile responsiveness for on-the-go access\n\n4. Automated Reporting System:\n   - Implement scheduled report generation\n   - Create natural language generation for insight summaries\n   - Design alert mechanisms for anomaly detection\n   - Develop export functionality in multiple formats (PDF, CSV, Excel)\n   - Implement email delivery with customizable templates\n\n5. Scalable Architecture:\n   - Design for horizontal scaling to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Create data partitioning for efficient query processing\n   - Set up appropriate security measures for sensitive data\n   - Implement logging and monitoring for system health\n\n6. Integration with Existing Systems:\n   - Connect with current lead generation workflows\n   - Implement API endpoints for third-party tool integration\n   - Ensure backward compatibility with existing reporting tools\n   - Create documentation for integration points",
+      "testStrategy": "1. Unit Testing:\n   - Write unit tests for all frontend components (filters, search, pagination)\n   - Test backend API endpoints with various query parameters\n   - Verify authentication and authorization logic\n   - Test data export functionality for all supported formats\n\n2. Integration Testing:\n   - Test the complete flow from log storage to retrieval and display\n   - Verify filtering works correctly with backend queries\n   - Test search functionality with various query types\n   - Ensure pagination works correctly with large datasets\n\n3. Performance Testing:\n   - Benchmark API response times with various query complexities\n   - Test UI performance with large log datasets\n   - Verify memory usage remains acceptable during extended use\n   - Test concurrent user access scenarios\n\n4. User Acceptance Testing:\n   - Create test scenarios for common user workflows\n   - Verify all filtering options work as expected\n   - Test across different browsers and devices\n   - Validate that exported data is complete and correctly formatted\n\n5. Security Testing:\n   - Verify unauthorized users cannot access log data\n   - Test role-based access controls\n   - Ensure sensitive data is properly protected\n   - Validate input sanitization for search and filter parameters\n\n6. Regression Testing:\n   - Ensure existing log storage functionality continues to work\n   - Verify integration with any existing systems",
       "subtasks": [
         {
           "id": 1,
@@ -1564,30 +1573,12 @@
           "created_at": "2025-05-29T22:47:34.763Z",
           "last_updated": "2025-05-29T22:47:34.763Z"
         }
-      ],
-      "velocity_metadata": {
-        "complexity_score": 9,
-        "estimated_hours": null,
-        "actual_hours": null,
-        "velocity_points": 9,
-        "blocked_time": 0,
-        "status_history": [
-          {
-            "status": "deferred",
-            "timestamp": "2025-05-29T22:47:34.763Z",
-            "duration_hours": null
-          }
-        ]
-      },
-      "created_at": "2025-05-29T22:47:34.763Z",
-      "last_updated": "2025-05-29T22:47:34.763Z"
+      ]
     },
     {
       "id": 12,
       "title": "Implement Advanced Analytics for Lead Generation Optimization",
       "description": "Develop a comprehensive analytics system that leverages machine learning to analyze lead quality, conversion rates, and ROI, providing actionable insights through predictive models and automated reporting.",
-      "details": "Implement an advanced analytics system with the following components:\n\n1. Data Integration Layer:\n   - Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n   - Implement data normalization and cleaning processes\n   - Design a unified data schema optimized for analytics\n   - Set up real-time data streaming for continuous analysis\n\n2. Machine Learning Models:\n   - Develop lead quality scoring algorithms using supervised learning\n   - Implement pattern recognition for lead behavior analysis\n   - Create conversion prediction models with feature importance analysis\n   - Build ROI optimization algorithms with A/B testing capabilities\n   - Implement model training pipelines with validation frameworks\n\n3. Analytics Dashboard:\n   - Design an intuitive UI with key performance indicators\n   - Create interactive visualizations for lead funnel analysis\n   - Implement drill-down capabilities for detailed insights\n   - Add customizable reporting views for different stakeholders\n   - Ensure mobile responsiveness for on-the-go access\n\n4. Automated Reporting System:\n   - Implement scheduled report generation\n   - Create natural language generation for insight summaries\n   - Design alert mechanisms for anomaly detection\n   - Develop export functionality in multiple formats (PDF, CSV, Excel)\n   - Implement email delivery with customizable templates\n\n5. Scalable Architecture:\n   - Design for horizontal scaling to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Create data partitioning for efficient query processing\n   - Set up appropriate security measures for sensitive data\n   - Implement logging and monitoring for system health\n\n6. Integration with Existing Systems:\n   - Connect with current lead generation workflows\n   - Implement API endpoints for third-party tool integration\n   - Ensure backward compatibility with existing reporting tools\n   - Create documentation for integration points",
-      "testStrategy": "Verify the implementation through the following testing approach:\n\n1. Data Integration Testing:\n   - Validate data completeness and accuracy from all sources\n   - Test ETL processes with various data scenarios (clean, dirty, missing)\n   - Measure data processing performance under load\n   - Verify data consistency across the system\n\n2. Machine Learning Model Validation:\n   - Implement cross-validation for all predictive models\n   - Measure model accuracy, precision, recall, and F1 scores\n   - Conduct A/B testing to compare model performance against baseline\n   - Test model retraining processes with historical data\n   - Validate feature importance analysis with domain experts\n\n3. Dashboard and UI Testing:\n   - Perform usability testing with actual stakeholders\n   - Conduct cross-browser and cross-device compatibility testing\n   - Validate visualization accuracy against raw data\n   - Test performance with large datasets and concurrent users\n   - Verify export functionality for all supported formats\n\n4. Automated Reporting Testing:\n   - Validate report generation accuracy and completeness\n   - Test scheduling functionality across different time zones\n   - Verify email delivery and formatting across mail clients\n   - Test natural language generation for accuracy and readability\n   - Validate alert thresholds and notification delivery\n\n5. System Integration Testing:\n   - Test end-to-end workflows from data ingestion to reporting\n   - Validate API endpoints with various request scenarios\n   - Measure system performance under expected and peak loads\n   - Conduct security testing including penetration testing\n   - Verify system resilience with chaos engineering techniques\n\n6. User Acceptance Testing:\n   - Create test scenarios based on real business use cases\n   - Collect feedback from stakeholders on insights quality\n   - Validate ROI calculations against manual analysis\n   - Measure system adoption and usage metrics",
       "status": "deferred",
       "dependencies": [
         5,
@@ -1595,6 +1586,8 @@
         11
       ],
       "priority": "medium",
+      "details": "Implement an advanced analytics system with the following components:\n\n1. Data Integration Layer:\n   - Create ETL pipelines to collect data from multiple sources (CRM, marketing platforms, website)\n   - Implement data normalization and cleaning processes\n   - Design a unified data schema optimized for analytics\n   - Set up real-time data streaming for continuous analysis\n\n2. Machine Learning Models:\n   - Develop lead quality scoring algorithms using supervised learning\n   - Implement pattern recognition for lead behavior analysis\n   - Create conversion prediction models with feature importance analysis\n   - Build ROI optimization algorithms with A/B testing capabilities\n   - Implement model training pipelines with validation frameworks\n\n3. Analytics Dashboard:\n   - Design an intuitive UI with key performance indicators\n   - Create interactive visualizations for lead funnel analysis\n   - Implement drill-down capabilities for detailed insights\n   - Add customizable reporting views for different stakeholders\n   - Ensure mobile responsiveness for on-the-go access\n\n4. Automated Reporting System:\n   - Implement scheduled report generation\n   - Create natural language generation for insight summaries\n   - Design alert mechanisms for anomaly detection\n   - Develop export functionality in multiple formats (PDF, CSV, Excel)\n   - Implement email delivery with customizable templates\n\n5. Scalable Architecture:\n   - Design for horizontal scaling to handle growing data volumes\n   - Implement caching strategies for performance optimization\n   - Create data partitioning for efficient query processing\n   - Set up appropriate security measures for sensitive data\n   - Implement logging and monitoring for system health\n\n6. Integration with Existing Systems:\n   - Connect with current lead generation workflows\n   - Implement API endpoints for third-party tool integration\n   - Ensure backward compatibility with existing reporting tools\n   - Create documentation for integration points",
+      "testStrategy": "Verify the implementation through the following testing approach:\n\n1. Data Integration Testing:\n   - Validate data completeness and accuracy from all sources\n   - Test ETL processes with various data scenarios (clean, dirty, missing)\n   - Measure data processing performance under load\n   - Verify data consistency across the system\n\n2. Machine Learning Model Validation:\n   - Implement cross-validation for all predictive models\n   - Measure model accuracy, precision, recall, and F1 scores\n   - Conduct A/B testing to compare model performance against baseline\n   - Test model retraining processes with historical data\n   - Validate feature importance analysis with domain experts\n\n3. Dashboard and UI Testing:\n   - Perform usability testing with actual stakeholders\n   - Conduct cross-browser and cross-device compatibility testing\n   - Validate visualization accuracy against raw data\n   - Test performance with large datasets and concurrent users\n   - Verify export functionality for all supported formats\n\n4. Automated Reporting Testing:\n   - Validate report generation accuracy and completeness\n   - Test scheduling functionality across different time zones\n   - Verify email delivery and formatting across mail clients\n   - Test natural language generation for accuracy and readability\n   - Validate alert thresholds and notification delivery\n\n5. System Integration Testing:\n   - Test end-to-end workflows from data ingestion to reporting\n   - Validate API endpoints with various request scenarios\n   - Measure system performance under expected and peak loads\n   - Conduct security testing including penetration testing\n   - Verify system resilience with chaos engineering techniques\n\n6. User Acceptance Testing:\n   - Create test scenarios based on real business use cases\n   - Collect feedback from stakeholders on insights quality\n   - Validate ROI calculations against manual analysis\n   - Measure system adoption and usage metrics",
       "subtasks": [
         {
           "id": 1,
@@ -1734,30 +1727,12 @@
           "created_at": "2025-05-29T22:47:34.763Z",
           "last_updated": "2025-05-29T22:47:34.763Z"
         }
-      ],
-      "velocity_metadata": {
-        "complexity_score": 9,
-        "estimated_hours": null,
-        "actual_hours": null,
-        "velocity_points": 9,
-        "blocked_time": 0,
-        "status_history": [
-          {
-            "status": "deferred",
-            "timestamp": "2025-05-29T22:47:34.763Z",
-            "duration_hours": null
-          }
-        ]
-      },
-      "created_at": "2025-05-29T22:47:34.763Z",
-      "last_updated": "2025-05-29T22:47:34.763Z"
+      ]
     },
     {
       "id": 13,
       "title": "Implement Scalable Architecture for High-Volume Lead Processing",
       "description": "Implement a scalable architecture for the Anthrasite LeadFactory system to efficiently process increased lead volumes, targeting at least 10x the current capacity without performance degradation.",
-      "details": "Implement a comprehensive scalable architecture with the following components:\n\n1. Horizontal Scaling Implementation:\n   - Refactor application components to be stateless\n   - Implement containerization using Docker for all services\n   - Configure Kubernetes for orchestration and auto-scaling\n   - Set up load balancing with health checks and failover\n   - Implement distributed session management if applicable\n\n2. Database Optimization:\n   - Implement database sharding for lead data\n   - Set up read replicas for high-volume queries\n   - Optimize database indexes based on query patterns\n   - Implement connection pooling\n   - Add database query caching where appropriate\n   - Consider NoSQL solutions for specific high-volume data types\n\n3. Caching Layer Implementation:\n   - Implement Redis or similar distributed caching\n   - Cache frequently accessed lead data and scoring rules\n   - Implement cache invalidation strategies\n   - Set up tiered caching (memory, distributed, disk)\n   - Configure TTL policies based on data volatility\n\n4. Message Queue System:\n   - Implement RabbitMQ or Kafka for asynchronous processing\n   - Design queue topology for lead processing workflows\n   - Implement dead letter queues for failed processing\n   - Configure retry policies and backoff strategies\n   - Add monitoring for queue depths and processing rates\n\n5. Microservices Architecture:\n   - Decompose monolithic components into microservices\n   - Define service boundaries based on business capabilities\n   - Implement API gateway for service orchestration\n   - Design inter-service communication protocols\n   - Implement circuit breakers for fault tolerance\n\n6. Monitoring and Observability:\n   - Implement distributed tracing (Jaeger or similar)\n   - Set up metrics collection with Prometheus\n   - Configure dashboards in Grafana for real-time monitoring\n   - Implement alerting for performance thresholds\n   - Add structured logging across all services\n\n7. Performance Testing Framework:\n   - Develop load testing scripts simulating 10x current volume\n   - Implement performance benchmarking tools\n   - Create automated performance regression tests\n   - Set up continuous performance testing in CI/CD pipeline",
-      "testStrategy": "1. Component-Level Testing:\n   - Unit test all new scalable components\n   - Test each service independently with mock dependencies\n   - Verify proper configuration of each infrastructure component\n   - Test failure scenarios and recovery mechanisms\n\n2. Integration Testing:\n   - Test communication between microservices\n   - Verify message queue producers and consumers\n   - Test database sharding and read replica functionality\n   - Validate caching behavior and invalidation\n   - Test service discovery and load balancing\n\n3. Load Testing:\n   - Create baseline performance metrics at current load\n   - Incrementally increase load to 2x, 5x, and 10x current volume\n   - Measure response times, throughput, and resource utilization\n   - Identify and resolve bottlenecks\n   - Test auto-scaling triggers and behavior\n\n4. Chaos Testing:\n   - Simulate infrastructure failures (network, instances, databases)\n   - Test system resilience during component outages\n   - Verify data consistency during recovery scenarios\n   - Validate circuit breaker functionality\n\n5. Monitoring Validation:\n   - Verify all metrics are properly collected and displayed\n   - Test alerting thresholds and notifications\n   - Validate distributed tracing for complex transactions\n   - Ensure logs provide adequate information for troubleshooting\n\n6. Acceptance Criteria:\n   - System must handle 10x current load with <10% performance degradation\n   - Recovery from component failures must be automatic\n   - No data loss during scaling or component failures\n   - All monitoring dashboards must accurately reflect system state",
       "status": "deferred",
       "dependencies": [
         1,
@@ -1766,6 +1741,8 @@
         9
       ],
       "priority": "high",
+      "details": "Implement a comprehensive scalable architecture with the following components:\n\n1. Horizontal Scaling Implementation:\n   - Refactor application components to be stateless\n   - Implement containerization using Docker for all services\n   - Configure Kubernetes for orchestration and auto-scaling\n   - Set up load balancing with health checks and failover\n   - Implement distributed session management if applicable\n   - Maintain 3x t3.medium Puppeteer containers always running\n   - Integrate with GPU burst capability via Hetzner when personalization queue exceeds 2k\n\n2. Database Optimization:\n   - Implement database sharding for lead data\n   - Set up read replicas for high-volume queries\n   - Optimize database indexes based on query patterns\n   - Implement connection pooling\n   - Add database query caching where appropriate\n   - Consider NoSQL solutions for specific high-volume data types\n\n3. Caching Layer Implementation:\n   - Implement Redis or similar distributed caching\n   - Cache frequently accessed lead data and scoring rules\n   - Implement cache invalidation strategies\n   - Set up tiered caching (memory, distributed, disk)\n   - Configure TTL policies based on data volatility\n\n4. Message Queue System:\n   - Implement RabbitMQ or Kafka for asynchronous processing\n   - Design queue topology for lead processing workflows\n   - Implement dead letter queues for failed processing\n   - Configure retry policies and backoff strategies\n   - Add monitoring for queue depths and processing rates\n\n5. Microservices Architecture:\n   - Decompose monolithic components into microservices\n   - Define service boundaries based on business capabilities\n   - Implement API gateway for service orchestration\n   - Design inter-service communication protocols\n   - Implement circuit breakers for fault tolerance\n\n6. Monitoring and Observability:\n   - Implement distributed tracing (Jaeger or similar)\n   - Set up metrics collection with Prometheus\n   - Configure dashboards in Grafana for real-time monitoring\n   - Implement alerting for performance thresholds\n   - Add structured logging across all services\n\n7. Performance Testing Framework:\n   - Develop load testing scripts simulating 10x current volume\n   - Implement performance benchmarking tools\n   - Create automated performance regression tests\n   - Set up continuous performance testing in CI/CD pipeline",
+      "testStrategy": "1. Component-Level Testing:\n   - Unit test all new scalable components\n   - Test each service independently with mock dependencies\n   - Verify proper configuration of each infrastructure component\n   - Test failure scenarios and recovery mechanisms\n\n2. Integration Testing:\n   - Test communication between microservices\n   - Verify message queue producers and consumers\n   - Test database sharding and read replica functionality\n   - Validate caching behavior and invalidation\n   - Test service discovery and load balancing\n\n3. Load Testing:\n   - Create baseline performance metrics at current load\n   - Incrementally increase load to 2x, 5x, and 10x current volume\n   - Measure response times, throughput, and resource utilization\n   - Identify and resolve bottlenecks\n   - Test auto-scaling triggers and behavior\n\n4. Chaos Testing:\n   - Simulate infrastructure failures (network, instances, databases)\n   - Test system resilience during component outages\n   - Verify data consistency during recovery scenarios\n   - Validate circuit breaker functionality\n\n5. Monitoring Validation:\n   - Verify all metrics are properly collected and displayed\n   - Test alerting thresholds and notifications\n   - Validate distributed tracing for complex transactions\n   - Ensure logs provide adequate information for troubleshooting\n\n6. Acceptance Criteria:\n   - System must handle 10x current load with <10% performance degradation\n   - Recovery from component failures must be automatic\n   - No data loss during scaling or component failures\n   - All monitoring dashboards must accurately reflect system state\n   - 3x t3.medium Puppeteer containers must be always running\n   - GPU burst capability via Hetzner must activate when personalization queue exceeds 2k",
       "subtasks": [
         {
           "id": 1,
@@ -1879,9 +1856,9 @@
             1,
             4
           ],
-          "details": "Create Kubernetes deployment manifests for all containerized services. Configure horizontal pod autoscalers based on CPU/memory metrics. Implement readiness/liveness probes for all services. Set up ingress controllers with appropriate routing rules. Configure network policies for service-to-service communication. Implement resource quotas and limits. Create persistent volume claims for stateful components. Document Kubernetes cluster requirements and scaling parameters.",
+          "details": "Create Kubernetes deployment manifests for all containerized services. Configure horizontal pod autoscalers based on CPU/memory metrics. Implement readiness/liveness probes for all services. Set up ingress controllers with appropriate routing rules. Configure network policies for service-to-service communication. Implement resource quotas and limits. Create persistent volume claims for stateful components. Document Kubernetes cluster requirements and scaling parameters. Configure Kubernetes to maintain 3x t3.medium Puppeteer containers always running. Integrate with Hetzner GPU provisioning system for burst capacity.",
           "status": "pending",
-          "testStrategy": "Test auto-scaling by simulating traffic spikes. Verify pod recovery after forced termination. Validate resource allocation under various load conditions. Test rolling updates without service disruption.",
+          "testStrategy": "Test auto-scaling by simulating traffic spikes. Verify pod recovery after forced termination. Validate resource allocation under various load conditions. Test rolling updates without service disruption. Verify that 3x t3.medium Puppeteer containers remain running at all times. Test integration with Hetzner GPU provisioning when personalization queue exceeds 2k items.",
           "velocity_metadata": {
             "complexity_score": 6,
             "estimated_hours": null,
@@ -1907,9 +1884,9 @@
             3,
             5
           ],
-          "details": "Implement distributed tracing with Jaeger across all services. Set up Prometheus for metrics collection with custom exporters for business KPIs. Create Grafana dashboards for real-time monitoring of system performance. Configure alerting for performance thresholds and anomaly detection. Implement structured logging with correlation IDs. Develop load testing scripts using JMeter or Locust simulating 10x current volume. Create automated performance regression tests in CI/CD pipeline. Document performance baselines and targets.",
+          "details": "Implement distributed tracing with Jaeger across all services. Set up Prometheus for metrics collection with custom exporters for business KPIs. Create Grafana dashboards for real-time monitoring of system performance. Configure alerting for performance thresholds and anomaly detection. Implement structured logging with correlation IDs. Develop load testing scripts using JMeter or Locust simulating 10x current volume. Create automated performance regression tests in CI/CD pipeline. Document performance baselines and targets. Add specific monitoring for Puppeteer containers and GPU burst capacity.",
           "status": "pending",
-          "testStrategy": "Validate end-to-end tracing for lead processing workflows. Verify metrics accuracy against known workloads. Test alerting by triggering threshold violations. Execute load tests to verify 10x capacity without degradation.",
+          "testStrategy": "Validate end-to-end tracing for lead processing workflows. Verify metrics accuracy against known workloads. Test alerting by triggering threshold violations. Execute load tests to verify 10x capacity without degradation. Verify monitoring correctly tracks Puppeteer container status and GPU burst activation.",
           "velocity_metadata": {
             "complexity_score": 9,
             "estimated_hours": null,
@@ -1926,24 +1903,17 @@
           },
           "created_at": "2025-05-29T22:47:34.763Z",
           "last_updated": "2025-05-29T22:47:34.763Z"
+        },
+        {
+          "id": 7,
+          "title": "Comprehensive Testing Suite",
+          "description": "Unit tests for containerized services, integration tests for Kubernetes orchestration, e2e tests for auto-scaling and monitoring, load testing for 10x capacity, run all tests and resolve issues, update CI with infrastructure tests, merge to master and confirm successful CI via GitHub CLI logs.",
+          "details": "",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 13
         }
-      ],
-      "velocity_metadata": {
-        "complexity_score": 10,
-        "estimated_hours": null,
-        "actual_hours": null,
-        "velocity_points": 10,
-        "blocked_time": 0,
-        "status_history": [
-          {
-            "status": "deferred",
-            "timestamp": "2025-05-29T22:47:34.763Z",
-            "duration_hours": null
-          }
-        ]
-      },
-      "created_at": "2025-05-29T22:47:34.763Z",
-      "last_updated": "2025-05-29T22:47:34.763Z"
+      ]
     },
     {
       "id": 14,
@@ -2094,23 +2064,7 @@
           "created_at": "2025-05-29T22:47:34.764Z",
           "last_updated": "2025-05-29T22:47:34.764Z"
         }
-      ],
-      "velocity_metadata": {
-        "complexity_score": 9,
-        "estimated_hours": null,
-        "actual_hours": null,
-        "velocity_points": 9,
-        "blocked_time": 0,
-        "status_history": [
-          {
-            "status": "deferred",
-            "timestamp": "2025-05-29T22:47:34.764Z",
-            "duration_hours": null
-          }
-        ]
-      },
-      "created_at": "2025-05-29T22:47:34.764Z",
-      "last_updated": "2025-05-29T22:47:34.764Z"
+      ]
     },
     {
       "id": 15,
@@ -2504,30 +2458,30 @@
     },
     {
       "id": 18,
-      "title": "Implement Pipeline Variant A/B Testing System",
-      "description": "Implement a complete A/B testing system for pipeline variants, utilizing the existing variant_id field in the email_queue table to support variant selection, tracking, and reporting.",
+      "title": "Implement A/B Testing for Email Subject Lines and Price Variants",
+      "description": "Implement a focused A/B testing system for email subject lines and price variants for audit reports, utilizing the existing variant_id field in the email_queue table to support variant selection, tracking, and reporting.",
       "status": "pending",
       "dependencies": [
         3,
         12,
         13
       ],
-      "priority": "high",
-      "details": "Implement a comprehensive A/B testing system for pipeline variants with the following components:\n\n1. Pipeline Variant Definition:\n   - Create a `PipelineVariant` class that defines alternative pipeline configurations\n   - Implement a registry system for managing multiple pipeline variants\n   - Support different node configurations, parameters, and flow paths per variant\n   - Ensure variants maintain the DAG structure and validation requirements\n   - Integrate with the existing email_queue table's variant_id field\n\n2. Variant Selection Mechanism:\n   - Create a `VariantSelector` class that implements logic for assigning leads to different pipeline variants\n   - Implement configurable distribution strategies (equal split, percentage-based, etc.)\n   - Add support for multiple variants (A/B/n testing) beyond just two options\n   - Ensure deterministic variant assignment for consistent user experiences\n   - Integrate with the existing email_queue table's variant_id field\n\n3. Tracking Implementation:\n   - Add tracking parameters to identify pipeline variants throughout processing\n   - Implement event tracking for opens, clicks, and conversions per variant\n   - Create a data storage schema for variant performance metrics\n   - Implement aggregation logic for real-time and historical performance data\n\n4. Reporting System:\n   - Develop a reporting API for variant performance metrics\n   - Implement statistical significance calculations for variant comparison\n   - Create visualization components for performance comparison\n   - Add export functionality for variant performance data\n   - Implement automated winner selection based on configurable metrics\n\n5. Integration with DAG Pipeline:\n   - Modify the pipeline execution engine to support variant-specific DAG configurations\n   - Update the pipeline traversal logic to handle variant-specific nodes and edges\n   - Integrate with the unified terminal GPT-4o node for consistent output handling\n   - Ensure proper tracking of variant data throughout the pipeline\n\n6. Configuration and Management:\n   - Create a configuration interface for defining variant parameters\n   - Implement test duration controls and automatic completion\n   - Add manual override capabilities for test management\n   - Implement safeguards against invalid configurations\n\nThe implementation should follow best practices for A/B testing, including proper randomization, statistical validity, and isolation of variables.",
-      "testStrategy": "Verify the A/B testing implementation with the following test strategy:\n\n1. Unit Tests:\n   - Test the `PipelineVariant` class with different node configurations\n   - Test the `VariantSelector` class with mock email_queue table data\n   - Verify deterministic variant assignment for consistent user experiences\n   - Test variant-specific DAG traversal with different configurations\n   - Validate tracking parameter generation and parsing\n   - Test statistical significance calculations with known datasets\n\n2. Integration Tests:\n   - Create a test email_queue table with sample data\n   - Verify the complete variant selection and tracking workflow\n   - Test the reporting API with simulated variant performance data\n   - Validate the pipeline execution with different variants\n   - Verify proper handling of variant data throughout the pipeline\n\n3. Performance Tests:\n   - Benchmark variant selection performance under high load\n   - Test reporting system with large datasets\n   - Verify tracking system can handle concurrent events\n   - Compare performance between different pipeline variants\n\n4. Functional Tests:\n   - Create test campaigns with multiple variants and verify correct distribution\n   - Validate that tracking correctly attributes actions to specific variants\n   - Test the reporting interface with real campaign data\n   - Verify that statistical calculations correctly identify winning variants\n   - Test automatic winner selection based on different metrics\n\n5. Regression Tests:\n   - Ensure existing pipeline functionality works with variant testing enabled\n   - Verify backward compatibility with non-variant pipeline configurations\n   - Test that existing analytics are not affected by the new tracking\n\n6. User Acceptance Tests:\n   - Create a test campaign with marketing team to validate usability\n   - Verify that reporting provides actionable insights\n   - Test the configuration interface for ease of use\n\nDocument all test cases and results in the project wiki, including screenshots of the reporting interface and example variant performance data.",
+      "priority": "low",
+      "details": "Implement a focused A/B testing system for email subject lines and price variants for audit reports with the following components:\n\n1. Variant Definition for Subject Lines and Price Variants:\n   - Create a `SubjectPriceVariant` class that defines alternative subject lines and price variants for audit reports\n   - Implement a registry system for managing multiple subject and price variants\n   - Support different pricing structures and subject line variations\n   - Ensure variants maintain consistent structure and validation requirements\n   - Integrate with the existing email_queue table's variant_id field\n\n2. Variant Selection Mechanism:\n   - Create a `VariantSelector` class that implements logic for assigning leads to different subject and price variants\n   - Implement configurable distribution strategies (equal split, percentage-based, etc.)\n   - Add support for multiple variants (A/B/n testing) beyond just two options\n   - Ensure deterministic variant assignment for consistent user experiences\n   - Integrate with the existing email_queue table's variant_id field\n\n3. Tracking Implementation:\n   - Add tracking parameters to identify subject and price variants throughout processing\n   - Implement event tracking for opens, clicks, and conversions per variant\n   - Create a data storage schema for variant performance metrics\n   - Implement aggregation logic for real-time and historical performance data\n\n4. Reporting System:\n   - Develop a reporting API for variant performance metrics\n   - Implement statistical significance calculations for variant comparison\n   - Create visualization components for performance comparison\n   - Add export functionality for variant performance data\n   - Implement automated winner selection based on configurable metrics\n\n5. Integration with Email System:\n   - Modify the email generation system to support variant-specific subject lines and pricing\n   - Update the email templates to handle dynamic price points\n   - Ensure proper tracking of variant data throughout the email delivery process\n\n6. Configuration and Management:\n   - Create a configuration interface for defining subject line and price variants\n   - Implement test duration controls and automatic completion\n   - Add manual override capabilities for test management\n   - Implement safeguards against invalid configurations\n\nThe implementation should focus specifically on testing different email subject lines and price points for the audit reports, rather than implementing a full A/B testing system for all email content.",
+      "testStrategy": "Verify the A/B testing implementation with the following test strategy:\n\n1. Unit Tests:\n   - Test the `SubjectPriceVariant` class with different subject line and price configurations\n   - Test the `VariantSelector` class with mock email_queue table data\n   - Verify deterministic variant assignment for consistent user experiences\n   - Test variant-specific email generation with different subject lines and prices\n   - Validate tracking parameter generation and parsing\n   - Test statistical significance calculations with known datasets\n\n2. Integration Tests:\n   - Create a test email_queue table with sample data\n   - Verify the complete variant selection and tracking workflow\n   - Test the reporting API with simulated variant performance data\n   - Validate the email generation with different subject line and price variants\n   - Verify proper handling of variant data throughout the email delivery process\n\n3. Performance Tests:\n   - Benchmark variant selection performance under high load\n   - Test reporting system with large datasets\n   - Verify tracking system can handle concurrent events\n   - Compare performance between different subject line and price variants\n\n4. Functional Tests:\n   - Create test campaigns with multiple subject line and price variants and verify correct distribution\n   - Validate that tracking correctly attributes actions to specific variants\n   - Test the reporting interface with real campaign data\n   - Verify that statistical calculations correctly identify winning variants\n   - Test automatic winner selection based on different metrics\n\n5. Regression Tests:\n   - Ensure existing email functionality works with variant testing enabled\n   - Verify backward compatibility with non-variant email configurations\n   - Test that existing analytics are not affected by the new tracking\n\n6. User Acceptance Tests:\n   - Create a test campaign with marketing team to validate usability\n   - Verify that reporting provides actionable insights on subject line and price variant effectiveness\n   - Test the configuration interface for ease of use\n\nDocument all test cases and results in the project wiki, including screenshots of the reporting interface and example variant performance data.",
       "subtasks": [
         {
           "id": 1,
-          "title": "Implement pipeline variant definition system",
-          "description": "Create a system for defining and managing different pipeline variants with alternative configurations",
+          "title": "Implement subject line and price variant definition system",
+          "description": "Create a system for defining and managing different subject lines and price variants for audit reports",
           "dependencies": [],
-          "details": "Develop a `PipelineVariant` class that allows defining alternative DAG configurations, node parameters, and flow paths. Implement a registry system for managing multiple variants. Ensure variants maintain proper DAG structure and validation requirements.",
+          "details": "Develop a `SubjectPriceVariant` class that allows defining alternative subject lines and price variants for audit reports. Implement a registry system for managing multiple variants. Ensure variants maintain proper structure and validation requirements.",
           "status": "pending"
         },
         {
           "id": 2,
           "title": "Build variant selection mechanism",
-          "description": "Create a system that assigns leads to different pipeline variants based on predefined distribution rules",
+          "description": "Create a system that assigns leads to different subject line and price variants based on predefined distribution rules",
           "dependencies": [],
           "details": "Develop a statistically sound randomization algorithm that ensures even distribution across variants. Include support for weighted distributions, cohort-based assignments, and persistent user assignments. Implement safeguards to prevent bias in selection. Create unit tests to verify distribution accuracy.",
           "status": "pending"
@@ -2535,7 +2489,7 @@
         {
           "id": 3,
           "title": "Implement tracking and analytics",
-          "description": "Add tracking capabilities to measure performance metrics for each pipeline variant",
+          "description": "Add tracking capabilities to measure performance metrics for each subject line and price variant",
           "dependencies": [
             1
           ],
@@ -2554,25 +2508,34 @@
         },
         {
           "id": 5,
-          "title": "Integrate with DAG pipeline architecture",
-          "description": "Modify the pipeline execution engine to support variant-specific DAG configurations",
+          "title": "Integrate with email delivery system",
+          "description": "Modify the email generation and delivery system to support variant-specific subject lines and price points",
           "dependencies": [
             1,
             2
           ],
-          "details": "Update the pipeline traversal logic to handle variant-specific nodes and edges. Integrate with the unified terminal GPT-4o node for consistent output handling. Ensure proper tracking of variant data throughout the pipeline execution.",
+          "details": "Update the email generation logic to handle variant-specific subject lines and price points. Integrate with the email template system for dynamic content insertion. Ensure proper tracking of variant data throughout the email delivery process.",
           "status": "pending"
         },
         {
           "id": 6,
           "title": "Build configuration interface",
-          "description": "Create a user interface for setting up and managing pipeline variants",
+          "description": "Create a user interface for setting up and managing subject line and price variants",
           "dependencies": [
             1,
             5
           ],
-          "details": "Design an interface for creating new variants, defining node configurations, setting distribution rules, and scheduling test duration. Implement validation for variant parameters. Create preview functionality for variants. Add capabilities for pausing, resuming, or stopping tests. Include permissions management for test creation and analysis.",
+          "details": "Design an interface for creating new variants, defining subject lines, price variations, setting distribution rules, and scheduling test duration. Implement validation for variant parameters. Create preview functionality for variants. Add capabilities for pausing, resuming, or stopping tests. Include permissions management for test creation and analysis.",
           "status": "pending"
+        },
+        {
+          "id": 7,
+          "title": "Comprehensive Testing Suite",
+          "description": "Unit tests for A/B testing logic and variant selection, integration tests with email delivery system, e2e browser tests following BDD principles for A/B test flows, run all tests and resolve issues, update CI with A/B testing tests, merge to master and confirm successful CI via GitHub CLI logs.",
+          "details": "",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 18
         }
       ]
     },
@@ -2660,7 +2623,7 @@
       "id": 20,
       "title": "Implement Node Capability Flags for Pipeline Configuration",
       "description": "Implement a node capability flag system to replace the MOCKUP_ENABLED configuration flag, allowing fine-grained control of node behavior in the DAG-based pipeline.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         16,
         17
@@ -2675,7 +2638,7 @@
           "description": "Create a comprehensive design for the node capability flag system",
           "dependencies": [],
           "details": "Define the core concepts of node capabilities, including capability types, inheritance rules, and configuration options. Create a `NodeCapability` enum or class with standard capabilities. Design the configuration schema for different levels (global, pipeline, node). Document the design with clear examples.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -2685,7 +2648,7 @@
             1
           ],
           "details": "Create a configuration system that supports capability settings at global, pipeline, and node levels. Implement configuration loading from files and environment variables. Add validation logic to ensure capability configurations are valid. Support dynamic runtime updates to capability settings.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -2696,7 +2659,7 @@
             2
           ],
           "details": "Update the base Node class to include capability checking logic. Implement methods for querying capability status and handling disabled capabilities gracefully. Add capability requirements declaration for nodes. Ensure proper documentation of capability usage in each node.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -2706,7 +2669,7 @@
             3
           ],
           "details": "Modify the DAG traversal algorithm to check node capabilities during execution. Implement capability-based routing and decision making. Update the unified terminal GPT-4o node to respect capability settings for mockup and email generation. Add validation to ensure required capabilities are available for critical paths.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -2714,10 +2677,11 @@
       "id": 21,
       "title": "Implement Automatic IP Pool Switching on Bounce Threshold",
       "description": "Implement an automated mechanism to switch to a dedicated sub-user IP pool when bounce rates exceed 2%, as specified in section 2 of the requirements, replacing the current manual SendGrid configuration process.",
-      "status": "pending",
+      "status": "blocked",
       "dependencies": [
         2,
-        13
+        13,
+        34
       ],
       "priority": "high",
       "details": "Implement a comprehensive automatic IP pool switching system with the following components:\n\n1. Bounce Rate Monitoring:\n   - Create a `BounceRateMonitor` class that interfaces with SendGrid API to retrieve bounce statistics\n   - Implement scheduled jobs to check bounce rates at regular intervals (hourly by default)\n   - Calculate rolling 24-hour bounce rate percentage for each IP pool/sub-user\n   - Add configurable threshold setting (default 2% per spec section 2)\n   - Implement proper error handling for API failures with retry logic\n\n2. IP Pool Management:\n   - Create an `IPPoolManager` class to handle IP pool switching operations\n   - Implement methods to retrieve available IP pools and their current status\n   - Add capability to switch active sending IP pool programmatically\n   - Implement cooldown period for previously high-bounce IP pools (default 72 hours)\n   - Add rotation strategy to ensure even distribution when multiple backup pools are available\n\n3. Notification System:\n   - Implement real-time alerts when bounce thresholds are approached (80% of threshold)\n   - Send critical notifications when automatic switching occurs\n   - Log all IP pool changes with timestamp, reason, and before/after state\n   - Create a dashboard component to display current and historical bounce rates\n\n4. Configuration Interface:\n   - Add new configuration parameters to settings:\n     - `BOUNCE_RATE_THRESHOLD`: Configurable bounce rate threshold (default 2.0)\n     - `BOUNCE_CHECK_INTERVAL`: Frequency of bounce rate checks (default 60 minutes)\n     - `IP_POOL_COOLDOWN_PERIOD`: Hours before a switched pool can be used again (default 72)\n     - `AUTO_SWITCH_ENABLED`: Master toggle for the feature (default True)\n   - Implement admin interface to manually override automatic decisions if needed\n\n5. SendGrid Integration:\n   - Extend existing SendGrid connector to support the new IP pool switching functionality\n   - Implement proper authentication and authorization for the required SendGrid API endpoints\n   - Add rate limiting and backoff strategies to prevent API abuse\n   - Create abstraction layer to support other email providers in the future\n\n6. Database Schema Updates:\n   - Add new tables to track:\n     - IP pool status history\n     - Bounce rate metrics over time\n     - Switching events with reasons\n   - Implement data retention policies for historical metrics\n\n7. Failsafe Mechanisms:\n   - Implement circuit breaker pattern to prevent excessive switching\n   - Add fallback logic if all available IP pools exceed threshold\n   - Create emergency manual override capability for critical situations\n   - Implement dry-run mode for testing without affecting production sending",
@@ -2846,6 +2810,824 @@
             4
           ],
           "details": "Implement secure API key management for Hetzner credentials. Set up network security for provisioned GPUs including firewalls and access controls. Create secure channels for communication between components. Implement audit logging for all provisioning actions. Develop a security incident response plan for the auto-provisioning system.",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "title": "Comprehensive Testing Suite",
+          "description": "Unit tests for GPU auto-spin logic and queue monitoring, integration tests with Hetzner GPU instances, e2e tests for personalization queue scaling, run all tests and resolve issues, update CI with GPU scaling tests, merge to master and confirm successful CI via GitHub CLI logs.",
+          "details": "",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 22
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Report Commerce & Delivery Epic",
+      "description": "Epic capturing everything needed to support direct-to-SMB audit sales including Stripe checkout, PDF rendering, email delivery, and secure storage",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Stripe checkout integration for audit sales",
+          "description": "Create the necessary backend and frontend components to integrate Stripe checkout for direct-to-SMB audit sales. This includes setting up Stripe API connections, creating payment intents, handling webhooks, and designing the checkout UI flow.",
+          "dependencies": [],
+          "details": "1. Set up Stripe API keys and SDK in the application\n2. Create payment intent endpoints in the backend\n3. Implement webhook handlers for payment events\n4. Design and implement checkout UI components\n5. Handle success/failure payment flows\n6. Store transaction records in the database",
+          "status": "pending",
+          "testStrategy": "Unit test the payment service and webhook handlers. Mock Stripe API responses for testing."
+        },
+        {
+          "id": 2,
+          "title": "Develop PDF audit report generation system",
+          "description": "Create a system to generate professional PDF audit reports based on customer data and audit results. The system should support templating, styling, and dynamic content insertion.",
+          "dependencies": [],
+          "details": "1. Select and integrate a PDF generation library\n2. Design report templates with proper styling\n3. Create a service to populate templates with audit data\n4. Implement image and chart embedding if needed\n5. Add pagination, headers, and footers\n6. Ensure generated PDFs are accessible and properly formatted",
+          "status": "pending",
+          "testStrategy": "Unit test the PDF generation service with sample data. Visually inspect generated PDFs for formatting issues."
+        },
+        {
+          "id": 3,
+          "title": "Build secure storage and delivery system for audit reports",
+          "description": "Implement a secure storage solution for audit reports with appropriate access controls. Create a delivery system that allows customers to securely access their reports.",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Set up secure cloud storage (S3 or equivalent)\n2. Implement access control and time-limited URLs\n3. Create database schema for tracking report access\n4. Build API endpoints for report retrieval\n5. Implement client-side report viewing components\n6. Add logging for all access attempts",
+          "status": "pending",
+          "testStrategy": "Test storage and retrieval with various file sizes. Verify access controls prevent unauthorized access."
+        },
+        {
+          "id": 4,
+          "title": "Implement email delivery system for audit reports",
+          "description": "Create an email delivery system that sends notifications and secure links to customers when their audit reports are ready. Include tracking capabilities and handle bounces/failures.",
+          "dependencies": [
+            3
+          ],
+          "details": "1. Set up email service provider integration\n2. Design email templates for report delivery\n3. Implement email sending service with retry logic\n4. Create tracking for email opens and link clicks\n5. Handle bounce notifications and delivery failures\n6. Implement scheduled/delayed sending capabilities",
+          "status": "pending",
+          "testStrategy": "Test email delivery to various providers. Verify tracking works correctly. Test bounce handling."
+        },
+        {
+          "id": 5,
+          "title": "Implement comprehensive testing and CI/CD integration",
+          "description": "Create and execute a comprehensive testing strategy for the entire commerce and delivery system. Integrate all tests into the CI/CD pipeline to ensure quality and prevent regressions.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Write unit tests for all core services\n2. Create integration tests for service interactions\n3. Implement E2E tests including browser-based BDD tests for frontend\n4. Set up test data generators and fixtures\n5. Update CI configuration to run all test suites\n6. Add GitHub CLI integration to verify successful test runs before merging",
+          "status": "pending",
+          "testStrategy": "Meta-testing: verify test coverage meets standards. Ensure tests run successfully in CI environment. Document any flaky tests and stabilize them."
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Implement Stripe Checkout Flow",
+      "description": "Build one-time purchase flow for  audit reports with Stripe integration, payment processing, and order confirmation",
+      "status": "pending",
+      "dependencies": [
+        23
+      ],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up Stripe API integration and configuration",
+          "description": "Initialize Stripe integration by setting up API keys, configuring the development environment, and implementing the necessary client and server-side libraries.",
+          "dependencies": [],
+          "details": "1. Register for Stripe account and obtain API keys (test and production)\n2. Install Stripe SDK/libraries for both frontend and backend\n3. Create configuration files for storing API keys securely using environment variables\n4. Set up basic Stripe client initialization in the application\n5. Implement a simple test endpoint to verify connectivity with Stripe API",
+          "status": "pending",
+          "testStrategy": "Write unit tests to verify Stripe client initialization and connection to API. Create a mock for Stripe API responses to test the integration without making actual API calls."
+        },
+        {
+          "id": 2,
+          "title": "Implement checkout session creation and product setup",
+          "description": "Create the necessary product configurations in Stripe and implement the checkout session creation flow that will redirect users to the Stripe-hosted checkout page.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Set up audit report products in Stripe dashboard with appropriate pricing\n2. Create API endpoint to initiate checkout process\n3. Implement session creation logic that generates a unique checkout session with the selected audit report product\n4. Add frontend component to trigger checkout and handle redirect to Stripe\n5. Store checkout session information in database for tracking",
+          "status": "pending",
+          "testStrategy": "Test the checkout session creation endpoint with various product configurations. Verify the correct parameters are passed to Stripe and proper session objects are returned."
+        },
+        {
+          "id": 3,
+          "title": "Implement payment processing and webhook handling",
+          "description": "Set up webhook endpoints to receive and process payment events from Stripe, including successful payments, failed payments, and other relevant events.",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Create webhook endpoint to receive Stripe events\n2. Implement signature verification for webhook security\n3. Handle payment_intent.succeeded events to confirm successful payments\n4. Handle payment_intent.failed events for failed payments\n5. Implement database updates based on payment status changes\n6. Set up logging for all webhook events for debugging and auditing",
+          "status": "pending",
+          "testStrategy": "Create test suite for webhook handling with mock Stripe events. Test signature verification, event processing logic, and database updates. Use Stripe CLI to simulate webhook events locally."
+        },
+        {
+          "id": 4,
+          "title": "Implement order fulfillment and error handling",
+          "description": "Create the order fulfillment process that triggers after successful payment, including PDF delivery, and implement comprehensive error handling for payment failures.",
+          "dependencies": [
+            3
+          ],
+          "details": "1. Create order record in database upon successful payment\n2. Implement PDF generation or delivery mechanism for audit reports\n3. Send confirmation emails to customers with order details\n4. Develop error handling for payment failures with appropriate user messaging\n5. Implement retry mechanisms for failed payments\n6. Create admin dashboard for monitoring payment issues",
+          "status": "pending",
+          "testStrategy": "Test the complete order fulfillment flow with mock successful payments. Verify PDF generation, email sending, and database updates. Test error scenarios to ensure proper handling of payment failures."
+        },
+        {
+          "id": 5,
+          "title": "Implement security measures and comprehensive testing",
+          "description": "Ensure PCI compliance, implement security best practices, and create a comprehensive testing suite for the entire checkout flow.",
+          "dependencies": [
+            4
+          ],
+          "details": "1. Review and implement PCI compliance requirements\n2. Add input validation for all payment-related forms\n3. Implement CSRF protection for checkout endpoints\n4. Create end-to-end tests for the complete checkout flow\n5. Develop integration tests with Stripe API sandbox\n6. Set up automated testing in CI pipeline\n7. Perform security audit of the payment implementation",
+          "status": "pending",
+          "testStrategy": "Create end-to-end tests simulating user checkout flow. Implement integration tests with Stripe test mode. Perform security testing including penetration testing and vulnerability scanning. Update CI pipeline to include payment-related tests."
+        },
+        {
+          "id": 6,
+          "title": "Security Implementation",
+          "description": "Implement PCI compliance measures, input validation, secure token handling, and payment data protection according to Stripe security best practices.",
+          "details": "",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 24
+        },
+        {
+          "id": 7,
+          "title": "Error Handling & Recovery",
+          "description": "Implement comprehensive error handling for payment failures, network issues, webhook delivery failures, and user-friendly error messaging with retry mechanisms.",
+          "details": "",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 24
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Build Secure PDF Rendering Pipeline",
+      "description": "Implement PDF generation using wkhtmltopdf or similar with clean template design and secure output styling for audit reports",
+      "status": "pending",
+      "dependencies": [
+        23
+      ],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up PDF Generation Engine",
+          "description": "Install and configure wkhtmltopdf or Puppeteer as the PDF generation engine. Create a wrapper service that handles the core PDF generation functionality.",
+          "dependencies": [],
+          "details": "1. Research and select between wkhtmltopdf and Puppeteer based on project requirements\n2. Install the chosen library and any dependencies\n3. Create a service class that wraps the PDF generation functionality\n4. Implement basic configuration options (page size, margins, etc.)\n5. Add error handling for generation failures",
+          "status": "pending",
+          "testStrategy": "Write unit tests to verify the PDF generation service can create basic PDFs with various configurations. Test error handling for invalid inputs."
+        },
+        {
+          "id": 2,
+          "title": "Develop Report Template System",
+          "description": "Create a flexible template system for audit reports that supports dynamic data injection and maintains consistent styling.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Design HTML/CSS templates for audit reports\n2. Implement a template engine that supports variable substitution\n3. Create a data model for audit report content\n4. Develop helper functions for common formatting needs\n5. Ensure templates are responsive and render correctly in PDF format",
+          "status": "pending",
+          "testStrategy": "Create test templates with sample data. Verify template rendering with various data inputs. Test edge cases like missing data or extremely large content."
+        },
+        {
+          "id": 3,
+          "title": "Implement PDF Security and Watermarking",
+          "description": "Add security features to generated PDFs including watermarking, encryption, and access controls to protect sensitive audit information.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Implement watermarking functionality (configurable text/image overlays)\n2. Add PDF encryption with password protection options\n3. Configure permissions (printing, copying, editing)\n4. Add document metadata and properties\n5. Implement digital signatures if required",
+          "status": "pending",
+          "testStrategy": "Test that watermarks appear correctly. Verify encryption works by attempting to open PDFs with and without passwords. Confirm that permission restrictions are enforced."
+        },
+        {
+          "id": 4,
+          "title": "Optimize PDF Output and Implement Compression",
+          "description": "Optimize the generated PDFs for file size and quality, implementing appropriate compression techniques while maintaining document integrity.",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "1. Implement image compression and optimization\n2. Configure text and vector graphics compression\n3. Add options for quality vs. file size tradeoffs\n4. Optimize CSS and HTML for PDF output\n5. Implement file size monitoring and reporting",
+          "status": "pending",
+          "testStrategy": "Compare file sizes before and after optimization. Test with various content types (text-heavy, image-heavy). Ensure document quality remains acceptable after compression."
+        },
+        {
+          "id": 5,
+          "title": "Create Comprehensive Testing Suite",
+          "description": "Develop a complete testing suite for the PDF rendering pipeline, including unit, integration, and end-to-end tests, with CI/CD integration.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Write unit tests for all PDF generation components\n2. Create integration tests for template system with PDF generation\n3. Develop end-to-end tests for the complete rendering pipeline\n4. Implement security tests for PDF protection features\n5. Add performance tests for large reports\n6. Configure CI/CD pipeline to run all tests automatically",
+          "status": "pending",
+          "testStrategy": "Use a combination of automated and visual testing. Implement snapshot testing for PDF output. Create a test matrix covering different report types, sizes, and security configurations."
+        },
+        {
+          "id": 6,
+          "title": "Quality Validation & Integrity",
+          "description": "Implement PDF quality validation, integrity checks, file size optimization, and automated testing for PDF structure, readability, and security compliance.",
+          "details": "",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 25
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Email Delivery Service for Reports",
+      "description": "Build email delivery system that sends purchased audit reports via signed secure links with follow-up CTA for agency connection",
+      "status": "pending",
+      "dependencies": [
+        23
+      ],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Secure Link Generation for Reports",
+          "description": "Create a service that generates cryptographically signed URLs with expiration dates for securely accessing purchased audit reports.",
+          "dependencies": [],
+          "details": "Develop a utility class that generates signed URLs with JWT or similar token-based authentication. Include parameters for report ID, user ID, expiration time, and any access restrictions. The links should be time-limited (default 7 days) and contain verification mechanisms to prevent tampering. Implement proper error handling for invalid or expired links.",
+          "status": "pending",
+          "testStrategy": "Write unit tests to verify link generation, signature validation, and expiration handling. Test with various edge cases including expired tokens and invalid signatures."
+        },
+        {
+          "id": 2,
+          "title": "Build Email Template System with CTA Components",
+          "description": "Create a flexible email template system that includes the secure report links and call-to-action components for agency connection.",
+          "dependencies": [],
+          "details": "Develop HTML email templates with responsive design that work across major email clients. Include placeholders for personalization (user name, report details), the secure link, and prominent CTAs for agency connection. Use a templating engine like Handlebars or Pug for maintainable templates. Implement tracking parameters for CTAs to measure conversion rates.",
+          "status": "pending",
+          "testStrategy": "Test template rendering with various data inputs. Verify email appearance in multiple email clients using a service like Litmus or Email on Acid."
+        },
+        {
+          "id": 3,
+          "title": "Implement Email Delivery and Tracking Service",
+          "description": "Build a service to handle the actual sending of emails through a provider, with tracking capabilities for opens, clicks, and delivery status.",
+          "dependencies": [],
+          "details": "Integrate with an email service provider (ESP) like SendGrid, Mailgun, or AWS SES. Implement a queue-based system for reliable delivery with retry logic. Add tracking pixel and link tracking to monitor email opens and clicks. Store delivery status, open and click events in the database for reporting. Implement rate limiting to prevent sending too many emails at once.",
+          "status": "pending",
+          "testStrategy": "Create integration tests with the ESP using test API keys. Mock ESP responses to test error handling and retry logic. Verify tracking data is correctly recorded."
+        },
+        {
+          "id": 4,
+          "title": "Create Follow-up Email Workflow",
+          "description": "Implement an automated follow-up email system that sends reminders based on user interactions with the initial email.",
+          "dependencies": [],
+          "details": "Design a workflow engine that triggers follow-up emails based on user behavior: 1) If report link not clicked after 3 days, send reminder, 2) If report viewed but no agency connection made after 5 days, send CTA-focused follow-up, 3) If agency connection made, send confirmation and next steps. Implement configurable timing and content for each follow-up type. Include opt-out mechanisms in all emails.",
+          "status": "pending",
+          "testStrategy": "Test the workflow logic with various user interaction scenarios. Verify correct timing of follow-ups and that opt-outs are respected."
+        },
+        {
+          "id": 5,
+          "title": "Implement Comprehensive Testing and Monitoring",
+          "description": "Set up end-to-end testing, monitoring, and analytics for the email delivery system.",
+          "dependencies": [],
+          "details": "Create end-to-end tests that verify the complete flow from report purchase to email delivery and link access. Set up monitoring dashboards for email delivery rates, bounces, opens, and clicks. Implement alerting for delivery failures or unusual patterns. Add analytics to track conversion from email to agency connection. Update CI pipeline to include all email service tests. Document the entire system including troubleshooting procedures.",
+          "status": "pending",
+          "testStrategy": "Run automated end-to-end tests that simulate the entire user journey. Set up synthetic monitoring to regularly test the email delivery pipeline in production. Create test scenarios for various failure modes to verify proper error handling and alerting."
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Extend Supabase PNG Upload for Report Storage and Delivery",
+      "description": "Extend existing PNG upload functionality to include final PDF report storage and secure URL generation with expiration for audit report delivery via Stripe webhook flow",
+      "status": "pending",
+      "dependencies": [
+        23
+      ],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement PDF Upload Functionality in Supabase Storage",
+          "description": "Extend the existing PNG upload service to handle PDF files for report storage, including proper MIME type detection, file validation, and bucket configuration.",
+          "dependencies": [],
+          "details": "1. Modify the existing upload service to accept PDF files\n2. Add MIME type validation for PDFs (application/pdf)\n3. Configure appropriate storage bucket permissions for PDFs\n4. Implement file size limits and validation\n5. Create helper functions to standardize PDF naming conventions",
+          "status": "pending",
+          "testStrategy": "Unit test the upload function with mock PDF files to verify correct handling and storage path generation."
+        },
+        {
+          "id": 2,
+          "title": "Develop Secure URL Generation with Expiration",
+          "description": "Create functionality to generate secure, time-limited URLs for accessing stored PDF reports with configurable expiration times.",
+          "dependencies": [],
+          "details": "1. Implement a function that generates signed URLs with Supabase\n2. Add configurable expiration parameter (default 24 hours)\n3. Ensure URL includes proper authentication tokens\n4. Add URL validation and error handling\n5. Create utility to check if URLs are still valid",
+          "status": "pending",
+          "testStrategy": "Test URL generation with various expiration times and verify URL structure and token presence."
+        },
+        {
+          "id": 3,
+          "title": "Integrate with Stripe Webhook Flow for Report Delivery",
+          "description": "Implement integration with Stripe webhook flow to automatically generate and deliver secure PDF report URLs upon successful payment.",
+          "dependencies": [],
+          "details": "1. Create webhook handler for Stripe payment success events\n2. Implement logic to identify which report to deliver based on payment metadata\n3. Generate secure, expiring URL for the appropriate PDF report\n4. Add the URL to the payment confirmation response or trigger email delivery\n5. Implement error handling and retry logic for failed deliveries",
+          "status": "pending",
+          "testStrategy": "Test webhook handling with mock Stripe events, verify correct report identification and URL generation. Test error scenarios and retry mechanisms."
+        },
+        {
+          "id": 4,
+          "title": "Implement Access Control and Security Features",
+          "description": "Add security layers to ensure PDFs are only accessible to authorized users and implement proper access logging.",
+          "dependencies": [],
+          "details": "1. Implement role-based access control for PDF operations\n2. Add request logging for security audit trails\n3. Implement rate limiting for PDF operations\n4. Create access revocation mechanism for expired or compromised tokens\n5. Add server-side validation of user permissions before generating URLs",
+          "status": "pending",
+          "testStrategy": "Test access control with different user roles and verify proper enforcement of permissions."
+        },
+        {
+          "id": 5,
+          "title": "Develop Comprehensive Testing Suite",
+          "description": "Create a complete testing suite covering unit, integration, and end-to-end tests for the PDF storage and delivery functionality.",
+          "dependencies": [],
+          "details": "1. Write unit tests for PDF upload and URL generation functions\n2. Create integration tests with Supabase storage\n3. Implement end-to-end tests for secure file access, URL expiration, and Stripe webhook integration\n4. Add tests for edge cases (large files, invalid PDFs, etc.)\n5. Update CI pipeline configuration to include storage tests",
+          "status": "pending",
+          "testStrategy": "Run tests in isolated environments with mocked Supabase services for unit tests and real Supabase test instance for integration tests. Use mock Stripe events for webhook testing."
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "title": "GPT BudgetGuard Middleware",
+      "description": "Implement middleware to monitor and cap GPT API usage with configurable budget limits and automatic throttling",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement GPT API Usage Tracking Module",
+          "description": "Create a module that tracks and logs GPT API usage, including token counts, request frequency, and associated costs. This module will serve as the foundation for budget monitoring.",
+          "dependencies": [],
+          "details": "Develop a class that intercepts GPT API calls, counts tokens for both input and output, calculates costs based on current pricing, and stores usage data in a persistent store. Implement methods for retrieving current usage statistics and historical trends. Use the decorator pattern to wrap API calls without modifying existing code.",
+          "status": "pending",
+          "testStrategy": "Unit test with mock API responses to verify token counting accuracy and cost calculations. Test persistence of usage data across multiple requests."
+        },
+        {
+          "id": 2,
+          "title": "Develop Budget Configuration System",
+          "description": "Create a configuration system that allows setting budget limits at different levels (daily, weekly, monthly) and for different API endpoints or models.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement a configuration class that loads budget settings from environment variables, config files, or a database. Include validation logic for configuration values. Support different budget tiers and alert thresholds (warning at 80%, critical at 95%). Allow runtime updates to budget configurations.",
+          "status": "pending",
+          "testStrategy": "Unit test configuration loading from different sources, validation of inputs, and proper application of defaults when values are missing."
+        },
+        {
+          "id": 3,
+          "title": "Implement Throttling and Rate Limiting Logic",
+          "description": "Build the core throttling mechanism that enforces budget limits by controlling API request rates or blocking requests when budgets are exceeded.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create a throttling service that makes decisions based on current usage and configured budgets. Implement multiple throttling strategies: soft throttling (delaying requests), hard throttling (rejecting requests), and graceful degradation (using smaller models when budget is tight). Include retry logic with exponential backoff for temporary throttling.",
+          "status": "pending",
+          "testStrategy": "Unit test throttling decisions under various usage scenarios. Test the behavior of different throttling strategies and verify proper handling of retry logic."
+        },
+        {
+          "id": 4,
+          "title": "Create Notification and Alerting System",
+          "description": "Develop a system to send alerts and notifications when budget thresholds are approached or exceeded, supporting multiple notification channels.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Implement a notification service that integrates with email, Slack, and other messaging platforms. Create templates for different alert levels. Include rate limiting for notifications to prevent alert storms. Add support for custom alert messages and thresholds based on configuration.",
+          "status": "pending",
+          "testStrategy": "Unit test alert triggering logic and message formatting. Mock notification services to verify proper integration."
+        },
+        {
+          "id": 5,
+          "title": "Integrate Middleware with Express/API Framework",
+          "description": "Package the budget guard components into middleware that can be easily integrated with Express.js or other API frameworks, with comprehensive documentation.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Create middleware factory functions that initialize the budget guard with appropriate configuration. Ensure proper error handling and logging. Implement middleware registration helpers for popular frameworks. Write comprehensive documentation with examples for different use cases and frameworks. Include performance optimization to minimize overhead.",
+          "status": "pending",
+          "testStrategy": "Integration tests with Express.js to verify middleware correctly intercepts requests and applies budget controls. End-to-end tests simulating budget exhaustion scenarios to verify system behavior."
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Simplify YAML Scoring Rules",
+      "description": "Refactor complex YAML scoring configurations into more maintainable and readable format",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Analyze current YAML scoring rule structure and design new format",
+          "description": "Analyze the existing complex YAML scoring configurations to identify pain points and design a more maintainable and readable format.",
+          "dependencies": [],
+          "details": "Review all existing YAML scoring rule files to identify common patterns, redundancies, and complexity issues. Document the current structure's limitations. Design a new YAML schema that improves readability, reduces duplication, and maintains backward compatibility. Create a specification document for the new format with examples showing before/after transformations.",
+          "status": "pending",
+          "testStrategy": "Create test cases that cover various edge cases in the current format to ensure they can be properly represented in the new format."
+        },
+        {
+          "id": 2,
+          "title": "Implement YAML parser and transformer for new format",
+          "description": "Develop a parser and transformer that can read both old and new YAML formats and convert between them.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a parser module that can read the existing YAML format. Implement a transformer that converts the old format to the new format. Add validation logic to ensure the transformed rules maintain semantic equivalence. Include error handling for malformed YAML files. Provide a CLI utility for batch conversion of existing rule files.",
+          "status": "pending",
+          "testStrategy": "Unit test the parser with various input formats. Test the transformer with sample rules from production to verify correctness."
+        },
+        {
+          "id": 3,
+          "title": "Update scoring engine to work with new YAML format",
+          "description": "Modify the scoring engine to process rules in the new YAML format while maintaining backward compatibility.",
+          "dependencies": [
+            2
+          ],
+          "details": "Refactor the scoring engine to accept the new YAML format. Implement detection logic to automatically identify whether a rule is in the old or new format. Update the rule application logic to work with both formats. Optimize the engine for the new format's structure. Document any API changes for consumers of the scoring engine.",
+          "status": "pending",
+          "testStrategy": "Create integration tests that verify the scoring engine produces identical results with both old and new formats."
+        },
+        {
+          "id": 4,
+          "title": "Develop comprehensive test suite for new YAML format",
+          "description": "Create a comprehensive test suite that validates the new YAML format and ensures scoring accuracy.",
+          "dependencies": [
+            3
+          ],
+          "details": "Implement unit tests for rule parsing and validation. Create integration tests with the scoring engine. Develop end-to-end tests for rule application and scoring accuracy. Include performance benchmarks comparing old and new formats. Add regression tests for all identified edge cases.",
+          "status": "pending",
+          "testStrategy": "Use property-based testing to generate random valid rules and verify they produce consistent results in both formats. Run tests in CI environment to ensure compatibility across platforms."
+        },
+        {
+          "id": 5,
+          "title": "Migrate existing rules and update documentation",
+          "description": "Convert all existing production rules to the new format and update documentation for rule authors.",
+          "dependencies": [
+            4
+          ],
+          "details": "Use the transformer to convert all production rules to the new format. Verify each converted rule produces identical scoring results. Update all documentation to reflect the new YAML format. Create migration guides for teams that maintain custom rules. Update CI/CD pipelines to validate rules in the new format. Prepare a rollout plan with fallback options.",
+          "status": "pending",
+          "testStrategy": "Conduct A/B testing in production with a subset of rules to verify scoring consistency. Monitor performance metrics after deployment."
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "title": "Update NodeCapability Defaults",
+      "description": "Refactor default node capability configurations to better align with current infrastructure requirements",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Analyze and document current NodeCapability defaults",
+          "description": "Review the existing NodeCapability default configurations and document their current values, usage patterns, and limitations. Identify specific areas that need updates to align with current infrastructure requirements.",
+          "dependencies": [],
+          "details": "Create a comprehensive document that maps all existing NodeCapability defaults. Include information about where these defaults are defined, how they're consumed throughout the codebase, and which ones are outdated or misaligned with current infrastructure. Identify performance bottlenecks or configuration issues that need to be addressed.",
+          "status": "pending",
+          "testStrategy": "No tests needed for this analysis phase, but create a validation checklist for the subsequent implementation tasks."
+        },
+        {
+          "id": 2,
+          "title": "Implement updated NodeCapability default configurations",
+          "description": "Refactor the NodeCapability default configuration code to align with the current infrastructure requirements based on the analysis from the previous subtask.",
+          "dependencies": [
+            1
+          ],
+          "details": "Update the default configuration values in the NodeCapability system. This may involve modifying configuration files, updating constants, or refactoring how defaults are determined. Ensure backward compatibility where necessary and document any breaking changes. Consider implementing a configuration versioning system if significant changes are being made.",
+          "status": "pending",
+          "testStrategy": "Write unit tests to verify that the new default values are correctly applied and that any configuration loading logic works as expected."
+        },
+        {
+          "id": 3,
+          "title": "Develop comprehensive test suite for NodeCapability configurations",
+          "description": "Create a robust test suite that validates the updated NodeCapability defaults across different test levels: unit, integration, and end-to-end tests.",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement unit tests for configuration validation logic, integration tests that verify how the NodeCapability system interacts with the new defaults, and end-to-end tests that confirm capability detection and assignment work correctly with the updated defaults. Cover edge cases and ensure that the tests are maintainable and provide clear failure messages.",
+          "status": "pending",
+          "testStrategy": "Use a combination of mocking for unit tests, controlled test environments for integration tests, and realistic scenarios for end-to-end tests. Include performance benchmarks to ensure the new defaults don't negatively impact system performance."
+        },
+        {
+          "id": 4,
+          "title": "Update CI pipeline with NodeCapability tests",
+          "description": "Integrate the new NodeCapability tests into the CI pipeline to ensure ongoing validation of the capability system.",
+          "dependencies": [
+            3
+          ],
+          "details": "Update the CI configuration to include the new tests. This may involve modifying GitHub Actions workflows, Jenkins pipelines, or other CI tools. Ensure that the tests run efficiently and don't unnecessarily slow down the CI process. Add appropriate reporting and notifications for test failures related to NodeCapability configurations.",
+          "status": "pending",
+          "testStrategy": "Run a full CI pipeline test to verify that the new tests are correctly integrated and that they provide meaningful feedback when capabilities are misconfigured."
+        },
+        {
+          "id": 5,
+          "title": "Create documentation and release updated NodeCapability defaults",
+          "description": "Document the changes to NodeCapability defaults and prepare for release to production.",
+          "dependencies": [
+            4
+          ],
+          "details": "Update all relevant documentation, including code comments, README files, and any external documentation. Create a migration guide if users need to make changes to accommodate the new defaults. Prepare release notes that clearly explain the changes and their benefits. Merge the changes to the master branch and monitor the deployment to ensure everything works as expected in production.",
+          "status": "pending",
+          "testStrategy": "Perform a final validation in a staging environment that mirrors production as closely as possible. Verify that all documentation accurately reflects the implemented changes."
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "title": "Add Purchase Metrics to Monitoring Layer",
+      "description": "Implement monitoring and analytics for audit report purchases including conversion tracking and revenue metrics",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Core Purchase Metrics Collection",
+          "description": "Create the foundational data collection layer for purchase metrics including conversion tracking, revenue metrics, and purchase timestamps.",
+          "dependencies": [],
+          "details": "Develop a metrics collector service that hooks into the purchase flow. Capture key events: purchase initiated, purchase completed, purchase abandoned. Store metrics with appropriate user context (anonymized), product details, and timestamp. Implement revenue tracking with currency normalization.",
+          "status": "pending",
+          "testStrategy": "Unit test the metrics collector with mock purchase events to verify data capture accuracy and format."
+        },
+        {
+          "id": 2,
+          "title": "Develop Metrics Aggregation and Storage",
+          "description": "Create aggregation logic for purchase metrics and implement appropriate storage solutions for both raw and aggregated data.",
+          "dependencies": [],
+          "details": "Implement time-based aggregation (hourly, daily, weekly, monthly) for purchase metrics. Create database schema for efficient storage and querying. Develop data retention policies. Implement batch processing for historical data and real-time processing for current metrics.",
+          "status": "pending",
+          "testStrategy": "Unit test aggregation functions with predefined datasets. Integration test storage solutions with sample data loads to verify performance."
+        },
+        {
+          "id": 3,
+          "title": "Build Monitoring Dashboard and Alerting",
+          "description": "Create visualization dashboards for purchase metrics and implement alerting for anomalies or threshold violations.",
+          "dependencies": [],
+          "details": "Integrate with existing monitoring platform (e.g., Grafana, Datadog). Create custom dashboards showing conversion rates, revenue trends, and purchase patterns. Implement alerting rules for unusual drops in conversion or revenue. Add user segmentation views to identify patterns across different user groups.",
+          "status": "pending",
+          "testStrategy": "End-to-end test dashboard rendering and alert triggering with simulated threshold violations."
+        },
+        {
+          "id": 4,
+          "title": "Implement A/B Testing Framework for Purchase Flow",
+          "description": "Extend the monitoring system to support A/B testing of different purchase flows and track performance metrics for each variant.",
+          "dependencies": [],
+          "details": "Create experiment tracking capabilities in the metrics system. Implement variant assignment and tracking. Develop statistical analysis tools to compare conversion rates and revenue between variants. Build reporting views to visualize experiment results.",
+          "status": "pending",
+          "testStrategy": "Test experiment assignment logic and verify that metrics are correctly attributed to experiment variants. Validate statistical calculations with known datasets."
+        },
+        {
+          "id": 5,
+          "title": "Create Comprehensive Testing Suite and Documentation",
+          "description": "Develop a complete testing suite for the monitoring system and create documentation for maintenance and future extensions.",
+          "dependencies": [],
+          "details": "Create unit tests for all components. Implement integration tests for the entire monitoring pipeline. Develop load tests to verify system performance under high volume. Write comprehensive documentation including system architecture, data flow diagrams, and maintenance procedures. Update CI/CD pipeline to include monitoring system tests.",
+          "status": "pending",
+          "testStrategy": "Run the complete test suite in staging environment. Verify all components work together correctly. Conduct a mock incident response to test alerting effectiveness."
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "Revise Roadmap Documentation",
+      "description": "Update project roadmap documentation to reflect the new audit-first, agency-later business model and task priorities",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Draft Updated Roadmap Content",
+          "description": "Create a draft of the revised roadmap documentation that reflects the new audit-first, agency-later business model and updated task priorities.",
+          "dependencies": [],
+          "details": "Review the current roadmap documentation and identify all sections that need updates. Create a new draft document that includes: 1) Introduction to the new business model, 2) Revised timeline with audit-first focus, 3) Updated milestones and deliverables, 4) Reprioritized task list, and 5) Resource allocation changes. Use clear language and maintain consistent formatting with existing documentation.",
+          "status": "pending",
+          "testStrategy": "Perform manual review for content accuracy, business model alignment, and completeness of all required sections."
+        },
+        {
+          "id": 2,
+          "title": "Implement Documentation Structure and Format",
+          "description": "Restructure the roadmap documentation to improve readability and ensure consistent formatting throughout the document.",
+          "dependencies": [],
+          "details": "Apply consistent heading hierarchy, add a table of contents, standardize section layouts, and ensure proper markdown formatting. Create visual elements such as timelines, milestone charts, and priority matrices to illustrate the new roadmap. Update any cross-references between sections and ensure all internal links are working correctly.",
+          "status": "pending",
+          "testStrategy": "Validate markdown syntax, check rendering in multiple browsers, and verify all internal navigation links work correctly."
+        },
+        {
+          "id": 3,
+          "title": "Develop Automated Documentation Tests",
+          "description": "Create automated tests to validate documentation accuracy, format consistency, and integration with the project structure.",
+          "dependencies": [],
+          "details": "Implement three types of tests: 1) Unit tests for documentation accuracy (link checking, format validation, spelling), 2) Integration tests to verify alignment with project structure and code references, and 3) End-to-end tests for documentation completeness and usability. Use appropriate testing frameworks and document the test coverage.",
+          "status": "pending",
+          "testStrategy": "Run tests in isolation first, then as part of an integrated test suite. Document test coverage and expected outcomes."
+        },
+        {
+          "id": 4,
+          "title": "Execute Tests and Resolve Issues",
+          "description": "Run all documentation tests, identify and fix any issues, and ensure the documentation meets quality standards.",
+          "dependencies": [],
+          "details": "Execute the full test suite developed in the previous subtask. Document all issues found, categorize them by severity, and systematically address each one. Perform regression testing after fixes are implemented. Update the documentation based on test results and conduct a final review to ensure all issues are resolved.",
+          "status": "pending",
+          "testStrategy": "Maintain a test log documenting issues found, fixes applied, and verification of fixes. Perform a final full test run to confirm all issues are resolved."
+        },
+        {
+          "id": 5,
+          "title": "Update CI Pipeline and Publish Documentation",
+          "description": "Integrate documentation testing into the CI pipeline and publish the finalized roadmap documentation.",
+          "dependencies": [],
+          "details": "Update the CI configuration to include documentation testing as part of the build process. Configure appropriate failure conditions for documentation issues. Merge the updated documentation to the master branch and verify successful CI run. Use GitHub CLI to confirm successful integration and deployment. Update any documentation references or links that point to the roadmap.",
+          "status": "pending",
+          "testStrategy": "Monitor CI logs for successful execution of documentation tests. Verify published documentation is accessible and correctly displayed in the production environment."
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "title": "Stripe fee & tax tracking in BudgetGuard",
+      "description": "Implement comprehensive Stripe fee and tax tracking for profit reporting in the audit-first business model",
+      "status": "pending",
+      "priority": "high",
+      "type": "feature",
+      "created_at": "2025-06-03T11:02:00Z",
+      "dependencies": [],
+      "tags": [
+        "cost_model"
+      ],
+      "details": "Implement Stripe webhook integration and fee tracking for the $99 audit report business model:\n- Listen to Stripe webhooks for successful payment events\n- Extract and store fee, tax, and net amounts for every transaction\n- Integrate fee data into the daily cost aggregation system\n- Update profit reporting to show:\n  * Subtotal revenue & cost before agency fees\n  * Incremental agency revenue & cost (future phase)\n  * Grand totals with accurate net margins\n- Update Grafana dashboard with new visualizations:\n  * Stripe fees per day graph\n  * Gross vs. Net margin comparison\n- Ensure all financial data is accurately tracked for business intelligence",
+      "testStrategy": "1. Unit tests for webhook processing and fee calculation\n2. Integration tests with Stripe test webhooks\n3. E2E tests for complete payment flow and reporting\n4. Test execution and issue resolution\n5. CI pipeline updates\n6. Deployment verification",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Stripe webhook listener and processing",
+          "description": "Set up webhook endpoint to receive and process Stripe payment events",
+          "dependencies": [],
+          "details": "Create secure webhook endpoint to receive Stripe payment_intent.succeeded events. Implement signature verification for security. Parse webhook payload to extract transaction details including fees, taxes, and net amounts. Handle webhook retries and idempotency. Add comprehensive error handling and logging.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Integrate fee data into cost aggregation system",
+          "description": "Modify daily cost aggregation to include Stripe fees and taxes",
+          "dependencies": [
+            1
+          ],
+          "details": "Update the existing cost tracking system to incorporate Stripe transaction fees and taxes. Modify database schema if needed to store fee breakdowns. Ensure fee data is properly categorized and aggregated in daily reports. Maintain backward compatibility with existing cost tracking.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Update profit reporting with fee breakdowns",
+          "description": "Enhance profit reports to show revenue and cost breakdowns",
+          "dependencies": [
+            2
+          ],
+          "details": "Modify profit reporting logic to display subtotal revenue & cost before agency fees, space for incremental agency revenue & cost (future), and grand totals. Ensure accurate net margin calculations. Update report formats and APIs to include new breakdown structure.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Create Grafana dashboard visualizations",
+          "description": "Add new graphs for Stripe fees and margin analysis",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Create two new Grafana dashboard panels: (a) Stripe fees per day showing daily fee trends, (b) Gross vs. Net margin comparison showing the impact of fees on profitability. Configure proper time ranges, aggregations, and visual styling consistent with existing dashboards.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Comprehensive testing and deployment",
+          "description": "Complete testing suite and CI integration",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Create comprehensive unit tests for webhook processing and fee calculations. Develop integration tests with Stripe test environment. Implement e2e tests covering complete payment flow and reporting. Run all tests and resolve any issues. Update CI pipeline with new tests. Merge to master and confirm successful deployment via GitHub CLI logs.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "title": "SendGrid dedicated-IP warm-up scheduler",
+      "description": "Implement dedicated IP warm-up system for 110k daily cold email volume with automated throttling and bounce integration",
+      "status": "pending",
+      "priority": "high",
+      "type": "feature",
+      "created_at": "2025-06-03T11:02:00Z",
+      "dependencies": [],
+      "details": "Implement a comprehensive SendGrid dedicated IP warm-up system for high-volume cold email sending:\n- Move from shared IP pool to dedicated IP(s) for 110k daily emails\n- Implement 14-day warm-up schedule with automated send-cap progression\n- Create send-cap table (5k, 15k, 35k, etc.) with automatic throttling\n- Integrate with existing bounce-rate rotation logic post warm-up\n- Surface warm-up progress and metrics in monitoring dashboard\n- Ensure compliance with SendGrid best practices and deliverability standards\n- Handle failover scenarios and warm-up interruptions gracefully",
+      "testStrategy": "1. Unit tests for warm-up scheduling and throttling logic\n2. Integration tests with SendGrid API and bounce monitoring\n3. E2E tests for complete warm-up cycle simulation\n4. Test execution and issue resolution\n5. CI pipeline updates\n6. Deployment verification",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design and implement warm-up schedule system",
+          "description": "Create the core warm-up scheduling and progression logic",
+          "dependencies": [],
+          "details": "Design 14-day warm-up schedule with progressive send caps (5k, 15k, 35k, 50k, 75k, 100k, 110k). Implement scheduling system that automatically advances through warm-up stages. Create configuration system for send caps and timing. Include safety mechanisms to prevent exceeding daily limits and handle schedule interruptions.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement SendGrid dedicated IP provisioning",
+          "description": "Set up dedicated IP allocation and configuration with SendGrid",
+          "dependencies": [],
+          "details": "Integrate with SendGrid API to provision dedicated IP(s). Configure IP authentication and DNS records. Set up IP pool management for multiple IPs if needed. Implement IP health monitoring and status tracking. Create fallback mechanisms for IP provisioning failures.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Create automated throttling system",
+          "description": "Implement send-rate throttling based on warm-up schedule",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Build throttling system that enforces daily send caps based on current warm-up stage. Implement rate limiting to distribute sends throughout the day. Create queue management for email batches. Add monitoring for send rates and cap adherence. Include emergency stop mechanisms for compliance.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Integrate with bounce-rate rotation system",
+          "description": "Connect warm-up system with existing IP rotation logic",
+          "dependencies": [
+            3
+          ],
+          "details": "Modify existing bounce-rate monitoring and IP rotation system to work with dedicated IPs post warm-up. Update Task #21 dependency to be blocked by warm-up completion. Ensure seamless transition from warm-up to production rotation. Maintain bounce rate thresholds and rotation triggers.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Build monitoring dashboard and metrics",
+          "description": "Create comprehensive monitoring for warm-up progress and health",
+          "dependencies": [
+            1,
+            3
+          ],
+          "details": "Develop dashboard showing warm-up progress, daily send volumes, success rates, and schedule adherence. Create metrics for IP reputation, deliverability rates, and warm-up health. Implement alerts for warm-up issues, schedule deviations, and deliverability problems. Surface progress in existing metrics dashboard.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Comprehensive testing and deployment",
+          "description": "Complete testing suite and CI integration",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "details": "Create comprehensive unit tests for scheduling and throttling logic. Develop integration tests with SendGrid API and bounce monitoring systems. Implement e2e tests simulating complete warm-up cycles. Run all tests and resolve any issues. Update CI pipeline with new tests. Merge to master and confirm successful deployment via GitHub CLI logs.",
           "status": "pending"
         }
       ]
