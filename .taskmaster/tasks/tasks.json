@@ -3189,7 +3189,7 @@
           "description": "Create a module that tracks and logs GPT API usage, including token counts, request frequency, and associated costs. This module will serve as the foundation for budget monitoring.",
           "dependencies": [],
           "details": "Develop a class that intercepts GPT API calls, counts tokens for both input and output, calculates costs based on current pricing, and stores usage data in a persistent store. Implement methods for retrieving current usage statistics and historical trends. Use the decorator pattern to wrap API calls without modifying existing code.",
-          "status": "in-progress",
+          "status": "done",
           "testStrategy": "Unit test with mock API responses to verify token counting accuracy and cost calculations. Test persistence of usage data across multiple requests."
         },
         {
@@ -3200,7 +3200,7 @@
             1
           ],
           "details": "Implement a configuration class that loads budget settings from environment variables, config files, or a database. Include validation logic for configuration values. Support different budget tiers and alert thresholds (warning at 80%, critical at 95%). Allow runtime updates to budget configurations.",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Unit test configuration loading from different sources, validation of inputs, and proper application of defaults when values are missing."
         },
         {
