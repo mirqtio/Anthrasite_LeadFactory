@@ -5,18 +5,20 @@ Tests the complete workflow from PDF upload through secure URL generation,
 Stripe webhook integration, and final delivery to users.
 """
 
-import pytest
-import tempfile
+import contextlib
 import os
+import tempfile
 import time
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+from leadfactory.security.access_control import PDFOperation, UserRole
+from leadfactory.security.rate_limiter import RateLimitType
 from leadfactory.services.report_delivery import ReportDeliveryService
 from leadfactory.storage.supabase_storage import SupabaseStorage
-from leadfactory.security.access_control import UserRole, PDFOperation
-from leadfactory.security.rate_limiter import RateLimitType
 
 
 class TestPDFStorageDeliveryE2E:
@@ -30,36 +32,34 @@ class TestPDFStorageDeliveryE2E:
         self.invalid_pdf_content = b"This is not a PDF file"
 
         # Create temporary files
-        self.temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+        self.temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         self.temp_pdf.write(self.test_pdf_content)
         self.temp_pdf.close()
 
-        self.large_temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+        self.large_temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         self.large_temp_pdf.write(self.large_pdf_content)
         self.large_temp_pdf.close()
 
-        self.invalid_temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+        self.invalid_temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         self.invalid_temp_pdf.write(self.invalid_pdf_content)
         self.invalid_temp_pdf.close()
 
     def teardown_method(self):
         """Clean up test files."""
         for temp_file in [self.temp_pdf, self.large_temp_pdf, self.invalid_temp_pdf]:
-            try:
-                os.unlink(temp_file.name)
-            except FileNotFoundError:
-                pass
+            with contextlib.suppress(FileNotFoundError):
+                Path(temp_file.name).unlink()
 
     @pytest.mark.e2e
     def test_complete_pdf_upload_and_delivery_workflow(self):
         """Test complete workflow from upload to secure delivery."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
 
             # Mock environment variables
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             # Mock Supabase client
@@ -148,14 +148,14 @@ class TestPDFStorageDeliveryE2E:
             }
         }
 
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env, \
-             patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env, \
+             patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock environment and Supabase
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -214,13 +214,13 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_url_expiration_validation(self):
         """Test URL expiration validation in end-to-end workflow."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -235,7 +235,7 @@ class TestPDFStorageDeliveryE2E:
             storage = SupabaseStorage(bucket_name="expiry-test")
 
             # Generate URL with past expiration
-            with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+            with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
                 mock_datetime.utcnow.return_value = expired_time
 
                 url_result = storage.generate_secure_report_url(
@@ -283,13 +283,13 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_large_file_handling_workflow(self):
         """Test complete workflow with large PDF files."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -322,13 +322,13 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_invalid_pdf_handling_workflow(self):
         """Test workflow behavior with invalid PDF files."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -375,16 +375,16 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.skip(reason="Temporarily disabled due to CI hanging - needs threading fix")
     def test_concurrent_access_handling(self):
         """Test system behavior under concurrent access scenarios."""
-        import threading
         import queue
+        import threading
 
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -465,7 +465,7 @@ class TestPDFStorageDeliveryE2E:
             while not results_queue.empty() and timeout_count < 10:
                 try:
                     results.append(results_queue.get_nowait())
-                except:
+                except Exception:
                     timeout_count += 1
                     time.sleep(0.1)
 
@@ -479,13 +479,13 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_error_recovery_and_resilience(self):
         """Test system resilience and error recovery mechanisms."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()

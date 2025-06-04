@@ -5,16 +5,19 @@ Tests the complete integration between Stripe payment webhooks and
 PDF report delivery, including security, rate limiting, and error handling.
 """
 
-import pytest
-import tempfile
-import os
+import contextlib
 import json
+import os
+import tempfile
 import time
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
-from leadfactory.services.report_delivery import ReportDeliveryService
+import pytest
+
 from leadfactory.services.payment_service import StripePaymentService
+from leadfactory.services.report_delivery import ReportDeliveryService
 from leadfactory.storage.supabase_storage import SupabaseStorage
 
 
@@ -27,7 +30,7 @@ class TestStripePDFDeliveryIntegration:
         self.test_pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
 
         # Create temporary PDF file
-        self.temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+        self.temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         self.temp_pdf.write(self.test_pdf_content)
         self.temp_pdf.close()
 
@@ -94,23 +97,21 @@ class TestStripePDFDeliveryIntegration:
 
     def teardown_method(self):
         """Clean up test files."""
-        try:
-            os.unlink(self.temp_pdf.name)
-        except FileNotFoundError:
-            pass
+        with contextlib.suppress(FileNotFoundError):
+            Path(self.temp_pdf.name).unlink()
 
     @pytest.mark.integration
     def test_successful_payment_triggers_pdf_delivery(self):
         """Test that successful payment webhook triggers PDF delivery."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env, \
-             patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env, \
+             patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock environment variables
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key',
-                'STRIPE_WEBHOOK_SECRET': 'whsec_test_secret'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key",
+                "STRIPE_WEBHOOK_SECRET": "whsec_test_secret"
             }.get(key)
 
             # Mock Supabase client
@@ -184,7 +185,7 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.integration
     def test_failed_payment_no_pdf_delivery(self):
         """Test that failed payment webhook does not trigger PDF delivery."""
-        with patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock Stripe webhook verification
             mock_stripe.Webhook.construct_event.return_value = self.failed_payment_payload
@@ -213,15 +214,15 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.integration
     def test_webhook_rate_limiting_protection(self):
         """Test rate limiting protection for webhook processing."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env, \
-             patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env, \
+             patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key',
-                'STRIPE_WEBHOOK_SECRET': 'whsec_test_secret'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key",
+                "STRIPE_WEBHOOK_SECRET": "whsec_test_secret"
             }.get(key)
 
             mock_client = Mock()
@@ -281,7 +282,7 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.integration
     def test_webhook_security_validation(self):
         """Test security validation during webhook processing."""
-        with patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock invalid webhook signature
             mock_stripe.Webhook.construct_event.side_effect = Exception("Invalid signature")
@@ -304,14 +305,14 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.integration
     def test_webhook_duplicate_event_handling(self):
         """Test handling of duplicate webhook events."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env, \
-             patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env, \
+             patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -362,7 +363,7 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.integration
     def test_webhook_refund_handling(self):
         """Test handling of refund/dispute webhooks."""
-        with patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock Stripe webhook verification
             mock_stripe.Webhook.construct_event.return_value = self.refund_payload
@@ -398,14 +399,14 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.integration
     def test_webhook_error_recovery(self):
         """Test error recovery during webhook processing."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env, \
-             patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env, \
+             patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -468,7 +469,7 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.integration
     def test_webhook_metadata_validation(self):
         """Test validation of webhook metadata requirements."""
-        with patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Create payload with missing metadata
             invalid_payload = {
@@ -511,17 +512,17 @@ class TestStripePDFDeliveryIntegration:
     @pytest.mark.skip(reason="Temporarily disabled due to CI hanging - needs threading fix")
     def test_webhook_concurrent_processing(self):
         """Test concurrent webhook processing scenarios."""
-        import threading
         import queue
+        import threading
 
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create_client, \
-             patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env, \
-             patch('leadfactory.services.payment_service.stripe') as mock_stripe:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
+             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env, \
+             patch("leadfactory.services.payment_service.stripe") as mock_stripe:
 
             # Mock environment
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key"
             }.get(key)
 
             mock_client = Mock()
@@ -590,7 +591,7 @@ class TestStripePDFDeliveryIntegration:
             while not results_queue.empty() and timeout_count < 10:
                 try:
                     results.append(results_queue.get_nowait())
-                except:
+                except Exception:
                     timeout_count += 1
                     time.sleep(0.1)
 
