@@ -149,7 +149,9 @@ class ShardRouter:
             return self.config.default_shard
 
         # Use consistent hashing
-        hash_value = hashlib.md5(business_id.encode()).hexdigest()
+        hash_value = hashlib.md5(
+            business_id.encode(), usedforsecurity=False
+        ).hexdigest()  # nosec B324
         shard_index = int(hash_value[:8], 16) % len(self.config.shards)
         return self.config.shards[shard_index].shard_id
 
@@ -283,7 +285,7 @@ def create_default_sharding_config() -> ShardingConfig:
             port=5432,
             database="leadfactory_east",
             username="leadfactory",
-            password="leadfactory_password",
+            password="leadfactory_password",  # pragma: allowlist secret
             read_replicas=[
                 {
                     "host": "postgres-east-replica1",
@@ -303,7 +305,7 @@ def create_default_sharding_config() -> ShardingConfig:
             port=5432,
             database="leadfactory_west",
             username="leadfactory",
-            password="leadfactory_password",
+            password="leadfactory_password",  # pragma: allowlist secret
             read_replicas=[
                 {
                     "host": "postgres-west-replica1",
@@ -318,7 +320,7 @@ def create_default_sharding_config() -> ShardingConfig:
             port=5432,
             database="leadfactory_central",
             username="leadfactory",
-            password="leadfactory_password",
+            password="leadfactory_password",  # pragma: allowlist secret
         ),
     ]
 
