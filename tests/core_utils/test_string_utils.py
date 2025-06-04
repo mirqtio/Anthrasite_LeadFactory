@@ -2,7 +2,7 @@
 Test string utility functions.
 """
 
-from bin.utils.string_utils import clean_html, extract_domain, normalize_text
+from leadfactory.utils.string_utils import clean_html, extract_domain, normalize_text
 
 
 def test_normalize_text():

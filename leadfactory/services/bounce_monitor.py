@@ -295,6 +295,19 @@ class BounceRateMonitor:
             ),
         )
 
+        # Get current stats for calculation
+        cursor = db.execute(
+            "SELECT total_sent, total_bounced FROM bounce_rate_stats WHERE ip_address = ? AND subuser = ?",
+            (bounce_event.ip_address, bounce_event.subuser),
+        )
+        result = cursor.fetchone()
+        current_sent = result[0] if result else 0
+        current_bounced = result[1] if result else 0
+
+        # Calculate new totals
+        new_bounced = current_bounced + 1
+        bounce_rate = (new_bounced / current_sent) if current_sent > 0 else 0.0
+
         # Update or create stats record
         db.execute(
             """
@@ -311,7 +324,7 @@ class BounceRateMonitor:
                     CASE WHEN ? = 'soft' THEN 1 ELSE 0 END,
                 COALESCE((SELECT block_bounces FROM bounce_rate_stats WHERE ip_address = ? AND subuser = ?), 0) +
                     CASE WHEN ? = 'block' THEN 1 ELSE 0 END,
-                0.0,
+                ?,
                 'active',
                 ?
             )
@@ -332,11 +345,17 @@ class BounceRateMonitor:
                 bounce_event.ip_address,
                 bounce_event.subuser,
                 bounce_event.bounce_type,
+                bounce_rate,
                 datetime.now().isoformat(),
             ),
         )
 
         db.commit()
+
+        # Clear cache for this IP/subuser combination
+        cache_key = (bounce_event.ip_address, bounce_event.subuser)
+        if cache_key in self.cache:
+            del self.cache[cache_key]
 
     def _record_bounce_postgres(self, db, bounce_event: BounceEvent):
         """Record bounce event in PostgreSQL database."""
@@ -422,6 +441,19 @@ class BounceRateMonitor:
 
     def _record_sent_sqlite(self, db, ip_address: str, subuser: str):
         """Record sent email in SQLite database."""
+        # Get current stats for calculation
+        cursor = db.execute(
+            "SELECT total_sent, total_bounced FROM bounce_rate_stats WHERE ip_address = ? AND subuser = ?",
+            (ip_address, subuser),
+        )
+        result = cursor.fetchone()
+        current_sent = result[0] if result else 0
+        current_bounced = result[1] if result else 0
+
+        # Calculate new totals and bounce rate
+        new_sent = current_sent + 1
+        bounce_rate = (current_bounced / new_sent) if new_sent > 0 else 0.0
+
         # Update or create stats record
         db.execute(
             """
@@ -434,7 +466,7 @@ class BounceRateMonitor:
                 COALESCE((SELECT hard_bounces FROM bounce_rate_stats WHERE ip_address = ? AND subuser = ?), 0),
                 COALESCE((SELECT soft_bounces FROM bounce_rate_stats WHERE ip_address = ? AND subuser = ?), 0),
                 COALESCE((SELECT block_bounces FROM bounce_rate_stats WHERE ip_address = ? AND subuser = ?), 0),
-                0.0,
+                ?,
                 CURRENT_TIMESTAMP
             )
         """,
@@ -451,9 +483,15 @@ class BounceRateMonitor:
                 subuser,
                 ip_address,
                 subuser,
+                bounce_rate,
             ),
         )
         db.commit()
+
+        # Clear cache for this IP/subuser combination
+        cache_key = (ip_address, subuser)
+        if cache_key in self.cache:
+            del self.cache[cache_key]
 
     def _record_sent_postgres(self, db, ip_address: str, subuser: str):
         """Record sent email in PostgreSQL database."""

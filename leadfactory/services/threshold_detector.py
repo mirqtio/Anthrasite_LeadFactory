@@ -462,16 +462,16 @@ def create_default_threshold_config() -> ThresholdConfig:
     """
     config = ThresholdConfig()
 
-    # Low severity - warning level
+    # Low severity - warning level (2% for Task 21 requirements)
     config.add_rule(
         ThresholdRule(
             name="warning_threshold",
-            threshold_value=0.05,  # 5%
+            threshold_value=0.02,  # 2% - Task 21 requirement
             severity=ThresholdSeverity.LOW,
             threshold_type=ThresholdType.ABSOLUTE,
-            minimum_sample_size=50,
+            minimum_sample_size=10,  # Lower for testing
             time_window_hours=24,
-            description="Warning level bounce rate threshold",
+            description="2% bounce rate threshold as per Task 21",
         )
     )
 

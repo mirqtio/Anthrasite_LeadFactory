@@ -218,9 +218,8 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.io")
 SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
 DAILY_EMAIL_LIMIT = int(os.getenv("DAILY_EMAIL_LIMIT", "50"))
-BOUNCE_RATE_THRESHOLD = float(
-    os.getenv("BOUNCE_RATE_THRESHOLD", "0.02")
-)  # 2% bounce rate threshold
+# 2% bounce rate threshold
+BOUNCE_RATE_THRESHOLD = float(os.getenv("BOUNCE_RATE_THRESHOLD", "0.02"))
 SPAM_RATE_THRESHOLD = float(
     os.getenv("SPAM_RATE_THRESHOLD", "0.001")
 )  # 0.1% spam rate threshold
