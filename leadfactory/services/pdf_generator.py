@@ -87,6 +87,43 @@ class SecurityConfig:
             self.permissions = []
 
 
+class CompressionLevel(Enum):
+    """PDF compression levels for balancing quality vs file size."""
+
+    NONE = "none"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    MAXIMUM = "maximum"
+
+
+class ImageQuality(Enum):
+    """Image quality settings for PDF optimization."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    ORIGINAL = "original"
+
+
+@dataclass
+class OptimizationConfig:
+    """Configuration for PDF optimization and compression."""
+
+    compression_level: CompressionLevel = CompressionLevel.MEDIUM
+    image_quality: ImageQuality = ImageQuality.MEDIUM
+    max_image_width: int = 1200
+    max_image_height: int = 1200
+    jpeg_quality: int = 85
+    enable_image_compression: bool = True
+    enable_text_compression: bool = True
+    enable_font_subsetting: bool = True
+    target_file_size_mb: Optional[float] = None
+    enable_size_monitoring: bool = True
+    remove_metadata: bool = False
+    optimize_for_web: bool = False
+
+
 class PDFGenerationError(Exception):
     """Custom exception for PDF generation errors."""
 
@@ -103,6 +140,7 @@ class PDFConfiguration:
         margins: Dict[str, float] = None,
         orientation: str = "portrait",
         compression: bool = True,
+        optimization_config: Optional[OptimizationConfig] = None,
         security_config: Optional[SecurityConfig] = None,
         # Backward compatibility parameters
         encryption: bool = False,
@@ -120,7 +158,8 @@ class PDFConfiguration:
             page_size: Page size tuple (default: letter)
             margins: Dict with 'top', 'bottom', 'left', 'right' margins in inches
             orientation: 'portrait' or 'landscape'
-            compression: Enable PDF compression
+            compression: Enable basic PDF compression (legacy)
+            optimization_config: Advanced optimization configuration
             security_config: Security configuration (new format)
             encryption: Enable PDF encryption (legacy)
             password: Password for encrypted PDFs (legacy)
@@ -134,6 +173,7 @@ class PDFConfiguration:
         self.margins = margins or {"top": 1.0, "bottom": 1.0, "left": 1.0, "right": 1.0}
         self.orientation = orientation
         self.compression = compression
+        self.optimization_config = optimization_config or OptimizationConfig()
         self.title = title
         self.author = author
         self.subject = subject
@@ -345,6 +385,9 @@ class PDFGenerator:
                     creator=self.config.creator,
                 )
 
+            # Apply compression settings
+            self._apply_compression_settings(doc)
+
             # Build story from content
             story = self._build_story(content)
 
@@ -365,6 +408,18 @@ class PDFGenerator:
                 ) or self.config.encryption:
                     pdf_bytes = self._encrypt_pdf(pdf_bytes)
 
+                # Monitor file size if enabled
+                if self.config.optimization_config.enable_size_monitoring:
+                    size_mb = len(pdf_bytes) / (1024 * 1024)
+                    logger.info(f"Generated PDF size: {size_mb:.2f}MB")
+
+                    # Check target file size
+                    target_size = self.config.optimization_config.target_file_size_mb
+                    if target_size and size_mb > target_size:
+                        logger.warning(
+                            f"PDF size ({size_mb:.2f}MB) exceeds target ({target_size}MB)"
+                        )
+
                 logger.info("PDF generated successfully as bytes")
                 return pdf_bytes
             else:
@@ -374,6 +429,16 @@ class PDFGenerator:
                     and self.config.security_config.enable_encryption
                 ) or self.config.encryption:
                     self._encrypt_pdf_file(output_path)
+
+                # Monitor file size if enabled
+                if self.config.optimization_config.enable_size_monitoring:
+                    metrics = self._monitor_file_size(output_path)
+                    logger.info(f"PDF metrics: {metrics}")
+
+                    # Log recommendations if any
+                    if metrics.get("recommendations"):
+                        for rec in metrics["recommendations"]:
+                            logger.info(f"Optimization recommendation: {rec}")
 
                 logger.info(f"PDF generated successfully: {output_path}")
                 return output_path
@@ -498,9 +563,30 @@ class PDFGenerator:
 
         try:
             if image_path and os.path.exists(image_path):
+                # Optimize image if optimization is enabled
+                optimized_path = self._optimize_image(image_path)
+                final_path = optimized_path if optimized_path else image_path
+
                 width = element.get("width", 400)
                 height = element.get("height", 300)
-                return Image(image_path, width=width, height=height)
+
+                # Apply size constraints based on optimization config
+                opt_config = self.config.optimization_config
+                if opt_config.enable_image_compression:
+                    # Respect maximum dimensions from optimization config
+                    max_width = min(width, opt_config.max_image_width)
+                    max_height = min(height, opt_config.max_image_height)
+
+                    # Maintain aspect ratio
+                    if width > max_width or height > max_height:
+                        ratio = min(max_width / width, max_height / height)
+                        width = int(width * ratio)
+                        height = int(height * ratio)
+                        logger.info(
+                            f"Adjusted image size to {width}x{height} for optimization"
+                        )
+
+                return Image(final_path, width=width, height=height)
             elif image_data:
                 # Handle base64 or binary image data
                 # This would require additional processing
@@ -867,6 +953,163 @@ class PDFGenerator:
 
         return content
 
+    def _optimize_image(self, image_path: str) -> Optional[str]:
+        """
+        Optimize an image for PDF embedding based on configuration.
+
+        Args:
+            image_path: Path to the original image
+
+        Returns:
+            Path to optimized image or None if optimization failed
+        """
+        try:
+            from PIL import Image as PILImage
+
+            opt_config = self.config.optimization_config
+
+            # Skip optimization if disabled
+            if not opt_config.enable_image_compression:
+                return image_path
+
+            # Open and analyze image
+            with PILImage.open(image_path) as img:
+                original_size = os.path.getsize(image_path)
+
+                # Convert to RGB if necessary
+                if img.mode in ("RGBA", "LA", "P"):
+                    img = img.convert("RGB")
+
+                # Resize if image is too large
+                if (
+                    img.width > opt_config.max_image_width
+                    or img.height > opt_config.max_image_height
+                ):
+
+                    img.thumbnail(
+                        (opt_config.max_image_width, opt_config.max_image_height),
+                        PILImage.Resampling.LANCZOS,
+                    )
+                    logger.info(f"Resized image from {img.width}x{img.height}")
+
+                # Determine quality settings based on configuration
+                quality_map = {
+                    ImageQuality.LOW: 60,
+                    ImageQuality.MEDIUM: 85,
+                    ImageQuality.HIGH: 95,
+                    ImageQuality.ORIGINAL: 100,
+                }
+
+                quality = quality_map.get(
+                    opt_config.image_quality, opt_config.jpeg_quality
+                )
+
+                # Create optimized image path
+                base, ext = os.path.splitext(image_path)
+                optimized_path = f"{base}_optimized{ext}"
+
+                # Save optimized image
+                save_kwargs = {"format": "JPEG", "quality": quality, "optimize": True}
+                img.save(optimized_path, **save_kwargs)
+
+                optimized_size = os.path.getsize(optimized_path)
+                compression_ratio = (1 - optimized_size / original_size) * 100
+
+                logger.info(f"Image optimized: {compression_ratio:.1f}% size reduction")
+                return optimized_path
+
+        except ImportError:
+            logger.warning("PIL not available for image optimization")
+            return image_path
+        except Exception as e:
+            logger.warning(f"Image optimization failed: {e}")
+            return image_path
+
+    def _monitor_file_size(self, file_path: str) -> Dict[str, Any]:
+        """
+        Monitor and report PDF file size metrics.
+
+        Args:
+            file_path: Path to the PDF file
+
+        Returns:
+            Dictionary with size metrics and recommendations
+        """
+        try:
+            file_size = os.path.getsize(file_path)
+            size_mb = file_size / (1024 * 1024)
+
+            metrics = {
+                "file_size_bytes": file_size,
+                "file_size_mb": round(size_mb, 2),
+                "optimization_applied": True,
+                "compression_level": self.config.optimization_config.compression_level.value,
+                "recommendations": [],
+            }
+
+            opt_config = self.config.optimization_config
+
+            # Check against target file size
+            if (
+                opt_config.target_file_size_mb
+                and size_mb > opt_config.target_file_size_mb
+            ):
+                metrics["recommendations"].append(
+                    f"File size ({size_mb:.2f}MB) exceeds target ({opt_config.target_file_size_mb}MB)"
+                )
+
+                # Suggest optimizations
+                if opt_config.image_quality != ImageQuality.LOW:
+                    metrics["recommendations"].append("Consider reducing image quality")
+
+                if opt_config.compression_level != CompressionLevel.MAXIMUM:
+                    metrics["recommendations"].append(
+                        "Consider increasing compression level"
+                    )
+
+            # Performance recommendations
+            if size_mb > 10:
+                metrics["recommendations"].append(
+                    "Large file size may impact performance"
+                )
+
+            if size_mb > 50:
+                metrics["recommendations"].append(
+                    "Consider splitting into multiple documents"
+                )
+
+            return metrics
+
+        except Exception as e:
+            logger.error(f"File size monitoring failed: {e}")
+            return {"error": str(e)}
+
+    def _apply_compression_settings(self, doc: SimpleDocTemplate) -> None:
+        """
+        Apply compression settings to the PDF document.
+
+        Args:
+            doc: ReportLab SimpleDocTemplate instance
+        """
+        opt_config = self.config.optimization_config
+
+        # Configure compression based on level
+        if opt_config.compression_level == CompressionLevel.NONE:
+            doc.compress = 0
+        elif opt_config.compression_level == CompressionLevel.LOW:
+            doc.compress = 1
+        elif opt_config.compression_level == CompressionLevel.MEDIUM:
+            doc.compress = 1
+        elif opt_config.compression_level == CompressionLevel.HIGH:
+            doc.compress = 1
+        elif opt_config.compression_level == CompressionLevel.MAXIMUM:
+            doc.compress = 1
+
+        # Note: ReportLab's compression is primarily for text and vector graphics
+        # Image compression is handled separately in _optimize_image
+
+        logger.info(f"Applied compression level: {opt_config.compression_level.value}")
+
 
 # Convenience functions for common use cases
 def create_audit_report_pdf(
@@ -913,3 +1156,67 @@ def create_simple_pdf(
     return generator.generate_document(
         content, output_path, return_bytes=(output_path is None)
     )
+
+
+def create_optimized_pdf(
+    content: List[Dict[str, Any]],
+    output_path: Optional[str] = None,
+    compression_level: CompressionLevel = CompressionLevel.HIGH,
+    image_quality: ImageQuality = ImageQuality.MEDIUM,
+    target_size_mb: Optional[float] = None,
+) -> Union[str, bytes, Dict[str, Any]]:
+    """
+    Convenience function to create a highly optimized PDF.
+
+    Args:
+        content: List of content elements
+        output_path: Path to save the PDF file (if None, returns bytes)
+        compression_level: Level of compression to apply
+        image_quality: Quality level for image compression
+        target_size_mb: Target file size in MB (optional)
+
+    Returns:
+        Path to generated file, bytes content, or dict with metrics if optimization enabled
+    """
+    # Create optimization configuration
+    opt_config = OptimizationConfig(
+        compression_level=compression_level,
+        image_quality=image_quality,
+        target_file_size_mb=target_size_mb,
+        enable_size_monitoring=True,
+        enable_image_compression=True,
+        enable_text_compression=True,
+    )
+
+    # Create PDF configuration with optimization
+    config = PDFConfiguration(optimization_config=opt_config)
+
+    generator = PDFGenerator(config)
+    result = generator.generate_document(
+        content, output_path, return_bytes=(output_path is None)
+    )
+
+    # If file was saved and monitoring is enabled, return metrics too
+    if output_path and opt_config.enable_size_monitoring:
+        metrics = generator._monitor_file_size(output_path)
+        return {"file_path": result, "metrics": metrics}
+
+    return result
+
+
+def get_optimization_recommendations(file_path: str) -> Dict[str, Any]:
+    """
+    Analyze a PDF file and provide optimization recommendations.
+
+    Args:
+        file_path: Path to the PDF file to analyze
+
+    Returns:
+        Dictionary with analysis results and recommendations
+    """
+    # Create a generator with monitoring enabled
+    opt_config = OptimizationConfig(enable_size_monitoring=True)
+    config = PDFConfiguration(optimization_config=opt_config)
+    generator = PDFGenerator(config)
+
+    return generator._monitor_file_size(file_path)

@@ -3014,7 +3014,7 @@
             1
           ],
           "details": "1. Implement watermarking functionality (configurable text/image overlays)\n2. Add PDF encryption with password protection options\n3. Configure permissions (printing, copying, editing)\n4. Add document metadata and properties\n5. Implement digital signatures if required",
-          "status": "in-progress",
+          "status": "done",
           "testStrategy": "Test that watermarks appear correctly. Verify encryption works by attempting to open PDFs with and without passwords. Confirm that permission restrictions are enforced."
         },
         {
@@ -3027,7 +3027,7 @@
             3
           ],
           "details": "1. Implement image compression and optimization\n2. Configure text and vector graphics compression\n3. Add options for quality vs. file size tradeoffs\n4. Optimize CSS and HTML for PDF output\n5. Implement file size monitoring and reporting",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Compare file sizes before and after optimization. Test with various content types (text-heavy, image-heavy). Ensure document quality remains acceptable after compression."
         },
         {

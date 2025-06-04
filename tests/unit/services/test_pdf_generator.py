@@ -20,8 +20,13 @@ from leadfactory.services.pdf_generator import (
     PDFGenerator,
     PDFConfiguration,
     PDFGenerationError,
+    OptimizationConfig,
+    CompressionLevel,
+    ImageQuality,
     create_audit_report_pdf,
-    create_simple_pdf
+    create_simple_pdf,
+    create_optimized_pdf,
+    get_optimization_recommendations
 )
 
 
@@ -415,6 +420,243 @@ class TestConvenienceFunctions:
             "/tmp/simple.pdf",
             return_bytes=False
         )
+
+
+class TestOptimizationConfig:
+    """Test OptimizationConfig class."""
+
+    def test_default_optimization_config(self):
+        """Test default optimization configuration values."""
+        config = OptimizationConfig()
+
+        assert config.compression_level == CompressionLevel.MEDIUM
+        assert config.image_quality == ImageQuality.MEDIUM
+        assert config.max_image_width == 1200
+        assert config.max_image_height == 1200
+        assert config.jpeg_quality == 85
+        assert config.enable_image_compression is True
+        assert config.enable_text_compression is True
+        assert config.enable_font_subsetting is True
+        assert config.target_file_size_mb is None
+        assert config.enable_size_monitoring is True
+        assert config.remove_metadata is False
+        assert config.optimize_for_web is False
+
+    def test_custom_optimization_config(self):
+        """Test custom optimization configuration values."""
+        config = OptimizationConfig(
+            compression_level=CompressionLevel.HIGH,
+            image_quality=ImageQuality.LOW,
+            max_image_width=800,
+            max_image_height=600,
+            jpeg_quality=70,
+            target_file_size_mb=5.0,
+            optimize_for_web=True
+        )
+
+        assert config.compression_level == CompressionLevel.HIGH
+        assert config.image_quality == ImageQuality.LOW
+        assert config.max_image_width == 800
+        assert config.max_image_height == 600
+        assert config.jpeg_quality == 70
+        assert config.target_file_size_mb == 5.0
+        assert config.optimize_for_web is True
+
+    def test_compression_level_enum(self):
+        """Test CompressionLevel enum values."""
+        assert CompressionLevel.NONE.value == "none"
+        assert CompressionLevel.LOW.value == "low"
+        assert CompressionLevel.MEDIUM.value == "medium"
+        assert CompressionLevel.HIGH.value == "high"
+        assert CompressionLevel.MAXIMUM.value == "maximum"
+
+    def test_image_quality_enum(self):
+        """Test ImageQuality enum values."""
+        assert ImageQuality.LOW.value == "low"
+        assert ImageQuality.MEDIUM.value == "medium"
+        assert ImageQuality.HIGH.value == "high"
+        assert ImageQuality.ORIGINAL.value == "original"
+
+
+class TestPDFOptimization:
+    """Test PDF optimization features."""
+
+    @pytest.fixture
+    def optimized_config(self):
+        """Create optimized PDF configuration for testing."""
+        opt_config = OptimizationConfig(
+            compression_level=CompressionLevel.HIGH,
+            image_quality=ImageQuality.MEDIUM,
+            enable_size_monitoring=True,
+            target_file_size_mb=2.0
+        )
+        return PDFConfiguration(optimization_config=opt_config)
+
+    @pytest.fixture
+    def pdf_generator_optimized(self, optimized_config):
+        """Create PDF generator with optimization for testing."""
+        return PDFGenerator(optimized_config)
+
+    def test_optimization_config_integration(self, optimized_config):
+        """Test optimization config is properly integrated."""
+        assert optimized_config.optimization_config is not None
+        assert optimized_config.optimization_config.compression_level == CompressionLevel.HIGH
+        assert optimized_config.optimization_config.enable_size_monitoring is True
+
+    @patch('leadfactory.services.pdf_generator.os.path.getsize')
+    def test_monitor_file_size(self, mock_getsize, pdf_generator_optimized):
+        """Test file size monitoring functionality."""
+        mock_getsize.return_value = 1024 * 1024  # 1MB
+
+        metrics = pdf_generator_optimized._monitor_file_size("/fake/path.pdf")
+
+        assert 'file_size_bytes' in metrics
+        assert 'file_size_mb' in metrics
+        assert metrics['file_size_mb'] == 1.0
+        assert 'compression_level' in metrics
+        assert metrics['compression_level'] == 'high'
+
+    @patch('leadfactory.services.pdf_generator.os.path.getsize')
+    def test_monitor_file_size_with_target_exceeded(self, mock_getsize, pdf_generator_optimized):
+        """Test file size monitoring when target is exceeded."""
+        mock_getsize.return_value = 5 * 1024 * 1024  # 5MB (exceeds 2MB target)
+
+        metrics = pdf_generator_optimized._monitor_file_size("/fake/path.pdf")
+
+        assert metrics['file_size_mb'] == 5.0
+        assert len(metrics['recommendations']) > 0
+        assert any("exceeds target" in rec for rec in metrics['recommendations'])
+
+    @patch('leadfactory.services.pdf_generator.os.path.getsize')
+    @patch('leadfactory.services.pdf_generator.os.path.exists')
+    def test_optimize_image(self, mock_exists, mock_getsize, pdf_generator_optimized):
+        """Test image optimization functionality."""
+        mock_exists.return_value = True
+        mock_getsize.side_effect = [2048, 1024]  # Original: 2KB, Optimized: 1KB
+
+        # Mock PIL Image import
+        with patch('builtins.__import__') as mock_import:
+            mock_pil_module = Mock()
+            mock_img = Mock()
+            mock_img.mode = 'RGB'
+            mock_img.width = 1600
+            mock_img.height = 1200
+
+            # Create a proper context manager mock
+            mock_context_manager = Mock()
+            mock_context_manager.__enter__ = Mock(return_value=mock_img)
+            mock_context_manager.__exit__ = Mock(return_value=None)
+            mock_pil_module.Image.open.return_value = mock_context_manager
+
+            def import_side_effect(name, *args, **kwargs):
+                if name == 'PIL':
+                    return mock_pil_module
+                return __import__(name, *args, **kwargs)
+
+            mock_import.side_effect = import_side_effect
+
+            result = pdf_generator_optimized._optimize_image("/fake/image.jpg")
+
+            assert result is not None
+            assert "_optimized" in result
+            mock_img.thumbnail.assert_called_once()
+            mock_img.save.assert_called_once()
+
+    def test_optimize_image_disabled(self, pdf_generator_optimized):
+        """Test image optimization when disabled."""
+        pdf_generator_optimized.config.optimization_config.enable_image_compression = False
+
+        result = pdf_generator_optimized._optimize_image("/fake/image.jpg")
+
+        assert result == "/fake/image.jpg"
+
+    def test_apply_compression_settings(self, pdf_generator_optimized):
+        """Test compression settings application."""
+        mock_doc = Mock()
+
+        pdf_generator_optimized._apply_compression_settings(mock_doc)
+
+        assert mock_doc.compress == 1  # High compression should enable compression
+
+    @patch('leadfactory.services.pdf_generator.SimpleDocTemplate')
+    def test_generate_document_with_optimization(self, mock_doc_class, pdf_generator_optimized):
+        """Test document generation with optimization features."""
+        mock_doc = Mock()
+        mock_doc_class.return_value = mock_doc
+
+        content = [{"type": "paragraph", "text": "Test content"}]
+
+        with patch.object(pdf_generator_optimized, '_apply_compression_settings') as mock_compress:
+            pdf_generator_optimized.generate_document(content, return_bytes=True)
+
+            mock_compress.assert_called_once_with(mock_doc)
+
+    @patch('leadfactory.services.pdf_generator.os.path.exists')
+    def test_create_image_with_optimization(self, mock_exists, pdf_generator_optimized):
+        """Test image creation with optimization."""
+        mock_exists.return_value = True
+
+        with patch.object(pdf_generator_optimized, '_optimize_image') as mock_optimize:
+            mock_optimize.return_value = "/fake/optimized.jpg"
+
+            element = {"path": "/fake/image.jpg", "width": 2000, "height": 1500}
+            result = pdf_generator_optimized._create_image(element)
+
+            mock_optimize.assert_called_once_with("/fake/image.jpg")
+
+
+class TestOptimizedConvenienceFunctions:
+    """Test optimized convenience functions."""
+
+    @patch('leadfactory.services.pdf_generator.PDFGenerator')
+    def test_create_optimized_pdf(self, mock_generator_class):
+        """Test create_optimized_pdf convenience function."""
+        mock_generator = Mock()
+        mock_generator_class.return_value = mock_generator
+        mock_generator.generate_document.return_value = b"pdf_bytes"
+
+        content = [{"type": "paragraph", "text": "Test"}]
+        result = create_optimized_pdf(
+            content,
+            compression_level=CompressionLevel.HIGH,
+            image_quality=ImageQuality.LOW
+        )
+
+        assert result == b"pdf_bytes"
+        mock_generator_class.assert_called_once()
+        mock_generator.generate_document.assert_called_once()
+
+    @patch('leadfactory.services.pdf_generator.PDFGenerator')
+    def test_create_optimized_pdf_with_file_output(self, mock_generator_class):
+        """Test create_optimized_pdf with file output and metrics."""
+        mock_generator = Mock()
+        mock_generator_class.return_value = mock_generator
+        mock_generator.generate_document.return_value = "/fake/output.pdf"
+        mock_generator._monitor_file_size.return_value = {"file_size_mb": 1.5}
+
+        content = [{"type": "paragraph", "text": "Test"}]
+        result = create_optimized_pdf(content, output_path="/fake/output.pdf")
+
+        assert isinstance(result, dict)
+        assert 'file_path' in result
+        assert 'metrics' in result
+        assert result['file_path'] == "/fake/output.pdf"
+
+    @patch('leadfactory.services.pdf_generator.PDFGenerator')
+    def test_get_optimization_recommendations(self, mock_generator_class):
+        """Test get_optimization_recommendations function."""
+        mock_generator = Mock()
+        mock_generator_class.return_value = mock_generator
+        mock_generator._monitor_file_size.return_value = {
+            "file_size_mb": 5.0,
+            "recommendations": ["Consider reducing image quality"]
+        }
+
+        result = get_optimization_recommendations("/fake/file.pdf")
+
+        assert result["file_size_mb"] == 5.0
+        assert len(result["recommendations"]) > 0
+        mock_generator._monitor_file_size.assert_called_once_with("/fake/file.pdf")
 
 
 class TestIntegration:
