@@ -13,6 +13,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from leadfactory.ab_testing.email_ab_test import EmailABTest
 from leadfactory.email.delivery import EmailDeliveryService
 from leadfactory.email.secure_links import SecureLinkGenerator
 from leadfactory.email.templates import EmailPersonalization, EmailTemplateEngine
@@ -59,6 +60,7 @@ class EmailReportService:
         self.link_generator = SecureLinkGenerator()
         self.template_engine = EmailTemplateEngine()
         self.workflow_engine = EmailWorkflowEngine()
+        self.ab_test = EmailABTest()
 
     async def deliver_report(
         self, request: ReportDeliveryRequest, start_followup_workflow: bool = True
@@ -113,9 +115,22 @@ class EmailReportService:
                 expiry_date=datetime.utcnow() + timedelta(days=7),
             )
 
-            # Render email template
-            template = self.template_engine.create_report_delivery_email(
-                personalization, include_download=request.include_download_link
+            # Generate email with A/B testing variant
+            variant_id, email_template = self.ab_test.generate_email_with_variant(
+                user_id=request.user_id,
+                personalization=personalization,
+                email_type="report_delivery",
+            )
+
+            # Convert email_template dict to EmailTemplate object for delivery
+            from leadfactory.email.templates import EmailTemplate
+
+            template = EmailTemplate(
+                name=email_template.get("template_name", "report_delivery"),
+                subject=email_template["subject"],
+                html_content=email_template["html_content"],
+                text_content=email_template.get("text_content"),
+                tracking_enabled=True,
             )
 
             # Send email
@@ -126,9 +141,39 @@ class EmailReportService:
                     "report_id": request.report_id,
                     "purchase_id": request.purchase_id,
                     "delivery_type": "report_delivery",
+                    "ab_test_variant_id": variant_id,
+                    "ab_test_variant_config": email_template.get("variant_config", {}),
                     **request.metadata,
                 },
             )
+
+            # Record email sent event for A/B testing
+            try:
+                # Find active email A/B test
+                from leadfactory.ab_testing.ab_test_manager import TestType
+
+                active_tests = self.ab_test.test_manager.get_active_tests(
+                    TestType.EMAIL_SUBJECT
+                )
+                email_tests = [
+                    t
+                    for t in active_tests
+                    if t.metadata.get("email_template") == "report_delivery"
+                ]
+
+                if email_tests:
+                    self.ab_test.record_email_event(
+                        test_id=email_tests[0].id,
+                        user_id=request.user_id,
+                        event_type="sent",
+                        metadata={
+                            "email_id": email_id,
+                            "variant_id": variant_id,
+                            "subject": template.subject,
+                        },
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to record A/B test email event: {e}")
 
             # Start follow-up workflow if requested
             workflow_id = None

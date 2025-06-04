@@ -1,0 +1,264 @@
+# GPU Auto-Spin Configuration for LeadFactory Pipeline
+
+# Budget Settings
+budget:
+  daily_limit: 500.0  # Maximum daily spend in USD
+  hourly_limit: 50.0  # Maximum hourly spend in USD
+  alert_threshold: 0.8  # Alert when reaching 80% of budget
+
+# Queue Thresholds
+queue_thresholds:
+  scale_up_pending: 2000  # Scale up when pending tasks > 2000 (Task 22 requirement)
+  scale_down_pending: 100  # Scale down when pending tasks < 100
+  high_utilization: 0.8  # Scale up when utilization > 80%
+  low_utilization: 0.2  # Scale down when utilization < 20%
+  eta_threshold: 1800  # Scale up when ETA > 30 minutes
+
+# Instance Configurations
+instances:
+  local_gpu:
+    enabled: true
+    max_concurrent: 4
+    cost_per_hour: 0.0
+    priority: 1  # Prefer local GPU first
+    
+  # Hetzner instances (preferred for Task 22)
+  hetzner_gtx1080:
+    enabled: true
+    max_concurrent: 8
+    cost_per_hour: 0.35
+    priority: 2  # Prioritize Hetzner per requirements
+    location: "nbg1"
+    server_type: "cx21"
+    
+  hetzner_rtx3080:
+    enabled: true
+    max_concurrent: 12
+    cost_per_hour: 0.60
+    priority: 3
+    location: "nbg1"
+    server_type: "cx31"
+    
+  hetzner_rtx4090:
+    enabled: true
+    max_concurrent: 16
+    cost_per_hour: 1.20
+    priority: 4
+    location: "nbg1"
+    server_type: "cx41"
+    
+  # AWS instances (fallback)
+  aws_g4dn_xlarge:
+    enabled: true
+    max_concurrent: 8
+    cost_per_hour: 0.526
+    priority: 5
+    regions: ["us-east-1", "us-west-2"]
+    
+  aws_g4dn_2xlarge:
+    enabled: true
+    max_concurrent: 16
+    cost_per_hour: 0.752
+    priority: 6
+    regions: ["us-east-1", "us-west-2"]
+    
+  aws_g4dn_4xlarge:
+    enabled: false  # High cost, use only for extreme loads
+    max_concurrent: 32
+    cost_per_hour: 1.352
+    priority: 7
+    regions: ["us-east-1"]
+    
+  aws_p3_2xlarge:
+    enabled: false  # Very high cost, disable for now
+    max_concurrent: 20
+    cost_per_hour: 3.06
+    priority: 8
+    regions: ["us-east-1", "us-west-2"]
+
+# AWS Configuration
+aws:
+  ami_id: "ami-0c94855ba95b798c7"  # Deep Learning AMI (Ubuntu 20.04)
+  key_name: "leadfactory-gpu"
+  security_group: "leadfactory-gpu-sg"
+  instance_profile: "leadfactory-gpu-role"
+  
+  # Startup script for GPU instances
+  user_data_script: |
+    #!/bin/bash
+    set -e
+    
+    # Update system
+    apt-get update -y
+    
+    # Install Docker if not present
+    if ! command -v docker &> /dev/null; then
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
+        usermod -aG docker ubuntu
+    fi
+    
+    # Install nvidia-docker
+    distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+    curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
+    curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list
+    apt-get update && apt-get install -y nvidia-docker2
+    systemctl restart docker
+    
+    # Configure GPU monitoring
+    nvidia-smi -pm 1
+    nvidia-smi -c 3
+    
+    # Pull and start personalization worker
+    docker pull leadfactory/personalization-gpu:latest
+    docker run -d --gpus all --name personalization-worker \
+        --restart unless-stopped \
+        -p 8080:8080 \
+        -e WORKER_TYPE=gpu \
+        -e QUEUE_URL=$QUEUE_URL \
+        -e INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id) \
+        -e AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region) \
+        leadfactory/personalization-gpu:latest
+    
+    # Signal readiness to manager
+    sleep 30
+    curl -X POST $MANAGER_URL/gpu/ready \
+        -H "Content-Type: application/json" \
+        -d "{\"instance_id\": \"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\", \"status\": \"ready\"}"
+
+# Hetzner Configuration
+hetzner:
+  image: "ubuntu-20.04"  # Ubuntu 20.04 LTS
+  ssh_key: "leadfactory-gpu"  # SSH key name in Hetzner
+  location: "nbg1"  # Nuremberg datacenter
+  networks: []  # Use default network
+  
+  # Startup script for Hetzner GPU instances
+  user_data_script: |
+    #!/bin/bash
+    set -e
+    
+    # Update system
+    apt-get update -y
+    
+    # Install Docker
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+    usermod -aG docker root
+    
+    # Install NVIDIA drivers and container runtime
+    apt-get install -y nvidia-driver-470 nvidia-docker2
+    
+    # Configure NVIDIA Docker runtime
+    cat > /etc/docker/daemon.json <<EOF
+    {
+        "default-runtime": "nvidia",
+        "runtimes": {
+            "nvidia": {
+                "path": "nvidia-container-runtime",
+                "runtimeArgs": []
+            }
+        }
+    }
+    EOF
+    
+    systemctl restart docker
+    
+    # Configure GPU monitoring
+    nvidia-smi -pm 1
+    nvidia-smi -c 3
+    
+    # Pull and start personalization worker
+    docker pull leadfactory/personalization-gpu:latest
+    docker run -d --gpus all --name personalization-worker \
+        --restart unless-stopped \
+        -p 8080:8080 \
+        -e WORKER_TYPE=gpu \
+        -e QUEUE_URL=$QUEUE_URL \
+        -e INSTANCE_ID=$(hostname) \
+        -e HETZNER_INSTANCE=true \
+        leadfactory/personalization-gpu:latest
+    
+    # Signal readiness
+    sleep 60
+    curl -X POST $MANAGER_URL/gpu/ready \
+        -H "Content-Type: application/json" \
+        -d "{\"instance_id\": \"$(hostname)\", \"status\": \"ready\", \"provider\": \"hetzner\"}"
+
+# Monitoring Settings
+monitoring:
+  check_interval: 30  # Check every 30 seconds
+  instance_timeout: 300  # Consider instance failed after 5 minutes
+  health_check_port: 8080
+  health_check_path: "/health"
+  
+  # Metrics collection
+  collect_gpu_metrics: true
+  collect_cost_metrics: true
+  collect_queue_metrics: true
+  
+  # Alerting
+  slack_webhook: null  # Set to enable Slack alerts
+  email_alerts: null   # Set to enable email alerts
+
+# Scaling Rules
+scaling:
+  # Minimum instances to keep running
+  min_instances: 0
+  
+  # Maximum instances to run simultaneously  
+  max_instances: 5
+  
+  # Cool-down periods (seconds)
+  scale_up_cooldown: 300   # Wait 5 minutes between scale-ups
+  scale_down_cooldown: 600 # Wait 10 minutes between scale-downs
+  
+  # Predictive scaling
+  enable_predictive: true
+  prediction_window: 3600  # Look ahead 1 hour
+  
+  # Emergency scaling
+  emergency_queue_size: 500  # Emergency scale if queue > 500
+  emergency_instance_type: "aws_p3_2xlarge"
+
+# Personalization Task Settings
+personalization:
+  # Task types that require GPU processing
+  gpu_task_types:
+    - "website_mockup_generation"
+    - "ai_content_personalization" 
+    - "image_optimization"
+    - "video_rendering"
+    
+  # Resource requirements per task type
+  task_requirements:
+    website_mockup_generation:
+      vram_mb: 4096
+      processing_time_avg: 180
+      
+    ai_content_personalization:
+      vram_mb: 2048
+      processing_time_avg: 120
+      
+    image_optimization:
+      vram_mb: 1024
+      processing_time_avg: 60
+      
+    video_rendering:
+      vram_mb: 8192
+      processing_time_avg: 600
+
+# Integration Settings
+integration:
+  # Pipeline service integration
+  orchestrator_url: "http://localhost:8000"
+  kafka_bootstrap_servers: "localhost:9092"
+  redis_url: "redis://localhost:6379/7"
+  
+  # API endpoints
+  queue_api_url: "http://localhost:8000/api/queue"
+  metrics_api_url: "http://localhost:8000/api/metrics"
+  
+  # Authentication
+  api_key: null  # Set in environment variable
+  auth_header: "X-API-Key"

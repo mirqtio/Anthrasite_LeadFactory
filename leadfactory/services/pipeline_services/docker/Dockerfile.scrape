@@ -1,0 +1,33 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install system dependencies for scraping
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    chromium \
+    chromium-driver \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy leadfactory package
+COPY leadfactory/ leadfactory/
+
+# Create non-root user
+RUN useradd -m -u 1000 pipelineuser && \
+    chown -R pipelineuser:pipelineuser /app
+
+USER pipelineuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+EXPOSE 8001
+
+CMD ["python", "-c", "from leadfactory.services.pipeline_services.scrape_service import create_scrape_service; import asyncio; service = create_scrape_service(); asyncio.run(service.start())"]

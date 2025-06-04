@@ -75,7 +75,9 @@ class TestRoadmapDocumentation(unittest.TestCase):
             "Task 31",
             "Task 32",
             "Purchase Metrics",
-            "Roadmap Documentation"
+            "Roadmap Documentation",
+            "COMPLETED",
+            "In Progress"
         ]
 
         for task_ref in task_references:
@@ -83,19 +85,36 @@ class TestRoadmapDocumentation(unittest.TestCase):
                 self.assertIn(task_ref, self.roadmap_content,
                              f"Current task reference '{task_ref}' not found")
 
+        # Test that Task 31 is marked as completed
+        self.assertIn("✅ **COMPLETED**", self.roadmap_content,
+                     "Task 31 should be marked as completed")
+
+        # Test that Task 32 is marked as in progress
+        self.assertIn("🔄 **In Progress**", self.roadmap_content,
+                     "Task 32 should be marked as in progress")
+
     def test_next_priority_tasks_identified(self):
-        """Test that next priority tasks (29, 30) are properly identified."""
+        """Test that next priority tasks (19, 22, 18) are properly identified."""
         next_tasks = [
-            "Task 29",
-            "Task 30",
-            "YAML Scoring Rules",
-            "NodeCapability Defaults"
+            "Task 19",
+            "Task 22",
+            "Task 18",
+            "LLM Fallback Mechanism",
+            "GPU Auto-Spin",
+            "A/B Testing"
         ]
 
         for task in next_tasks:
             with self.subTest(task=task):
                 self.assertIn(task, self.roadmap_content,
                              f"Next priority task '{task}' not found")
+
+        # Test priority levels are properly indicated
+        priority_indicators = ["🔴 **HIGH**", "🟡 **MEDIUM**"]
+        for indicator in priority_indicators:
+            with self.subTest(indicator=indicator):
+                self.assertIn(indicator, self.roadmap_content,
+                             f"Priority indicator '{indicator}' not found")
 
     def test_timeline_consistency(self):
         """Test that timeline references are consistent and realistic."""
@@ -248,6 +267,68 @@ class TestRoadmapDocumentation(unittest.TestCase):
                 self.assertIn(concept.lower(), self.roadmap_content.lower(),
                              f"Business concept '{concept}' should be covered")
 
+    def test_purchase_metrics_monitoring_coverage(self):
+        """Test that purchase metrics monitoring implementation is properly documented."""
+        monitoring_keywords = [
+            "Purchase Metrics Monitoring",
+            "KPI tracking",
+            "conversion funnel",
+            "attribution analysis",
+            "Web Dashboard",
+            "CLI tools",
+            "alerting system",
+            "real-time"
+        ]
+
+        for keyword in monitoring_keywords:
+            with self.subTest(keyword=keyword):
+                self.assertIn(keyword.lower(), self.roadmap_content.lower(),
+                             f"Monitoring keyword '{keyword}' not found in roadmap")
+
+        # Test that Key Achievements section exists and has proper content
+        self.assertIn("🎉 Key Achievements:", self.roadmap_content,
+                     "Key Achievements section should exist")
+
+        # Test for specific achievements
+        achievements = [
+            "Real-time purchase metrics monitoring",
+            "Conversion funnel analysis",
+            "Marketing attribution modeling",
+            "Automated alerting system",
+            "Web-based dashboard"
+        ]
+
+        for achievement in achievements:
+            with self.subTest(achievement=achievement):
+                self.assertIn(achievement.lower(), self.roadmap_content.lower(),
+                             f"Achievement '{achievement}' not documented")
+
+    def test_visual_formatting_enhancements(self):
+        """Test that visual formatting improvements are present."""
+        visual_elements = [
+            "🎯", "🔥", "✅", "🔄", "📋",  # Emojis for visual enhancement
+            "| **", "**HIGH**", "**MEDIUM**",  # Table formatting
+            "> **", "---"  # Blockquotes and separators
+        ]
+
+        for element in visual_elements:
+            with self.subTest(element=element):
+                self.assertIn(element, self.roadmap_content,
+                             f"Visual element '{element}' not found")
+
+        # Test for improved table structure
+        table_headers = [
+            "🎯 **Task**",
+            "🔥 **Priority**",
+            "✅ **Status**",
+            "📋 **Description**"
+        ]
+
+        for header in table_headers:
+            with self.subTest(header=header):
+                self.assertIn(header, self.roadmap_content,
+                             f"Enhanced table header '{header}' not found")
+
 
 class TestDocumentationIntegration(unittest.TestCase):
     """Test integration between roadmap and project structure."""
@@ -269,7 +350,7 @@ class TestDocumentationIntegration(unittest.TestCase):
                           "Should reference specific task numbers")
 
         # Check for key tasks mentioned in the roadmap
-        key_tasks = ['29', '30', '31', '32']
+        key_tasks = ['18', '19', '22', '31', '32']
         for task_num in key_tasks:
             with self.subTest(task=task_num):
                 self.assertIn(f'Task {task_num}', self.roadmap_content,

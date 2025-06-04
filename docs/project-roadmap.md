@@ -19,22 +19,34 @@
 
 ## Executive Summary
 
-The Anthrasite LeadFactory has successfully evolved from a lead generation pipeline into a comprehensive **audit-first business platform**. Our system now prioritizes direct revenue generation through audit services while maintaining lead generation capabilities as a secondary offering for agency partnerships.
+> **📊 Business Transformation**: The Anthrasite LeadFactory has successfully evolved from a lead generation pipeline into a comprehensive **audit-first business platform**.
+
+Our system now prioritizes **direct revenue generation** through audit services while maintaining lead generation capabilities as a secondary offering for agency partnerships. With the recent completion of **Task 31** (Purchase Metrics Monitoring), we now have comprehensive business intelligence capabilities that provide real-time insights into our audit business performance.
 
 ## Business Model Evolution
 
-### Current: Audit-First Revenue Model
-- **Primary Revenue Stream**: Direct audit sales to businesses
-- **Secondary Revenue Stream**: Lead generation services for partner agencies
-- **Value Proposition**: Immediate website audits with actionable insights
-- **Customer Journey**: Discovery → Audit Purchase → Implementation Support → Retention
+### 🎯 Current: Audit-First Revenue Model
 
-### Key Business Metrics (As of June 2025)
-- Purchase metrics tracking with Prometheus integration
-- Customer Lifetime Value (CLV) calculations
-- Conversion funnel analytics by audit type
-- Revenue tracking with Stripe integration
-- Financial reporting and profit margin analysis
+| **Revenue Stream** | **Type** | **Priority** | **Value Proposition** |
+|-------------------|----------|--------------|----------------------|
+| 💰 **Direct Audit Sales** | Primary | **HIGH** | Immediate website audits with actionable insights |
+| 🤝 **Lead Generation Services** | Secondary | Medium | Partner agency support and warm lead handoffs |
+
+**📈 Customer Journey**: `Discovery` → `Audit Purchase` → `Implementation Support` → `Retention`
+
+### 📊 Key Business Metrics & Capabilities (As of June 2025)
+
+#### 🔍 **Analytics & Intelligence**
+- ✅ **Purchase Metrics Monitoring**: Real-time KPI tracking with trends and alerting
+- ✅ **Conversion Funnel Analytics**: Comprehensive customer journey analysis by audit type and channel
+- ✅ **Marketing Attribution**: Multi-touch attribution modeling for revenue optimization
+- ✅ **Customer Lifetime Value (CLV)**: Automated calculations with cohort analysis
+
+#### 💳 **Financial & Revenue**
+- ✅ **Revenue Tracking**: Stripe integration with profit margin analysis
+- ✅ **Financial Intelligence**: CLI-based business analytics and dashboard tools
+- ✅ **Alert System**: Automated threshold monitoring for business-critical metrics
+- ✅ **Web Dashboard**: Real-time visualization with export capabilities
 
 ## Completed: Phase 0 (v1.3) - Foundation & Compliance
 
@@ -48,42 +60,74 @@ The Anthrasite LeadFactory has successfully evolved from a lead generation pipel
 ### ✅ Payment & Revenue Infrastructure (June 2025)
 - **Stripe Integration**: Payment processing, webhook handling, fee tracking
 - **Financial Tracking**: Transaction logging, profit margin calculations, refund management
-- **Purchase Metrics**: Real-time revenue analytics, CLI business intelligence tools
+- **Purchase Metrics Monitoring**: Comprehensive real-time analytics with KPI tracking, conversion funnels, and attribution analysis
+- **Business Intelligence**: CLI tools for revenue analytics, dashboard monitoring, and alert management
 - **PDF Generation & Delivery**: Secure audit report generation and customer delivery
 - **Storage & Security**: Supabase integration, access control, URL expiration
 - **Email Integration**: SendGrid for transactional emails and delivery notifications
 - **AI Processing**: GPT-4 for advanced content analysis and report generation
+- **YAML Configuration**: Flexible scoring rules and configuration management
 - **Python Infrastructure**: Full Python implementation with modern development practices
+- **Monitoring & Alerting**: Automated threshold detection with multi-channel notifications
+- **Web Dashboard**: Real-time business metrics visualization with export capabilities
 
 ## Current Phase: Audit Business Optimization (June 2025)
 
-### 🔄 In Progress
-| Task | Priority | Status | Description |
-|------|----------|---------|-------------|
-| Task 31 | High | Validation Pending | Purchase Metrics Monitoring Layer |
-| Task 32 | Medium | In Progress | Roadmap Documentation Update |
+### ✅ Recently Completed (June 2025)
+
+| 🎯 **Task** | 🔥 **Priority** | ✅ **Status** | 📋 **Description** |
+|-------------|----------------|---------------|-------------------|
+| **Task 31** | 🔴 **HIGH** | ✅ **COMPLETED** | **Purchase Metrics Monitoring Layer** - Real-time KPI tracking, conversion funnels, attribution analysis, and business intelligence tools with web dashboard and CLI access |
+
+**🎉 Key Achievements:**
+- ✅ Real-time purchase metrics monitoring with KPI tracking
+- ✅ Conversion funnel analysis with customer journey insights
+- ✅ Marketing attribution modeling (last-click, first-click, linear)
+- ✅ Automated alerting system with email, Slack, and webhook notifications
+- ✅ Web-based dashboard with interactive charts and data export
+- ✅ Comprehensive CLI tools for business analytics
+
+---
+
+### 🔄 Currently In Progress
+
+| 🎯 **Task** | 🔥 **Priority** | 🔄 **Status** | 📋 **Description** |
+|-------------|----------------|---------------|-------------------|
+| **Task 32** | 🟡 **MEDIUM** | 🔄 **In Progress** | **Roadmap Documentation Update** - Reflecting audit-first business model achievements and revised task priorities |
+
+---
 
 ### 📋 Next Priority Tasks
 
-| Task | Priority | Timeline | Focus Area |
-|------|----------|----------|------------|
-| Task 29 | **High** | Q3 2025 | Simplify YAML Scoring Rules |
-| Task 30 | Medium | Q3 2025 | Update NodeCapability Defaults |
+| 🎯 **Task** | 🔥 **Priority** | ⏰ **Timeline** | 🎪 **Focus Area** | 🔗 **Dependencies** |
+|-------------|----------------|-----------------|-------------------|---------------------|
+| **Task 19** | 🔴 **HIGH** | Q3 2025 | 🤖 **LLM Fallback Mechanism** | ⚠️ Tasks 5, 9, 13, 17 |
+| **Task 22** | 🔴 **HIGH** | Q3 2025 | ⚡ **GPU Auto-Spin for Large Queues** | ⚠️ Tasks 13, 19 |
+| **Task 18** | 🟡 **MEDIUM** | Q4 2025 | 📧 **A/B Testing for Email Subject Lines** | ⚠️ Tasks 3, 12, 13 |
 
-#### Task 29: Simplify YAML Scoring Rules 🎯
-- **Objective**: Streamline scoring configuration for audit-focused criteria
-- **Key Deliverables**:
-  - Optimize for website quality, technical SEO, and user experience metrics
-  - Reduce complexity while maintaining scoring accuracy
-  - Audit-specific scoring templates
-- **Timeline**: Q3 2025
+#### 🎯 Strategic Priority Analysis
 
-#### Task 30: Update NodeCapability Defaults ⚙️
-- **Objective**: Align node configuration with audit-first infrastructure needs
+> **⚠️ Dependency Management**: Tasks 19 & 22 are currently blocked by dependencies but represent our **highest strategic priorities** for operational resilience and scalability.
+
+- 🔴 **HIGH PRIORITY**: **Operational Reliability** (Task 19) + **Scalability** (Task 22)
+- 🟡 **MEDIUM PRIORITY**: **Revenue Optimization** (Task 18) through A/B testing of audit sales funnels
+- 🎯 **Strategic Focus**: **Revenue generation** and **operational excellence**
+
+#### Task 19: LLM Fallback Mechanism 🔄
+- **Objective**: Implement robust AI processing resilience for audit generation
 - **Key Deliverables**:
-  - Optimize resource allocation for PDF generation and metrics collection
-  - Enhanced monitoring and alerting capabilities
-- **Timeline**: Q3 2025
+  - GPT-4o primary with Claude fallback on rate limits or cost spikes
+  - Pipeline pausing mechanism if both LLMs unavailable
+  - Intelligent cost and performance monitoring
+- **Timeline**: Q3 2025 (pending dependency completion)
+
+#### Task 22: GPU Auto-Spin for Large Queues ⚡
+- **Objective**: Automatic scaling for high-volume audit processing
+- **Key Deliverables**:
+  - Hetzner GPU instance auto-provisioning when queue exceeds 2000 items
+  - Cost optimization and automatic de-provisioning
+  - Seamless integration with existing processing pipeline
+- **Timeline**: Q3 2025 (dependent on Task 19)
 
 ## Next Phase: Enhanced Audit Platform (Q3-Q4 2025)
 
@@ -128,17 +172,18 @@ gantt
     section Phase 0 (Complete)
     Foundation & Compliance    :done, foundation, 2025-05-01, 2025-05-31
     Payment Infrastructure     :done, payment, 2025-06-01, 2025-06-04
+    Purchase Metrics (Task 31) :done, metrics, 2025-06-04, 2025-06-04
 
     section Current Phase
-    Purchase Metrics (Task 31) :active, metrics, 2025-06-04, 2025-06-07
-    Roadmap Update (Task 32)   :active, roadmap, 2025-06-04, 2025-06-06
+    Roadmap Update (Task 32)   :active, roadmap, 2025-06-04, 2025-06-05
 
     section Q3 2025
-    YAML Rules (Task 29)       :yaml, 2025-06-07, 2025-07-15
-    Node Config (Task 30)      :node, 2025-07-15, 2025-08-15
+    LLM Fallback (Task 19)     :pending, llm, 2025-06-05, 2025-07-15
+    GPU Auto-Spin (Task 22)    :pending, gpu, 2025-07-15, 2025-08-15
     Revenue Optimization       :revenue, 2025-08-01, 2025-09-30
 
     section Q4 2025
+    A/B Testing (Task 18)      :ab_test, 2025-10-01, 2025-11-15
     Audit Platform Enhancement :platform, 2025-10-01, 2025-12-31
     Customer Portal            :portal, 2025-10-15, 2025-12-15
 
@@ -162,24 +207,30 @@ gantt
 4. **Scalability**: Support for 10,000+ audits per month
 
 ### Business Intelligence
-1. **Real-time Analytics**: Live dashboard for business performance
-2. **Predictive Modeling**: Forecast revenue and customer behavior
-3. **Competitive Intelligence**: Market analysis and positioning
-4. **Customer Success Metrics**: Satisfaction, retention, and advocacy tracking
+1. **Real-time Analytics**: Live KPI dashboard with conversion funnel analysis and attribution modeling
+2. **Automated Alerting**: Threshold-based monitoring for revenue drops, conversion rate declines, and operational issues
+3. **Customer Journey Analytics**: Multi-touch attribution and detailed conversion path analysis
+4. **Predictive Modeling**: Forecast revenue and customer behavior based on historical data
+5. **Competitive Intelligence**: Market analysis and positioning insights
+6. **Customer Success Metrics**: Satisfaction, retention, and advocacy tracking with automated reporting
 
 ## Success Metrics & KPIs
 
 ### Financial Metrics
-- Monthly Recurring Revenue (MRR) growth: Target 20% month-over-month
-- Customer Acquisition Cost (CAC): Target sub-$50 per audit customer
-- Customer Lifetime Value (CLV): Target $300+ per customer
-- Gross profit margin: Target 85%+ for audit services
+- **Monthly Recurring Revenue (MRR)** growth: Target 20% month-over-month
+- **Customer Acquisition Cost (CAC)**: Target sub-$50 per audit customer
+- **Customer Lifetime Value (CLV)**: Target $300+ per customer
+- **Gross profit margin**: Target 85%+ for audit services
+- **Average Order Value**: Target $99+ per audit transaction
+- **Revenue per Customer**: Target $150+ annual value
 
 ### Operational Metrics
-- Audit delivery time: Target <24 hours from purchase
-- Customer satisfaction: Target 4.5+ stars average rating
-- Platform uptime: Target 99.9% availability
-- Support response time: Target <2 hours for customer inquiries
+- **Audit delivery time**: Target <24 hours from purchase
+- **Customer satisfaction**: Target 4.5+ stars average rating
+- **Platform uptime**: Target **99.9% availability**
+- **Support response time**: Target <2 hours for customer inquiries
+- **Conversion rate**: Target 2%+ from visitor to customer
+- **Email deliverability**: Target 98%+ delivery rate
 
 ### Technical Metrics
 - API performance: Target <200ms response times
@@ -232,4 +283,11 @@ The shift to an audit-first business model positions us for sustainable profitab
 
 *Document created: May 21, 2025*
 *Last updated: June 4, 2025*
-*Business Model Updated: June 4, 2025 - Audit-First Revenue Model*
+*Major Update: June 4, 2025 - Task 31 Completion & Audit-First Business Model Enhancement*
+*Business Model Validated: Audit-First Revenue Model*
+
+### Recent Updates (June 4, 2025)
+- ✅ **Task 31 Completed**: Purchase Metrics Monitoring Layer with real-time KPI tracking, conversion funnels, and attribution analysis
+- 🔄 **Task 32 In Progress**: Roadmap documentation update to reflect current priorities and completions
+- 📊 **Enhanced Business Intelligence**: Added comprehensive monitoring and alerting capabilities
+- 🎯 **Revised Priorities**: Updated next tasks to focus on LLM reliability and GPU auto-scaling

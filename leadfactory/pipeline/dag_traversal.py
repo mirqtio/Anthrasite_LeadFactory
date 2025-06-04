@@ -12,7 +12,11 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from leadfactory.config.node_config import NodeType, get_enabled_capabilities
+from leadfactory.config.node_config import (
+    DeploymentEnvironment,
+    NodeType,
+    get_enabled_capabilities,
+)
 from leadfactory.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -187,7 +191,9 @@ class PipelineDAG:
 
         # Filter stages based on node capabilities if provided
         if node_type is not None:
-            enabled_capabilities = get_enabled_capabilities(node_type, budget_cents)
+            enabled_capabilities = get_enabled_capabilities(
+                node_type, budget_cents, None
+            )  # Auto-detect environment
             available_stages = self._filter_by_capabilities(
                 available_stages, enabled_capabilities
             )

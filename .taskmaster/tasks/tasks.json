@@ -146,7 +146,7 @@
       "velocity_metadata": {
         "complexity_score": 9,
         "estimated_hours": null,
-        "actual_hours": 5.555555555555555e-07,
+        "actual_hours": 5.555555555555555e-7,
         "velocity_points": 9,
         "blocked_time": 0,
         "status_history": [
@@ -158,7 +158,7 @@
           {
             "status": "in-progress",
             "timestamp": "2025-05-29T23:20:36.858Z",
-            "duration_hours": 5.555555555555555e-07
+            "duration_hours": 5.555555555555555e-7
           },
           {
             "status": "done",
@@ -2460,7 +2460,7 @@
       "id": 18,
       "title": "Implement A/B Testing for Email Subject Lines and Price Variants",
       "description": "Implement a focused A/B testing system for email subject lines and price variants for audit reports, utilizing the existing variant_id field in the email_queue table to support variant selection, tracking, and reporting.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         3,
         12,
@@ -2476,7 +2476,7 @@
           "description": "Create a system for defining and managing different subject lines and price variants for audit reports",
           "dependencies": [],
           "details": "Develop a `SubjectPriceVariant` class that allows defining alternative subject lines and price variants for audit reports. Implement a registry system for managing multiple variants. Ensure variants maintain proper structure and validation requirements.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -2484,7 +2484,7 @@
           "description": "Create a system that assigns leads to different subject line and price variants based on predefined distribution rules",
           "dependencies": [],
           "details": "Develop a statistically sound randomization algorithm that ensures even distribution across variants. Include support for weighted distributions, cohort-based assignments, and persistent user assignments. Implement safeguards to prevent bias in selection. Create unit tests to verify distribution accuracy.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -2494,7 +2494,7 @@
             1
           ],
           "details": "Implement unique tracking identifiers for each variant. Track open rates, click rates, conversion rates, and other relevant metrics. Create a data storage solution optimized for quick retrieval and analysis. Ensure proper user privacy compliance in tracking implementation.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -2504,7 +2504,7 @@
             3
           ],
           "details": "Build visualizations for key metrics comparing variants. Implement statistical significance calculations with confidence intervals. Create exportable reports for stakeholders. Include recommendations based on test results. Design filters for viewing results by time period, user segment, and other relevant dimensions.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -2515,7 +2515,7 @@
             2
           ],
           "details": "Update the email generation logic to handle variant-specific subject lines and price points. Integrate with the email template system for dynamic content insertion. Ensure proper tracking of variant data throughout the email delivery process.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -2526,14 +2526,14 @@
             5
           ],
           "details": "Design an interface for creating new variants, defining subject lines, price variations, setting distribution rules, and scheduling test duration. Implement validation for variant parameters. Create preview functionality for variants. Add capabilities for pausing, resuming, or stopping tests. Include permissions management for test creation and analysis.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
           "title": "Comprehensive Testing Suite",
           "description": "Unit tests for A/B testing logic and variant selection, integration tests with email delivery system, e2e browser tests following BDD principles for A/B test flows, run all tests and resolve issues, update CI with A/B testing tests, merge to master and confirm successful CI via GitHub CLI logs.",
           "details": "",
-          "status": "pending",
+          "status": "done",
           "dependencies": [],
           "parentTaskId": 18
         }
@@ -2543,7 +2543,7 @@
       "id": 19,
       "title": "Implement LLM Fallback Mechanism",
       "description": "Implement a robust fallback mechanism for LLM failures that uses GPT-4o as default and Claude as fallback on rate-limit or cost spike, with pipeline pausing if both hosted LLMs are unavailable.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         5,
         9,
@@ -2560,7 +2560,7 @@
           "description": "Create a unified interface for interacting with different LLM providers",
           "dependencies": [],
           "details": "Develop an abstraction layer that standardizes interactions with different LLM providers (OpenAI, Anthropic, etc.). Include methods for sending prompts, handling responses, and managing provider-specific parameters. Ensure the interface is consistent regardless of the underlying provider.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -2570,7 +2570,7 @@
             1
           ],
           "details": "Create a fallback orchestrator that can detect failures from the primary LLM provider and seamlessly switch to backup providers. Implement retry logic, timeout handling, and error classification to determine when fallback should be triggered. Design the system to maintain context and state during provider transitions.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -2580,7 +2580,7 @@
             1
           ],
           "details": "Develop a system to track API usage costs across all LLM providers. Include real-time cost calculation, budget thresholds, usage reporting, and alerting mechanisms. Ensure the system can inform fallback decisions based on cost considerations and provide detailed cost analytics.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -2590,7 +2590,7 @@
             1
           ],
           "details": "Build a health check system that regularly tests each LLM provider's availability, response time, and quality. Implement circuit breaker patterns to temporarily disable underperforming providers. Create dashboards for monitoring provider health metrics and configure automated alerts for degraded performance.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -2601,7 +2601,7 @@
             2
           ],
           "details": "Implement a configuration management system that allows defining provider preferences, fallback order, retry policies, and provider-specific settings. Support both static configuration files and dynamic runtime configuration updates. Include validation logic to ensure configurations are valid.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -2615,7 +2615,7 @@
             5
           ],
           "details": "Integrate the fallback system with the DAG pipeline architecture. Focus on the unified terminal GPT-4o node for mockup and email generation. Ensure that all LLM nodes in the pipeline use the fallback system consistently. Update logging, monitoring, and analytics systems to track fallback events and their impact on overall system performance.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -3249,7 +3249,7 @@
       "id": 29,
       "title": "Simplify YAML Scoring Rules",
       "description": "Refactor complex YAML scoring configurations into more maintainable and readable format",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [],
       "priority": "medium",
       "details": "",
@@ -3314,7 +3314,7 @@
       "id": 30,
       "title": "Update NodeCapability Defaults",
       "description": "Refactor default node capability configurations to better align with current infrastructure requirements",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [],
       "priority": "medium",
       "details": "",
@@ -3379,7 +3379,7 @@
       "id": 31,
       "title": "Add Purchase Metrics to Monitoring Layer",
       "description": "Implement monitoring and analytics for audit report purchases including conversion tracking and revenue metrics",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "priority": "medium",
       "details": "",
@@ -3391,7 +3391,7 @@
           "description": "Create the foundational data collection layer for purchase metrics including conversion tracking, revenue metrics, and purchase timestamps.",
           "dependencies": [],
           "details": "Develop a metrics collector service that hooks into the purchase flow. Capture key events: purchase initiated, purchase completed, purchase abandoned. Store metrics with appropriate user context (anonymized), product details, and timestamp. Implement revenue tracking with currency normalization.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test the metrics collector with mock purchase events to verify data capture accuracy and format."
         },
         {
@@ -3400,7 +3400,7 @@
           "description": "Create aggregation logic for purchase metrics and implement appropriate storage solutions for both raw and aggregated data.",
           "dependencies": [],
           "details": "Implement time-based aggregation (hourly, daily, weekly, monthly) for purchase metrics. Create database schema for efficient storage and querying. Develop data retention policies. Implement batch processing for historical data and real-time processing for current metrics.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test aggregation functions with predefined datasets. Integration test storage solutions with sample data loads to verify performance."
         },
         {
@@ -3409,7 +3409,7 @@
           "description": "Create visualization dashboards for purchase metrics and implement alerting for anomalies or threshold violations.",
           "dependencies": [],
           "details": "Integrate with existing monitoring platform (e.g., Grafana, Datadog). Create custom dashboards showing conversion rates, revenue trends, and purchase patterns. Implement alerting rules for unusual drops in conversion or revenue. Add user segmentation views to identify patterns across different user groups.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "End-to-end test dashboard rendering and alert triggering with simulated threshold violations."
         },
         {
@@ -3418,7 +3418,7 @@
           "description": "Extend the monitoring system to support A/B testing of different purchase flows and track performance metrics for each variant.",
           "dependencies": [],
           "details": "Create experiment tracking capabilities in the metrics system. Implement variant assignment and tracking. Develop statistical analysis tools to compare conversion rates and revenue between variants. Build reporting views to visualize experiment results.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test experiment assignment logic and verify that metrics are correctly attributed to experiment variants. Validate statistical calculations with known datasets."
         },
         {
@@ -3427,7 +3427,7 @@
           "description": "Develop a complete testing suite for the monitoring system and create documentation for maintenance and future extensions.",
           "dependencies": [],
           "details": "Create unit tests for all components. Implement integration tests for the entire monitoring pipeline. Develop load tests to verify system performance under high volume. Write comprehensive documentation including system architecture, data flow diagrams, and maintenance procedures. Update CI/CD pipeline to include monitoring system tests.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Run the complete test suite in staging environment. Verify all components work together correctly. Conduct a mock incident response to test alerting effectiveness."
         }
       ]
@@ -3436,7 +3436,7 @@
       "id": 32,
       "title": "Revise Roadmap Documentation",
       "description": "Update project roadmap documentation to reflect the new audit-first, agency-later business model and task priorities",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "priority": "medium",
       "details": "",
@@ -3448,7 +3448,7 @@
           "description": "Create a draft of the revised roadmap documentation that reflects the new audit-first, agency-later business model and updated task priorities.",
           "dependencies": [],
           "details": "Review the current roadmap documentation and identify all sections that need updates. Create a new draft document that includes: 1) Introduction to the new business model, 2) Revised timeline with audit-first focus, 3) Updated milestones and deliverables, 4) Reprioritized task list, and 5) Resource allocation changes. Use clear language and maintain consistent formatting with existing documentation.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Perform manual review for content accuracy, business model alignment, and completeness of all required sections."
         },
         {
@@ -3457,7 +3457,7 @@
           "description": "Restructure the roadmap documentation to improve readability and ensure consistent formatting throughout the document.",
           "dependencies": [],
           "details": "Apply consistent heading hierarchy, add a table of contents, standardize section layouts, and ensure proper markdown formatting. Create visual elements such as timelines, milestone charts, and priority matrices to illustrate the new roadmap. Update any cross-references between sections and ensure all internal links are working correctly.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Validate markdown syntax, check rendering in multiple browsers, and verify all internal navigation links work correctly."
         },
         {
@@ -3466,7 +3466,7 @@
           "description": "Create automated tests to validate documentation accuracy, format consistency, and integration with the project structure.",
           "dependencies": [],
           "details": "Implement three types of tests: 1) Unit tests for documentation accuracy (link checking, format validation, spelling), 2) Integration tests to verify alignment with project structure and code references, and 3) End-to-end tests for documentation completeness and usability. Use appropriate testing frameworks and document the test coverage.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Run tests in isolation first, then as part of an integrated test suite. Document test coverage and expected outcomes."
         },
         {
@@ -3475,7 +3475,7 @@
           "description": "Run all documentation tests, identify and fix any issues, and ensure the documentation meets quality standards.",
           "dependencies": [],
           "details": "Execute the full test suite developed in the previous subtask. Document all issues found, categorize them by severity, and systematically address each one. Perform regression testing after fixes are implemented. Update the documentation based on test results and conduct a final review to ensure all issues are resolved.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Maintain a test log documenting issues found, fixes applied, and verification of fixes. Perform a final full test run to confirm all issues are resolved."
         },
         {
@@ -3484,7 +3484,7 @@
           "description": "Integrate documentation testing into the CI pipeline and publish the finalized roadmap documentation.",
           "dependencies": [],
           "details": "Update the CI configuration to include documentation testing as part of the build process. Configure appropriate failure conditions for documentation issues. Merge the updated documentation to the master branch and verify successful CI run. Use GitHub CLI to confirm successful integration and deployment. Update any documentation references or links that point to the roadmap.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Monitor CI logs for successful execution of documentation tests. Verify published documentation is accessible and correctly displayed in the production environment."
         }
       ]

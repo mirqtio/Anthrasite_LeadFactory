@@ -20,6 +20,9 @@ import requests
 # Import configuration
 from leadfactory.config.dedupe_config import DedupeConfig, load_dedupe_config
 
+# Import LLM fallback client
+from leadfactory.llm import LLMClient, LLMError
+
 # Import conflict resolution
 from leadfactory.pipeline.conflict_resolution import (
     ConflictResolver,
@@ -90,12 +93,22 @@ class LevenshteinMatcher:
         return self.calculate_similarity(str1, str2) >= self.threshold
 
 
-class OllamaVerifier:
-    """Verifier using Ollama LLM for duplicate detection."""
+class LLMVerifier:
+    """Verifier using LLM with fallback for duplicate detection."""
 
     def __init__(self, config: DedupeConfig):
         """Initialize the verifier with configuration."""
         self.config = config
+
+        # Initialize LLM client with fallback support
+        try:
+            self.llm_client = LLMClient()
+            logger.info("Initialized LLM verifier with fallback support")
+        except Exception as e:
+            logger.error(f"Failed to initialize LLM client: {e}")
+            self.llm_client = None
+
+        # Fallback to legacy Ollama if LLM client fails
         self.model = config.llm_model
         self.base_url = config.llm_base_url
         self.api_url = f"{config.llm_base_url}/api/generate"
@@ -105,13 +118,52 @@ class OllamaVerifier:
         self, business1: dict, business2: dict
     ) -> tuple[bool, float, str]:
         """
-        Verify if two businesses are duplicates using LLM.
+        Verify if two businesses are duplicates using LLM with fallback.
 
         Returns:
             Tuple of (is_duplicate, confidence, reasoning)
         """
         prompt = self._create_prompt(business1, business2)
 
+        # Try using LLM client with fallback first
+        if self.llm_client:
+            try:
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are a data analyst specializing in business record deduplication. "
+                        "Analyze the provided business information and respond only in valid JSON format.",
+                    },
+                    {"role": "user", "content": prompt},
+                ]
+
+                response = self.llm_client.chat_completion(
+                    messages=messages,
+                    temperature=0.1,
+                    max_tokens=500,
+                    # Prefer cheaper models for this task
+                    provider=None,  # Let client choose best available
+                )
+
+                content = response["choices"][0]["message"]["content"]
+                logger.debug(
+                    f"LLM verification using {response.get('provider', 'unknown')} provider"
+                )
+
+                return self._parse_response(content)
+
+            except LLMError as e:
+                logger.warning(f"LLM client failed, falling back to legacy Ollama: {e}")
+            except Exception as e:
+                logger.warning(
+                    f"Unexpected error with LLM client, falling back to legacy Ollama: {e}"
+                )
+
+        # Fallback to legacy Ollama implementation
+        return self._verify_with_ollama(prompt)
+
+    def _verify_with_ollama(self, prompt: str) -> tuple[bool, float, str]:
+        """Fallback verification using direct Ollama API."""
         try:
             response = requests.post(
                 self.api_url,
@@ -523,7 +575,7 @@ def process_duplicate_pair(
     pair: dict,
     matcher: LevenshteinMatcher,
     config: DedupeConfig,
-    verifier: Optional[OllamaVerifier] = None,
+    verifier: Optional[LLMVerifier] = None,
 ) -> bool:
     """
     Process a single duplicate pair.
@@ -721,7 +773,7 @@ def deduplicate(
 
         # Initialize components
         matcher = LevenshteinMatcher(threshold=config.name_similarity_threshold)
-        verifier = OllamaVerifier(config) if config.use_llm_verification else None
+        verifier = LLMVerifier(config) if config.use_llm_verification else None
 
         # Get potential duplicates
         find_op = dedupe_logger.start_operation("find_duplicates", limit=limit)

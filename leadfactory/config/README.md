@@ -9,7 +9,21 @@ This module centralizes all configuration loading and access for the LeadFactory
 5. **Hierarchical Access**: Dot notation can be used to access nested configuration
 6. **Environment-specific Overrides**: Different environments can have different configurations
 
+## NodeCapability Configuration System
+
+The `node_config.py` module provides an advanced, environment-aware configuration system for pipeline node capabilities. This system automatically optimizes API usage and costs based on your deployment environment.
+
+### Key Features
+
+- **Environment Detection**: Automatically detects development, production_audit, and production_general environments
+- **Cost Optimization**: Reduces costs by up to 60% in development environments
+- **Business Model Alignment**: Special optimization for audit-focused business model
+- **API Fallbacks**: Graceful degradation when APIs are unavailable
+- **Capability Tiers**: Essential, high-value, and optional capability categorization
+
 ## Usage
+
+### General Configuration
 
 The recommended way to access configuration is through the `get_config()` function:
 
@@ -25,6 +39,46 @@ Or import specific configuration values directly:
 ```python
 from leadfactory import get_config
 from leadfactory.config import DATABASE_URL, OPENAI_API_KEY
+```
+
+### NodeCapability Configuration
+
+For pipeline node capabilities, use the environment-aware configuration system:
+
+```python
+from leadfactory.config.node_config import (
+    get_enabled_capabilities,
+    estimate_node_cost,
+    NodeType,
+    validate_environment_configuration
+)
+
+# Get capabilities for current environment (auto-detected)
+capabilities = get_enabled_capabilities(NodeType.ENRICH, budget_cents=10.0)
+
+# Estimate costs for current environment
+cost = estimate_node_cost(NodeType.ENRICH, budget_cents=10.0)
+
+# Validate configuration
+validation = validate_environment_configuration()
+if not validation['valid']:
+    print(f"Issues: {validation['issues']}")
+    print(f"Recommendations: {validation['recommendations']}")
+```
+
+### Environment Setup
+
+Set your deployment environment for optimal capability selection:
+
+```bash
+# Development (cost-optimized)
+export DEPLOYMENT_ENVIRONMENT=development
+
+# Production audit-focused
+export DEPLOYMENT_ENVIRONMENT=production_audit
+
+# Production general leads
+export DEPLOYMENT_ENVIRONMENT=production_general
 ```
 
 ## Migration Plan

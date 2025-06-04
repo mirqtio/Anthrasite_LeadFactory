@@ -11,6 +11,26 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Set, Union
 
+from leadfactory.utils.logging import get_logger
+
+logger = get_logger(__name__)
+
+
+class DeploymentEnvironment(Enum):
+    """Deployment environment types for environment-aware defaults."""
+
+    DEVELOPMENT = "development"
+    PRODUCTION_AUDIT = "production_audit"
+    PRODUCTION_GENERAL = "production_general"
+
+
+class CapabilityTier(Enum):
+    """Capability tiers based on business value and cost."""
+
+    ESSENTIAL = "essential"  # Always enabled, low/no cost
+    HIGH_VALUE = "high_value"  # Enabled when budget allows, high ROI
+    OPTIONAL = "optional"  # Enabled only with specific requirements
+
 
 class NodeType(Enum):
     """Enumeration of available node types in the pipeline."""
@@ -35,6 +55,8 @@ class APIConfiguration:
     description: str
     enabled_by_default: bool = True
     requires_budget: bool = True  # Whether this API requires budget allocation
+    fallback_available: bool = False  # Whether a fallback option exists
+    fallback_description: Optional[str] = None
 
 
 @dataclass
@@ -47,6 +69,8 @@ class NodeCapability:
     required_inputs: List[str]  # Input data required for this capability
     cost_estimate_cents: float
     enabled_by_default: bool = True
+    tier: CapabilityTier = CapabilityTier.ESSENTIAL
+    environment_overrides: Optional[Dict[DeploymentEnvironment, bool]] = None
 
 
 @dataclass
@@ -71,6 +95,7 @@ API_CONFIGS = {
         description="Tech stack detection using Wappalyzer library",
         enabled_by_default=True,
         requires_budget=False,
+        fallback_available=False,
     ),
     "pagespeed": APIConfiguration(
         name="PageSpeed Insights",
@@ -79,14 +104,18 @@ API_CONFIGS = {
         description="Core Web Vitals and performance metrics",
         enabled_by_default=True,
         requires_budget=False,
+        fallback_available=True,
+        fallback_description="Local Lighthouse CLI analysis",
     ),
     "screenshot_one": APIConfiguration(
         name="ScreenshotOne",
         required_env_vars=["SCREENSHOT_ONE_API_KEY", "SCREENSHOT_ONE_KEY"],
         cost_per_request=1.0,  # 1 cent per screenshot
         description="Website screenshot capture service",
-        enabled_by_default=True,
+        enabled_by_default=False,  # Updated: disabled by default due to cost
         requires_budget=True,
+        fallback_available=True,
+        fallback_description="Local Puppeteer screenshot generation",
     ),
     "semrush": APIConfiguration(
         name="SEMrush",
@@ -95,6 +124,7 @@ API_CONFIGS = {
         description="SEMrush Site Audit for comprehensive SEO analysis",
         enabled_by_default=False,  # Expensive, opt-in
         requires_budget=True,
+        fallback_available=False,
     ),
     "openai": APIConfiguration(
         name="OpenAI",
@@ -103,6 +133,8 @@ API_CONFIGS = {
         description="AI-powered content generation",
         enabled_by_default=True,
         requires_budget=True,
+        fallback_available=True,
+        fallback_description="Template-based content generation",
     ),
 }
 
@@ -115,6 +147,7 @@ ENRICH_CAPABILITIES = [
         required_inputs=["website"],
         cost_estimate_cents=0.0,
         enabled_by_default=True,
+        tier=CapabilityTier.ESSENTIAL,
     ),
     NodeCapability(
         name="core_web_vitals",
@@ -123,6 +156,7 @@ ENRICH_CAPABILITIES = [
         required_inputs=["website"],
         cost_estimate_cents=0.0,
         enabled_by_default=True,
+        tier=CapabilityTier.ESSENTIAL,
     ),
     NodeCapability(
         name="screenshot_capture",
@@ -130,7 +164,13 @@ ENRICH_CAPABILITIES = [
         required_apis=["screenshot_one"],
         required_inputs=["website"],
         cost_estimate_cents=1.0,
-        enabled_by_default=True,
+        enabled_by_default=False,  # Updated: disabled by default
+        tier=CapabilityTier.OPTIONAL,
+        environment_overrides={
+            DeploymentEnvironment.DEVELOPMENT: False,
+            DeploymentEnvironment.PRODUCTION_AUDIT: False,
+            DeploymentEnvironment.PRODUCTION_GENERAL: True,
+        },
     ),
     NodeCapability(
         name="semrush_site_audit",
@@ -139,6 +179,12 @@ ENRICH_CAPABILITIES = [
         required_inputs=["website"],
         cost_estimate_cents=10.0,
         enabled_by_default=False,
+        tier=CapabilityTier.HIGH_VALUE,
+        environment_overrides={
+            DeploymentEnvironment.DEVELOPMENT: False,
+            DeploymentEnvironment.PRODUCTION_AUDIT: True,  # Enable for audit model
+            DeploymentEnvironment.PRODUCTION_GENERAL: False,
+        },
     ),
 ]
 
@@ -150,6 +196,12 @@ FINAL_OUTPUT_CAPABILITIES = [
         required_inputs=["website", "name"],
         cost_estimate_cents=5.0,
         enabled_by_default=True,
+        tier=CapabilityTier.OPTIONAL,
+        environment_overrides={
+            DeploymentEnvironment.DEVELOPMENT: False,  # Reduce OpenAI costs in dev
+            DeploymentEnvironment.PRODUCTION_AUDIT: True,
+            DeploymentEnvironment.PRODUCTION_GENERAL: True,
+        },
     ),
     NodeCapability(
         name="email_generation",
@@ -158,6 +210,12 @@ FINAL_OUTPUT_CAPABILITIES = [
         required_inputs=["website", "name"],
         cost_estimate_cents=5.0,
         enabled_by_default=True,
+        tier=CapabilityTier.HIGH_VALUE,  # Core business value
+        environment_overrides={
+            DeploymentEnvironment.DEVELOPMENT: True,  # Keep for testing
+            DeploymentEnvironment.PRODUCTION_AUDIT: True,
+            DeploymentEnvironment.PRODUCTION_GENERAL: True,
+        },
     ),
 ]
 
@@ -239,34 +297,149 @@ def is_api_available(api_name: str) -> bool:
     return True
 
 
-def get_enabled_capabilities(
-    node_type: NodeType, budget_cents: Optional[float] = None
+def get_deployment_environment() -> DeploymentEnvironment:
+    """
+    Detect the current deployment environment based on environment variables.
+
+    Returns:
+        The detected deployment environment
+    """
+    env_mode = os.getenv("DEPLOYMENT_ENVIRONMENT", "").lower()
+
+    if env_mode == "development" or env_mode == "dev":
+        return DeploymentEnvironment.DEVELOPMENT
+    elif env_mode == "production_audit" or env_mode == "prod_audit":
+        return DeploymentEnvironment.PRODUCTION_AUDIT
+    elif env_mode == "production_general" or env_mode == "prod_general":
+        return DeploymentEnvironment.PRODUCTION_GENERAL
+    else:
+        # Default based on other environment indicators
+        if os.getenv("NODE_ENV") == "development":
+            return DeploymentEnvironment.DEVELOPMENT
+        elif os.getenv("BUSINESS_MODEL", "").lower() == "audit":
+            return DeploymentEnvironment.PRODUCTION_AUDIT
+        else:
+            return DeploymentEnvironment.PRODUCTION_GENERAL
+
+
+def is_capability_enabled_for_environment(
+    capability: NodeCapability, environment: DeploymentEnvironment
+) -> bool:
+    """
+    Check if a capability should be enabled for a specific environment.
+
+    Args:
+        capability: The capability to check
+        environment: The deployment environment
+
+    Returns:
+        True if the capability should be enabled
+    """
+    # Check for environment-specific overrides
+    if (
+        capability.environment_overrides
+        and environment in capability.environment_overrides
+    ):
+        return capability.environment_overrides[environment]
+
+    # Fall back to default setting
+    return capability.enabled_by_default
+
+
+def get_capabilities_by_tier(
+    tier: CapabilityTier, node_type: NodeType
 ) -> List[NodeCapability]:
     """
-    Get enabled capabilities for a node based on API availability and budget.
+    Get capabilities of a specific tier for a node type.
+
+    Args:
+        tier: The capability tier to filter by
+        node_type: The type of node to get capabilities for
+
+    Returns:
+        List of capabilities in the specified tier
+    """
+    node_config = get_node_config(node_type)
+    return [cap for cap in node_config.capabilities if cap.tier == tier]
+
+
+def get_enabled_capabilities(
+    node_type: NodeType,
+    budget_cents: Optional[float] = None,
+    environment: Optional[DeploymentEnvironment] = None,
+) -> List[NodeCapability]:
+    """
+    Get enabled capabilities for a node based on API availability, budget, and environment.
 
     Args:
         node_type: The type of node to get capabilities for
         budget_cents: Available budget in cents (None = unlimited)
+        environment: Deployment environment (auto-detected if None)
 
     Returns:
         List of enabled capabilities
     """
+    if environment is None:
+        environment = get_deployment_environment()
+
     node_config = get_node_config(node_type)
     enabled_capabilities = []
 
+    logger.debug(
+        f"Evaluating capabilities for {node_type.value} in {environment.value} environment"
+    )
+
     for capability in node_config.capabilities:
+        # Check if capability should be enabled for this environment
+        env_enabled = is_capability_enabled_for_environment(capability, environment)
+
+        if not env_enabled:
+            logger.debug(
+                f"Capability {capability.name} disabled for environment {environment.value}"
+            )
+            continue
+
         # Check if all required APIs are available
         apis_available = all(is_api_available(api) for api in capability.required_apis)
+
+        if not apis_available:
+            missing_apis = [
+                api for api in capability.required_apis if not is_api_available(api)
+            ]
+            logger.info(
+                f"Capability {capability.name} disabled due to missing APIs: {missing_apis}"
+            )
+
+            # Check for fallback options
+            fallback_available = any(
+                API_CONFIGS.get(api, APIConfiguration("", [], 0, "")).fallback_available
+                for api in missing_apis
+            )
+            if fallback_available:
+                logger.info(f"Fallback available for {capability.name}")
+            continue
 
         # Check budget if required
         budget_ok = True
         if budget_cents is not None and capability.cost_estimate_cents > 0:
             budget_ok = budget_cents >= capability.cost_estimate_cents
 
-        # Enable if APIs available, budget ok, and enabled by default
-        if apis_available and budget_ok and capability.enabled_by_default:
-            enabled_capabilities.append(capability)
+        if not budget_ok:
+            logger.debug(
+                f"Capability {capability.name} disabled due to budget constraint: "
+                f"requires {capability.cost_estimate_cents}, available {budget_cents}"
+            )
+            continue
+
+        enabled_capabilities.append(capability)
+        logger.debug(
+            f"Enabled capability: {capability.name} (tier: {capability.tier.value})"
+        )
+
+    logger.info(
+        f"Enabled {len(enabled_capabilities)} capabilities for {node_type.value}: "
+        f"{[cap.name for cap in enabled_capabilities]}"
+    )
 
     return enabled_capabilities
 
@@ -293,7 +466,9 @@ def can_node_run(node_type: NodeType, lead_data: dict) -> tuple[bool, List[str]]
 
 
 def estimate_node_cost(
-    node_type: NodeType, budget_cents: Optional[float] = None
+    node_type: NodeType,
+    budget_cents: Optional[float] = None,
+    environment: Optional[DeploymentEnvironment] = None,
 ) -> float:
     """
     Estimate the cost of running a node with enabled capabilities.
@@ -301,9 +476,114 @@ def estimate_node_cost(
     Args:
         node_type: The type of node to estimate cost for
         budget_cents: Available budget in cents
+        environment: Deployment environment (auto-detected if None)
 
     Returns:
         Estimated cost in cents
     """
-    enabled_capabilities = get_enabled_capabilities(node_type, budget_cents)
+    enabled_capabilities = get_enabled_capabilities(
+        node_type, budget_cents, environment
+    )
     return sum(cap.cost_estimate_cents for cap in enabled_capabilities)
+
+
+def get_environment_info() -> Dict[str, Union[str, bool, List[str]]]:
+    """
+    Get information about the current environment configuration.
+
+    Returns:
+        Dictionary with environment configuration details
+    """
+    environment = get_deployment_environment()
+
+    # Check API availability
+    available_apis = [api for api in API_CONFIGS.keys() if is_api_available(api)]
+    unavailable_apis = [api for api in API_CONFIGS.keys() if not is_api_available(api)]
+
+    # Check fallback availability
+    fallback_apis = [
+        api
+        for api, config in API_CONFIGS.items()
+        if config.fallback_available and not is_api_available(api)
+    ]
+
+    return {
+        "environment": environment.value,
+        "available_apis": available_apis,
+        "unavailable_apis": unavailable_apis,
+        "fallback_apis": fallback_apis,
+        "budget_tracking_enabled": bool(
+            os.getenv("ENABLE_BUDGET_TRACKING", "true").lower() == "true"
+        ),
+        "cost_optimization_enabled": bool(
+            os.getenv("ENABLE_COST_OPTIMIZATION", "true").lower() == "true"
+        ),
+    }
+
+
+def validate_environment_configuration() -> Dict[str, Union[bool, List[str]]]:
+    """
+    Validate the current environment configuration and identify issues.
+
+    Returns:
+        Dictionary with validation results and recommendations
+    """
+    environment = get_deployment_environment()
+    issues = []
+    warnings = []
+    recommendations = []
+
+    # Check essential capabilities
+    essential_nodes = [NodeType.ENRICH, NodeType.FINAL_OUTPUT]
+    for node_type in essential_nodes:
+        essential_caps = get_capabilities_by_tier(CapabilityTier.ESSENTIAL, node_type)
+        enabled_caps = get_enabled_capabilities(node_type, environment=environment)
+
+        missing_essential = [cap for cap in essential_caps if cap not in enabled_caps]
+        if missing_essential:
+            issues.append(
+                f"Missing essential capabilities for {node_type.value}: {[c.name for c in missing_essential]}"
+            )
+
+    # Check high-value capabilities for audit environment
+    if environment == DeploymentEnvironment.PRODUCTION_AUDIT:
+        audit_caps = get_capabilities_by_tier(
+            CapabilityTier.HIGH_VALUE, NodeType.ENRICH
+        )
+        enabled_audit_caps = [
+            cap
+            for cap in audit_caps
+            if is_capability_enabled_for_environment(cap, environment)
+        ]
+
+        if not enabled_audit_caps:
+            warnings.append(
+                "No high-value audit capabilities enabled in audit environment"
+            )
+            recommendations.append(
+                "Consider enabling SEMrush site audit for better audit lead identification"
+            )
+
+    # Check cost optimization
+    if environment == DeploymentEnvironment.DEVELOPMENT:
+        expensive_caps = []
+        for node_type in [NodeType.ENRICH, NodeType.FINAL_OUTPUT]:
+            caps = get_enabled_capabilities(node_type, environment=environment)
+            expensive_caps.extend(
+                [cap for cap in caps if cap.cost_estimate_cents > 1.0]
+            )
+
+        if expensive_caps:
+            warnings.append(
+                f"Expensive capabilities enabled in development: {[c.name for c in expensive_caps]}"
+            )
+            recommendations.append(
+                "Consider disabling expensive capabilities in development environment"
+            )
+
+    return {
+        "valid": len(issues) == 0,
+        "issues": issues,
+        "warnings": warnings,
+        "recommendations": recommendations,
+    }

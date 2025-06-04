@@ -14,6 +14,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 
+from leadfactory.ab_testing.pricing_ab_test import PricingABTest
 from leadfactory.services.payment_service import (
     StripePaymentService,
     create_payment_service,
@@ -70,10 +71,16 @@ def get_payment_service() -> StripePaymentService:
     return create_payment_service()
 
 
+def get_pricing_ab_test() -> PricingABTest:
+    """Dependency to get pricing A/B test instance."""
+    return PricingABTest()
+
+
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout_session(
     request: CheckoutRequest,
     payment_service: StripePaymentService = Depends(get_payment_service),
+    pricing_ab_test: PricingABTest = Depends(get_pricing_ab_test),
 ):
     """Create a Stripe checkout session for audit purchase."""
     try:
@@ -93,18 +100,73 @@ async def create_checkout_session(
                 detail=f"Invalid audit type. Must be one of: {', '.join(valid_audit_types)}",
             )
 
+        # Get A/B test pricing for this user and audit type
+        user_id = f"email_{request.customer_email}"  # Create consistent user ID
+        try:
+            variant_id, pricing_config = pricing_ab_test.get_price_for_user(
+                user_id=user_id, audit_type=request.audit_type.lower()
+            )
+
+            # Use A/B test price instead of provided amount
+            ab_test_amount = pricing_config["price"]
+
+            # Record pricing view event
+            try:
+                # Find active pricing test
+                from leadfactory.ab_testing.ab_test_manager import TestType
+
+                active_tests = pricing_ab_test.test_manager.get_active_tests(
+                    TestType.PRICING
+                )
+                pricing_tests = [
+                    t
+                    for t in active_tests
+                    if t.metadata.get("audit_type") == request.audit_type.lower()
+                ]
+
+                if pricing_tests:
+                    pricing_ab_test.record_pricing_event(
+                        test_id=pricing_tests[0].id,
+                        user_id=user_id,
+                        event_type="view",
+                        metadata={
+                            "variant_id": variant_id,
+                            "price": ab_test_amount,
+                            "original_price": request.amount,
+                        },
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to record pricing A/B test event: {e}")
+
+            # Use A/B test amount
+            final_amount = ab_test_amount
+
+        except Exception as e:
+            logger.warning(f"A/B test pricing failed, using original amount: {e}")
+            final_amount = request.amount
+            variant_id = "default"
+            pricing_config = {"price": request.amount, "currency": "usd"}
+
         # Validate amount (minimum $10, maximum $10,000)
-        if request.amount < 1000 or request.amount > 1000000:
+        if final_amount < 1000 or final_amount > 1000000:
             raise HTTPException(
                 status_code=400, detail="Amount must be between $10.00 and $10,000.00"
             )
+
+        # Prepare enhanced metadata with A/B test information
+        enhanced_metadata = {
+            "ab_test_variant_id": variant_id,
+            "ab_test_pricing_config": pricing_config,
+            "user_id": user_id,
+            **(request.metadata or {}),
+        }
 
         result = payment_service.create_checkout_session(
             customer_email=request.customer_email,
             customer_name=request.customer_name,
             audit_type=request.audit_type.lower(),
-            amount=request.amount,
-            metadata=request.metadata,
+            amount=final_amount,
+            metadata=enhanced_metadata,
         )
 
         return CheckoutResponse(**result)
@@ -258,6 +320,108 @@ async def get_pricing():
             },
         }
     }
+
+
+@router.get("/pricing/{audit_type}")
+async def get_audit_pricing(
+    audit_type: str,
+    user_email: Optional[str] = None,
+    pricing_ab_test: PricingABTest = Depends(get_pricing_ab_test),
+):
+    """Get pricing for specific audit type with A/B testing."""
+    try:
+        # Validate audit type
+        valid_audit_types = [
+            "seo",
+            "security",
+            "performance",
+            "accessibility",
+            "comprehensive",
+        ]
+        if audit_type.lower() not in valid_audit_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid audit type. Must be one of: {', '.join(valid_audit_types)}",
+            )
+
+        # Get user ID for A/B testing
+        user_id = (
+            f"email_{user_email}"
+            if user_email
+            else f"anonymous_{datetime.utcnow().timestamp()}"
+        )
+
+        # Get A/B test pricing
+        try:
+            variant_id, pricing_config = pricing_ab_test.get_price_for_user(
+                user_id=user_id, audit_type=audit_type.lower()
+            )
+
+            # Format price display
+            price_display = pricing_ab_test.format_price_display(pricing_config)
+
+            # Record pricing view
+            try:
+                from leadfactory.ab_testing.ab_test_manager import TestType
+
+                active_tests = pricing_ab_test.test_manager.get_active_tests(
+                    TestType.PRICING
+                )
+                pricing_tests = [
+                    t
+                    for t in active_tests
+                    if t.metadata.get("audit_type") == audit_type.lower()
+                ]
+
+                if pricing_tests:
+                    pricing_ab_test.record_pricing_event(
+                        test_id=pricing_tests[0].id,
+                        user_id=user_id,
+                        event_type="view",
+                        metadata={
+                            "variant_id": variant_id,
+                            "audit_type": audit_type.lower(),
+                        },
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to record pricing view event: {e}")
+
+            return {
+                "audit_type": audit_type.lower(),
+                "pricing": price_display,
+                "ab_test": {"variant_id": variant_id, "enabled": True},
+            }
+
+        except Exception as e:
+            logger.warning(f"A/B test pricing failed: {e}")
+
+            # Fallback to default pricing
+            default_prices = {
+                "seo": 9900,
+                "security": 14900,
+                "performance": 7900,
+                "accessibility": 8900,
+                "comprehensive": 24900,
+            }
+
+            price = default_prices.get(audit_type.lower(), 9900)
+
+            return {
+                "audit_type": audit_type.lower(),
+                "pricing": {
+                    "price": f"${price / 100:.2f}",
+                    "amount_cents": price,
+                    "currency": "usd",
+                    "display_format": "standard",
+                },
+                "ab_test": {"variant_id": "default", "enabled": False},
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting audit pricing: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get pricing information")
 
 
 @router.get("/session/{session_id}/status")

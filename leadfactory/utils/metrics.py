@@ -12,7 +12,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Optional, Union
 
-import psutil
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 # Import our unified logging system
 from .logging import get_logger
@@ -33,10 +37,10 @@ try:
     )
 
     METRICS_AVAILABLE = True
-except ImportError:
+except (ImportError, SyntaxError) as e:
     METRICS_AVAILABLE = False
     logger.warning(
-        "Prometheus client not available - install prometheus_client package"
+        f"Prometheus client not available - {e}"
     )
 
 # Define metrics
@@ -169,6 +173,26 @@ if METRICS_AVAILABLE:
     DAILY_REVENUE = Gauge("daily_revenue_cents", "Daily revenue in cents", ["date"])
     CONVERSION_FUNNEL = Gauge(
         "conversion_funnel_rate", "Conversion funnel metrics", ["stage", "audit_type"]
+    )
+
+    # GPU Auto-Scaling metrics
+    GPU_INSTANCES_ACTIVE = Gauge(
+        "gpu_instances_active", "Number of active GPU instances", ["provider", "instance_type"]
+    )
+    GPU_QUEUE_SIZE = Gauge(
+        "gpu_queue_size", "Size of personalization queue", ["status"]
+    )
+    GPU_PROVISIONING_TIME = Histogram(
+        "gpu_provisioning_time_seconds", "Time to provision GPU instances", ["provider", "instance_type"]
+    )
+    GPU_COST_HOURLY = Gauge(
+        "gpu_cost_hourly_dollars", "Hourly cost of GPU instances", ["provider", "instance_type"]
+    )
+    GPU_UTILIZATION = Gauge(
+        "gpu_utilization_percent", "GPU utilization percentage", ["instance_id", "instance_type"]
+    )
+    GPU_SCALING_EVENTS = Counter(
+        "gpu_scaling_events_total", "Total GPU scaling events", ["action", "provider", "instance_type"]
     )
 else:
     # Define a more robust placeholder metric class that logs metric operations when Prometheus isn't available
@@ -329,6 +353,26 @@ else:
         "conversion_funnel_rate", "Conversion funnel metrics", ["stage", "audit_type"]
     )
 
+    # GPU Auto-Scaling metrics
+    GPU_INSTANCES_ACTIVE = LoggingNoOpMetric(
+        "gpu_instances_active", "Number of active GPU instances", ["provider", "instance_type"]
+    )
+    GPU_QUEUE_SIZE = LoggingNoOpMetric(
+        "gpu_queue_size", "Size of personalization queue", ["status"]
+    )
+    GPU_PROVISIONING_TIME = LoggingNoOpMetric(
+        "gpu_provisioning_time_seconds", "Time to provision GPU instances", ["provider", "instance_type"]
+    )
+    GPU_COST_HOURLY = LoggingNoOpMetric(
+        "gpu_cost_hourly_dollars", "Hourly cost of GPU instances", ["provider", "instance_type"]
+    )
+    GPU_UTILIZATION = LoggingNoOpMetric(
+        "gpu_utilization_percent", "GPU utilization percentage", ["instance_id", "instance_type"]
+    )
+    GPU_SCALING_EVENTS = LoggingNoOpMetric(
+        "gpu_scaling_events_total", "Total GPU scaling events", ["action", "provider", "instance_type"]
+    )
+
 
 def initialize_metrics():
     """
@@ -404,7 +448,7 @@ def collect_system_metrics() -> None:
     """
     Collect and update system resource metrics (CPU, memory, disk, network).
     """
-    if not METRICS_AVAILABLE:
+    if not METRICS_AVAILABLE or not PSUTIL_AVAILABLE:
         return
 
     try:
@@ -510,6 +554,80 @@ def record_metric(metric, value=1, **labels):
             f"Failed to record metric: {e}",
             extra={"metric": getattr(metric, "name", str(metric)), "error": str(e)},
         )
+
+
+def get_queue_metrics(queue_name: str = "personalization") -> Optional[dict]:
+    """
+    Get metrics for a specific queue.
+    
+    Args:
+        queue_name: Name of the queue to get metrics for
+        
+    Returns:
+        dict: Queue metrics including total, pending, processing tasks, etc.
+        None: If unable to get metrics
+    """
+    logger = get_logger("metrics.queue")
+    
+    if queue_name == "personalization":
+        try:
+            # Import here to avoid circular imports
+            from leadfactory.storage.factory import get_storage_backend
+            
+            storage = get_storage_backend()
+            
+            # Get current queue state from personalization_queue table
+            total_query = "SELECT COUNT(*) FROM personalization_queue"
+            pending_query = "SELECT COUNT(*) FROM personalization_queue WHERE status = 'pending'"
+            processing_query = "SELECT COUNT(*) FROM personalization_queue WHERE status = 'processing'"
+            
+            # Get average processing time from completed tasks in last hour
+            avg_time_query = """
+                SELECT AVG(EXTRACT(EPOCH FROM (completed_at - started_at))) 
+                FROM personalization_queue 
+                WHERE status = 'completed' 
+                AND completed_at > NOW() - INTERVAL '1 hour'
+            """
+            
+            # Get queue growth rate (tasks added in last 10 minutes)
+            growth_query = """
+                SELECT COUNT(*) 
+                FROM personalization_queue 
+                WHERE created_at > NOW() - INTERVAL '10 minutes'
+            """
+            
+            total_tasks = storage.execute_query(total_query)[0][0] if storage.execute_query(total_query) else 0
+            pending_tasks = storage.execute_query(pending_query)[0][0] if storage.execute_query(pending_query) else 0
+            processing_tasks = storage.execute_query(processing_query)[0][0] if storage.execute_query(processing_query) else 0
+            
+            avg_time_result = storage.execute_query(avg_time_query)
+            avg_processing_time = float(avg_time_result[0][0]) if avg_time_result and avg_time_result[0][0] else 300.0
+            
+            growth_result = storage.execute_query(growth_query)
+            recent_additions = growth_result[0][0] if growth_result else 0
+            growth_rate = recent_additions * 6.0  # Extrapolate to per hour
+            
+            # Calculate estimated completion time
+            if processing_tasks > 0 and avg_processing_time > 0:
+                eta = (pending_tasks / processing_tasks) * avg_processing_time
+            else:
+                eta = pending_tasks * avg_processing_time
+            
+            return {
+                "total": total_tasks,
+                "pending": pending_tasks,
+                "processing": processing_tasks,
+                "avg_time": avg_processing_time,
+                "eta": eta,
+                "growth_rate": growth_rate
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get queue metrics: {e}")
+            return None
+    
+    logger.warning(f"Unknown queue name: {queue_name}")
+    return None
 
 
 def main() -> int:
