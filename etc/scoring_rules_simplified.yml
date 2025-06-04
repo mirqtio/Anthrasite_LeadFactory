@@ -1,0 +1,205 @@
+# Anthrasite Lead-Factory Simplified Audit Scoring Rules
+# Optimized for audit business model with focus on technical improvement opportunities
+
+settings:
+  base_score: 50
+  min_score: 0
+  max_score: 100
+  audit_threshold: 60  # Minimum score for audit opportunity
+
+# Rule templates for reusability
+templates:
+  tech_modernization:
+    description: "Technology modernization opportunity identified"
+    score: 15
+    audit_category: "technology_upgrade"
+
+  performance_optimization:
+    description: "Website performance optimization needed"
+    score: 20
+    audit_category: "performance_improvement"
+
+  seo_opportunity:
+    description: "SEO improvement opportunity available"
+    score: 12
+    audit_category: "seo_enhancement"
+
+  accessibility_fix:
+    description: "Accessibility improvements needed"
+    score: 10
+    audit_category: "accessibility_compliance"
+
+# Audit opportunities (positive scoring - more points = more audit potential)
+audit_opportunities:
+  # High-Impact Technology Modernization
+  - name: jquery_upgrade_opportunity
+    template: tech_modernization
+    when:
+      technology: "jQuery"
+      version: "<3.0.0"
+    audit_potential: "high"
+    priority: 90
+
+  - name: outdated_html_elements
+    template: tech_modernization
+    when:
+      technology: "Outdated HTML"
+    audit_potential: "high"
+    priority: 85
+
+  - name: legacy_javascript
+    template: tech_modernization
+    when:
+      missing_any: ["React", "Vue", "Angular", "Svelte", "Next.js"]
+      has_any: ["jQuery", "Vanilla JS"]
+    audit_potential: "medium"
+    priority: 70
+
+  # Performance Optimization Opportunities
+  - name: poor_overall_performance
+    template: performance_optimization
+    when:
+      performance_score: "<50"
+    audit_potential: "high"
+    priority: 95
+
+  - name: slow_largest_contentful_paint
+    template: performance_optimization
+    when:
+      lcp: ">2.5s"
+    audit_potential: "high"
+    priority: 80
+
+  - name: high_cumulative_layout_shift
+    template: performance_optimization
+    when:
+      cls: ">0.25"
+    audit_potential: "medium"
+    priority: 75
+
+  - name: slow_first_input_delay
+    template: performance_optimization
+    when:
+      fid: ">100ms"
+    audit_potential: "medium"
+    priority: 70
+
+  # SEO and Accessibility Opportunities
+  - name: poor_seo_score
+    template: seo_opportunity
+    when:
+      performance_score: "<60"  # Using performance as SEO proxy
+    audit_potential: "medium"
+    priority: 60
+
+  - name: accessibility_issues
+    template: accessibility_fix
+    when:
+      technology: "Outdated HTML"
+    audit_potential: "low"
+    priority: 50
+
+  # Business Model Alignment
+  - name: high_value_business_type
+    description: "Business type with high audit conversion potential"
+    score: 10
+    audit_category: "business_alignment"
+    when:
+      business_type: ["restaurant", "retail", "professional_service"]
+    audit_potential: "medium"
+    priority: 40
+
+  - name: target_geographic_market
+    description: "Business in target geographic markets"
+    score: 5
+    audit_category: "market_alignment"
+    when:
+      location: ["NY", "WA", "IN"]
+    audit_potential: "low"
+    priority: 30
+
+  - name: wordpress_optimization_opportunity
+    description: "WordPress site with optimization potential"
+    score: 8
+    audit_category: "cms_optimization"
+    when:
+      technology: "WordPress"
+      performance_score: "<70"
+    audit_potential: "medium"
+    priority: 65
+
+# Exclusions (negative scoring - reduces audit potential)
+exclusions:
+  - name: modern_tech_stack
+    description: "Already uses modern technology stack"
+    score: -15
+    audit_category: "modern_infrastructure"
+    when:
+      technology: ["React", "Vue", "Angular", "Next.js", "Svelte"]
+      performance_score: ">80"
+    audit_potential: "low"
+
+  - name: enterprise_website
+    description: "Enterprise-level website with professional development"
+    score: -20
+    audit_category: "enterprise_site"
+    when:
+      indicators: ["multiple_locations", "high_review_count"]
+      performance_score: ">75"
+    audit_potential: "low"
+
+  - name: website_builders
+    description: "Uses website builders (limited audit potential)"
+    score: -10
+    audit_category: "builder_platform"
+    when:
+      technology: ["Wix", "Squarespace"]
+    audit_potential: "low"
+
+  - name: missing_website
+    description: "No website to audit"
+    score: -50
+    audit_category: "no_web_presence"
+    when:
+      indicators: ["website_missing"]
+    audit_potential: "low"
+
+# Audit focus multipliers (amplify scores for ideal audit candidates)
+audit_multipliers:
+  - name: perfect_audit_candidate
+    description: "Ideal combination for comprehensive audit services"
+    multiplier: 1.5
+    when:
+      all:
+        - technology: ["jQuery", "WordPress"]
+        - performance_score: "<60"
+        - business_type: ["restaurant", "retail", "professional_service"]
+
+  - name: quick_win_potential
+    description: "Easy technical fixes with high business impact"
+    multiplier: 1.3
+    when:
+      any:
+        - lcp: ">4s"
+        - cls: ">0.5"
+        - technology: "Outdated HTML"
+
+  - name: performance_emergency
+    description: "Critical performance issues requiring immediate attention"
+    multiplier: 1.4
+    when:
+      all:
+        - performance_score: "<40"
+        - lcp: ">3s"
+        - business_type: ["restaurant", "retail"]
+
+  - name: wordpress_optimization_bundle
+    description: "WordPress sites with multiple optimization opportunities"
+    multiplier: 1.2
+    when:
+      all:
+        - technology: "WordPress"
+        - performance_score: "<65"
+        - any:
+          - lcp: ">2.5s"
+          - cls: ">0.25"
