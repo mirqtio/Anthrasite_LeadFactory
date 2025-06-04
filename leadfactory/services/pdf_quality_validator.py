@@ -35,11 +35,11 @@ except ImportError:
     REPORTLAB_AVAILABLE = False
 
 try:
-    import PyPDF2
+    import pypdf
 
-    PYPDF2_AVAILABLE = True
+    PYPDF_AVAILABLE = True
 except ImportError:
-    PYPDF2_AVAILABLE = False
+    PYPDF_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -213,9 +213,21 @@ class PDFQualityValidator:
 
             # PDF structure validation
             page_count = 0
-            if PYPDF2_AVAILABLE:
+
+            # Check PDF header first
+            if not pdf_bytes.startswith(b"%PDF-"):
+                issues.append(
+                    ValidationIssue(
+                        category=ValidationCategory.STRUCTURE,
+                        severity=ValidationSeverity.CRITICAL,
+                        message="Invalid PDF header",
+                        suggestion="Ensure file is a valid PDF",
+                    )
+                )
+
+            if PYPDF_AVAILABLE:
                 try:
-                    pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
+                    pdf_reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
                     page_count = len(pdf_reader.pages)
 
                     # Extract metadata
@@ -253,17 +265,7 @@ class PDFQualityValidator:
                         )
                     )
             else:
-                # Basic validation without PyPDF2
-                if not pdf_bytes.startswith(b"%PDF-"):
-                    issues.append(
-                        ValidationIssue(
-                            category=ValidationCategory.STRUCTURE,
-                            severity=ValidationSeverity.CRITICAL,
-                            message="Invalid PDF header",
-                            suggestion="Ensure file is a valid PDF",
-                        )
-                    )
-
+                # Basic validation without pypdf
                 # Estimate page count from content
                 page_count = pdf_bytes.count(b"/Type /Page")
 
