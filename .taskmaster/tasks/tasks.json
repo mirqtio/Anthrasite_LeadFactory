@@ -3603,7 +3603,7 @@
             3
           ],
           "details": "Modify existing bounce-rate monitoring and IP rotation system to work with dedicated IPs post warm-up. Update Task #21 dependency to be blocked by warm-up completion. Ensure seamless transition from warm-up to production rotation. Maintain bounce rate thresholds and rotation triggers.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 5,
@@ -3614,7 +3614,7 @@
             3
           ],
           "details": "Develop dashboard showing warm-up progress, daily send volumes, success rates, and schedule adherence. Create metrics for IP reputation, deliverability rates, and warm-up health. Implement alerts for warm-up issues, schedule deviations, and deliverability problems. Surface progress in existing metrics dashboard.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
