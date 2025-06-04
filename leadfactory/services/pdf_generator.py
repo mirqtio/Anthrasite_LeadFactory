@@ -633,7 +633,7 @@ class PDFGenerator:
         pdf_writer = PdfWriter()
 
         for page_num in range(len(pdf_reader.pages)):
-            pdf_writer.addPage(pdf_reader.pages[page_num])
+            pdf_writer.add_page(pdf_reader.pages[page_num])
 
         if (
             self.config.security_config
@@ -644,12 +644,12 @@ class PDFGenerator:
                 and self.config.security_config.user_password
             ):
                 pdf_writer.encrypt(
-                    user_pwd=self.config.security_config.user_password,
-                    owner_pwd=self.config.security_config.owner_password,
+                    user_password=self.config.security_config.user_password,
+                    owner_password=self.config.security_config.owner_password,
                     use_128bit=True,
                 )
             elif self.config.password:
-                pdf_writer.encrypt(user_pwd=self.config.password, use_128bit=True)
+                pdf_writer.encrypt(user_password=self.config.password, use_128bit=True)
 
         encrypted_pdf_bytes = io.BytesIO()
         pdf_writer.write(encrypted_pdf_bytes)
@@ -663,7 +663,7 @@ class PDFGenerator:
         pdf_writer = PdfWriter()
 
         for page_num in range(len(pdf_reader.pages)):
-            pdf_writer.addPage(pdf_reader.pages[page_num])
+            pdf_writer.add_page(pdf_reader.pages[page_num])
 
         if (
             self.config.security_config
@@ -674,12 +674,12 @@ class PDFGenerator:
                 and self.config.security_config.user_password
             ):
                 pdf_writer.encrypt(
-                    user_pwd=self.config.security_config.user_password,
-                    owner_pwd=self.config.security_config.owner_password,
+                    user_password=self.config.security_config.user_password,
+                    owner_password=self.config.security_config.owner_password,
                     use_128bit=True,
                 )
             elif self.config.password:
-                pdf_writer.encrypt(user_pwd=self.config.password, use_128bit=True)
+                pdf_writer.encrypt(user_password=self.config.password, use_128bit=True)
 
         with open(file_path, "wb") as encrypted_file:
             pdf_writer.write(encrypted_file)
@@ -878,6 +878,34 @@ class PDFGenerator:
         except Exception as e:
             logger.error(f"Error generating PDF from template: {e}")
             raise PDFGenerationError(f"Failed to generate PDF from template: {e}")
+
+    def generate_from_report_data(
+        self,
+        report_data,
+        template_name: str = "audit_report.html",
+        output_path: Optional[str] = None,
+        return_bytes: bool = False,
+    ) -> Union[str, bytes, None]:
+        """
+        Generate a PDF report from report data (alias for generate_report_from_template).
+
+        This method is provided for backward compatibility.
+
+        Args:
+            report_data: The report data to render
+            template_name: Name of the template file to use
+            output_path: Path to save the PDF file
+            return_bytes: If True, return PDF as bytes instead of saving to file
+
+        Returns:
+            Path to generated PDF file, bytes if return_bytes=True, or None
+        """
+        return self.generate_report_from_template(
+            report_data=report_data,
+            template_name=template_name,
+            output_path=output_path,
+            return_bytes=return_bytes,
+        )
 
     def _convert_html_to_pdf_content(
         self, html_content: str, report_data

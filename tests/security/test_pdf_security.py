@@ -71,11 +71,11 @@ class TestPDFSecurity:
             pdf_config_secure = PDFConfiguration(
                 password="test_password_123",
                 encryption=True,
+                optimization_config=self.optimization_config,
             )
 
             secure_generator = PDFGenerator(
                 config=pdf_config_secure,
-                optimization_config=self.optimization_config,
             )
 
             pdf_bytes = secure_generator.generate_from_report_data(
@@ -117,15 +117,19 @@ class TestPDFSecurity:
             assert output_path.exists()
 
             # Read PDF content and verify sensitive data is not exposed
-            with open(output_path, 'rb') as f:
-                pdf_content = f.read().decode('latin-1', errors='ignore')
+            from pypdf import PdfReader
 
-                # These should NOT appear in the PDF
-                assert "secret_key_123" not in pdf_content
-                assert "secret_password" not in pdf_content
+            pdf_reader = PdfReader(output_path)
+            pdf_text = ""
+            for page in pdf_reader.pages:
+                pdf_text += page.extract_text()
 
-                # These are OK to appear
-                assert "Test Report" in pdf_content
+            # These should NOT appear in the PDF
+            assert "secret_key_123" not in pdf_text
+            assert "secret_password" not in pdf_text
+
+            # These are OK to appear
+            assert "Test Report" in pdf_text
 
     def test_html_injection_prevention(self):
         """Test prevention of HTML/JavaScript injection in PDF content."""
