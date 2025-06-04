@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_data.title }}</title>
+    <style>
+        {{ css_content | safe }}
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <!-- Header -->
+        <header class="report-header">
+            <div class="header-content">
+                <h1 class="report-title">{{ report_data.title }}</h1>
+                {% if report_data.subtitle %}
+                <h2 class="report-subtitle">{{ report_data.subtitle }}</h2>
+                {% endif %}
+                <div class="report-meta">
+                    {% if report_data.company_name %}
+                    <p class="company-name">{{ report_data.company_name }}</p>
+                    {% endif %}
+                    <p class="report-date">{{ report_data.report_date | format_date }}</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="report-content">
+            {% for section in report_data.sections %}
+            <section class="report-section" data-type="{{ section.section_type }}">
+                <h3 class="section-title">{{ section.title }}</h3>
+                <div class="section-content">
+                    {% if section.section_type == "text" %}
+                        {% if section.content is string %}
+                            <p>{{ section.content }}</p>
+                        {% elif section.content is iterable %}
+                            {% for paragraph in section.content %}
+                            <p>{{ paragraph }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    {% elif section.section_type == "list" %}
+                        <ul class="section-list">
+                        {% for item in section.content %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% elif section.section_type == "table" %}
+                        {% include "table_section.html" %}
+                    {% elif section.section_type == "chart" %}
+                        {% include "chart_section.html" %}
+                    {% else %}
+                        <div class="custom-content">{{ section.content | safe }}</div>
+                    {% endif %}
+                </div>
+            </section>
+            {% endfor %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="report-footer">
+            <p>Generated on {{ report_data.report_date | format_date("%Y-%m-%d %H:%M:%S") }}</p>
+            {% if report_data.metadata.get("confidential") %}
+            <p class="confidential-notice">CONFIDENTIAL - For Internal Use Only</p>
+            {% endif %}
+        </footer>
+    </div>
+</body>
+</html>

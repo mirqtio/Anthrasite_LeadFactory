@@ -40,6 +40,12 @@ try:
 except ImportError:
     REPORTLAB_AVAILABLE = False
 
+from leadfactory.services.report_template_engine import (
+    ReportData,
+    ReportSection,
+    ReportTemplateEngine,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -120,17 +126,28 @@ class PDFGenerator:
     with support for templates, styling, and security features.
     """
 
-    def __init__(self, config: Optional[PDFConfiguration] = None):
+    def __init__(
+        self,
+        config: Optional[PDFConfiguration] = None,
+        template_dir: Optional[str] = None,
+    ):
         """
         Initialize PDF generator.
 
         Args:
             config: PDF configuration object
+            template_dir: Directory containing report templates
         """
+        if not REPORTLAB_AVAILABLE:
+            raise ImportError("ReportLab is required for PDF generation")
+
         self.config = config or PDFConfiguration()
         self.styles = getSampleStyleSheet()
         self._setup_custom_styles()
         self._register_fonts()
+
+        # Initialize template engine
+        self.template_engine = ReportTemplateEngine(template_dir)
 
         logger.info("PDF Generator initialized with ReportLab")
 
@@ -199,6 +216,21 @@ class PDFGenerator:
                     textColor=colors.Color(0.2, 0.2, 0.8),
                     spaceBefore=10,
                     spaceAfter=10,
+                )
+            )
+
+        # Warning style for confidential/warning text
+        if "warning" not in self.styles:
+            self.styles.add(
+                ParagraphStyle(
+                    name="warning",
+                    parent=self.styles["Normal"],
+                    fontSize=12,
+                    textColor=colors.red,
+                    spaceBefore=10,
+                    spaceAfter=10,
+                    alignment=TA_CENTER,
+                    fontName="Helvetica-Bold",
                 )
             )
 
@@ -329,12 +361,30 @@ class PDFGenerator:
                 story.append(Paragraph(element["text"], self.styles["CustomSubtitle"]))
                 story.append(Spacer(1, 15))
 
+            elif element_type == "heading":
+                level = element.get("level", 1)
+                if level == 1:
+                    style = "CustomTitle"
+                elif level == 2:
+                    style = "CustomSubtitle"
+                else:
+                    style = "SectionHeader"
+                story.append(Paragraph(element["text"], self.styles[style]))
+                story.append(Spacer(1, 10))
+
             elif element_type == "section_header":
                 story.append(Paragraph(element["text"], self.styles["SectionHeader"]))
 
             elif element_type == "paragraph":
                 style_name = element.get("style", "CustomBodyText")
                 story.append(Paragraph(element["text"], self.styles[style_name]))
+
+            elif element_type == "bullet_list":
+                items = element.get("items", [])
+                for item in items:
+                    bullet_text = f"• {item}"
+                    story.append(Paragraph(bullet_text, self.styles["CustomBodyText"]))
+                story.append(Spacer(1, 6))
 
             elif element_type == "table":
                 table = self._create_table(element)
@@ -384,7 +434,11 @@ class PDFGenerator:
 
         # Apply custom styling if provided
         custom_style = element.get("style", [])
-        table_style.extend(custom_style)
+        if isinstance(custom_style, str):
+            # If style is a string name, ignore it for now (use default styling)
+            pass
+        elif isinstance(custom_style, list):
+            table_style.extend(custom_style)
 
         table.setStyle(TableStyle(table_style))
 
@@ -582,6 +636,185 @@ class PDFGenerator:
             table_data.append([field, str(value)])
 
         return table_data
+
+    def generate_report_from_template(
+        self,
+        report_data: ReportData,
+        template_name: str = "audit_report.html",
+        output_path: Optional[str] = None,
+        return_bytes: bool = False,
+    ) -> Union[str, bytes, None]:
+        """
+        Generate a PDF report using a template.
+
+        Args:
+            report_data: The report data to render
+            template_name: Name of the template file to use
+            output_path: Path to save the PDF file
+            return_bytes: If True, return PDF as bytes instead of saving to file
+
+        Returns:
+            Path to generated PDF file, bytes if return_bytes=True, or None
+        """
+        try:
+            # Render HTML from template
+            html_content = self.template_engine.render_report(
+                report_data, template_name
+            )
+
+            # Convert HTML to PDF content structure
+            pdf_content = self._convert_html_to_pdf_content(html_content, report_data)
+
+            # Generate PDF using existing method
+            return self.generate_document(
+                content=pdf_content, output_path=output_path, return_bytes=return_bytes
+            )
+
+        except Exception as e:
+            logger.error(f"Error generating PDF from template: {e}")
+            raise
+
+    def _convert_html_to_pdf_content(
+        self, html_content: str, report_data: ReportData
+    ) -> List[Dict[str, Any]]:
+        """
+        Convert HTML content and report data to PDF content structure.
+
+        Args:
+            html_content: Rendered HTML content
+            report_data: Original report data
+
+        Returns:
+            List of content elements for PDF generation
+        """
+        content = []
+
+        # Add title
+        content.append({"type": "title", "text": report_data.title, "style": "title"})
+
+        # Add subtitle if present
+        if report_data.subtitle:
+            content.append(
+                {"type": "heading", "text": report_data.subtitle, "level": 2}
+            )
+
+        # Add company info and date
+        if report_data.company_name:
+            content.append(
+                {"type": "paragraph", "text": f"Company: {report_data.company_name}"}
+            )
+
+        content.append(
+            {
+                "type": "paragraph",
+                "text": f"Generated: {report_data.report_date.strftime('%B %d, %Y')}",
+            }
+        )
+
+        # Add spacing
+        content.append({"type": "spacer", "height": 20})
+
+        # Process sections
+        for section in report_data.sections:
+            # Section title
+            content.append({"type": "heading", "text": section.title, "level": 3})
+
+            # Section content based on type
+            if section.section_type == "text":
+                if isinstance(section.content, str):
+                    content.append({"type": "paragraph", "text": section.content})
+                elif isinstance(section.content, list):
+                    for paragraph in section.content:
+                        content.append({"type": "paragraph", "text": paragraph})
+
+            elif section.section_type == "list":
+                content.append({"type": "bullet_list", "items": section.content})
+
+            elif section.section_type == "table":
+                if isinstance(section.content, dict):
+                    if "headers" in section.content and "rows" in section.content:
+                        # Structured table
+                        table_data = [section.content["headers"]] + section.content[
+                            "rows"
+                        ]
+                        content.append(
+                            {"type": "table", "data": table_data, "style": "default"}
+                        )
+                    else:
+                        # Key-value pairs
+                        table_data = [["Key", "Value"]]
+                        for key, value in section.content.items():
+                            table_data.append([str(key), str(value)])
+                        content.append(
+                            {"type": "table", "data": table_data, "style": "default"}
+                        )
+
+            elif section.section_type == "chart":
+                # For charts, add a placeholder or convert to table
+                if isinstance(section.content, dict) and "data" in section.content:
+                    chart_data = section.content["data"]
+                    if isinstance(chart_data, list) and chart_data:
+                        # Convert chart data to table
+                        table_data = [["Item", "Value"]]
+                        for item in chart_data:
+                            if (
+                                isinstance(item, dict)
+                                and "label" in item
+                                and "value" in item
+                            ):
+                                table_data.append([item["label"], str(item["value"])])
+
+                        content.append(
+                            {"type": "table", "data": table_data, "style": "default"}
+                        )
+                    else:
+                        content.append(
+                            {
+                                "type": "paragraph",
+                                "text": f"Chart: {section.content.get('chart_type', 'Unknown type')}",
+                            }
+                        )
+                else:
+                    content.append(
+                        {"type": "paragraph", "text": "Chart data not available"}
+                    )
+
+            # Add spacing between sections
+            content.append({"type": "spacer", "height": 15})
+
+        # Add confidential notice if needed
+        if report_data.metadata.get("confidential"):
+            content.append({"type": "spacer", "height": 20})
+            content.append(
+                {
+                    "type": "paragraph",
+                    "text": "CONFIDENTIAL - For Internal Use Only",
+                    "style": "warning",
+                }
+            )
+
+        return content
+
+    def create_sample_audit_report(
+        self, output_path: Optional[str] = None, return_bytes: bool = False
+    ) -> Union[str, bytes, None]:
+        """
+        Create a sample audit report using the template system.
+
+        Args:
+            output_path: Path to save the PDF file
+            return_bytes: If True, return PDF as bytes instead of saving to file
+
+        Returns:
+            Path to generated PDF file, bytes if return_bytes=True, or None
+        """
+        # Create sample report data
+        report_data = self.template_engine.create_sample_report()
+
+        # Generate PDF from template
+        return self.generate_report_from_template(
+            report_data=report_data, output_path=output_path, return_bytes=return_bytes
+        )
 
 
 # Convenience functions for common use cases

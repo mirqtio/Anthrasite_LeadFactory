@@ -1,15 +1,39 @@
 """
-Services package for LeadFactory.
+Services module for LeadFactory.
 
-This package contains service layer implementations that provide
-business logic functionality.
+This module contains various services used throughout the application.
 """
 
-# Import key services for easier access
-from .pdf_generator import PDFGenerator
-from .pdf_quality_validator import PDFQualityValidator
+from .pdf_generator import PDFConfiguration, PDFGenerator, create_simple_pdf
+from .pdf_quality_validator import (
+    PDFQualityReport,
+    PDFQualityValidator,
+    ValidationCategory,
+    ValidationIssue,
+    ValidationSeverity,
+)
+from .report_template_engine import (
+    ReportData,
+    ReportSection,
+    ReportTemplateEngine,
+    create_comparison_table,
+    format_financial_data,
+    generate_executive_summary,
+)
 
 __all__ = [
     "PDFGenerator",
+    "PDFConfiguration",
+    "create_simple_pdf",
     "PDFQualityValidator",
+    "PDFQualityReport",
+    "ValidationSeverity",
+    "ValidationCategory",
+    "ValidationIssue",
+    "ReportTemplateEngine",
+    "ReportData",
+    "ReportSection",
+    "format_financial_data",
+    "create_comparison_table",
+    "generate_executive_summary",
 ]

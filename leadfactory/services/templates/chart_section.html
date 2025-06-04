@@ -1,0 +1,25 @@
+<div class="chart-container">
+    {% if section.content.chart_type == "bar" %}
+        <div class="bar-chart">
+            {% for item in section.content.data %}
+            <div class="bar-item">
+                <div class="bar-label">{{ item.label }}</div>
+                <div class="bar-visual">
+                    <div class="bar-fill" style="width: {{ (item.value / section.content.max_value * 100) }}%"></div>
+                </div>
+                <div class="bar-value">{{ item.value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    {% elif section.content.chart_type == "pie" %}
+        <div class="pie-chart">
+            <!-- Pie chart implementation would go here -->
+            <p>Pie chart: {{ section.content.data | length }} items</p>
+        </div>
+    {% else %}
+        <div class="generic-chart">
+            <p>Chart Type: {{ section.content.chart_type }}</p>
+            <pre>{{ section.content.data | tojson(indent=2) }}</pre>
+        </div>
+    {% endif %}
+</div>

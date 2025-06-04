@@ -1,0 +1,31 @@
+<div class="table-container">
+    {% if section.content.headers %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                {% for header in section.content.headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in section.content.rows %}
+            <tr>
+                {% for cell in row %}
+                <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="simple-table">
+        {% for key, value in section.content.items() %}
+        <div class="table-row">
+            <span class="table-key">{{ key }}:</span>
+            <span class="table-value">{{ value }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

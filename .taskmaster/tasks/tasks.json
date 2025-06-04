@@ -3003,7 +3003,7 @@
             1
           ],
           "details": "1. Design HTML/CSS templates for audit reports\n2. Implement a template engine that supports variable substitution\n3. Create a data model for audit report content\n4. Develop helper functions for common formatting needs\n5. Ensure templates are responsive and render correctly in PDF format",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Create test templates with sample data. Verify template rendering with various data inputs. Test edge cases like missing data or extremely large content."
         },
         {
@@ -3049,7 +3049,7 @@
           "title": "Quality Validation & Integrity",
           "description": "Implement PDF quality validation, integrity checks, file size optimization, and automated testing for PDF structure, readability, and security compliance.",
           "details": "",
-          "status": "in-progress",
+          "status": "done",
           "dependencies": [],
           "parentTaskId": 25
         }
