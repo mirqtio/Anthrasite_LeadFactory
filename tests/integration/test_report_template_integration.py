@@ -202,8 +202,10 @@ class TestReportTemplateIntegration:
         assert title_elements[0]["text"] == "Conversion Test"
 
         # Check for headings
-        heading_elements = [item for item in pdf_content if item.get("type") == "heading"]
-        assert len(heading_elements) >= 2  # subtitle + section titles
+        subtitle_elements = [item for item in pdf_content if item.get("type") == "subtitle"]
+        section_header_elements = [item for item in pdf_content if item.get("type") == "section_header"]
+        assert len(subtitle_elements) == 1  # subtitle
+        assert len(section_header_elements) >= 2  # section titles
 
         # Check for bullet list
         list_elements = [item for item in pdf_content if item.get("type") == "bullet_list"]

@@ -182,12 +182,13 @@ class TestBudgetConstrainedDecorator:
         def test_function(prompt, model="gpt-4o"):
             return f"Generated response for: {prompt}"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
-            mock_enforce.return_value = None
+        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_constraints:
+            mock_constraints.can_execute_operation.return_value = (True, None, [])
+            mock_constraints.cost_tracker = None
 
             result = test_function("Test prompt", model="gpt-4o")
             assert "Test prompt" in result
-            mock_enforce.assert_called_once()
+            mock_constraints.can_execute_operation.assert_called_once()
 
 
 class TestSpecializedDecorators:
@@ -202,12 +203,13 @@ class TestSpecializedDecorators:
         def generate_text(prompt, tokens=1000):
             return f"Generated text for: {prompt}"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
-            mock_enforce.return_value = None
+        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_constraints:
+            mock_constraints.can_execute_operation.return_value = (True, None, [])
+            mock_constraints.cost_tracker = None
 
             result = generate_text("Test prompt", tokens=1500)
             assert "Test prompt" in result
-            mock_enforce.assert_called_once()
+            mock_constraints.can_execute_operation.assert_called_once()
 
     def test_openai_budget_check_with_prompt_length(self):
         """Test OpenAI decorator with prompt length calculation."""
