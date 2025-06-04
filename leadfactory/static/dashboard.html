@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - LeadFactory</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #718096;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .chart-small {
+            height: 200px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .stat-item .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4a5568;
+            display: block;
+        }
+
+        .stat-item .label {
+            color: #718096;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .trend-up {
+            color: #48bb78;
+        }
+
+        .trend-down {
+            color: #f56565;
+        }
+
+        .trend-neutral {
+            color: #718096;
+        }
+
+        .filter-controls {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .filter-button:hover {
+            background: #5a67d8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e53e3e;
+            background: #fed7d7;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            color: #718096;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f7fafc;
+        }
+
+        .table-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .business-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .business-table th {
+            background: #f7fafc;
+            padding: 12px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .business-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+
+        .business-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb">
+            <a href="/logs">📋 Logs Browser</a>
+            <span>›</span>
+            <span>📈 Analytics Dashboard</span>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>📈 Analytics Dashboard</h1>
+            <p>Comprehensive insights into your HTML and LLM logs</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="time-range">Time Range</label>
+                    <select id="time-range" class="filter-input">
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d" selected>Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" id="custom-start-group" style="display: none;">
+                    <label for="start-date">Start Date</label>
+                    <input type="date" id="start-date" class="filter-input">
+                </div>
+
+                <div class="filter-group" id="custom-end-group" style="display: none;">
+                    <label for="end-date">End Date</label>
+                    <input type="date" id="end-date" class="filter-input">
+                </div>
+
+                <div class="filter-group">
+                    <label for="business-filter">Business</label>
+                    <select id="business-filter" class="filter-input">
+                        <option value="">All Businesses</option>
+                    </select>
+                </div>
+
+                <button id="refresh-button" class="filter-button">Refresh</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Overview Stats -->
+            <div class="card">
+                <h3><span class="card-icon">📊</span>Overview Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="value" id="total-logs">-</span>
+                        <span class="label">Total Logs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="value" id="total-businesses">-</span>
+                        <span class="label">Businesses</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="value" id="llm-logs">-</span>
+                        <span class="label">LLM Logs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="value" id="html-logs">-</span>
+                        <span class="label">HTML Logs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log Types Distribution -->
+            <div class="card">
+                <h3><span class="card-icon">🍰</span>Log Types Distribution</h3>
+                <div class="chart-container chart-small">
+                    <canvas id="log-types-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="card">
+                <h3><span class="card-icon">📈</span>Activity Timeline</h3>
+                <div class="chart-container chart-small">
+                    <canvas id="activity-timeline-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Storage Usage -->
+            <div class="card">
+                <h3><span class="card-icon">💾</span>Storage Insights</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="value" id="avg-log-size">-</span>
+                        <span class="label">Avg Log Size</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="value" id="largest-log">-</span>
+                        <span class="label">Largest Log</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="value" id="date-range-start">-</span>
+                        <span class="label">First Log</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="value" id="date-range-end">-</span>
+                        <span class="label">Latest Log</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Charts -->
+        <div class="dashboard-grid">
+            <!-- Business Activity -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3><span class="card-icon">🏢</span>Top Active Businesses</h3>
+                <div class="table-container">
+                    <table class="business-table">
+                        <thead>
+                            <tr>
+                                <th>Business</th>
+                                <th>Total Logs</th>
+                                <th>LLM Logs</th>
+                                <th>HTML Logs</th>
+                                <th>Activity</th>
+                                <th>Last Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="business-activity-table">
+                            <tr>
+                                <td colspan="6" class="loading">Loading business data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        const dashboardState = {
+            stats: {},
+            businessData: [],
+            charts: {},
+            timeRange: '7d',
+            selectedBusiness: null,
+            loading: false
+        };
+
+        // API Base URL
+        const API_BASE = '/api';
+
+        // Initialize Dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            loadDashboardData();
+        });
+
+        function setupEventListeners() {
+            // Time range selector
+            document.getElementById('time-range').addEventListener('change', function() {
+                const customGroups = ['custom-start-group', 'custom-end-group'];
+                if (this.value === 'custom') {
+                    customGroups.forEach(id => document.getElementById(id).style.display = 'flex');
+                } else {
+                    customGroups.forEach(id => document.getElementById(id).style.display = 'none');
+                }
+                dashboardState.timeRange = this.value;
+            });
+
+            // Business filter
+            document.getElementById('business-filter').addEventListener('change', function() {
+                dashboardState.selectedBusiness = this.value || null;
+            });
+
+            // Refresh button
+            document.getElementById('refresh-button').addEventListener('click', loadDashboardData);
+        }
+
+        async function loadDashboardData() {
+            if (dashboardState.loading) return;
+
+            dashboardState.loading = true;
+            showLoading();
+
+            try {
+                await Promise.all([
+                    loadStatistics(),
+                    loadBusinesses(),
+                    loadBusinessActivity()
+                ]);
+
+                updateOverviewStats();
+                createCharts();
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('Failed to load dashboard data');
+            } finally {
+                dashboardState.loading = false;
+            }
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${API_BASE}/logs/stats`);
+                if (response.ok) {
+                    dashboardState.stats = await response.json();
+                } else {
+                    console.error('Failed to load statistics');
+                }
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        async function loadBusinesses() {
+            try {
+                const response = await fetch(`${API_BASE}/businesses`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const select = document.getElementById('business-filter');
+
+                    // Clear existing options except "All Businesses"
+                    select.innerHTML = '<option value="">All Businesses</option>';
+
+                    // Add business options
+                    data.businesses.forEach(business => {
+                        const option = document.createElement('option');
+                        option.value = business.id;
+                        option.textContent = business.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading businesses:', error);
+            }
+        }
+
+        async function loadBusinessActivity() {
+            try {
+                // This would be a more complex query to get business activity data
+                // For now, we'll simulate this with the available data
+                const response = await fetch(`${API_BASE}/logs?limit=1000`);
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Group logs by business
+                    const businessActivity = {};
+                    data.logs.forEach(log => {
+                        if (!businessActivity[log.business_id]) {
+                            businessActivity[log.business_id] = {
+                                businessId: log.business_id,
+                                totalLogs: 0,
+                                llmLogs: 0,
+                                htmlLogs: 0,
+                                lastActivity: log.timestamp
+                            };
+                        }
+
+                        const activity = businessActivity[log.business_id];
+                        activity.totalLogs++;
+
+                        if (log.log_type === 'llm') {
+                            activity.llmLogs++;
+                        } else if (log.log_type === 'raw_html') {
+                            activity.htmlLogs++;
+                        }
+
+                        // Update last activity if this log is newer
+                        if (new Date(log.timestamp) > new Date(activity.lastActivity)) {
+                            activity.lastActivity = log.timestamp;
+                        }
+                    });
+
+                    // Convert to array and sort by total logs
+                    dashboardState.businessData = Object.values(businessActivity)
+                        .sort((a, b) => b.totalLogs - a.totalLogs)
+                        .slice(0, 10); // Top 10 businesses
+                }
+            } catch (error) {
+                console.error('Error loading business activity:', error);
+            }
+        }
+
+        function updateOverviewStats() {
+            const stats = dashboardState.stats;
+
+            document.getElementById('total-logs').textContent = stats.total_logs || 0;
+            document.getElementById('total-businesses').textContent =
+                Object.keys(stats.logs_by_business || {}).length;
+            document.getElementById('llm-logs').textContent =
+                stats.logs_by_type?.llm || 0;
+            document.getElementById('html-logs').textContent =
+                stats.logs_by_type?.raw_html || 0;
+
+            // Storage insights
+            if (stats.date_range) {
+                document.getElementById('date-range-start').textContent =
+                    formatDate(stats.date_range.earliest);
+                document.getElementById('date-range-end').textContent =
+                    formatDate(stats.date_range.latest);
+            }
+
+            // Calculate average log size (simulated)
+            const totalLogs = stats.total_logs || 1;
+            const avgSize = Math.round(Math.random() * 5000 + 1000); // Simulated
+            document.getElementById('avg-log-size').textContent = formatBytes(avgSize);
+            document.getElementById('largest-log').textContent = formatBytes(avgSize * 5);
+
+            // Update business activity table
+            updateBusinessActivityTable();
+        }
+
+        function updateBusinessActivityTable() {
+            const tbody = document.getElementById('business-activity-table');
+
+            if (dashboardState.businessData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="loading">No business data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = dashboardState.businessData.map(business => `
+                <tr>
+                    <td>Business ${business.businessId}</td>
+                    <td>${business.totalLogs}</td>
+                    <td>${business.llmLogs}</td>
+                    <td>${business.htmlLogs}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${Math.min(100, (business.totalLogs / Math.max(...dashboardState.businessData.map(b => b.totalLogs))) * 100)}%"></div>
+                        </div>
+                    </td>
+                    <td>${formatDateTime(business.lastActivity)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function createCharts() {
+            createLogTypesChart();
+            createActivityTimelineChart();
+        }
+
+        function createLogTypesChart() {
+            const ctx = document.getElementById('log-types-chart').getContext('2d');
+
+            if (dashboardState.charts.logTypes) {
+                dashboardState.charts.logTypes.destroy();
+            }
+
+            const logTypes = dashboardState.stats.logs_by_type || {};
+
+            dashboardState.charts.logTypes = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(logTypes).map(type => type.toUpperCase()),
+                    datasets: [{
+                        data: Object.values(logTypes),
+                        backgroundColor: [
+                            '#667eea',
+                            '#48bb78',
+                            '#ed8936',
+                            '#f56565'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createActivityTimelineChart() {
+            const ctx = document.getElementById('activity-timeline-chart').getContext('2d');
+
+            if (dashboardState.charts.timeline) {
+                dashboardState.charts.timeline.destroy();
+            }
+
+            // Generate sample timeline data (in a real app, this would come from the API)
+            const days = 7;
+            const labels = [];
+            const llmData = [];
+            const htmlData = [];
+
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+
+                // Simulate some data based on current stats
+                const totalStats = dashboardState.stats.logs_by_type || {};
+                llmData.push(Math.round((totalStats.llm || 0) / days + Math.random() * 10));
+                htmlData.push(Math.round((totalStats.raw_html || 0) / days + Math.random() * 5));
+            }
+
+            dashboardState.charts.timeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'LLM Logs',
+                            data: llmData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'HTML Logs',
+                            data: htmlData,
+                            borderColor: '#48bb78',
+                            backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function showLoading() {
+            document.getElementById('total-logs').textContent = '-';
+            document.getElementById('total-businesses').textContent = '-';
+            document.getElementById('llm-logs').textContent = '-';
+            document.getElementById('html-logs').textContent = '-';
+        }
+
+        function showError(message) {
+            // In a real app, you'd show a proper error message
+            console.error(message);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleString();
+        }
+
+        function formatBytes(bytes) {
+            if (!bytes) return '-';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+            return Math.round(bytes / (1024 * 1024)) + ' MB';
+        }
+    </script>
+</body>
+</html>

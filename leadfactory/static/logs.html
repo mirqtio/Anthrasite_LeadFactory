@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs Browser - LeadFactory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar h2 {
+            color: #2d3748;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .nav-section {
+            margin-bottom: 30px;
+        }
+
+        .nav-section h3 {
+            color: #4a5568;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 15px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: #edf2f7;
+        }
+
+        .nav-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-item .icon {
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* Filters Panel */
+        .filters-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filters-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-button, .export-button, .clear-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-button {
+            background: #667eea;
+            color: white;
+        }
+
+        .search-button:hover {
+            background: #5a67d8;
+        }
+
+        .export-button {
+            background: #48bb78;
+            color: white;
+        }
+
+        .export-button:hover {
+            background: #38a169;
+        }
+
+        .clear-button {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        .clear-button:hover {
+            background: #e2e8f0;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Logs Table */
+        .logs-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .logs-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logs-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .logs-table th {
+            background: #f7fafc;
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .logs-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+
+        .logs-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .log-type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .log-type-html { background: #fed7d7; color: #c53030; }
+        .log-type-llm { background: #bee3f8; color: #2b6cb0; }
+        .log-type-raw_html { background: #c6f6d5; color: #22543d; }
+        .log-type-enrichment { background: #fbb6ce; color: #b83280; }
+
+        .content-preview {
+            max-width: 300px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: #4a5568;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .timestamp {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .view-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .view-button:hover {
+            background: #5a67d8;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #edf2f7;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Loading and Error States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e53e3e;
+            background: #fed7d7;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+
+        /* Modal for Log Details */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .log-detail-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .detail-value {
+            color: #2d3748;
+        }
+
+        .log-content {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <h2>📊 Logs Browser</h2>
+
+            <div class="nav-section">
+                <h3>Views</h3>
+                <div class="nav-item active" data-view="all">
+                    <span class="icon">📋</span>
+                    All Logs
+                </div>
+                <div class="nav-item" data-view="html">
+                    <span class="icon">🌐</span>
+                    HTML Logs
+                </div>
+                <div class="nav-item" data-view="llm">
+                    <span class="icon">🤖</span>
+                    LLM Logs
+                </div>
+                <div class="nav-item" data-view="raw_html">
+                    <span class="icon">📄</span>
+                    Raw HTML
+                </div>
+                <div class="nav-item" data-view="enrichment">
+                    <span class="icon">✨</span>
+                    Enrichment
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Tools</h3>
+                <div class="nav-item" data-action="export">
+                    <span class="icon">📥</span>
+                    Export Data
+                </div>
+                <div class="nav-item" data-action="dashboard">
+                    <span class="icon">📈</span>
+                    Dashboard
+                </div>
+                <div class="nav-item" data-action="stats">
+                    <span class="icon">📊</span>
+                    Statistics
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Logs Browser</h1>
+                <p>Browse, search, and export HTML and LLM logs</p>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Filters Panel -->
+                <div class="filters-panel">
+                    <div class="filters-header">
+                        <h3>🔍 Filters & Search</h3>
+                    </div>
+
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label for="business-filter">Business ID</label>
+                            <input type="number" id="business-filter" class="filter-input" placeholder="Enter business ID">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="log-type-filter">Log Type</label>
+                            <select id="log-type-filter" class="filter-input">
+                                <option value="">All Types</option>
+                                <option value="html">HTML</option>
+                                <option value="llm">LLM</option>
+                                <option value="raw_html">Raw HTML</option>
+                                <option value="enrichment">Enrichment</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="start-date-filter">Start Date</label>
+                            <input type="datetime-local" id="start-date-filter" class="filter-input">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="end-date-filter">End Date</label>
+                            <input type="datetime-local" id="end-date-filter" class="filter-input">
+                        </div>
+                    </div>
+
+                    <div class="search-container">
+                        <input type="text" id="search-input" class="search-input" placeholder="Search log content...">
+                        <button id="search-button" class="search-button">Search</button>
+                        <button id="clear-button" class="clear-button">Clear</button>
+                        <button id="export-button" class="export-button">Export</button>
+                    </div>
+                </div>
+
+                <!-- Stats Bar -->
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <span class="stat-number" id="total-logs">-</span>
+                        <span class="stat-label">Total Logs</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="filtered-logs">-</span>
+                        <span class="stat-label">Filtered Results</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="selected-type">All</span>
+                        <span class="stat-label">Log Type</span>
+                    </div>
+                </div>
+
+                <!-- Logs Container -->
+                <div class="logs-container">
+                    <div class="logs-header">
+                        <h3>📋 Log Entries</h3>
+                        <span id="results-count">Loading...</span>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Business</th>
+                                    <th>Type</th>
+                                    <th>Timestamp</th>
+                                    <th>Content Preview</th>
+                                    <th>Size</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <tr>
+                                    <td colspan="7" class="loading">Loading logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="pagination">
+                        <!-- Pagination controls will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Detail Modal -->
+    <div id="log-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Log Details</h3>
+                <button class="close-button" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="log-detail-grid" id="log-details">
+                    <!-- Log details will be inserted here -->
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 15px; color: #2d3748;">Content:</h4>
+                    <div class="log-content" id="log-content">
+                        <!-- Log content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        const state = {
+            logs: [],
+            totalCount: 0,
+            currentPage: 1,
+            itemsPerPage: 50,
+            currentFilters: {},
+            loading: false
+        };
+
+        // API Base URL
+        const API_BASE = '/api';
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            loadInitialData();
+        });
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+                item.addEventListener('click', function() {
+                    setActiveNav(this);
+                    const logType = this.dataset.view === 'all' ? '' : this.dataset.view;
+                    document.getElementById('log-type-filter').value = logType;
+                    updateSelectedType(this.dataset.view);
+                    searchLogs();
+                });
+            });
+
+            // Tools navigation
+            document.querySelectorAll('.nav-item[data-action]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    if (action === 'dashboard') {
+                        window.open('/dashboard', '_blank');
+                    } else if (action === 'export') {
+                        exportLogs();
+                    } else if (action === 'stats') {
+                        showStatsModal();
+                    }
+                });
+            });
+
+            // Search and filters
+            document.getElementById('search-button').addEventListener('click', searchLogs);
+            document.getElementById('clear-button').addEventListener('click', clearFilters);
+            document.getElementById('export-button').addEventListener('click', exportLogs);
+
+            // Enter key for search
+            document.getElementById('search-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchLogs();
+                }
+            });
+
+            // Filter changes
+            ['business-filter', 'log-type-filter', 'start-date-filter', 'end-date-filter'].forEach(id => {
+                document.getElementById(id).addEventListener('change', searchLogs);
+            });
+        }
+
+        function setActiveNav(activeItem) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            activeItem.classList.add('active');
+        }
+
+        function updateSelectedType(type) {
+            const typeLabels = {
+                'all': 'All',
+                'html': 'HTML',
+                'llm': 'LLM',
+                'raw_html': 'Raw HTML',
+                'enrichment': 'Enrichment'
+            };
+            document.getElementById('selected-type').textContent = typeLabels[type] || 'All';
+        }
+
+        async function loadInitialData() {
+            await Promise.all([
+                loadStats(),
+                searchLogs()
+            ]);
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/logs/stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('total-logs').textContent = stats.total_logs || 0;
+                } else {
+                    console.error('Failed to load stats');
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function searchLogs() {
+            if (state.loading) return;
+
+            state.loading = true;
+            showLoading();
+
+            try {
+                // Build filters
+                const filters = buildFilters();
+                state.currentFilters = filters;
+
+                // Make API request
+                const queryParams = new URLSearchParams({
+                    limit: state.itemsPerPage,
+                    offset: (state.currentPage - 1) * state.itemsPerPage,
+                    ...filters
+                });
+
+                const response = await fetch(`${API_BASE}/logs?${queryParams}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    state.logs = data.logs;
+                    state.totalCount = data.pagination.total;
+                    displayLogs(data.logs);
+                    updatePagination(data.pagination);
+                    updateResultsCount();
+                } else {
+                    showError(data.error || 'Failed to load logs');
+                }
+            } catch (error) {
+                console.error('Error searching logs:', error);
+                showError('Failed to load logs');
+            } finally {
+                state.loading = false;
+            }
+        }
+
+        function buildFilters() {
+            const filters = {};
+
+            const businessId = document.getElementById('business-filter').value;
+            if (businessId) filters.business_id = businessId;
+
+            const logType = document.getElementById('log-type-filter').value;
+            if (logType) filters.log_type = logType;
+
+            const startDate = document.getElementById('start-date-filter').value;
+            if (startDate) filters.start_date = new Date(startDate).toISOString();
+
+            const endDate = document.getElementById('end-date-filter').value;
+            if (endDate) filters.end_date = new Date(endDate).toISOString();
+
+            const searchQuery = document.getElementById('search-input').value;
+            if (searchQuery) filters.search = searchQuery;
+
+            return filters;
+        }
+
+        function displayLogs(logs) {
+            const tbody = document.getElementById('logs-table-body');
+
+            if (logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <h3>No logs found</h3>
+                            <p>Try adjusting your search criteria</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${log.id}</td>
+                    <td>${log.business_id}</td>
+                    <td><span class="log-type-badge log-type-${log.log_type}">${log.log_type}</span></td>
+                    <td class="timestamp">${formatTimestamp(log.timestamp)}</td>
+                    <td class="content-preview">${log.content_preview}</td>
+                    <td>${formatFileSize(log.content_length)}</td>
+                    <td>
+                        <button class="view-button" onclick="viewLogDetail(${log.id})">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updatePagination(pagination) {
+            const paginationEl = document.getElementById('pagination');
+            const totalPages = Math.ceil(pagination.total / pagination.limit);
+
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+
+            const buttons = [];
+
+            // Previous button
+            buttons.push(`
+                <button onclick="goToPage(${state.currentPage - 1})"
+                        ${state.currentPage === 1 ? 'disabled' : ''}>
+                    Previous
+                </button>
+            `);
+
+            // Page numbers
+            const startPage = Math.max(1, state.currentPage - 2);
+            const endPage = Math.min(totalPages, state.currentPage + 2);
+
+            if (startPage > 1) {
+                buttons.push('<button onclick="goToPage(1)">1</button>');
+                if (startPage > 2) buttons.push('<span>...</span>');
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                buttons.push(`
+                    <button onclick="goToPage(${i})"
+                            ${i === state.currentPage ? 'class="current-page"' : ''}>
+                        ${i}
+                    </button>
+                `);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) buttons.push('<span>...</span>');
+                buttons.push(`<button onclick="goToPage(${totalPages})">${totalPages}</button>`);
+            }
+
+            // Next button
+            buttons.push(`
+                <button onclick="goToPage(${state.currentPage + 1})"
+                        ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            `);
+
+            paginationEl.innerHTML = buttons.join('');
+        }
+
+        function updateResultsCount() {
+            const countEl = document.getElementById('results-count');
+            const start = (state.currentPage - 1) * state.itemsPerPage + 1;
+            const end = Math.min(state.currentPage * state.itemsPerPage, state.totalCount);
+
+            countEl.textContent = `${start}-${end} of ${state.totalCount} results`;
+            document.getElementById('filtered-logs').textContent = state.totalCount;
+        }
+
+        function goToPage(page) {
+            state.currentPage = page;
+            searchLogs();
+        }
+
+        function clearFilters() {
+            document.getElementById('business-filter').value = '';
+            document.getElementById('log-type-filter').value = '';
+            document.getElementById('start-date-filter').value = '';
+            document.getElementById('end-date-filter').value = '';
+            document.getElementById('search-input').value = '';
+
+            // Reset to "All" view
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector('.nav-item[data-view="all"]').classList.add('active');
+            updateSelectedType('all');
+
+            state.currentPage = 1;
+            searchLogs();
+        }
+
+        async function exportLogs() {
+            if (state.loading) return;
+
+            try {
+                const filters = buildFilters();
+
+                const exportData = {
+                    filters: filters,
+                    format: 'csv',
+                    include_content: false
+                };
+
+                const response = await fetch(`${API_BASE}/logs/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(exportData)
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `logs_export_${new Date().toISOString().slice(0, 10)}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const error = await response.json();
+                    alert('Export failed: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed: ' + error.message);
+            }
+        }
+
+        async function viewLogDetail(logId) {
+            try {
+                const response = await fetch(`${API_BASE}/logs/${logId}`);
+                const log = await response.json();
+
+                if (response.ok) {
+                    showLogModal(log);
+                } else {
+                    alert('Failed to load log details: ' + (log.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error loading log detail:', error);
+                alert('Failed to load log details');
+            }
+        }
+
+        function showLogModal(log) {
+            const detailsEl = document.getElementById('log-details');
+            const contentEl = document.getElementById('log-content');
+
+            detailsEl.innerHTML = `
+                <div class="detail-label">ID:</div>
+                <div class="detail-value">${log.id}</div>
+
+                <div class="detail-label">Business ID:</div>
+                <div class="detail-value">${log.business_id}</div>
+
+                <div class="detail-label">Type:</div>
+                <div class="detail-value"><span class="log-type-badge log-type-${log.log_type}">${log.log_type}</span></div>
+
+                <div class="detail-label">Timestamp:</div>
+                <div class="detail-value">${formatTimestamp(log.timestamp)}</div>
+
+                <div class="detail-label">Content Length:</div>
+                <div class="detail-value">${formatFileSize(log.content_length)}</div>
+
+                <div class="detail-label">File Path:</div>
+                <div class="detail-value">${log.file_path || 'N/A'}</div>
+            `;
+
+            contentEl.textContent = log.content || 'No content available';
+
+            document.getElementById('log-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('log-modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('log-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        function showLoading() {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">Loading logs...</td></tr>';
+            document.getElementById('results-count').textContent = 'Loading...';
+        }
+
+        function showError(message) {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = `<tr><td colspan="7" class="error">Error: ${message}</td></tr>`;
+        }
+
+        function formatTimestamp(timestamp) {
+            return new Date(timestamp).toLocaleString();
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'N/A';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+            return Math.round(bytes / (1024 * 1024)) + ' MB';
+        }
+
+        async function showStatsModal() {
+            try {
+                const response = await fetch(`${API_BASE}/logs/stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+
+                    const statsContent = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                            <div style="text-align: center; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                                <div style="font-size: 2rem; font-weight: 700; color: #667eea;">${stats.total_logs || 0}</div>
+                                <div style="color: #718096; font-size: 0.9rem;">Total Logs</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                                <div style="font-size: 2rem; font-weight: 700; color: #48bb78;">${stats.logs_by_type?.llm || 0}</div>
+                                <div style="color: #718096; font-size: 0.9rem;">LLM Logs</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                                <div style="font-size: 2rem; font-weight: 700; color: #ed8936;">${stats.logs_by_type?.raw_html || 0}</div>
+                                <div style="color: #718096; font-size: 0.9rem;">HTML Logs</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                                <div style="font-size: 2rem; font-weight: 700; color: #9f7aea;">${Object.keys(stats.logs_by_business || {}).length}</div>
+                                <div style="color: #718096; font-size: 0.9rem;">Businesses</div>
+                            </div>
+                        </div>
+
+                        ${stats.date_range ? `
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="margin-bottom: 10px; color: #2d3748;">Date Range</h4>
+                                <p style="color: #4a5568;">
+                                    <strong>First Log:</strong> ${new Date(stats.date_range.earliest).toLocaleString()}<br>
+                                    <strong>Latest Log:</strong> ${new Date(stats.date_range.latest).toLocaleString()}
+                                </p>
+                            </div>
+                        ` : ''}
+
+                        ${Object.keys(stats.logs_by_business || {}).length > 0 ? `
+                            <div>
+                                <h4 style="margin-bottom: 10px; color: #2d3748;">Top Businesses by Log Count</h4>
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    ${Object.entries(stats.logs_by_business)
+                                        .sort(([,a], [,b]) => b - a)
+                                        .slice(0, 10)
+                                        .map(([businessId, count]) => `
+                                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                                                <span>Business ${businessId}</span>
+                                                <span style="font-weight: 600; color: #667eea;">${count} logs</span>
+                                            </div>
+                                        `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    `;
+
+                    // Create and show modal
+                    const modal = document.getElementById('log-modal');
+                    const modalHeader = modal.querySelector('.modal-header h3');
+                    const modalBody = modal.querySelector('.modal-body');
+
+                    modalHeader.textContent = 'System Statistics';
+                    modalBody.innerHTML = statsContent;
+                    modal.style.display = 'block';
+
+                } else {
+                    alert('Failed to load statistics');
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                alert('Failed to load statistics');
+            }
+        }
+    </script>
+</body>
+</html>

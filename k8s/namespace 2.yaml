@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: leadfactory
+  labels:
+    name: leadfactory
+    app: leadfactory

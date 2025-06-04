@@ -1358,3 +1358,392 @@ class PostgresStorage(StorageInterface):
             )
 
         return related_data
+
+    def merge_businesses(self, primary_id: int, secondary_id: int) -> bool:
+        """Merge two business records, keeping primary and removing secondary."""
+        try:
+            with self.connection() as conn:
+                with conn.cursor() as cursor:
+                    # This would be a complex operation involving multiple tables
+                    # For now, just a placeholder
+                    logger.warning("merge_businesses not fully implemented")
+                    return False
+        except Exception as e:
+            logger.error(
+                f"Failed to merge businesses {primary_id} and {secondary_id}: {e}"
+            )
+            return False
+
+    # Log Management Methods for Web Interface
+    def get_logs_with_filters(
+        self,
+        business_id: Optional[int] = None,
+        log_type: Optional[str] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        search_query: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+        sort_by: str = "timestamp",
+        sort_order: str = "desc",
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Get logs with filtering, pagination, and search."""
+        try:
+            with self.cursor() as cursor:
+                # Build base query to union LLM logs and HTML storage
+                base_queries = []
+                params = []
+
+                # Query LLM logs
+                if not log_type or log_type == "llm":
+                    llm_query = """
+                        SELECT
+                            id,
+                            business_id,
+                            'llm' as log_type,
+                            COALESCE(prompt_text, '') as content,
+                            created_at as timestamp,
+                            JSONB_BUILD_OBJECT(
+                                'operation', operation,
+                                'model_version', model_version,
+                                'tokens_prompt', tokens_prompt,
+                                'tokens_completion', tokens_completion,
+                                'duration_ms', duration_ms,
+                                'status', status,
+                                'metadata', metadata
+                            ) as metadata,
+                            NULL as file_path,
+                            COALESCE(LENGTH(prompt_text) + LENGTH(response_json::text), 0) as content_length
+                        FROM llm_logs
+                        WHERE 1=1
+                    """
+                    base_queries.append(llm_query)
+
+                # Query raw HTML storage
+                if not log_type or log_type == "raw_html":
+                    html_query = """
+                        SELECT
+                            id,
+                            business_id,
+                            'raw_html' as log_type,
+                            COALESCE(original_url, '') as content,
+                            created_at as timestamp,
+                            JSONB_BUILD_OBJECT(
+                                'original_url', original_url,
+                                'compression_ratio', compression_ratio,
+                                'content_hash', content_hash,
+                                'size_bytes', size_bytes
+                            ) as metadata,
+                            html_path as file_path,
+                            COALESCE(size_bytes, 0) as content_length
+                        FROM raw_html_storage
+                        WHERE 1=1
+                    """
+                    base_queries.append(html_query)
+
+                if not base_queries:
+                    return [], 0
+
+                # Combine queries
+                main_query = f"({') UNION ALL ('.join(base_queries)})"
+
+                # Count query for pagination
+                count_query = f"SELECT COUNT(*) FROM ({main_query}) as combined_logs"
+
+                # Add filters
+                filter_conditions = []
+                filter_params = []
+
+                if business_id is not None:
+                    filter_conditions.append("business_id = %s")
+                    filter_params.append(business_id)
+
+                if start_date:
+                    filter_conditions.append("timestamp >= %s")
+                    filter_params.append(start_date)
+
+                if end_date:
+                    filter_conditions.append("timestamp <= %s")
+                    filter_params.append(end_date)
+
+                if search_query:
+                    filter_conditions.append("content ILIKE %s")
+                    filter_params.append(f"%{search_query}%")
+
+                # Apply filters to both count and data queries
+                if filter_conditions:
+                    filter_clause = " WHERE " + " AND ".join(filter_conditions)
+                    count_query = f"SELECT COUNT(*) FROM ({main_query}) as combined_logs{filter_clause}"
+                    main_query = (
+                        f"SELECT * FROM ({main_query}) as combined_logs{filter_clause}"
+                    )
+                else:
+                    main_query = f"SELECT * FROM ({main_query}) as combined_logs"
+
+                # Get total count
+                cursor.execute(count_query, filter_params)
+                total_count = cursor.fetchone()[0] or 0
+
+                # Add sorting and pagination
+                valid_sort_fields = ["timestamp", "business_id", "log_type", "id"]
+                if sort_by not in valid_sort_fields:
+                    sort_by = "timestamp"
+
+                sort_order = "DESC" if sort_order.lower() == "desc" else "ASC"
+                main_query += f" ORDER BY {sort_by} {sort_order} LIMIT %s OFFSET %s"
+
+                # Execute data query
+                data_params = filter_params + [limit, offset]
+                cursor.execute(main_query, data_params)
+
+                # Convert results to dictionaries
+                columns = [desc[0] for desc in cursor.description]
+                logs = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+                # Convert metadata from JSON if needed
+                for log in logs:
+                    if isinstance(log.get("metadata"), str):
+                        try:
+                            log["metadata"] = json.loads(log["metadata"])
+                        except (json.JSONDecodeError, TypeError):
+                            log["metadata"] = {}
+
+                logger.info(f"Retrieved {len(logs)} logs (total: {total_count})")
+                return logs, total_count
+
+        except Exception as e:
+            logger.error(f"Error fetching logs with filters: {e}")
+            return [], 0
+
+    def get_log_by_id(self, log_id: int) -> Optional[Dict[str, Any]]:
+        """Get a single log entry by ID."""
+        try:
+            with self.cursor() as cursor:
+                # Try LLM logs first
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        business_id,
+                        'llm' as log_type,
+                        COALESCE(prompt_text || E'\n\n--- Response ---\n' || response_json::text, '') as content,
+                        created_at as timestamp,
+                        JSONB_BUILD_OBJECT(
+                            'operation', operation,
+                            'model_version', model_version,
+                            'tokens_prompt', tokens_prompt,
+                            'tokens_completion', tokens_completion,
+                            'duration_ms', duration_ms,
+                            'status', status,
+                            'metadata', metadata
+                        ) as metadata,
+                        NULL as file_path,
+                        COALESCE(LENGTH(prompt_text) + LENGTH(response_json::text), 0) as content_length
+                    FROM llm_logs
+                    WHERE id = %s
+                """,
+                    (log_id,),
+                )
+
+                result = cursor.fetchone()
+                if result:
+                    columns = [desc[0] for desc in cursor.description]
+                    log = dict(zip(columns, result))
+
+                    if isinstance(log.get("metadata"), str):
+                        try:
+                            log["metadata"] = json.loads(log["metadata"])
+                        except (json.JSONDecodeError, TypeError):
+                            log["metadata"] = {}
+
+                    return log
+
+                # Try raw HTML storage
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        business_id,
+                        'raw_html' as log_type,
+                        COALESCE('URL: ' || original_url || E'\nPath: ' || html_path, '') as content,
+                        created_at as timestamp,
+                        JSONB_BUILD_OBJECT(
+                            'original_url', original_url,
+                            'compression_ratio', compression_ratio,
+                            'content_hash', content_hash,
+                            'size_bytes', size_bytes
+                        ) as metadata,
+                        html_path as file_path,
+                        COALESCE(size_bytes, 0) as content_length
+                    FROM raw_html_storage
+                    WHERE id = %s
+                """,
+                    (log_id,),
+                )
+
+                result = cursor.fetchone()
+                if result:
+                    columns = [desc[0] for desc in cursor.description]
+                    log = dict(zip(columns, result))
+
+                    if isinstance(log.get("metadata"), str):
+                        try:
+                            log["metadata"] = json.loads(log["metadata"])
+                        except (json.JSONDecodeError, TypeError):
+                            log["metadata"] = {}
+
+                    return log
+
+                return None
+
+        except Exception as e:
+            logger.error(f"Error fetching log by ID {log_id}: {e}")
+            return None
+
+    def get_log_statistics(self) -> Dict[str, Any]:
+        """Get statistical information about logs."""
+        try:
+            with self.cursor() as cursor:
+                stats = {
+                    "total_logs": 0,
+                    "logs_by_type": {},
+                    "logs_by_business": {},
+                    "date_range": {},
+                    "storage_usage": {},
+                }
+
+                # Count LLM logs
+                cursor.execute("SELECT COUNT(*) FROM llm_logs")
+                llm_count = cursor.fetchone()[0] or 0
+
+                # Count raw HTML logs
+                cursor.execute("SELECT COUNT(*) FROM raw_html_storage")
+                html_count = cursor.fetchone()[0] or 0
+
+                stats["total_logs"] = llm_count + html_count
+                stats["logs_by_type"] = {"llm": llm_count, "raw_html": html_count}
+
+                # Get date range for LLM logs
+                cursor.execute(
+                    """
+                    SELECT MIN(created_at), MAX(created_at)
+                    FROM llm_logs
+                    WHERE created_at IS NOT NULL
+                """
+                )
+                llm_dates = cursor.fetchone()
+
+                # Get date range for HTML logs
+                cursor.execute(
+                    """
+                    SELECT MIN(created_at), MAX(created_at)
+                    FROM raw_html_storage
+                    WHERE created_at IS NOT NULL
+                """
+                )
+                html_dates = cursor.fetchone()
+
+                # Combine date ranges
+                min_dates = [
+                    d
+                    for d in [
+                        llm_dates[0] if llm_dates else None,
+                        html_dates[0] if html_dates else None,
+                    ]
+                    if d
+                ]
+                max_dates = [
+                    d
+                    for d in [
+                        llm_dates[1] if llm_dates else None,
+                        html_dates[1] if html_dates else None,
+                    ]
+                    if d
+                ]
+
+                if min_dates and max_dates:
+                    stats["date_range"] = {
+                        "earliest": min(min_dates).isoformat(),
+                        "latest": max(max_dates).isoformat(),
+                    }
+
+                # Get top businesses by log count
+                cursor.execute(
+                    """
+                    SELECT business_id, COUNT(*) as log_count
+                    FROM (
+                        SELECT business_id FROM llm_logs
+                        UNION ALL
+                        SELECT business_id FROM raw_html_storage
+                    ) combined
+                    GROUP BY business_id
+                    ORDER BY log_count DESC
+                    LIMIT 10
+                """
+                )
+
+                business_stats = cursor.fetchall()
+                stats["logs_by_business"] = {
+                    str(row[0]): row[1] for row in business_stats
+                }
+
+                return stats
+
+        except Exception as e:
+            logger.error(f"Error calculating log statistics: {e}")
+            return {
+                "total_logs": 0,
+                "logs_by_type": {},
+                "logs_by_business": {},
+                "date_range": {},
+                "storage_usage": {},
+            }
+
+    def get_available_log_types(self) -> List[str]:
+        """Get list of available log types in the database."""
+        return ["llm", "raw_html"]
+
+    def get_businesses_with_logs(self) -> List[Dict[str, Any]]:
+        """Get list of businesses that have log entries."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT DISTINCT b.id, COALESCE(b.name, 'Unknown') as name
+                    FROM businesses b
+                    WHERE b.id IN (
+                        SELECT DISTINCT business_id FROM llm_logs
+                        UNION
+                        SELECT DISTINCT business_id FROM raw_html_storage
+                    )
+                    AND b.id IS NOT NULL
+                    ORDER BY b.name
+                """
+                )
+
+                return [{"id": row[0], "name": row[1]} for row in cursor.fetchall()]
+
+        except Exception as e:
+            logger.error(f"Error getting businesses with logs: {e}")
+            return []
+
+    def get_all_businesses(self) -> List[Dict[str, Any]]:
+        """Get all businesses for general purposes."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, COALESCE(name, 'Unknown') as name, website
+                    FROM businesses
+                    ORDER BY name
+                """
+                )
+
+                return [
+                    {"id": row[0], "name": row[1], "website": row[2]}
+                    for row in cursor.fetchall()
+                ]
+
+        except Exception as e:
+            logger.error(f"Error getting all businesses: {e}")
+            return []

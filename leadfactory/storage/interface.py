@@ -717,3 +717,94 @@ class StorageInterface(ABC):
             True if merge succeeded, False otherwise
         """
         pass
+
+    # Log Management Methods for Web Interface
+    @abstractmethod
+    def get_logs_with_filters(
+        self,
+        business_id: Optional[int] = None,
+        log_type: Optional[str] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        search_query: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+        sort_by: str = "timestamp",
+        sort_order: str = "desc",
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """
+        Get logs with filtering, pagination, and search.
+
+        Args:
+            business_id: Filter by business ID
+            log_type: Filter by log type (html, llm, raw_html, enrichment)
+            start_date: Filter by start date
+            end_date: Filter by end date
+            search_query: Search query for content
+            limit: Number of results to return
+            offset: Pagination offset
+            sort_by: Field to sort by
+            sort_order: Sort order (asc, desc)
+
+        Returns:
+            Tuple of (logs list, total count)
+        """
+        pass
+
+    @abstractmethod
+    def get_log_by_id(self, log_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Get a single log entry by ID.
+
+        Args:
+            log_id: Log entry ID
+
+        Returns:
+            Log entry dictionary or None if not found
+        """
+        pass
+
+    @abstractmethod
+    def get_log_statistics(self) -> Dict[str, Any]:
+        """
+        Get statistical information about logs.
+
+        Returns:
+            Dictionary containing log statistics:
+            - total_logs: Total number of logs
+            - logs_by_type: Count by log type
+            - logs_by_business: Count by business
+            - date_range: Earliest and latest log dates
+            - storage_usage: Storage usage information
+        """
+        pass
+
+    @abstractmethod
+    def get_available_log_types(self) -> List[str]:
+        """
+        Get list of available log types in the database.
+
+        Returns:
+            List of log type strings
+        """
+        pass
+
+    @abstractmethod
+    def get_businesses_with_logs(self) -> List[Dict[str, Any]]:
+        """
+        Get list of businesses that have log entries.
+
+        Returns:
+            List of business dictionaries with id and name
+        """
+        pass
+
+    @abstractmethod
+    def get_all_businesses(self) -> List[Dict[str, Any]]:
+        """
+        Get all businesses for general purposes.
+
+        Returns:
+            List of business dictionaries
+        """
+        pass
