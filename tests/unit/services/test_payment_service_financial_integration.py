@@ -36,7 +36,8 @@ class TestPaymentServiceFinancialIntegration(unittest.TestCase):
         with patch('leadfactory.services.payment_service.stripe'):
             with patch('leadfactory.services.payment_service.create_engine'):
                 with patch('leadfactory.services.payment_service.sessionmaker', return_value=self.mock_session_local):
-                    self.payment_service = StripePaymentService(self.mock_config, "sqlite:///:memory:")
+                    with patch('leadfactory.services.payment_service.ReportDeliveryService'):
+                        self.payment_service = StripePaymentService(self.mock_config, "sqlite:///:memory:")
 
     @patch('leadfactory.services.payment_service.financial_tracker')
     @patch('leadfactory.services.payment_service.stripe')

@@ -3059,7 +3059,7 @@
       "id": 26,
       "title": "Email Delivery Service for Reports",
       "description": "Build email delivery system that sends purchased audit reports via signed secure links with follow-up CTA for agency connection",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         23
       ],
@@ -3073,7 +3073,7 @@
           "description": "Create a service that generates cryptographically signed URLs with expiration dates for securely accessing purchased audit reports.",
           "dependencies": [],
           "details": "Develop a utility class that generates signed URLs with JWT or similar token-based authentication. Include parameters for report ID, user ID, expiration time, and any access restrictions. The links should be time-limited (default 7 days) and contain verification mechanisms to prevent tampering. Implement proper error handling for invalid or expired links.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests to verify link generation, signature validation, and expiration handling. Test with various edge cases including expired tokens and invalid signatures."
         },
         {
@@ -3082,7 +3082,7 @@
           "description": "Create a flexible email template system that includes the secure report links and call-to-action components for agency connection.",
           "dependencies": [],
           "details": "Develop HTML email templates with responsive design that work across major email clients. Include placeholders for personalization (user name, report details), the secure link, and prominent CTAs for agency connection. Use a templating engine like Handlebars or Pug for maintainable templates. Implement tracking parameters for CTAs to measure conversion rates.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test template rendering with various data inputs. Verify email appearance in multiple email clients using a service like Litmus or Email on Acid."
         },
         {
@@ -3091,7 +3091,7 @@
           "description": "Build a service to handle the actual sending of emails through a provider, with tracking capabilities for opens, clicks, and delivery status.",
           "dependencies": [],
           "details": "Integrate with an email service provider (ESP) like SendGrid, Mailgun, or AWS SES. Implement a queue-based system for reliable delivery with retry logic. Add tracking pixel and link tracking to monitor email opens and clicks. Store delivery status, open and click events in the database for reporting. Implement rate limiting to prevent sending too many emails at once.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Create integration tests with the ESP using test API keys. Mock ESP responses to test error handling and retry logic. Verify tracking data is correctly recorded."
         },
         {
@@ -3100,7 +3100,7 @@
           "description": "Implement an automated follow-up email system that sends reminders based on user interactions with the initial email.",
           "dependencies": [],
           "details": "Design a workflow engine that triggers follow-up emails based on user behavior: 1) If report link not clicked after 3 days, send reminder, 2) If report viewed but no agency connection made after 5 days, send CTA-focused follow-up, 3) If agency connection made, send confirmation and next steps. Implement configurable timing and content for each follow-up type. Include opt-out mechanisms in all emails.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test the workflow logic with various user interaction scenarios. Verify correct timing of follow-ups and that opt-outs are respected."
         },
         {
@@ -3109,7 +3109,7 @@
           "description": "Set up end-to-end testing, monitoring, and analytics for the email delivery system.",
           "dependencies": [],
           "details": "Create end-to-end tests that verify the complete flow from report purchase to email delivery and link access. Set up monitoring dashboards for email delivery rates, bounces, opens, and clicks. Implement alerting for delivery failures or unusual patterns. Add analytics to track conversion from email to agency connection. Update CI pipeline to include all email service tests. Document the entire system including troubleshooting procedures.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Run automated end-to-end tests that simulate the entire user journey. Set up synthetic monitoring to regularly test the email delivery pipeline in production. Create test scenarios for various failure modes to verify proper error handling and alerting."
         }
       ]
@@ -3118,7 +3118,7 @@
       "id": 27,
       "title": "Extend Supabase PNG Upload for Report Storage and Delivery",
       "description": "Extend existing PNG upload functionality to include final PDF report storage and secure URL generation with expiration for audit report delivery via Stripe webhook flow",
-      "status": "pending",
+      "status": "in-progress",
       "dependencies": [
         23
       ],
@@ -3132,7 +3132,7 @@
           "description": "Extend the existing PNG upload service to handle PDF files for report storage, including proper MIME type detection, file validation, and bucket configuration.",
           "dependencies": [],
           "details": "1. Modify the existing upload service to accept PDF files\n2. Add MIME type validation for PDFs (application/pdf)\n3. Configure appropriate storage bucket permissions for PDFs\n4. Implement file size limits and validation\n5. Create helper functions to standardize PDF naming conventions",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test the upload function with mock PDF files to verify correct handling and storage path generation."
         },
         {
@@ -3141,7 +3141,7 @@
           "description": "Create functionality to generate secure, time-limited URLs for accessing stored PDF reports with configurable expiration times.",
           "dependencies": [],
           "details": "1. Implement a function that generates signed URLs with Supabase\n2. Add configurable expiration parameter (default 24 hours)\n3. Ensure URL includes proper authentication tokens\n4. Add URL validation and error handling\n5. Create utility to check if URLs are still valid",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test URL generation with various expiration times and verify URL structure and token presence."
         },
         {
@@ -3150,7 +3150,7 @@
           "description": "Implement integration with Stripe webhook flow to automatically generate and deliver secure PDF report URLs upon successful payment.",
           "dependencies": [],
           "details": "1. Create webhook handler for Stripe payment success events\n2. Implement logic to identify which report to deliver based on payment metadata\n3. Generate secure, expiring URL for the appropriate PDF report\n4. Add the URL to the payment confirmation response or trigger email delivery\n5. Implement error handling and retry logic for failed deliveries",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Test webhook handling with mock Stripe events, verify correct report identification and URL generation. Test error scenarios and retry mechanisms."
         },
         {

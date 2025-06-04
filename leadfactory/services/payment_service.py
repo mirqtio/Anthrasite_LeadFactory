@@ -7,6 +7,8 @@ for direct-to-SMB audit sales.
 
 import logging
 import os
+import tempfile
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -27,6 +29,9 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 # Import financial tracking
 from leadfactory.cost.financial_tracking import financial_tracker
+
+# Import report delivery service
+from leadfactory.services.report_delivery import ReportDeliveryService
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -90,6 +95,9 @@ class StripePaymentService:
         self.engine = create_engine(database_url)
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
+
+        # Initialize report delivery service
+        self.report_delivery = ReportDeliveryService()
 
         logger.info("Stripe payment service initialized")
 
@@ -497,9 +505,165 @@ class StripePaymentService:
 
     def _trigger_audit_generation(self, payment: Payment) -> None:
         """Trigger audit report generation after successful payment."""
-        # This will be implemented when we create the PDF generation service
         logger.info(f"Triggering audit generation for payment: {payment.id}")
-        # TODO: Integrate with PDF generation service
+
+        try:
+            # For now, we'll simulate PDF generation by creating a placeholder
+            # In a real implementation, this would call the PDF generation service
+            # and get the actual PDF path
+
+            # Generate a report ID based on payment details
+            report_id = f"audit_{payment.audit_type}_{payment.id}_{int(datetime.utcnow().timestamp())}"
+
+            # Simulate PDF generation (replace with actual PDF generation service)
+            pdf_path = self._generate_audit_pdf(payment, report_id)
+
+            # Use the report delivery service to upload and deliver the report
+            delivery_result = self.report_delivery.upload_and_deliver_report(
+                pdf_path=pdf_path,
+                report_id=report_id,
+                user_id=payment.customer_email,  # Using email as user ID for now
+                user_email=payment.customer_email,
+                purchase_id=payment.stripe_payment_intent_id,
+                business_name=payment.customer_name or "Your Business",
+                expiry_hours=72,  # 3 days access
+            )
+
+            logger.info(
+                f"Report delivered successfully for payment {payment.id}: {delivery_result}"
+            )
+
+            # Update payment record with delivery information
+            with self.SessionLocal() as db:
+                db_payment = db.query(Payment).filter(Payment.id == payment.id).first()
+                if db_payment:
+                    # Store delivery metadata in payment record
+                    if not db_payment.payment_metadata:
+                        db_payment.payment_metadata = "{}"
+
+                    import json
+
+                    metadata = (
+                        json.loads(db_payment.payment_metadata)
+                        if db_payment.payment_metadata
+                        else {}
+                    )
+                    metadata.update(
+                        {
+                            "report_delivered": True,
+                            "report_id": report_id,
+                            "delivery_status": delivery_result.get("status"),
+                            "storage_path": delivery_result.get("storage_path"),
+                            "delivered_at": delivery_result.get("delivered_at"),
+                            "expires_at": delivery_result.get("expires_at"),
+                        }
+                    )
+                    db_payment.payment_metadata = json.dumps(metadata)
+
+                    db.commit()
+                    logger.info(f"Updated payment {payment.id} with delivery metadata")
+
+        except Exception as e:
+            logger.error(
+                f"Failed to generate and deliver audit report for payment {payment.id}: {e}"
+            )
+            # Don't raise the exception to avoid disrupting webhook processing
+            # The payment is still successful even if report delivery fails
+
+    def _generate_audit_pdf(self, payment: Payment, report_id: str) -> str:
+        """
+        Generate audit PDF report.
+
+        This is a placeholder implementation. In production, this would:
+        1. Call the actual PDF generation service
+        2. Generate a comprehensive audit report
+        3. Return the path to the generated PDF
+
+        Args:
+            payment: Payment record with audit details
+            report_id: Unique identifier for the report
+
+        Returns:
+            Path to the generated PDF file
+        """
+        import os
+        import tempfile
+
+        from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
+
+        # Create a temporary PDF file
+        temp_dir = tempfile.mkdtemp()
+        pdf_path = os.path.join(temp_dir, f"{report_id}.pdf")
+
+        # Generate a simple PDF report (placeholder)
+        c = canvas.Canvas(pdf_path, pagesize=letter)
+        width, height = letter
+
+        # Add content to the PDF
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(50, height - 50, f"Audit Report: {payment.audit_type}")
+
+        c.setFont("Helvetica", 12)
+        c.drawString(50, height - 80, f"Report ID: {report_id}")
+        c.drawString(50, height - 100, f"Customer: {payment.customer_name}")
+        c.drawString(50, height - 120, f"Email: {payment.customer_email}")
+        c.drawString(50, height - 140, f"Business: {payment.customer_name or 'N/A'}")
+        c.drawString(
+            50,
+            height - 160,
+            f"Amount Paid: ${payment.amount / 100:.2f} {payment.currency.upper()}",
+        )
+        c.drawString(
+            50,
+            height - 180,
+            f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC",
+        )
+
+        c.setFont("Helvetica", 10)
+        c.drawString(
+            50,
+            height - 220,
+            "This is a placeholder audit report generated for testing purposes.",
+        )
+        c.drawString(
+            50,
+            height - 240,
+            "In production, this would contain comprehensive audit findings,",
+        )
+        c.drawString(
+            50,
+            height - 260,
+            "recommendations, and detailed analysis of the business operations.",
+        )
+
+        # Add audit sections
+        y_pos = height - 300
+        sections = [
+            "Executive Summary",
+            "Financial Analysis",
+            "Operational Review",
+            "Compliance Assessment",
+            "Risk Analysis",
+            "Recommendations",
+            "Action Plan",
+        ]
+
+        c.setFont("Helvetica-Bold", 12)
+        for section in sections:
+            c.drawString(50, y_pos, f"• {section}")
+            y_pos -= 30
+            c.setFont("Helvetica", 10)
+            c.drawString(
+                70, y_pos, "Detailed analysis and findings would appear here..."
+            )
+            y_pos -= 40
+            c.setFont("Helvetica-Bold", 12)
+
+        c.save()
+
+        logger.info(f"Generated placeholder PDF report: {pdf_path}")
+        return pdf_path
 
     def get_payment_status(self, payment_id: str) -> Optional[Dict[str, Any]]:
         """Get payment status by ID."""

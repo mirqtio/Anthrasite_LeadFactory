@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your {{ user.report_title }} is Ready!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px 5px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .cta-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .cta-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .cta-secondary {
+            background-color: #10b981;
+            color: white;
+        }
+        .cta-secondary:hover {
+            background-color: #059669;
+        }
+        .cta-outline {
+            background-color: transparent;
+            color: #2563eb;
+            border: 2px solid #2563eb;
+        }
+        .cta-outline:hover {
+            background-color: #2563eb;
+            color: white;
+        }
+        .report-info {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .expiry-notice {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Anthrasite</div>
+            <h1>Your {{ user.report_title }} is Ready! 🎉</h1>
+        </div>
+
+        <p>Dear {{ user.user_name }},</p>
+
+        <p>Great news! Your comprehensive audit report has been generated and is ready for viewing. We've analyzed your digital presence and compiled actionable insights to help you grow your business.</p>
+
+        <div class="report-info">
+            <h3>📊 Report Details</h3>
+            <p><strong>Report:</strong> {{ user.report_title }}</p>
+            {% if user.company_name %}
+            <p><strong>Company:</strong> {{ user.company_name }}</p>
+            {% endif %}
+            <p><strong>Generated:</strong> {{ user.purchase_date|format_date }}</p>
+            <p><strong>Access Until:</strong> {{ user.expiry_date|format_date }}</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            {% for button in cta_buttons %}
+                <a href="{{ button.url }}" class="cta-button cta-{{ button.style }}">{{ button.text }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="expiry-notice">
+            <strong>⏰ Important:</strong> Your secure access link will expire on {{ user.expiry_date|format_date }}. Make sure to download your report before then!
+        </div>
+
+        <h3>🚀 What's Next?</h3>
+        <p>Your audit report contains valuable insights, but implementing the recommendations can be challenging. That's where our partner agencies come in!</p>
+
+        <ul>
+            <li>✅ Expert implementation of audit recommendations</li>
+            <li>✅ Ongoing optimization and growth strategies</li>
+            <li>✅ Dedicated account management</li>
+            <li>✅ Proven track record of success</li>
+        </ul>
+
+        <p>Ready to take your business to the next level? Connect with one of our vetted growth agencies today!</p>
+
+        <div class="footer">
+            <p>Need help? Contact us at <a href="mailto:{{ user.support_email }}">{{ user.support_email }}</a></p>
+            {% if user.unsubscribe_link %}
+            <p><a href="{{ user.unsubscribe_link }}">Unsubscribe</a> from these emails</p>
+            {% endif %}
+            <p>&copy; {{ current_year }} Anthrasite. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

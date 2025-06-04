@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Miss Your {{ user.report_title }}!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px 5px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .cta-primary {
+            background-color: #dc2626;
+            color: white;
+        }
+        .cta-primary:hover {
+            background-color: #b91c1c;
+        }
+        .urgency-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .urgency-high {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #dc2626;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .value-points {
+            background-color: #f0f9ff;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Anthrasite</div>
+            <h1>⏰ Don't Miss Your {{ user.report_title }}!</h1>
+        </div>
+
+        <p>Hi {{ user.user_name }},</p>
+
+        <p>We noticed you haven't accessed your {{ user.report_title }} yet. It's been {{ days_since_delivery }} days since we delivered it, and we don't want you to miss out on the valuable insights waiting for you!</p>
+
+        <div class="urgency-box {% if urgency_level == 'high' %}urgency-high{% endif %}">
+            <h3>🚨 {% if urgency_level == 'high' %}URGENT:{% else %}REMINDER:{% endif %} Your Report Expires Soon!</h3>
+            <p><strong>Access expires on: {{ user.expiry_date|format_date }}</strong></p>
+            {% if urgency_level == 'high' %}
+            <p>Only a few days left to access your report!</p>
+            {% endif %}
+        </div>
+
+        <div class="value-points">
+            <h3>💎 Here's what you're missing:</h3>
+            <ul>
+                <li>✅ Comprehensive analysis of your digital presence</li>
+                <li>✅ Actionable recommendations for growth</li>
+                <li>✅ Competitive insights and opportunities</li>
+                <li>✅ Priority areas for immediate improvement</li>
+                <li>✅ ROI projections for recommended changes</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            {% for button in cta_buttons %}
+                <a href="{{ button.url }}" class="cta-button cta-{{ button.style }}">{{ button.text }}</a>
+            {% endfor %}
+        </div>
+
+        <p>Your audit contains insights that could significantly impact your business growth. Don't let this valuable information go to waste!</p>
+
+        <p><strong>Need help implementing the recommendations?</strong> Our partner agencies are standing by to help you turn insights into results.</p>
+
+        <div class="footer">
+            <p>Need help? Contact us at <a href="mailto:{{ user.support_email }}">{{ user.support_email }}</a></p>
+            {% if user.unsubscribe_link %}
+            <p><a href="{{ user.unsubscribe_link }}">Unsubscribe</a> from these emails</p>
+            {% endif %}
+            <p>&copy; {{ current_year }} Anthrasite. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
