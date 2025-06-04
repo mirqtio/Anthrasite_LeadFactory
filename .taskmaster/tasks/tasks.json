@@ -3150,7 +3150,7 @@
           "description": "Implement integration with Stripe webhook flow to automatically generate and deliver secure PDF report URLs upon successful payment.",
           "dependencies": [],
           "details": "1. Create webhook handler for Stripe payment success events\n2. Implement logic to identify which report to deliver based on payment metadata\n3. Generate secure, expiring URL for the appropriate PDF report\n4. Add the URL to the payment confirmation response or trigger email delivery\n5. Implement error handling and retry logic for failed deliveries",
-          "status": "in-progress",
+          "status": "done",
           "testStrategy": "Test webhook handling with mock Stripe events, verify correct report identification and URL generation. Test error scenarios and retry mechanisms."
         },
         {
@@ -3159,7 +3159,7 @@
           "description": "Add security layers to ensure PDFs are only accessible to authorized users and implement proper access logging.",
           "dependencies": [],
           "details": "1. Implement role-based access control for PDF operations\n2. Add request logging for security audit trails\n3. Implement rate limiting for PDF operations\n4. Create access revocation mechanism for expired or compromised tokens\n5. Add server-side validation of user permissions before generating URLs",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test access control with different user roles and verify proper enforcement of permissions."
         },
         {

@@ -203,29 +203,29 @@ class TestSpecializedDecorators:
         def generate_text(prompt, tokens=1000):
             return f"Generated text for: {prompt}"
 
-        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_constraints:
-            mock_constraints.can_execute_operation.return_value = (True, None, [])
-            mock_constraints.cost_tracker = None
+        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_budget:
+            mock_budget.can_execute_operation.return_value = (True, None, [])
+            mock_budget.cost_tracker = None
 
             result = generate_text("Test prompt", tokens=1500)
             assert "Test prompt" in result
-            mock_constraints.can_execute_operation.assert_called_once()
+            mock_budget.can_execute_operation.assert_called_once()
 
     def test_openai_budget_check_with_prompt_length(self):
         """Test OpenAI decorator with prompt length calculation."""
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        @openai_budget_check("gpt-4o", parameters_func=lambda *args, **kwargs: {"prompt": args[0]})
+        @openai_budget_check("gpt-4o", prompt_param="prompt")
         def generate_text(prompt):
             return f"Generated text for: {prompt}"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
-            mock_enforce.return_value = None
+        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_budget:
+            mock_budget.can_execute_operation.return_value = (True, None, [])
 
             result = generate_text("This is a test prompt")
             assert "test prompt" in result
-            mock_enforce.assert_called_once()
+            mock_budget.can_execute_operation.assert_called_once()
 
     def test_semrush_budget_check_decorator(self):
         """Test SEMrush-specific budget decorator."""
