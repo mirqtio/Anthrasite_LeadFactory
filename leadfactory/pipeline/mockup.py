@@ -138,7 +138,9 @@ def generate_business_mockup(
 
     try:
         # Create mockups directory if it doesn't exist
-        mockup_dir = "/tmp/mockups"
+        import tempfile
+
+        mockup_dir = os.path.join(tempfile.gettempdir(), "mockups")  # nosec B108
         os.makedirs(mockup_dir, exist_ok=True)
 
         mockup_filename = f"mockup_{business_id}.png"

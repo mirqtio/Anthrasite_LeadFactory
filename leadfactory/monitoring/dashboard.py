@@ -30,7 +30,9 @@ logger = get_logger(__name__)
 class PurchaseMetricsDashboard:
     """Web-based dashboard for purchase metrics monitoring."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 5000, debug: bool = False):
+    def __init__(
+        self, host: str = "127.0.0.1", port: int = 5000, debug: bool = False
+    ):  # nosec B104
         """Initialize the dashboard.
 
         Args:
@@ -528,7 +530,9 @@ dashboard = PurchaseMetricsDashboard()
 create_dashboard_templates()
 
 
-def run_dashboard(host: str = "0.0.0.0", port: int = 5000, debug: bool = False):
+def run_dashboard(
+    host: str = "127.0.0.1", port: int = 5000, debug: bool = False
+):  # nosec B104
     """Run the dashboard server.
 
     Args:

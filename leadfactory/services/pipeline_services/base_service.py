@@ -27,7 +27,7 @@ class ServiceConfig:
 
     service_name: str
     service_version: str = "1.0.0"
-    host: str = "0.0.0.0"
+    host: str = "127.0.0.1"  # nosec B104
     port: int = 8000
     workers: int = 1
     debug: bool = False

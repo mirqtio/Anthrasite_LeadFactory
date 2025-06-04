@@ -83,7 +83,10 @@ class SecurityAuditLogger:
 
     def _get_default_log_path(self) -> str:
         """Get the default audit log file path."""
-        log_dir = get_env("AUDIT_LOG_DIR", "/tmp/leadfactory/audit")
+        import tempfile
+
+        default_log_dir = os.path.join(tempfile.gettempdir(), "leadfactory", "audit")
+        log_dir = get_env("AUDIT_LOG_DIR", default_log_dir)  # nosec B108
         Path(log_dir).mkdir(parents=True, exist_ok=True)
         return f"{log_dir}/security_audit.log"
 

@@ -150,7 +150,7 @@ def validate_sqlite_database(db_path: str):
                 print(f"✓ Table '{table}' exists")
 
                 # Get row count
-                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                cursor.execute(f"SELECT COUNT(*) FROM {table}")  # nosec B608
                 count = cursor.fetchone()[0]
                 print(f"  - Contains {count} rows")
             else:

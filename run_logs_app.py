@@ -51,7 +51,7 @@ def main():
                 return "Dashboard interface not found", 404
 
         # Configuration
-        host = os.getenv("LOGS_HOST", "0.0.0.0")
+        host = os.getenv("LOGS_HOST", "127.0.0.1")  # nosec B104
         port = int(os.getenv("LOGS_PORT", "5000"))
         debug = os.getenv("LOGS_DEBUG", "False").lower() == "true"
 

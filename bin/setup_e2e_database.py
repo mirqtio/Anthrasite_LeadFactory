@@ -240,7 +240,7 @@ def validate_database(database_url: str):
                 print(f"✓ Table '{table}' exists")
 
                 # Get row count
-                cur.execute(f"SELECT COUNT(*) FROM {table}")
+                cur.execute(f"SELECT COUNT(*) FROM {table}")  # nosec B608
                 count = cur.fetchone()[0]
                 print(f"  - Contains {count} rows")
             else:

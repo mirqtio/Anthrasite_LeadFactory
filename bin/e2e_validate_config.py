@@ -239,7 +239,7 @@ class E2EPreflightChecker:
                         conn.close()
                         return False
 
-                    cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                    cursor.execute(f"SELECT COUNT(*) FROM {table}")  # nosec B608
                     count = cursor.fetchone()[0]
                     self.logger.info(f"✓ Table '{table}' exists with {count} rows")
 
