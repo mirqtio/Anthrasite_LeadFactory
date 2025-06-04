@@ -561,6 +561,7 @@ class SendGridWarmupScheduler:
         if not progress:
             return False
 
+        progress.status = WarmupStatus.PAUSED
         progress.is_paused = True
         progress.pause_reason = reason
         progress.pause_timestamp = datetime.now()
@@ -591,6 +592,7 @@ class SendGridWarmupScheduler:
         if not progress or not progress.is_paused:
             return False
 
+        progress.status = WarmupStatus.IN_PROGRESS
         progress.is_paused = False
         progress.pause_reason = None
         progress.pause_timestamp = None

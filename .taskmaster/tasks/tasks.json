@@ -3593,7 +3593,7 @@
             2
           ],
           "details": "Build throttling system that enforces daily send caps based on current warm-up stage. Implement rate limiting to distribute sends throughout the day. Create queue management for email batches. Add monitoring for send rates and cap adherence. Include emergency stop mechanisms for compliance.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 4,
@@ -3603,7 +3603,7 @@
             3
           ],
           "details": "Modify existing bounce-rate monitoring and IP rotation system to work with dedicated IPs post warm-up. Update Task #21 dependency to be blocked by warm-up completion. Ensure seamless transition from warm-up to production rotation. Maintain bounce rate thresholds and rotation triggers.",
-          "status": "pending"
+          "status": "in-progress"
         },
         {
           "id": 5,
