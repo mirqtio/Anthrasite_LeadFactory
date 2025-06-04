@@ -694,8 +694,8 @@ def alerts():
 @purchase.command()
 @click.option(
     "--host",
-    default="0.0.0.0",
-    help="Host to bind dashboard server (default: 0.0.0.0)",
+    default="127.0.0.1",  # nosec B104
+    help="Host to bind dashboard server (default: 127.0.0.1)",
 )
 @click.option(
     "--port",

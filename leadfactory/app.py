@@ -122,8 +122,12 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(os.getenv("PORT", 8000))
-    host = os.getenv("HOST", "0.0.0.0")
+    host = os.getenv("HOST", "127.0.0.1")  # Default to localhost for security
 
     uvicorn.run(
-        "leadfactory.app:app", host=host, port=port, reload=True, log_level="info"
+        "leadfactory.app:app",
+        host=host,
+        port=port,
+        reload=True,
+        log_level="info",  # nosec B104
     )

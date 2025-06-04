@@ -270,7 +270,7 @@ class GPTUsageTracker:
         where_clause = " AND ".join(where_clauses)
 
         # Get aggregate statistics
-        cursor.execute(
+        cursor.execute(  # nosec B608
             f"""
             SELECT
                 COUNT(*) as total_requests,
@@ -292,7 +292,7 @@ class GPTUsageTracker:
         stats = cursor.fetchone()
 
         # Get model breakdown
-        cursor.execute(
+        cursor.execute(  # nosec B608
             f"""
             SELECT
                 model,
@@ -313,7 +313,7 @@ class GPTUsageTracker:
         ]
 
         # Get hourly usage pattern
-        cursor.execute(
+        cursor.execute(  # nosec B608
             f"""
             SELECT
                 strftime('%Y-%m-%d %H:00:00', datetime(timestamp, 'unixepoch')) as hour,

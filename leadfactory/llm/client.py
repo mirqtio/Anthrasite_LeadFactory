@@ -454,7 +454,9 @@ class LLMClient:
             "kwargs": kwargs,
         }
         cache_str = json.dumps(cache_data, sort_keys=True)
-        return hashlib.md5(cache_str.encode()).hexdigest()
+        return hashlib.md5(
+            cache_str.encode(), usedforsecurity=False
+        ).hexdigest()  # nosec B324
 
     def get_available_providers(self) -> List[str]:
         """Get list of available providers."""
