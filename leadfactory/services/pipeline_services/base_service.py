@@ -35,7 +35,9 @@ class ServiceConfig:
     enable_tracing: bool = True
     kafka_brokers: str = "localhost:9092"
     redis_url: str = "redis://localhost:6379"
-    postgres_url: str = "postgresql://postgres:postgres@localhost:5432/leadfactory"  # pragma: allowlist secret
+    postgres_url: str = (
+        "postgresql://postgres:postgres@localhost:5432/leadfactory"  # pragma: allowlist secret
+    )
 
 
 class HealthResponse(BaseModel):
