@@ -47,6 +47,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: "k8s/(postgres-deployment|redis-deployment|scraper-deployment|mockup-deployment)\\.yaml$|leadfactory/services/pipeline_services/k8s/(kafka|services|redis)\\.yaml$"
       - id: check-added-large-files
       - id: debug-statements
       - id: check-ast

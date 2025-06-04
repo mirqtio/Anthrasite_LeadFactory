@@ -156,7 +156,7 @@ config.max_fallback_attempts = 5
 # Add custom provider
 config.providers['custom'] = ProviderConfig(
     name='custom',
-    api_key='your_key',
+    api_key='your_key',  # pragma: allowlist secret
     default_model='custom-model',
     cost_per_1k_tokens=0.01
 )

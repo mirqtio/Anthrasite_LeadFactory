@@ -707,7 +707,7 @@ jobs:
           # Test queue metrics function
           import sys
           sys.path.insert(0, '.')
-          
+
           # Mock the storage backend
           class MockStorage:
               def execute_query(self, query, params=None):
@@ -723,16 +723,16 @@ jobs:
                   elif 'created_at > NOW()' in query:
                       return [(5,)]
                   return []
-          
+
           # Mock get_storage function
           import types
           storage_module = types.ModuleType('leadfactory.storage.factory')
           storage_module.get_storage = lambda: MockStorage()
           sys.modules['leadfactory.storage.factory'] = storage_module
-          
+
           # Import and test metrics function
           from leadfactory.utils.metrics import get_queue_metrics
-          
+
           metrics = get_queue_metrics('personalization')
           assert metrics is not None
           assert metrics['total'] == 50
@@ -749,7 +749,7 @@ jobs:
           import sys
           import os
           from datetime import datetime, timedelta
-          
+
           # Test cooldown logic
           class TestCooldown:
               def __init__(self):
@@ -757,29 +757,29 @@ jobs:
                   self.last_scale_down = None
                   self.scale_up_cooldown = 300  # 5 minutes
                   self.scale_down_cooldown = 600  # 10 minutes
-              
+
               def _can_scale_up(self):
                   if self.last_scale_up is None:
                       return True
                   time_since_last = (datetime.utcnow() - self.last_scale_up).total_seconds()
                   return time_since_last >= self.scale_up_cooldown
-              
+
               def _can_scale_down(self):
                   if self.last_scale_down is None:
                       return True
                   time_since_last = (datetime.utcnow() - self.last_scale_down).total_seconds()
                   return time_since_last >= self.scale_down_cooldown
-          
+
           # Test cooldown logic
           test = TestCooldown()
           assert test._can_scale_up() == True  # No previous scale up
-          
+
           test.last_scale_up = datetime.utcnow()
           assert test._can_scale_up() == False  # Within cooldown
-          
+
           test.last_scale_up = datetime.utcnow() - timedelta(minutes=10)
           assert test._can_scale_up() == True  # After cooldown
-          
+
           print('GPU scaling logic test passed!')
           "
 
@@ -790,14 +790,14 @@ jobs:
           # Test credential management without external dependencies
           import base64
           import hashlib
-          
+
           class TestCredentialManager:
               def __init__(self):
                   self.encryption_key = base64.urlsafe_b64encode(
                       hashlib.sha256('test'.encode()).digest()
                   ).decode()
                   self.credentials = {}
-              
+
               def _encrypt_credential(self, credential):
                   # Simple XOR encryption for testing
                   key_bytes = base64.urlsafe_b64decode(self.encryption_key)
@@ -806,7 +806,7 @@ jobs:
                   for i, byte in enumerate(credential_bytes):
                       encrypted.append(byte ^ key_bytes[i % len(key_bytes)])
                   return base64.urlsafe_b64encode(bytes(encrypted)).decode()
-              
+
               def _decrypt_credential(self, encrypted_credential):
                   key_bytes = base64.urlsafe_b64decode(self.encryption_key)
                   encrypted_bytes = base64.urlsafe_b64decode(encrypted_credential)
@@ -814,28 +814,28 @@ jobs:
                   for i, byte in enumerate(encrypted_bytes):
                       decrypted.append(byte ^ key_bytes[i % len(key_bytes)])
                   return bytes(decrypted).decode('utf-8')
-              
+
               def store_credential(self, provider, cred_type, value):
                   encrypted = self._encrypt_credential(value)
                   self.credentials[f'{provider}_{cred_type}'] = encrypted
                   return True
-              
+
               def get_credential(self, provider, cred_type):
                   key = f'{provider}_{cred_type}'
                   if key in self.credentials:
                       return self._decrypt_credential(self.credentials[key])
                   return None
-          
+
           # Test credential encryption/decryption
           cred_manager = TestCredentialManager()
           test_token = 'test_hetzner_token_12345'
-          
+
           success = cred_manager.store_credential('hetzner', 'api_token', test_token)
           assert success
-          
+
           retrieved = cred_manager.get_credential('hetzner', 'api_token')
           assert retrieved == test_token
-          
+
           print('GPU security test passed!')
           "
 
@@ -851,14 +851,14 @@ jobs:
           test -f tests/unit/services/test_gpu_manager.py
           test -f tests/integration/test_gpu_integration.py
           test -f tests/e2e/test_gpu_e2e.py
-          
+
           echo "All GPU system files present!"
-          
+
           # Check Python syntax
           python -m py_compile leadfactory/services/gpu_manager.py
           python -m py_compile leadfactory/services/gpu_security.py
           python -m py_compile leadfactory/services/gpu_alerting.py
-          
+
           echo "All GPU Python files have valid syntax!"
 
   test-documentation:
