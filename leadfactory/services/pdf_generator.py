@@ -323,6 +323,16 @@ class PDFGenerator:
             )
         )
 
+        # Date style
+        self.styles.add(
+            ParagraphStyle(
+                name="date",
+                parent=self.styles["Normal"],
+                fontSize=10,
+                alignment=TA_LEFT,
+            )
+        )
+
     def _register_fonts(self):
         """Register custom fonts if available."""
         # This is a placeholder for custom font registration
@@ -903,6 +913,17 @@ class PDFGenerator:
                 }
             )
 
+        # Add generated date if available
+        if hasattr(report_data, "report_date") and report_data.report_date:
+            formatted_date = report_data.report_date.strftime("%B %d, %Y")
+            content.append(
+                {
+                    "type": "paragraph",
+                    "text": f"Generated: {formatted_date}",
+                    "style": "date",
+                }
+            )
+
         content.append({"type": "spacer", "height": 20})
 
         # Process sections
@@ -919,13 +940,23 @@ class PDFGenerator:
                     content.append({"type": "paragraph", "text": str(section.content)})
 
             elif section.section_type == "table":
-                # Add table
-                if isinstance(section.content, dict) and "headers" in section.content:
-                    table_data = [section.content["headers"]]
-                    table_data.extend(section.content.get("rows", []))
-                    content.append(
-                        {"type": "table", "data": table_data, "style": "default"}
-                    )
+                # Handle different table formats
+                if isinstance(section.content, dict):
+                    if "headers" in section.content:
+                        # Structured table with headers and rows
+                        table_data = [section.content["headers"]]
+                        table_data.extend(section.content.get("rows", []))
+                        content.append(
+                            {"type": "table", "data": table_data, "style": "default"}
+                        )
+                    else:
+                        # Key-value table
+                        table_data = [["Key", "Value"]]  # Headers
+                        for key, value in section.content.items():
+                            table_data.append([str(key), str(value)])
+                        content.append(
+                            {"type": "table", "data": table_data, "style": "default"}
+                        )
 
             elif section.section_type == "list":
                 # Add bullet list
@@ -941,13 +972,69 @@ class PDFGenerator:
                 )
 
             elif section.section_type == "chart":
-                # Add chart placeholder (charts would need additional implementation)
-                content.append(
-                    {
-                        "type": "paragraph",
-                        "text": f"[Chart: {section.content.get('chart_type', 'Unknown')} chart would be displayed here]",
-                    }
-                )
+                # Convert charts to tables for PDF representation
+                if isinstance(section.content, dict):
+                    chart_type = section.content.get("chart_type", "chart")
+                    chart_data = section.content.get("data", [])
+
+                    if chart_data:
+                        # Convert chart data to table format
+                        if isinstance(chart_data, dict):
+                            # Key-value chart data
+                            table_data = [["Item", "Value"]]  # Headers
+                            for key, value in chart_data.items():
+                                table_data.append([str(key), str(value)])
+                        elif isinstance(chart_data, list) and chart_data:
+                            # List-based chart data
+                            if isinstance(chart_data[0], dict):
+                                # List of dictionaries - check for common chart patterns
+                                if (
+                                    "label" in chart_data[0]
+                                    and "value" in chart_data[0]
+                                ):
+                                    # Standard chart format with label/value
+                                    table_data = [["Item", "Value"]]  # Standard headers
+                                    for item in chart_data:
+                                        label = str(item.get("label", ""))
+                                        value = str(item.get("value", ""))
+                                        table_data.append([label, value])
+                                else:
+                                    # Generic list of dictionaries
+                                    headers = list(chart_data[0].keys())
+                                    table_data = [headers]
+                                    for item in chart_data:
+                                        row = [
+                                            str(item.get(header, ""))
+                                            for header in headers
+                                        ]
+                                        table_data.append(row)
+                            else:
+                                # Simple list
+                                table_data = [["Item", "Value"]]
+                                for i, item in enumerate(chart_data):
+                                    table_data.append([f"Item {i+1}", str(item)])
+                        else:
+                            table_data = [["Item", "Value"], ["No data", "N/A"]]
+
+                        content.append(
+                            {"type": "table", "data": table_data, "style": "default"}
+                        )
+                    else:
+                        # Fallback for charts without data
+                        content.append(
+                            {
+                                "type": "paragraph",
+                                "text": f"[Chart: {chart_type} chart would be displayed here]",
+                            }
+                        )
+                else:
+                    # Fallback for non-dict chart content
+                    content.append(
+                        {
+                            "type": "paragraph",
+                            "text": "[Chart: chart would be displayed here]",
+                        }
+                    )
 
             content.append({"type": "spacer", "height": 15})
 
