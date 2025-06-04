@@ -6,17 +6,18 @@ and ensures the new system doesn't introduce significant overhead.
 """
 
 import os
-import time
 import statistics
+import time
 from unittest.mock import patch
+
 import pytest
 
 from leadfactory.config.node_config import (
     DeploymentEnvironment,
     NodeType,
+    estimate_node_cost,
     get_deployment_environment,
     get_enabled_capabilities,
-    estimate_node_cost,
     get_environment_info,
     validate_environment_configuration,
 )
@@ -56,13 +57,15 @@ class TestCapabilitySelectionPerformance:
         avg_time = statistics.mean(times)
 
         assert max_time < 0.001, f"Environment detection too slow: {max_time:.6f}s"
-        assert avg_time < 0.0005, f"Average environment detection too slow: {avg_time:.6f}s"
+        assert avg_time < 0.0005, (
+            f"Average environment detection too slow: {avg_time:.6f}s"
+        )
 
-        print(f"Environment detection performance:")
-        print(f"  Average: {avg_time*1000:.3f}ms")
-        print(f"  Maximum: {max_time*1000:.3f}ms")
+        print("Environment detection performance:")
+        print(f"  Average: {avg_time * 1000:.3f}ms")
+        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
-    @patch('leadfactory.config.node_config.is_api_available')
+    @patch("leadfactory.config.node_config.is_api_available")
     def test_capability_selection_performance(self, mock_api_available):
         """Test capability selection performance."""
         # Mock all APIs as available for consistent testing
@@ -97,16 +100,20 @@ class TestCapabilitySelectionPerformance:
 
         # Capability selection should be fast (< 10ms per call)
         for env, data in performance_data.items():
-            assert data["max_time"] < 0.01, \
+            assert data["max_time"] < 0.01, (
                 f"Capability selection too slow in {env.value}: {data['max_time']:.6f}s"
-            assert data["avg_time"] < 0.005, \
+            )
+            assert data["avg_time"] < 0.005, (
                 f"Average capability selection too slow in {env.value}: {data['avg_time']:.6f}s"
+            )
 
-        print(f"Capability selection performance:")
+        print("Capability selection performance:")
         for env, data in performance_data.items():
-            print(f"  {env.value}: avg={data['avg_time']*1000:.3f}ms, max={data['max_time']*1000:.3f}ms")
+            print(
+                f"  {env.value}: avg={data['avg_time'] * 1000:.3f}ms, max={data['max_time'] * 1000:.3f}ms"
+            )
 
-    @patch('leadfactory.config.node_config.is_api_available')
+    @patch("leadfactory.config.node_config.is_api_available")
     def test_cost_estimation_performance(self, mock_api_available):
         """Test cost estimation performance."""
         # Mock all APIs as available
@@ -136,15 +143,15 @@ class TestCapabilitySelectionPerformance:
         assert max_time < 0.005, f"Cost estimation too slow: {max_time:.6f}s"
         assert avg_time < 0.002, f"Average cost estimation too slow: {avg_time:.6f}s"
 
-        print(f"Cost estimation performance:")
-        print(f"  Average: {avg_time*1000:.3f}ms")
-        print(f"  Maximum: {max_time*1000:.3f}ms")
+        print("Cost estimation performance:")
+        print(f"  Average: {avg_time * 1000:.3f}ms")
+        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
 
 class TestDAGTraversalPerformance:
     """Test performance impact on DAG traversal."""
 
-    @patch('leadfactory.config.node_config.is_api_available')
+    @patch("leadfactory.config.node_config.is_api_available")
     def test_dag_execution_plan_performance(self, mock_api_available):
         """Test DAG execution plan generation performance."""
         # Mock all APIs as available
@@ -157,7 +164,9 @@ class TestDAGTraversalPerformance:
         times = []
 
         for node_type in node_types:
-            with patch.dict(os.environ, {"DEPLOYMENT_ENVIRONMENT": "production_general"}):
+            with patch.dict(
+                os.environ, {"DEPLOYMENT_ENVIRONMENT": "production_general"}
+            ):
                 start_time = time.perf_counter()
                 for _ in range(iterations):
                     dag.get_execution_plan(node_type=node_type, budget_cents=10.0)
@@ -173,11 +182,11 @@ class TestDAGTraversalPerformance:
         assert max_time < 0.02, f"DAG execution plan too slow: {max_time:.6f}s"
         assert avg_time < 0.01, f"Average DAG execution plan too slow: {avg_time:.6f}s"
 
-        print(f"DAG execution plan performance:")
-        print(f"  Average: {avg_time*1000:.3f}ms")
-        print(f"  Maximum: {max_time*1000:.3f}ms")
+        print("DAG execution plan performance:")
+        print(f"  Average: {avg_time * 1000:.3f}ms")
+        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
-    @patch('leadfactory.config.node_config.is_api_available')
+    @patch("leadfactory.config.node_config.is_api_available")
     def test_dag_topological_sort_performance(self, mock_api_available):
         """Test DAG topological sort performance with capability filtering."""
         # Mock all APIs as available
@@ -192,10 +201,7 @@ class TestDAGTraversalPerformance:
             with patch.dict(os.environ, {"DEPLOYMENT_ENVIRONMENT": env}):
                 start_time = time.perf_counter()
                 for _ in range(iterations):
-                    dag.topological_sort(
-                        node_type=NodeType.ENRICH,
-                        budget_cents=10.0
-                    )
+                    dag.topological_sort(node_type=NodeType.ENRICH, budget_cents=10.0)
                 end_time = time.perf_counter()
 
                 avg_time = (end_time - start_time) / iterations
@@ -206,11 +212,13 @@ class TestDAGTraversalPerformance:
 
         # Topological sort should remain fast
         assert max_time < 0.01, f"DAG topological sort too slow: {max_time:.6f}s"
-        assert avg_time < 0.005, f"Average DAG topological sort too slow: {avg_time:.6f}s"
+        assert avg_time < 0.005, (
+            f"Average DAG topological sort too slow: {avg_time:.6f}s"
+        )
 
-        print(f"DAG topological sort performance:")
-        print(f"  Average: {avg_time*1000:.3f}ms")
-        print(f"  Maximum: {max_time*1000:.3f}ms")
+        print("DAG topological sort performance:")
+        print(f"  Average: {avg_time * 1000:.3f}ms")
+        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
 
 class TestMemoryUsage:
@@ -221,10 +229,11 @@ class TestMemoryUsage:
         import sys
 
         # Measure baseline memory
-        initial_objects = len(gc.get_objects()) if 'gc' in globals() else 0
+        initial_objects = len(gc.get_objects()) if "gc" in globals() else 0
 
         # Import gc for memory testing
         import gc
+
         gc.collect()
         initial_objects = len(gc.get_objects())
 
@@ -242,7 +251,9 @@ class TestMemoryUsage:
         for env in environments:
             with patch.dict(os.environ, {"DEPLOYMENT_ENVIRONMENT": env.value}):
                 for node_type in node_types:
-                    with patch('leadfactory.config.node_config.is_api_available') as mock_api:
+                    with patch(
+                        "leadfactory.config.node_config.is_api_available"
+                    ) as mock_api:
                         mock_api.return_value = True
                         caps = get_enabled_capabilities(node_type)
                         capabilities_cache[(env, node_type)] = caps
@@ -254,10 +265,11 @@ class TestMemoryUsage:
         object_increase = final_objects - initial_objects
 
         # Should not create excessive objects (< 1000 new objects for all configurations)
-        assert object_increase < 1000, \
+        assert object_increase < 1000, (
             f"Excessive memory usage: {object_increase} new objects created"
+        )
 
-        print(f"Memory usage test:")
+        print("Memory usage test:")
         print(f"  Objects created: {object_increase}")
         print(f"  Configurations cached: {len(capabilities_cache)}")
 
@@ -265,7 +277,7 @@ class TestMemoryUsage:
 class TestScalabilityBenchmarks:
     """Test scalability with large numbers of capabilities and environments."""
 
-    @patch('leadfactory.config.node_config.is_api_available')
+    @patch("leadfactory.config.node_config.is_api_available")
     def test_large_scale_capability_evaluation(self, mock_api_available):
         """Test performance with many capability evaluations."""
         # Mock all APIs as available
@@ -287,21 +299,24 @@ class TestScalabilityBenchmarks:
         total_time = end_time - start_time
 
         # Should handle large batches efficiently
-        time_per_evaluation = total_time / (batch_size * len(node_types) * 2)  # 2 operations per iteration
+        time_per_evaluation = total_time / (
+            batch_size * len(node_types) * 2
+        )  # 2 operations per iteration
 
-        assert time_per_evaluation < 0.001, \
+        assert time_per_evaluation < 0.001, (
             f"Large scale evaluation too slow: {time_per_evaluation:.6f}s per evaluation"
+        )
 
-        print(f"Large scale capability evaluation:")
+        print("Large scale capability evaluation:")
         print(f"  Total operations: {batch_size * len(node_types) * 2}")
         print(f"  Total time: {total_time:.3f}s")
-        print(f"  Time per evaluation: {time_per_evaluation*1000:.3f}ms")
+        print(f"  Time per evaluation: {time_per_evaluation * 1000:.3f}ms")
 
-    @patch('leadfactory.config.node_config.is_api_available')
+    @patch("leadfactory.config.node_config.is_api_available")
     def test_concurrent_environment_access(self, mock_api_available):
         """Test performance with concurrent environment access simulation."""
-        import threading
         import queue
+        import threading
 
         # Mock all APIs as available
         mock_api_available.return_value = True
@@ -356,17 +371,19 @@ class TestScalabilityBenchmarks:
         max_operation_time = max(all_times)
 
         # Concurrent access should not significantly degrade performance
-        assert avg_operation_time < 0.01, \
+        assert avg_operation_time < 0.01, (
             f"Concurrent access too slow: {avg_operation_time:.6f}s average"
-        assert max_operation_time < 0.05, \
+        )
+        assert max_operation_time < 0.05, (
             f"Concurrent access maximum too slow: {max_operation_time:.6f}s"
+        )
 
-        print(f"Concurrent environment access:")
+        print("Concurrent environment access:")
         print(f"  Threads: {thread_count}")
         print(f"  Operations per thread: {operations_per_thread}")
         print(f"  Total time: {total_time:.3f}s")
-        print(f"  Average operation time: {avg_operation_time*1000:.3f}ms")
-        print(f"  Maximum operation time: {max_operation_time*1000:.3f}ms")
+        print(f"  Average operation time: {avg_operation_time * 1000:.3f}ms")
+        print(f"  Maximum operation time: {max_operation_time * 1000:.3f}ms")
 
 
 if __name__ == "__main__":

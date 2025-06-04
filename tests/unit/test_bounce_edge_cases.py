@@ -20,6 +20,7 @@ try:
         EventType,
         SendGridWebhookHandler,
     )
+
     REAL_IMPLEMENTATION = True
 except ImportError:
     REAL_IMPLEMENTATION = False
@@ -37,8 +38,18 @@ except ImportError:
         BLOCK = "block"
 
     class BounceEvent:
-        def __init__(self, email, event, timestamp, bounce_type=None, reason=None,
-                     status=None, message_id=None, sg_event_id=None, sg_message_id=None):
+        def __init__(
+            self,
+            email,
+            event,
+            timestamp,
+            bounce_type=None,
+            reason=None,
+            status=None,
+            message_id=None,
+            sg_event_id=None,
+            sg_message_id=None,
+        ):
             self.email = email
             self.event = event
             self.timestamp = timestamp
@@ -60,7 +71,7 @@ except ImportError:
                 status=data.get("status"),
                 message_id=data.get("message_id"),
                 sg_event_id=data.get("sg_event_id"),
-                sg_message_id=data.get("sg_message_id")
+                sg_message_id=data.get("sg_message_id"),
             )
 
     class SendGridWebhookHandler:
@@ -116,7 +127,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "event": EventType.BOUNCE,
             "timestamp": self.base_timestamp,
             "type": BounceType.HARD,
-            "reason": "Empty email address"
+            "reason": "Empty email address",
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -136,7 +147,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "status": None,
             "message_id": None,
             "sg_event_id": None,
-            "sg_message_id": None
+            "sg_message_id": None,
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -155,7 +166,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "event": EventType.BOUNCE,
             "timestamp": self.base_timestamp,
             "type": BounceType.SOFT,
-            "reason": long_reason
+            "reason": long_reason,
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -173,7 +184,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "test@sub.domain.example.com",
             "test@example-domain.com",
             "test123@example.com",
-            "123test@example.com"
+            "123test@example.com",
         ]
 
         for email in special_emails:
@@ -182,7 +193,7 @@ class TestBounceEdgeCases(unittest.TestCase):
                 "event": EventType.BOUNCE,
                 "timestamp": self.base_timestamp,
                 "type": BounceType.HARD,
-                "reason": f"Hard bounce for {email}"
+                "reason": f"Hard bounce for {email}",
             }
 
             bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -196,12 +207,14 @@ class TestBounceEdgeCases(unittest.TestCase):
             "timestamp": self.base_timestamp,
             "type": BounceType.SOFT,
             "reason": "Bounce reason with unicode: 测试 🚀 émojis",
-            "status": "4.2.2 Boîte aux lettres pleine"
+            "status": "4.2.2 Boîte aux lettres pleine",
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
 
-        self.assertEqual(bounce_event.reason, "Bounce reason with unicode: 测试 🚀 émojis")
+        self.assertEqual(
+            bounce_event.reason, "Bounce reason with unicode: 测试 🚀 émojis"
+        )
         self.assertEqual(bounce_event.status, "4.2.2 Boîte aux lettres pleine")
 
     def test_negative_timestamp(self):
@@ -211,7 +224,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "event": EventType.BOUNCE,
             "timestamp": -1640995200,  # Negative timestamp
             "type": BounceType.HARD,
-            "reason": "Negative timestamp test"
+            "reason": "Negative timestamp test",
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -221,14 +234,16 @@ class TestBounceEdgeCases(unittest.TestCase):
 
     def test_future_timestamp(self):
         """Test handling of future timestamps."""
-        future_timestamp = int(datetime.now().timestamp()) + 86400 * 365  # 1 year in future
+        future_timestamp = (
+            int(datetime.now().timestamp()) + 86400 * 365
+        )  # 1 year in future
 
         event_data = {
             "email": "future.time@example.com",
             "event": EventType.BOUNCE,
             "timestamp": future_timestamp,
             "type": BounceType.SOFT,
-            "reason": "Future timestamp test"
+            "reason": "Future timestamp test",
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -247,7 +262,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "soft",
             "BLOCK",
             "Block",
-            "block"
+            "block",
         ]
 
         for bounce_type in case_variations:
@@ -256,7 +271,7 @@ class TestBounceEdgeCases(unittest.TestCase):
                 "event": EventType.BOUNCE,
                 "timestamp": self.base_timestamp,
                 "type": bounce_type,
-                "reason": f"Case test for {bounce_type}"
+                "reason": f"Case test for {bounce_type}",
             }
 
             bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -272,7 +287,7 @@ class TestBounceEdgeCases(unittest.TestCase):
                 "event": EventType.BOUNCE,
                 "timestamp": self.base_timestamp + i,
                 "type": BounceType.SOFT if i % 2 == 0 else BounceType.HARD,
-                "reason": f"Batch test bounce {i}"
+                "reason": f"Batch test bounce {i}",
             }
             large_batch.append(event_data)
 
@@ -283,8 +298,11 @@ class TestBounceEdgeCases(unittest.TestCase):
         self.assertEqual(len(self.handler.bounce_events), 1000)
 
         # Verify correct categorization
-        hard_bounces = sum(1 for email, status in self.handler.email_statuses.items()
-                          if status == "hard_bounced")
+        hard_bounces = sum(
+            1
+            for email, status in self.handler.email_statuses.items()
+            if status == "hard_bounced"
+        )
         soft_bounces = len(self.handler.soft_bounce_counts)
 
         self.assertEqual(hard_bounces, 500)  # Every odd index
@@ -299,7 +317,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "timestamp": self.base_timestamp,
             "type": BounceType.HARD,
             "reason": "Duplicate bounce test",
-            "sg_event_id": "same_event_id"
+            "sg_event_id": "same_event_id",
         }
 
         # Process the same event multiple times
@@ -320,26 +338,26 @@ class TestBounceEdgeCases(unittest.TestCase):
                 "event": EventType.BOUNCE,
                 "timestamp": self.base_timestamp,
                 "type": BounceType.HARD,
-                "reason": "Hard bounce"
+                "reason": "Hard bounce",
             },
             {
                 "email": "delivered@example.com",
                 "event": EventType.DELIVERED,
                 "timestamp": self.base_timestamp,
-                "response": "250 OK"
+                "response": "250 OK",
             },
             {
                 "email": "spam@example.com",
                 "event": EventType.SPAM_REPORT,
-                "timestamp": self.base_timestamp
+                "timestamp": self.base_timestamp,
             },
             {
                 "email": "bounce2@example.com",
                 "event": EventType.BOUNCE,
                 "timestamp": self.base_timestamp,
                 "type": BounceType.SOFT,
-                "reason": "Soft bounce"
-            }
+                "reason": "Soft bounce",
+            },
         ]
 
         self.handler.process_webhook_events(mixed_events)
@@ -348,7 +366,9 @@ class TestBounceEdgeCases(unittest.TestCase):
         self.assertEqual(len(self.handler.bounce_events), 2)
 
         # Verify correct processing
-        self.assertEqual(self.handler.email_statuses["bounce@example.com"], "hard_bounced")
+        self.assertEqual(
+            self.handler.email_statuses["bounce@example.com"], "hard_bounced"
+        )
         self.assertEqual(self.handler.soft_bounce_counts["bounce2@example.com"], 1)
 
     def test_malformed_json_like_strings(self):
@@ -359,13 +379,15 @@ class TestBounceEdgeCases(unittest.TestCase):
             "timestamp": self.base_timestamp,
             "type": BounceType.HARD,
             "reason": '{"error": "malformed json", "code": 550}',
-            "status": '{"smtp_code": "5.1.1"}'
+            "status": '{"smtp_code": "5.1.1"}',
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
 
         # Should treat as strings, not parse as JSON
-        self.assertEqual(bounce_event.reason, '{"error": "malformed json", "code": 550}')
+        self.assertEqual(
+            bounce_event.reason, '{"error": "malformed json", "code": 550}'
+        )
         self.assertEqual(bounce_event.status, '{"smtp_code": "5.1.1"}')
 
     def test_zero_timestamp(self):
@@ -375,7 +397,7 @@ class TestBounceEdgeCases(unittest.TestCase):
             "event": EventType.BOUNCE,
             "timestamp": 0,
             "type": BounceType.HARD,
-            "reason": "Epoch timestamp test"
+            "reason": "Epoch timestamp test",
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)

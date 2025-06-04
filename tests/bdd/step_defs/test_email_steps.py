@@ -25,13 +25,8 @@ except ImportError:
     class MockEmailQueue:
         @staticmethod
         def process_email_queue(db_conn, limit=10):
-            return {
-                "processed": 1,
-                "success": 1,
-                "sent": 1,
-                "failed": 0,
-                "errors": []
-            }
+            return {"processed": 1, "success": 1, "sent": 1, "failed": 0, "errors": []}
+
     email_queue = MockEmailQueue()
 
 # Import shared steps to ensure 'the database is initialized' step is available
@@ -96,11 +91,7 @@ def high_scoring_business(email_db_conn):
         )
         VALUES (?, ?, ?)
         """,
-        (
-            "High Score Business",
-            "contact@highscore.com",
-            85
-        )
+        ("High Score Business", "contact@highscore.com", 85),
     )
     email_db_conn.commit()
 
@@ -143,8 +134,8 @@ def emails_in_queue(email_db_conn):
                 f"Test Subject {i}",
                 f"<p>Test Body {i}</p>",
                 f"Test Body {i}",
-                "pending"
-            )
+                "pending",
+            ),
         )
 
     email_db_conn.commit()
@@ -183,7 +174,7 @@ def generate_email_for_business(high_scoring_business):
     email_data = {
         "subject": "Improve Your Website Performance",
         "body_html": "<p>Dear High Score Business,</p><p>We can help you improve your website.</p>",
-        "body_text": "Dear High Score Business,\n\nWe can help you improve your website."
+        "body_text": "Dear High Score Business,\n\nWe can help you improve your website.",
     }
 
     # Insert the email
@@ -206,8 +197,8 @@ def generate_email_for_business(high_scoring_business):
             email_data["subject"],
             email_data["body_html"],
             email_data["body_text"],
-            "pending"
-        )
+            "pending",
+        ),
     )
     db_conn.commit()
 
@@ -228,17 +219,13 @@ def process_email_queue(emails_in_queue, mock_email_sender):
 
     # If result is a MagicMock (from graceful import), use our mock data
     if isinstance(result, MagicMock):
-        result = {
-            "processed": 1,
-            "success": 1,
-            "sent": 1,
-            "failed": 0,
-            "errors": []
-        }
+        result = {"processed": 1, "success": 1, "sent": 1, "failed": 0, "errors": []}
 
         # Update email status to 'sent' for mock processing
         cursor = db_conn.cursor()
-        cursor.execute("UPDATE emails SET status = 'sent', sent_at = datetime('now') WHERE status = 'pending'")
+        cursor.execute(
+            "UPDATE emails SET status = 'sent', sent_at = datetime('now') WHERE status = 'pending'"
+        )
         db_conn.commit()
 
     emails_in_queue["queue_result"] = result

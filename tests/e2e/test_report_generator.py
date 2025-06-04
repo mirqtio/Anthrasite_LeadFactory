@@ -2,6 +2,7 @@
 """
 Unit tests for the E2E Pipeline Report Generator
 """
+
 import json
 import os
 import tempfile
@@ -53,9 +54,9 @@ class TestReportGenerator(unittest.TestCase):
                 "duration": 120,
                 "stages": {
                     "stage1": {"status": "success", "duration": 60},
-                    "stage2": {"status": "success", "duration": 60}
+                    "stage2": {"status": "success", "duration": 60},
                 },
-                "failures": []
+                "failures": [],
             }
         ]
         self.report_generator.metrics.calculate_success_rate.return_value = 100.0
@@ -63,13 +64,12 @@ class TestReportGenerator(unittest.TestCase):
         self.report_generator.validator.validate_execution.return_value = {
             "test_coverage": {"status": "passed"},
             "performance": {"status": "passed"},
-            "outputs": {"status": "passed"}
+            "outputs": {"status": "passed"},
         }
 
         # Call the method under test
         report_path = self.report_generator.generate_report(
-            report_type=ReportType.EXECUTIVE_SUMMARY,
-            output_format=OutputFormat.HTML
+            report_type=ReportType.EXECUTIVE_SUMMARY, output_format=OutputFormat.HTML
         )
 
         # Assert report file was created
@@ -100,23 +100,23 @@ class TestReportGenerator(unittest.TestCase):
                     "end_time": datetime.now().isoformat(),
                     "duration": 60,
                     "retry_count": 0,
-                    "error": None
+                    "error": None,
                 }
             },
-            "failures": []
+            "failures": [],
         }
         self.report_generator.tracker.get_execution.return_value = mock_execution
         self.report_generator.validator.validate_execution.return_value = {
             "test_coverage": {"status": "passed"},
             "performance": {"status": "passed"},
-            "outputs": {"status": "passed"}
+            "outputs": {"status": "passed"},
         }
 
         # Call the method under test
         report_path = self.report_generator.generate_report(
             report_type=ReportType.TECHNICAL_DETAIL,
             output_format=OutputFormat.JSON,
-            execution_id="test-123"
+            execution_id="test-123",
         )
 
         # Assert report file was created
@@ -140,33 +140,38 @@ class TestReportGenerator(unittest.TestCase):
                 "status": "success",
                 "start_time": datetime.now().isoformat(),
                 "duration": 120,
-                "failures": []
-            } for i in range(10)
+                "failures": [],
+            }
+            for i in range(10)
         ]
         self.report_generator.metrics.calculate_success_rate.return_value = 90.0
         self.report_generator.metrics.calculate_stage_success_rates.return_value = {
-            "stage1": 100.0, "stage2": 80.0
+            "stage1": 100.0,
+            "stage2": 80.0,
         }
         self.report_generator.metrics.calculate_average_duration.return_value = 120
         self.report_generator.metrics.calculate_stage_average_durations.return_value = {
-            "stage1": 60, "stage2": 60
+            "stage1": 60,
+            "stage2": 60,
         }
         self.report_generator.metrics.calculate_failure_counts.return_value = {
-            "network": 1, "timeout": 1
+            "network": 1,
+            "timeout": 1,
         }
         self.report_generator.metrics.calculate_retry_rates.return_value = {
-            "stage1": 0.0, "stage2": 0.2
+            "stage1": 0.0,
+            "stage2": 0.2,
         }
         self.report_generator.analyzer.analyze_execution_history.return_value = {
             "recurring_patterns": ["pattern1", "pattern2"],
-            "stage_reliability": {"stage1": "high", "stage2": "medium"}
+            "stage_reliability": {"stage1": "high", "stage2": "medium"},
         }
 
         # Call the method under test
         report_path = self.report_generator.generate_report(
             report_type=ReportType.TREND_ANALYSIS,
             output_format=OutputFormat.MARKDOWN,
-            num_executions=10
+            num_executions=10,
         )
 
         # Assert report file was created
@@ -193,17 +198,17 @@ class TestReportGenerator(unittest.TestCase):
             "duration": 120,
             "stages": {
                 "stage1": {"status": "success", "duration": 60},
-                "stage2": {"status": "failed", "duration": 60, "error": "Test error"}
+                "stage2": {"status": "failed", "duration": 60, "error": "Test error"},
             },
             "failures": [
                 {
                     "stage": "stage2",
                     "message": "Test error",
                     "category": "test",
-                    "resolution": ""
+                    "resolution": "",
                 }
             ],
-            "resolution_attempts": []
+            "resolution_attempts": [],
         }
         self.report_generator.tracker.get_execution.return_value = mock_execution
 
@@ -215,13 +220,16 @@ class TestReportGenerator(unittest.TestCase):
         mock_pattern.auto_resolvable = True
         mock_pattern.resolution_steps = ["Step 1", "Step 2"]
 
-        self.report_generator.analyzer.analyze_failure.return_value = ([mock_pattern], {})
+        self.report_generator.analyzer.analyze_failure.return_value = (
+            [mock_pattern],
+            {},
+        )
 
         # Call the method under test
         report_path = self.report_generator.generate_report(
             report_type=ReportType.ISSUE_REPORT,
             output_format=OutputFormat.HTML,
-            execution_id="test-123"
+            execution_id="test-123",
         )
 
         # Assert report file was created
@@ -245,21 +253,21 @@ class TestReportGenerator(unittest.TestCase):
             "details": {
                 "required_stages_coverage": 100.0,
                 "critical_stages_coverage": 100.0,
-                "missing_stages": []
-            }
+                "missing_stages": [],
+            },
         }
         self.report_generator.metrics.calculate_stage_success_rates.return_value = {
-            "stage1": 100.0, "stage2": 90.0
+            "stage1": 100.0,
+            "stage2": 90.0,
         }
         self.report_generator.validator.requirements.get.return_value = {
             "required_stages": ["stage1", "stage2"],
-            "critical_stages": ["stage1"]
+            "critical_stages": ["stage1"],
         }
 
         # Call the method under test
         report_path = self.report_generator.generate_report(
-            report_type=ReportType.TEST_COVERAGE,
-            output_format=OutputFormat.CSV
+            report_type=ReportType.TEST_COVERAGE, output_format=OutputFormat.CSV
         )
 
         # Assert report file was created
@@ -283,26 +291,24 @@ class TestReportGenerator(unittest.TestCase):
                 "status": "success",
                 "start_time": datetime.now().isoformat(),
                 "duration": 120,
-                "failures": []
-            } for i in range(10)
+                "failures": [],
+            }
+            for i in range(10)
         ]
         self.report_generator.metrics.calculate_average_duration.return_value = 120
         self.report_generator.metrics.calculate_stage_average_durations.return_value = {
-            "stage1": 60, "stage2": 60
+            "stage1": 60,
+            "stage2": 60,
         }
         self.report_generator.validator.requirements.get.return_value = {
-            "max_duration_seconds": {
-                "stage1": 100,
-                "stage2": 100,
-                "total": 200
-            }
+            "max_duration_seconds": {"stage1": 100, "stage2": 100, "total": 200}
         }
 
         # Call the method under test
         with patch("sys.stdout") as mock_stdout:
             report_path = self.report_generator.generate_report(
                 report_type=ReportType.PERFORMANCE_METRICS,
-                output_format=OutputFormat.CONSOLE
+                output_format=OutputFormat.CONSOLE,
             )
 
             # Assert report was printed to console
@@ -326,7 +332,7 @@ class TestReportGenerator(unittest.TestCase):
             result = self.report_generator.distribute_report(
                 report_path=report_path,
                 distribution_channel="email",
-                recipients=["test@example.com"]
+                recipients=["test@example.com"],
             )
 
             # Assert the distribution was successful
@@ -348,7 +354,7 @@ class TestReportGenerator(unittest.TestCase):
             result = self.report_generator.distribute_report(
                 report_path=report_path,
                 distribution_channel="slack",
-                recipients=["#test-channel"]
+                recipients=["#test-channel"],
             )
 
             # Assert the distribution was successful
@@ -367,7 +373,7 @@ class TestReportGenerator(unittest.TestCase):
             result = self.report_generator.distribute_report(
                 report_path=report_path,
                 distribution_channel="unsupported",
-                recipients=["test@example.com"]
+                recipients=["test@example.com"],
             )
 
             # Assert the distribution failed
@@ -390,7 +396,7 @@ class TestMetricsCalculator(unittest.TestCase):
             {"status": "success"},
             {"status": "success"},
             {"status": "failed"},
-            {"status": "success"}
+            {"status": "success"},
         ]
 
         # Call the method under test
@@ -406,15 +412,15 @@ class TestMetricsCalculator(unittest.TestCase):
             {
                 "stages": {
                     "stage1": {"status": "success"},
-                    "stage2": {"status": "success"}
+                    "stage2": {"status": "success"},
                 }
             },
             {
                 "stages": {
                     "stage1": {"status": "success"},
-                    "stage2": {"status": "failed"}
+                    "stage2": {"status": "failed"},
                 }
-            }
+            },
         ]
 
         # Call the method under test
@@ -430,7 +436,7 @@ class TestMetricsCalculator(unittest.TestCase):
         self.metrics_calculator.tracker.get_recent_executions.return_value = [
             {"duration": 100},
             {"duration": 200},
-            {"duration": 300}
+            {"duration": 300},
         ]
 
         # Call the method under test
@@ -443,17 +449,8 @@ class TestMetricsCalculator(unittest.TestCase):
         """Test calculating failure counts"""
         # Set up mock data
         self.metrics_calculator.tracker.get_recent_executions.return_value = [
-            {
-                "failures": [
-                    {"category": "network"},
-                    {"category": "timeout"}
-                ]
-            },
-            {
-                "failures": [
-                    {"category": "network"}
-                ]
-            }
+            {"failures": [{"category": "network"}, {"category": "timeout"}]},
+            {"failures": [{"category": "network"}]},
         ]
 
         # Call the method under test
@@ -470,22 +467,27 @@ class TestResultValidator(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures"""
         # Mock the requirements file loading
-        with patch("builtins.open", mock_open(read_data=json.dumps({
-            "test_coverage": {
-                "required_stages": ["stage1", "stage2"],
-                "critical_stages": ["stage1"]
-            },
-            "performance": {
-                "max_duration_seconds": {
-                    "stage1": 100,
-                    "stage2": 100,
-                    "total": 200
-                }
-            },
-            "outputs": {
-                "required_files": ["output1.txt", "output2.txt"]
-            }
-        }))):
+        with patch(
+            "builtins.open",
+            mock_open(
+                read_data=json.dumps(
+                    {
+                        "test_coverage": {
+                            "required_stages": ["stage1", "stage2"],
+                            "critical_stages": ["stage1"],
+                        },
+                        "performance": {
+                            "max_duration_seconds": {
+                                "stage1": 100,
+                                "stage2": 100,
+                                "total": 200,
+                            }
+                        },
+                        "outputs": {"required_files": ["output1.txt", "output2.txt"]},
+                    }
+                )
+            ),
+        ):
             self.validator = ResultValidator()
             self.validator.tracker = MagicMock()
 
@@ -493,10 +495,7 @@ class TestResultValidator(unittest.TestCase):
         """Test validating test coverage"""
         # Set up mock data
         mock_execution = {
-            "stages": {
-                "stage1": {"status": "success"},
-                "stage2": {"status": "success"}
-            }
+            "stages": {"stage1": {"status": "success"}, "stage2": {"status": "success"}}
         }
         self.validator.tracker.get_execution.return_value = mock_execution
         self.validator.tracker.get_recent_executions.return_value = [mock_execution]
@@ -516,10 +515,7 @@ class TestResultValidator(unittest.TestCase):
         # Set up mock data
         mock_execution = {
             "duration": 150,
-            "stages": {
-                "stage1": {"duration": 70},
-                "stage2": {"duration": 80}
-            }
+            "stages": {"stage1": {"duration": 70}, "stage2": {"duration": 80}},
         }
         self.validator.tracker.get_execution.return_value = mock_execution
         self.validator.tracker.get_recent_executions.return_value = [mock_execution]
@@ -535,11 +531,7 @@ class TestResultValidator(unittest.TestCase):
     def test_validate_outputs(self):
         """Test validating outputs"""
         # Set up mock data
-        mock_execution = {
-            "outputs": {
-                "files": ["output1.txt", "output2.txt"]
-            }
-        }
+        mock_execution = {"outputs": {"files": ["output1.txt", "output2.txt"]}}
         self.validator.tracker.get_execution.return_value = mock_execution
 
         # Mock os.path.exists to return True for required files
@@ -555,13 +547,23 @@ class TestResultValidator(unittest.TestCase):
     def test_validate_execution(self):
         """Test validating the entire execution"""
         # Mock the individual validation methods
-        with patch.object(self.validator, "validate_test_coverage") as mock_coverage, \
-             patch.object(self.validator, "validate_performance") as mock_performance, \
-             patch.object(self.validator, "validate_outputs") as mock_outputs:
-
-            mock_coverage.return_value = {"valid": True, "message": "Test coverage validation completed"}
-            mock_performance.return_value = {"valid": True, "message": "Performance validation completed"}
-            mock_outputs.return_value = {"valid": True, "message": "Output validation completed"}
+        with (
+            patch.object(self.validator, "validate_test_coverage") as mock_coverage,
+            patch.object(self.validator, "validate_performance") as mock_performance,
+            patch.object(self.validator, "validate_outputs") as mock_outputs,
+        ):
+            mock_coverage.return_value = {
+                "valid": True,
+                "message": "Test coverage validation completed",
+            }
+            mock_performance.return_value = {
+                "valid": True,
+                "message": "Performance validation completed",
+            }
+            mock_outputs.return_value = {
+                "valid": True,
+                "message": "Output validation completed",
+            }
 
             # Call the method under test
             results = self.validator.validate_execution()

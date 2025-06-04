@@ -21,6 +21,7 @@ try:
         EventType,
         SendGridWebhookHandler,
     )
+
     REAL_IMPLEMENTATION = True
 except ImportError:
     REAL_IMPLEMENTATION = False
@@ -38,8 +39,18 @@ except ImportError:
         BLOCK = "block"
 
     class BounceEvent:
-        def __init__(self, email, event, timestamp, bounce_type=None, reason=None,
-                     status=None, message_id=None, sg_event_id=None, sg_message_id=None):
+        def __init__(
+            self,
+            email,
+            event,
+            timestamp,
+            bounce_type=None,
+            reason=None,
+            status=None,
+            message_id=None,
+            sg_event_id=None,
+            sg_message_id=None,
+        ):
             self.email = email
             self.event = event
             self.timestamp = timestamp
@@ -61,7 +72,7 @@ except ImportError:
                 status=data.get("status"),
                 message_id=data.get("message_id"),
                 sg_event_id=data.get("sg_event_id"),
-                sg_message_id=data.get("sg_message_id")
+                sg_message_id=data.get("sg_message_id"),
             )
 
     class SendGridWebhookHandler:
@@ -106,8 +117,9 @@ class TestBounceTypesComprehensive(unittest.TestCase):
         self.handler = SendGridWebhookHandler(webhook_secret="test_secret")
         self.base_timestamp = int(datetime.now().timestamp())
 
-    def create_bounce_event(self, email: str, bounce_type: str, reason: str = None,
-                           status: str = None) -> dict[str, Any]:
+    def create_bounce_event(
+        self, email: str, bounce_type: str, reason: str = None, status: str = None
+    ) -> dict[str, Any]:
         """Create a bounce event payload for testing."""
         return {
             "email": email,
@@ -118,7 +130,7 @@ class TestBounceTypesComprehensive(unittest.TestCase):
             "status": status,
             "message_id": f"test_msg_{email}",
             "sg_event_id": f"sg_event_{email}",
-            "sg_message_id": f"sg_msg_{email}"
+            "sg_message_id": f"sg_msg_{email}",
         }
 
     def test_hard_bounce_processing(self):
@@ -128,7 +140,7 @@ class TestBounceTypesComprehensive(unittest.TestCase):
             email=email,
             bounce_type=BounceType.HARD,
             reason="550 5.1.1 User unknown",
-            status="5.1.1"
+            status="5.1.1",
         )
 
         self.handler._process_bounce_event(event_data)
@@ -150,7 +162,7 @@ class TestBounceTypesComprehensive(unittest.TestCase):
             email=email,
             bounce_type=BounceType.SOFT,
             reason="450 4.2.2 Mailbox full",
-            status="4.2.2"
+            status="4.2.2",
         )
 
         self.handler._process_bounce_event(event_data)
@@ -175,7 +187,7 @@ class TestBounceTypesComprehensive(unittest.TestCase):
             email=email,
             bounce_type=BounceType.BLOCK,
             reason="550 5.7.1 Blocked by spam filter",
-            status="5.7.1"
+            status="5.7.1",
         )
 
         self.handler._process_bounce_event(event_data)
@@ -196,9 +208,7 @@ class TestBounceTypesComprehensive(unittest.TestCase):
 
         # First soft bounce
         event_data1 = self.create_bounce_event(
-            email=email,
-            bounce_type=BounceType.SOFT,
-            reason="450 4.2.2 Mailbox full"
+            email=email, bounce_type=BounceType.SOFT, reason="450 4.2.2 Mailbox full"
         )
         self.handler._process_bounce_event(event_data1)
 
@@ -206,15 +216,13 @@ class TestBounceTypesComprehensive(unittest.TestCase):
         event_data2 = self.create_bounce_event(
             email=email,
             bounce_type=BounceType.SOFT,
-            reason="450 4.2.1 Mailbox temporarily unavailable"
+            reason="450 4.2.1 Mailbox temporarily unavailable",
         )
         self.handler._process_bounce_event(event_data2)
 
         # Third soft bounce
         event_data3 = self.create_bounce_event(
-            email=email,
-            bounce_type=BounceType.SOFT,
-            reason="450 4.7.1 Greylisted"
+            email=email, bounce_type=BounceType.SOFT, reason="450 4.7.1 Greylisted"
         )
         self.handler._process_bounce_event(event_data3)
 
@@ -239,7 +247,7 @@ class TestBounceTypesComprehensive(unittest.TestCase):
             "status": "5.1.1",
             "message_id": "test_message_id_123",
             "sg_event_id": "sg_event_id_456",
-            "sg_message_id": "sg_message_id_789"
+            "sg_message_id": "sg_message_id_789",
         }
 
         bounce_event = BounceEvent.from_webhook_data(event_data)
@@ -263,24 +271,24 @@ class TestBounceTypesComprehensive(unittest.TestCase):
                 "event": EventType.BOUNCE,
                 "timestamp": self.base_timestamp,
                 "type": BounceType.HARD,
-                "reason": "Test reason"
+                "reason": "Test reason",
             },
             # Missing event type
             {
                 "email": "test@example.com",
                 "timestamp": self.base_timestamp,
                 "type": BounceType.HARD,
-                "reason": "Test reason"
+                "reason": "Test reason",
             },
             # Missing timestamp
             {
                 "email": "test@example.com",
                 "event": EventType.BOUNCE,
                 "type": BounceType.HARD,
-                "reason": "Test reason"
+                "reason": "Test reason",
             },
             # Empty event data
-            {}
+            {},
         ]
 
         for malformed_event in malformed_events:
@@ -290,15 +298,15 @@ class TestBounceTypesComprehensive(unittest.TestCase):
             self.assertIsNotNone(bounce_event)
             self.assertEqual(bounce_event.email, malformed_event.get("email", ""))
             self.assertEqual(bounce_event.event, malformed_event.get("event", ""))
-            self.assertEqual(bounce_event.timestamp, malformed_event.get("timestamp", 0))
+            self.assertEqual(
+                bounce_event.timestamp, malformed_event.get("timestamp", 0)
+            )
 
     def test_unknown_bounce_type_handling(self):
         """Test handling of unknown bounce types."""
         email = "unknown.type@example.com"
         event_data = self.create_bounce_event(
-            email=email,
-            bounce_type="unknown_type",
-            reason="Unknown bounce type reason"
+            email=email, bounce_type="unknown_type", reason="Unknown bounce type reason"
         )
 
         self.handler._process_bounce_event(event_data)
@@ -329,8 +337,12 @@ class TestBounceTypesComprehensive(unittest.TestCase):
         self.assertEqual(len(self.handler.bounce_events), 5)
 
         # Verify hard bounces were marked correctly
-        self.assertEqual(self.handler.email_statuses["hard1@example.com"], "hard_bounced")
-        self.assertEqual(self.handler.email_statuses["hard2@example.com"], "hard_bounced")
+        self.assertEqual(
+            self.handler.email_statuses["hard1@example.com"], "hard_bounced"
+        )
+        self.assertEqual(
+            self.handler.email_statuses["hard2@example.com"], "hard_bounced"
+        )
 
         # Verify soft bounces were counted
         self.assertEqual(self.handler.soft_bounce_counts["soft1@example.com"], 1)
@@ -347,41 +359,41 @@ class TestBounceTypesComprehensive(unittest.TestCase):
                 "email": "invalid1@example.com",
                 "type": BounceType.HARD,
                 "reason": "550 5.1.1 User unknown",
-                "expected_status": "hard_bounced"
+                "expected_status": "hard_bounced",
             },
             {
                 "email": "invalid2@example.com",
                 "type": BounceType.HARD,
                 "reason": "550 5.1.10 RESOLVER.ADR.RecipNotFound",
-                "expected_status": "hard_bounced"
+                "expected_status": "hard_bounced",
             },
             # Soft bounce scenarios
             {
                 "email": "temp1@example.com",
                 "type": BounceType.SOFT,
                 "reason": "450 4.2.2 Mailbox full",
-                "expected_count": 1
+                "expected_count": 1,
             },
             {
                 "email": "temp2@example.com",
                 "type": BounceType.SOFT,
                 "reason": "450 4.7.1 Greylisted",
-                "expected_count": 1
+                "expected_count": 1,
             },
             # Block scenarios
             {
                 "email": "blocked1@example.com",
                 "type": BounceType.BLOCK,
                 "reason": "550 5.7.1 Blocked by spam filter",
-                "expected_status": "blocked"
-            }
+                "expected_status": "blocked",
+            },
         ]
 
         for scenario in bounce_scenarios:
             event_data = self.create_bounce_event(
                 email=scenario["email"],
                 bounce_type=scenario["type"],
-                reason=scenario["reason"]
+                reason=scenario["reason"],
             )
 
             self.handler._process_bounce_event(event_data)
@@ -390,12 +402,12 @@ class TestBounceTypesComprehensive(unittest.TestCase):
             if "expected_status" in scenario:
                 self.assertEqual(
                     self.handler.email_statuses[scenario["email"]],
-                    scenario["expected_status"]
+                    scenario["expected_status"],
                 )
             if "expected_count" in scenario:
                 self.assertEqual(
                     self.handler.soft_bounce_counts[scenario["email"]],
-                    scenario["expected_count"]
+                    scenario["expected_count"],
                 )
 
     def test_bounce_event_timestamps(self):
@@ -403,10 +415,7 @@ class TestBounceTypesComprehensive(unittest.TestCase):
         email = "timestamp.test@example.com"
         test_timestamp = 1640995200  # 2022-01-01 00:00:00 UTC
 
-        event_data = self.create_bounce_event(
-            email=email,
-            bounce_type=BounceType.HARD
-        )
+        event_data = self.create_bounce_event(email=email, bounce_type=BounceType.HARD)
         event_data["timestamp"] = test_timestamp
 
         bounce_event = BounceEvent.from_webhook_data(event_data)

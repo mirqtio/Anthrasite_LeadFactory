@@ -235,9 +235,9 @@ class CostAggregationService:
 
         logger.info(
             f"Daily aggregation completed for {date}: "
-            f"revenue=${gross_revenue_cents/100:.2f}, "
-            f"costs=${total_costs_cents/100:.2f}, "
-            f"profit=${gross_profit_cents/100:.2f}"
+            f"revenue=${gross_revenue_cents / 100:.2f}, "
+            f"costs=${total_costs_cents / 100:.2f}, "
+            f"profit=${gross_profit_cents / 100:.2f}"
         )
 
         return aggregated_data
@@ -422,9 +422,9 @@ class CostAggregationService:
 
         start_date = f"{year:04d}-{month:02d}-01"
         if month == 12:
-            end_date = f"{year+1:04d}-01-01"
+            end_date = f"{year + 1:04d}-01-01"
         else:
-            end_date = f"{year:04d}-{month+1:02d}-01"
+            end_date = f"{year:04d}-{month + 1:02d}-01"
 
         with self._lock:
             conn = sqlite3.connect(self.db_path)
@@ -516,9 +516,9 @@ class CostAggregationService:
 
                     logger.info(
                         f"Monthly aggregation completed for {year}-{month:02d}: "
-                        f"revenue=${(total_gross_revenue or 0)/100:.2f}, "
-                        f"costs=${(total_costs or 0)/100:.2f}, "
-                        f"profit=${gross_profit_cents/100:.2f}"
+                        f"revenue=${(total_gross_revenue or 0) / 100:.2f}, "
+                        f"costs=${(total_costs or 0) / 100:.2f}, "
+                        f"profit=${gross_profit_cents / 100:.2f}"
                     )
 
                     return monthly_data

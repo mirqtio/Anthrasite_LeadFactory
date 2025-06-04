@@ -38,8 +38,14 @@ except (ImportError, ModuleNotFoundError):
             pass
 
     # Create mock metric instances
-    COST_COUNTER = MockMetric("api_cost_total", "Total API cost in USD", ["api_name", "operation"])
-    API_LATENCY = MockMetric("api_latency_seconds", "API latency in seconds", ["api_name", "endpoint", "status"])
+    COST_COUNTER = MockMetric(
+        "api_cost_total", "Total API cost in USD", ["api_name", "operation"]
+    )
+    API_LATENCY = MockMetric(
+        "api_latency_seconds",
+        "API latency in seconds",
+        ["api_name", "endpoint", "status"],
+    )
 
 # Import API fixtures to make them available to tests
 from tests.integration.api_fixtures import (
@@ -73,7 +79,7 @@ __all__ = [
     "api_metrics_logger",
     "api_metric_decorator",
     "api_test_config",
-    "metrics_report"
+    "metrics_report",
 ]
 
 
@@ -85,42 +91,42 @@ def pytest_addoption(parser):
         action="store_true",
         dest="use_real_apis",
         default=False,
-        help="Use real APIs instead of mocks for integration tests"
+        help="Use real APIs instead of mocks for integration tests",
     )
     group.addoption(
         "--apis",
         action="store",
         dest="apis",
         default="all",
-        help="Comma-separated list of APIs to test with real calls (yelp,google,openai,sendgrid,screenshotone)"
+        help="Comma-separated list of APIs to test with real calls (yelp,google,openai,sendgrid,screenshotone)",
     )
     group.addoption(
         "--log-metrics",
         action="store_true",
         dest="log_metrics",
         default=False,
-        help="Log API metrics to file"
+        help="Log API metrics to file",
     )
     group.addoption(
         "--metrics-dir",
         action="store",
         dest="metrics_dir",
         default="metrics",
-        help="Directory to store metrics data"
+        help="Directory to store metrics data",
     )
     group.addoption(
         "--generate-report",
         action="store_true",
         dest="generate_report",
         default=False,
-        help="Generate API metrics report after tests complete"
+        help="Generate API metrics report after tests complete",
     )
     group.addoption(
         "--throttle-apis",
         action="store_true",
         dest="throttle_apis",
         default=False,
-        help="Enable API throttling to respect rate limits"
+        help="Enable API throttling to respect rate limits",
     )
 
 
@@ -129,8 +135,12 @@ def pytest_configure(config: Config):
     # Register markers
     config.addinivalue_line("markers", "real_api: mark test to run with real APIs")
     config.addinivalue_line("markers", "mock_only: mark test to run only with mocks")
-    config.addinivalue_line("markers", "pipeline: mark test as a pipeline integration test")
-    config.addinivalue_line("markers", "api_metrics: mark test for API metrics collection")
+    config.addinivalue_line(
+        "markers", "pipeline: mark test as a pipeline integration test"
+    )
+    config.addinivalue_line(
+        "markers", "api_metrics: mark test for API metrics collection"
+    )
 
     # Set environment variable based on command line option
     if config.getoption("use_real_apis"):
@@ -228,6 +238,7 @@ def api_test_config():
 @pytest.fixture(scope="session")
 def metrics_report(api_metrics_logger):
     """Return a function to generate metrics reports."""
+
     def _generate_report(output_dir=None, format="json"):
         """Generate an API metrics report.
 
@@ -255,16 +266,17 @@ def metrics_report(api_metrics_logger):
                     "apis": {},
                     "summary": api_metrics_logger.get_summary_stats(),
                     "timestamp": timestamp,
-                    "config": APITestConfig.get_config()
+                    "config": APITestConfig.get_config(),
                 }
 
                 for api in api_metrics_logger.get_all_apis():
                     report_data["apis"][api] = {
                         "metrics": api_metrics_logger.get_metrics_for_api(api),
-                        "stats": api_metrics_logger.get_api_stats(api)
+                        "stats": api_metrics_logger.get_api_stats(api),
                     }
 
                 import json
+
                 json.dump(report_data, f, indent=2)
 
         elif format == "csv":
@@ -301,7 +313,9 @@ def metrics_report(api_metrics_logger):
 
                 # Plot 2: Average Response Times
                 ax2 = plt.subplot(122)
-                avg_times = metrics_df.groupby("api")["request_time"].mean() * 1000  # Convert to ms
+                avg_times = (
+                    metrics_df.groupby("api")["request_time"].mean() * 1000
+                )  # Convert to ms
                 avg_times.plot(kind="bar", ax=ax2)
                 plt.title("Average Response Times")
                 plt.ylabel("Time (ms)")
@@ -353,12 +367,12 @@ def metrics_report(api_metrics_logger):
                 summary = api_metrics_logger.get_summary_stats()
                 for key, value in summary.items():
                     if key == "average_request_time":
-                        value = f"{value*1000:.2f} ms"
+                        value = f"{value * 1000:.2f} ms"
                     elif key == "total_cost":
                         value = f"${value:.4f}"
                     html_content += f"""
                             <tr>
-                                <td>{key.replace('_', ' ').title()}</td>
+                                <td>{key.replace("_", " ").title()}</td>
                                 <td>{value}</td>
                             </tr>
                     """
@@ -381,15 +395,15 @@ def metrics_report(api_metrics_logger):
                             </tr>
                             <tr>
                                 <td>Total Calls</td>
-                                <td>{stats['call_count']}</td>
+                                <td>{stats["call_count"]}</td>
                             </tr>
                             <tr>
                                 <td>Success Rate</td>
-                                <td>{stats['success_rate']*100:.1f}%</td>
+                                <td>{stats["success_rate"] * 100:.1f}%</td>
                             </tr>
                             <tr>
                                 <td>Average Response Time</td>
-                                <td>{stats['average_request_time']*1000:.2f} ms</td>
+                                <td>{stats["average_request_time"] * 1000:.2f} ms</td>
                             </tr>
                     """
 
@@ -397,7 +411,7 @@ def metrics_report(api_metrics_logger):
                         html_content += f"""
                             <tr>
                                 <td>Total Cost</td>
-                                <td>${stats['total_cost']:.4f}</td>
+                                <td>${stats["total_cost"]:.4f}</td>
                             </tr>
                         """
 
@@ -405,7 +419,7 @@ def metrics_report(api_metrics_logger):
                         html_content += f"""
                             <tr>
                                 <td>Total Tokens</td>
-                                <td>{stats['total_tokens']}</td>
+                                <td>{stats["total_tokens"]}</td>
                             </tr>
                         """
 
@@ -426,6 +440,7 @@ def metrics_report(api_metrics_logger):
                 report_path = output_dir / f"api_metrics_report_{timestamp}.json"
                 with open(report_path, "w") as f:
                     import json
+
                     json.dump(api_metrics_logger.get_summary(), f, indent=2)
         else:
             raise ValueError(f"Unsupported report format: {format}")
@@ -436,12 +451,17 @@ def metrics_report(api_metrics_logger):
 
 
 @pytest.hookimpl(trylast=True)
-def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus, config: Config):
+def pytest_terminal_summary(
+    terminalreporter: TerminalReporter, exitstatus, config: Config
+):
     """Add API metrics summary to the terminal output at the end of testing."""
     if not config.getoption("log_metrics"):
         return
 
-    if hasattr(config, "_api_metrics_logger") and config._api_metrics_logger is not None:
+    if (
+        hasattr(config, "_api_metrics_logger")
+        and config._api_metrics_logger is not None
+    ):
         metrics_logger = config._api_metrics_logger
 
         terminalreporter.write_sep("=", "API Metrics Summary")
@@ -449,11 +469,17 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus, conf
         # Print overall summary
         summary = metrics_logger.get_summary_stats()
         terminalreporter.write_line(f"Total API Calls: {summary['total_calls']}")
-        terminalreporter.write_line(f"Overall Success Rate: {summary['success_rate']*100:.1f}%")
-        terminalreporter.write_line(f"Average Response Time: {summary['average_request_time']*1000:.2f} ms")
+        terminalreporter.write_line(
+            f"Overall Success Rate: {summary['success_rate'] * 100:.1f}%"
+        )
+        terminalreporter.write_line(
+            f"Average Response Time: {summary['average_request_time'] * 1000:.2f} ms"
+        )
 
         if summary.get("total_cost") is not None:
-            terminalreporter.write_line(f"Total Estimated Cost: ${summary['total_cost']:.4f}")
+            terminalreporter.write_line(
+                f"Total Estimated Cost: ${summary['total_cost']:.4f}"
+            )
 
         # Print per-API summary
         terminalreporter.write_sep("-", "Per-API Statistics")
@@ -461,11 +487,17 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus, conf
             stats = metrics_logger.get_api_stats(api)
             terminalreporter.write_line(f"\n{api.upper()} API:")
             terminalreporter.write_line(f"  Calls: {stats['call_count']}")
-            terminalreporter.write_line(f"  Success Rate: {stats['success_rate']*100:.1f}%")
-            terminalreporter.write_line(f"  Avg Response Time: {stats['average_request_time']*1000:.2f} ms")
+            terminalreporter.write_line(
+                f"  Success Rate: {stats['success_rate'] * 100:.1f}%"
+            )
+            terminalreporter.write_line(
+                f"  Avg Response Time: {stats['average_request_time'] * 1000:.2f} ms"
+            )
 
             if "total_cost" in stats and stats["total_cost"] is not None:
-                terminalreporter.write_line(f"  Estimated Cost: ${stats['total_cost']:.4f}")
+                terminalreporter.write_line(
+                    f"  Estimated Cost: ${stats['total_cost']:.4f}"
+                )
 
             if "total_tokens" in stats and stats["total_tokens"] is not None:
                 terminalreporter.write_line(f"  Total Tokens: {stats['total_tokens']}")
@@ -482,13 +514,17 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus, conf
                     csv_report = metrics_logger.metrics_report(format="csv")
                     terminalreporter.write_line(f"CSV Report: {csv_report}")
                 except Exception as e:
-                    terminalreporter.write_line(f"CSV Report generation failed: {str(e)}")
+                    terminalreporter.write_line(
+                        f"CSV Report generation failed: {str(e)}"
+                    )
 
                 try:
                     html_report = metrics_logger.metrics_report(format="html")
                     terminalreporter.write_line(f"HTML Report: {html_report}")
                 except Exception as e:
-                    terminalreporter.write_line(f"HTML Report generation failed: {str(e)}")
+                    terminalreporter.write_line(
+                        f"HTML Report generation failed: {str(e)}"
+                    )
 
             except Exception as e:
                 terminalreporter.write_line(f"Report generation failed: {str(e)}")

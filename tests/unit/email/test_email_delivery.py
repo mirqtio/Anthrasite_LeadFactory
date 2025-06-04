@@ -2,18 +2,19 @@
 Tests for email delivery service.
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 from leadfactory.email.delivery import (
+    EmailDeliveryRecord,
     EmailDeliveryService,
-    EmailStatus,
     EmailEvent,
-    EmailDeliveryRecord
+    EmailStatus,
 )
-from leadfactory.email.templates import EmailTemplate, EmailPersonalization
+from leadfactory.email.templates import EmailPersonalization, EmailTemplate
 
 
 class TestEmailDeliveryService:
@@ -21,11 +22,11 @@ class TestEmailDeliveryService:
 
     def setup_method(self):
         """Set up test fixtures."""
-        with patch('leadfactory.email.delivery.get_settings') as mock_settings:
+        with patch("leadfactory.email.delivery.get_settings") as mock_settings:
             mock_settings.return_value = MagicMock(SENDGRID_API_KEY="test-api-key")
 
-            with patch('leadfactory.email.delivery.sendgrid.SendGridAPIClient'):
-                with patch('leadfactory.email.delivery.get_storage_instance'):
+            with patch("leadfactory.email.delivery.sendgrid.SendGridAPIClient"):
+                with patch("leadfactory.email.delivery.get_storage_instance"):
                     self.service = EmailDeliveryService()
                     self.service.storage = AsyncMock()
 
@@ -36,7 +37,7 @@ class TestEmailDeliveryService:
             name="test_template",
             subject="Test Subject",
             html_content="<h1>Test Email</h1>",
-            text_content="Test Email"
+            text_content="Test Email",
         )
 
     @pytest.fixture
@@ -49,7 +50,7 @@ class TestEmailDeliveryService:
             report_link="https://example.com/report",
             agency_cta_link="https://example.com/agency",
             purchase_date=datetime.utcnow(),
-            expiry_date=datetime.utcnow() + timedelta(days=7)
+            expiry_date=datetime.utcnow() + timedelta(days=7),
         )
 
     @pytest.mark.asyncio
@@ -61,8 +62,7 @@ class TestEmailDeliveryService:
         self.service.client.send.return_value = mock_response
 
         email_id = await self.service.send_email(
-            sample_template,
-            sample_personalization
+            sample_template, sample_personalization
         )
 
         assert email_id is not None
@@ -81,10 +81,7 @@ class TestEmailDeliveryService:
         self.service.client.send.return_value = mock_response
 
         with pytest.raises(Exception, match="SendGrid API error"):
-            await self.service.send_email(
-                sample_template,
-                sample_personalization
-            )
+            await self.service.send_email(sample_template, sample_personalization)
 
     @pytest.mark.asyncio
     async def test_handle_webhook_event_delivered(self):
@@ -94,7 +91,7 @@ class TestEmailDeliveryService:
             "email_id": "test-email-id",
             "timestamp": 1640995200,  # 2022-01-01 00:00:00
             "useragent": "Test Agent",
-            "ip": "192.168.1.1"
+            "ip": "192.168.1.1",
         }
 
         await self.service.handle_webhook_event(event_data)
@@ -114,7 +111,7 @@ class TestEmailDeliveryService:
             "email_id": "test-email-id",
             "timestamp": 1640995200,
             "useragent": "Test Agent",
-            "ip": "192.168.1.1"
+            "ip": "192.168.1.1",
         }
 
         await self.service.handle_webhook_event(event_data)
@@ -131,7 +128,7 @@ class TestEmailDeliveryService:
             "timestamp": 1640995200,
             "url": "https://example.com/clicked-link",
             "useragent": "Test Agent",
-            "ip": "192.168.1.1"
+            "ip": "192.168.1.1",
         }
 
         await self.service.handle_webhook_event(event_data)
@@ -146,7 +143,7 @@ class TestEmailDeliveryService:
             "event": "bounce",
             "email_id": "test-email-id",
             "timestamp": 1640995200,
-            "reason": "Invalid email address"
+            "reason": "Invalid email address",
         }
 
         await self.service.handle_webhook_event(event_data)
@@ -157,10 +154,7 @@ class TestEmailDeliveryService:
     @pytest.mark.asyncio
     async def test_handle_webhook_event_no_email_id(self):
         """Test handling webhook event without email ID."""
-        event_data = {
-            "event": "delivered",
-            "timestamp": 1640995200
-        }
+        event_data = {"event": "delivered", "timestamp": 1640995200}
 
         await self.service.handle_webhook_event(event_data)
 
@@ -176,7 +170,7 @@ class TestEmailDeliveryService:
             "opened": 60,
             "clicked": 25,
             "bounced": 3,
-            "failed": 2
+            "failed": 2,
         }
         self.service.storage.fetch_one.return_value = mock_result
 
@@ -201,14 +195,12 @@ class TestEmailDeliveryService:
             "opened": 30,
             "clicked": 15,
             "bounced": 1,
-            "failed": 1
+            "failed": 1,
         }
         self.service.storage.fetch_one.return_value = mock_result
 
         stats = await self.service.get_delivery_stats(
-            start_date=start_date,
-            end_date=end_date,
-            template_name=template_name
+            start_date=start_date, end_date=end_date, template_name=template_name
         )
 
         assert stats["total_sent"] == 50
@@ -241,15 +233,15 @@ class TestEmailDeliveryService:
                 "user_id": "user1",
                 "template_name": "test",
                 "subject": "Test",
-                "metadata": "{}"
+                "metadata": "{}",
             },
             {
                 "email_id": "failed-2",
                 "user_id": "user2",
                 "template_name": "test",
                 "subject": "Test",
-                "metadata": "{}"
-            }
+                "metadata": "{}",
+            },
         ]
         self.service.storage.fetch_all.return_value = mock_failed_emails
 
@@ -265,9 +257,7 @@ class TestEmailDeliveryService:
         email_id = str(uuid4())
 
         mail = self.service._prepare_sendgrid_email(
-            sample_template,
-            sample_personalization,
-            email_id
+            sample_template, sample_personalization, email_id
         )
 
         assert mail.from_email.email == "reports@anthrasite.com"
@@ -285,7 +275,7 @@ class TestEmailDeliveryService:
             user_id="user-123",
             email_address="test@example.com",
             template_name="test_template",
-            subject="Test Subject"
+            subject="Test Subject",
         )
 
         assert record.status == EmailStatus.QUEUED
@@ -299,7 +289,7 @@ class TestEmailDeliveryService:
             email_id="test-id",
             event_type="click",
             timestamp=datetime.utcnow(),
-            url="https://example.com/link"
+            url="https://example.com/link",
         )
 
         assert event.email_id == "test-id"
@@ -317,13 +307,14 @@ class TestEmailDeliveryService:
         assert EmailStatus.BOUNCED == "bounced"
         assert EmailStatus.FAILED == "failed"
 
-    @patch('leadfactory.email.delivery.get_email_delivery_service')
+    @patch("leadfactory.email.delivery.get_email_delivery_service")
     def test_get_email_delivery_service_function(self, mock_factory):
         """Test the factory function."""
         mock_service = MagicMock()
         mock_factory.return_value = mock_service
 
         from leadfactory.email.delivery import get_email_delivery_service
+
         service = get_email_delivery_service()
 
         assert service == mock_service

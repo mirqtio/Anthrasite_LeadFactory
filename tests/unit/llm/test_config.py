@@ -1,10 +1,16 @@
 """Tests for LLM configuration management."""
 
 import os
-import pytest
 from unittest.mock import patch
 
-from leadfactory.llm.config import LLMConfig, ProviderConfig, CostConfig, FallbackStrategy
+import pytest
+
+from leadfactory.llm.config import (
+    CostConfig,
+    FallbackStrategy,
+    LLMConfig,
+    ProviderConfig,
+)
 
 
 class TestProviderConfig:
@@ -50,17 +56,20 @@ class TestLLMConfig:
         assert config.enable_caching is True
         assert config.log_requests is True
 
-    @patch.dict(os.environ, {
-        'LLM_FALLBACK_STRATEGY': 'cost_optimized',
-        'LLM_MAX_FALLBACK_ATTEMPTS': '5',
-        'LLM_DEFAULT_TEMPERATURE': '0.5',
-        'LLM_DEFAULT_MAX_TOKENS': '2000',
-        'LLM_ENABLE_CACHING': 'false',
-        'LLM_LOG_REQUESTS': 'false',
-        'OPENAI_API_KEY': 'test-openai-key',
-        'ANTHROPIC_API_KEY': 'test-anthropic-key',
-        'OLLAMA_HOST': 'http://test:11434'
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "LLM_FALLBACK_STRATEGY": "cost_optimized",
+            "LLM_MAX_FALLBACK_ATTEMPTS": "5",
+            "LLM_DEFAULT_TEMPERATURE": "0.5",
+            "LLM_DEFAULT_MAX_TOKENS": "2000",
+            "LLM_ENABLE_CACHING": "false",
+            "LLM_LOG_REQUESTS": "false",
+            "OPENAI_API_KEY": "test-openai-key",
+            "ANTHROPIC_API_KEY": "test-anthropic-key",
+            "OLLAMA_HOST": "http://test:11434",
+        },
+    )
     def test_from_environment(self):
         """Test loading configuration from environment."""
         config = LLMConfig.from_environment()
@@ -73,21 +82,21 @@ class TestLLMConfig:
         assert config.log_requests is False
 
         # Check providers
-        assert 'openai' in config.providers
-        assert 'anthropic' in config.providers
-        assert 'ollama' in config.providers
+        assert "openai" in config.providers
+        assert "anthropic" in config.providers
+        assert "ollama" in config.providers
 
-        assert config.providers['openai'].api_key == 'test-openai-key'
-        assert config.providers['anthropic'].api_key == 'test-anthropic-key'
-        assert config.providers['ollama'].base_url == 'http://test:11434'
+        assert config.providers["openai"].api_key == "test-openai-key"
+        assert config.providers["anthropic"].api_key == "test-anthropic-key"
+        assert config.providers["ollama"].base_url == "http://test:11434"
 
     def test_get_enabled_providers(self):
         """Test getting enabled providers."""
         config = LLMConfig()
         config.providers = {
-            'provider1': ProviderConfig(name='provider1', enabled=True),
-            'provider2': ProviderConfig(name='provider2', enabled=False),
-            'provider3': ProviderConfig(name='provider3', enabled=True),
+            "provider1": ProviderConfig(name="provider1", enabled=True),
+            "provider2": ProviderConfig(name="provider2", enabled=False),
+            "provider3": ProviderConfig(name="provider3", enabled=True),
         }
 
         enabled = config.get_enabled_providers()
@@ -99,66 +108,66 @@ class TestLLMConfig:
         config = LLMConfig()
         config.fallback_strategy = FallbackStrategy.COST_OPTIMIZED
         config.providers = {
-            'expensive': ProviderConfig(name='expensive', cost_per_1k_tokens=0.03),
-            'cheap': ProviderConfig(name='cheap', cost_per_1k_tokens=0.01),
-            'free': ProviderConfig(name='free', cost_per_1k_tokens=0.0),
+            "expensive": ProviderConfig(name="expensive", cost_per_1k_tokens=0.03),
+            "cheap": ProviderConfig(name="cheap", cost_per_1k_tokens=0.01),
+            "free": ProviderConfig(name="free", cost_per_1k_tokens=0.0),
         }
 
         order = config.get_provider_order()
-        assert order == ['free', 'cheap', 'expensive']
+        assert order == ["free", "cheap", "expensive"]
 
     def test_get_provider_order_quality_optimized(self):
         """Test provider order for quality optimized strategy."""
         config = LLMConfig()
         config.fallback_strategy = FallbackStrategy.QUALITY_OPTIMIZED
         config.providers = {
-            'low': ProviderConfig(name='low', priority=1),
-            'high': ProviderConfig(name='high', priority=3),
-            'medium': ProviderConfig(name='medium', priority=2),
+            "low": ProviderConfig(name="low", priority=1),
+            "high": ProviderConfig(name="high", priority=3),
+            "medium": ProviderConfig(name="medium", priority=2),
         }
 
         order = config.get_provider_order()
-        assert order == ['high', 'medium', 'low']
+        assert order == ["high", "medium", "low"]
 
     def test_get_provider_order_smart_fallback(self):
         """Test provider order for smart fallback strategy."""
         config = LLMConfig()
         config.fallback_strategy = FallbackStrategy.SMART_FALLBACK
         config.providers = {
-            'ollama': ProviderConfig(name='ollama', priority=1),
-            'openai': ProviderConfig(name='openai', priority=3),
-            'anthropic': ProviderConfig(name='anthropic', priority=2),
+            "ollama": ProviderConfig(name="ollama", priority=1),
+            "openai": ProviderConfig(name="openai", priority=3),
+            "anthropic": ProviderConfig(name="anthropic", priority=2),
         }
 
         order = config.get_provider_order()
         # Should start with ollama (free), then order by priority
-        assert order[0] == 'ollama'
-        assert 'openai' in order
-        assert 'anthropic' in order
+        assert order[0] == "ollama"
+        assert "openai" in order
+        assert "anthropic" in order
 
     def test_estimate_request_cost(self):
         """Test request cost estimation."""
         config = LLMConfig()
         config.providers = {
-            'test': ProviderConfig(name='test', cost_per_1k_tokens=0.02)
+            "test": ProviderConfig(name="test", cost_per_1k_tokens=0.02)
         }
 
-        cost = config.estimate_request_cost(1000, 'test')
+        cost = config.estimate_request_cost(1000, "test")
         assert cost == 0.02
 
-        cost = config.estimate_request_cost(500, 'test')
+        cost = config.estimate_request_cost(500, "test")
         assert cost == 0.01
 
         # Unknown provider
-        cost = config.estimate_request_cost(1000, 'unknown')
+        cost = config.estimate_request_cost(1000, "unknown")
         assert cost == 0.0
 
     def test_validate_valid_config(self):
         """Test validation of valid configuration."""
         config = LLMConfig()
         config.providers = {
-            'openai': ProviderConfig(name='openai', api_key='test-key'),
-            'ollama': ProviderConfig(name='ollama'),
+            "openai": ProviderConfig(name="openai", api_key="test-key"),
+            "ollama": ProviderConfig(name="ollama"),
         }
 
         issues = config.validate()
@@ -168,23 +177,25 @@ class TestLLMConfig:
         """Test validation with missing API keys."""
         config = LLMConfig()
         config.providers = {
-            'openai': ProviderConfig(name='openai', enabled=True),  # Missing API key
-            'anthropic': ProviderConfig(name='anthropic', enabled=True),  # Missing API key
+            "openai": ProviderConfig(name="openai", enabled=True),  # Missing API key
+            "anthropic": ProviderConfig(
+                name="anthropic", enabled=True
+            ),  # Missing API key
         }
 
         issues = config.validate()
         assert len(issues) == 2
-        assert any('openai' in issue and 'API key' in issue for issue in issues)
-        assert any('anthropic' in issue and 'API key' in issue for issue in issues)
+        assert any("openai" in issue and "API key" in issue for issue in issues)
+        assert any("anthropic" in issue and "API key" in issue for issue in issues)
 
     def test_validate_invalid_values(self):
         """Test validation with invalid values."""
         config = LLMConfig()
         config.providers = {
-            'test': ProviderConfig(
-                name='test',
+            "test": ProviderConfig(
+                name="test",
                 timeout=-1,  # Invalid timeout
-                cost_per_1k_tokens=-0.01  # Negative cost
+                cost_per_1k_tokens=-0.01,  # Negative cost
             )
         }
         config.cost_config.max_cost_per_request = -1  # Invalid cost

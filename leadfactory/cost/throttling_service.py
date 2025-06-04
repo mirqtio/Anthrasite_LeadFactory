@@ -557,7 +557,7 @@ class ThrottlingService:
                             service,
                             model,
                             endpoint,
-                            f"Warning utilization - suggesting cheaper alternative",
+                            "Warning utilization - suggesting cheaper alternative",
                             current_cost,
                             budget_limit,
                             max_utilization * 100,

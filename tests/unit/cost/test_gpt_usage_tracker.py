@@ -51,7 +51,9 @@ class TestGPTUsageTracker:
         # Check that table exists
         conn = sqlite3.connect(temp_db)
         cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='gpt_usage'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='gpt_usage'"
+        )
         result = cursor.fetchone()
         conn.close()
 
@@ -66,7 +68,7 @@ class TestGPTUsageTracker:
             input_tokens=100,
             output_tokens=50,
             request_duration=1.5,
-            success=True
+            success=True,
         )
 
         # Check returned data
@@ -97,13 +99,16 @@ class TestGPTUsageTracker:
             input_tokens=200,
             output_tokens=100,
             metadata=metadata,
-            batch_id="batch_456"
+            batch_id="batch_456",
         )
 
         # Verify data was stored in database
         conn = sqlite3.connect(tracker.db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT metadata, batch_id FROM gpt_usage WHERE model = ?", ("gpt-3.5-turbo",))
+        cursor.execute(
+            "SELECT metadata, batch_id FROM gpt_usage WHERE model = ?",
+            ("gpt-3.5-turbo",),
+        )
         result = cursor.fetchone()
         conn.close()
 
@@ -120,7 +125,7 @@ class TestGPTUsageTracker:
             input_tokens=50,
             output_tokens=0,
             success=False,
-            error_message="API rate limit exceeded"
+            error_message="API rate limit exceeded",
         )
 
         assert result["success"] is False
@@ -134,7 +139,9 @@ class TestGPTUsageTracker:
 
         tracker.track_usage("gpt-4o", "chat_completion", 100, 50, success=True)
         tracker.track_usage("gpt-3.5-turbo", "completion", 200, 100, success=True)
-        tracker.track_usage("gpt-4o", "chat_completion", 150, 75, success=False, error_message="Error")
+        tracker.track_usage(
+            "gpt-4o", "chat_completion", 150, 75, success=False, error_message="Error"
+        )
 
         # Use a time range that includes the tracked usage (now + 1 hour to be safe)
         now = datetime.now()
@@ -145,8 +152,10 @@ class TestGPTUsageTracker:
         assert stats["summary"]["total_requests"] == 3
         assert stats["summary"]["successful_requests"] == 2
         assert stats["summary"]["failed_requests"] == 1
-        assert stats["summary"]["success_rate"] == 2/3
-        assert stats["summary"]["total_tokens"] == 675  # (100+50) + (200+100) + (150+75)
+        assert stats["summary"]["success_rate"] == 2 / 3
+        assert (
+            stats["summary"]["total_tokens"] == 675
+        )  # (100+50) + (200+100) + (150+75)
 
         # Check model breakdown
         model_breakdown = {item["model"]: item for item in stats["model_breakdown"]}
@@ -208,7 +217,7 @@ class TestGPTUsageTracker:
         cost = tracker.estimate_cost("gpt-4o", input_text, estimated_output)
 
         # Expected: (3/1000 * 0.005) + (10/1000 * 0.015) = 0.000015 + 0.00015 = 0.000165
-        expected = (3/1000 * 0.005) + (10/1000 * 0.015)
+        expected = (3 / 1000 * 0.005) + (10 / 1000 * 0.015)
         assert abs(cost - expected) < 0.0001
 
     def test_pricing_fallback(self, tracker):
@@ -217,11 +226,13 @@ class TestGPTUsageTracker:
             model="unknown-model",
             operation="test",
             input_tokens=1000,
-            output_tokens=1000
+            output_tokens=1000,
         )
 
         # Should use gpt-4o pricing
-        expected_cost = (1000/1000 * 0.005) + (1000/1000 * 0.015)  # 0.005 + 0.015 = 0.02
+        expected_cost = (1000 / 1000 * 0.005) + (
+            1000 / 1000 * 0.015
+        )  # 0.005 + 0.015 = 0.02
         assert abs(result["total_cost"] - expected_cost) < 0.0001
 
 
@@ -245,6 +256,7 @@ class TestGPTUsageTrackerDecorator:
 
     def test_decorator_basic_function(self, tracker):
         """Test decorator on a basic function."""
+
         @gpt_usage_tracker(model="gpt-4o", operation="test", tracker=tracker)
         def mock_gpt_call(messages):
             return {
@@ -252,8 +264,8 @@ class TestGPTUsageTrackerDecorator:
                 "usage": {
                     "prompt_tokens": 10,
                     "completion_tokens": 5,
-                    "total_tokens": 15
-                }
+                    "total_tokens": 15,
+                },
             }
 
         result = mock_gpt_call([{"role": "user", "content": "Hi"}])
@@ -268,6 +280,7 @@ class TestGPTUsageTrackerDecorator:
 
     def test_decorator_with_error(self, tracker):
         """Test decorator when function raises an error."""
+
         @gpt_usage_tracker(model="gpt-4o", operation="test", tracker=tracker)
         def failing_gpt_call():
             raise Exception("API Error")
@@ -283,15 +296,14 @@ class TestGPTUsageTrackerDecorator:
 
     def test_decorator_token_estimation(self, tracker):
         """Test decorator with token estimation from messages."""
+
         @gpt_usage_tracker(model="gpt-3.5-turbo", operation="chat", tracker=tracker)
         def mock_chat_call(messages):
-            return {
-                "choices": [{"message": {"content": "Response text here"}}]
-            }
+            return {"choices": [{"message": {"content": "Response text here"}}]}
 
         messages = [
             {"role": "system", "content": "You are helpful"},
-            {"role": "user", "content": "Hello there"}
+            {"role": "user", "content": "Hello there"},
         ]
 
         mock_chat_call(messages=messages)
@@ -314,11 +326,12 @@ class TestGlobalTracker:
         assert tracker1 is tracker2
         assert isinstance(tracker1, GPTUsageTracker)
 
-    @patch('leadfactory.cost.gpt_usage_tracker._global_tracker', None)
+    @patch("leadfactory.cost.gpt_usage_tracker._global_tracker", None)
     def test_global_tracker_initialization(self):
         """Test that global tracker is initialized on first access."""
         # Reset global tracker
         import leadfactory.cost.gpt_usage_tracker as module
+
         module._global_tracker = None
 
         tracker = get_gpt_usage_tracker()
@@ -339,7 +352,7 @@ class TestIntegrationWithCostTracker:
         if os.path.exists(db_path):
             os.unlink(db_path)
 
-    @patch('leadfactory.cost.gpt_usage_tracker.CostTracker')
+    @patch("leadfactory.cost.gpt_usage_tracker.CostTracker")
     def test_cost_tracker_integration(self, mock_cost_tracker_class, temp_db):
         """Test that GPT usage is also tracked in the main cost tracker."""
         mock_cost_tracker = MagicMock()
@@ -353,7 +366,7 @@ class TestIntegrationWithCostTracker:
             input_tokens=100,
             output_tokens=50,
             success=True,
-            batch_id="test_batch"
+            batch_id="test_batch",
         )
 
         # Verify cost tracker was called
@@ -368,7 +381,7 @@ class TestIntegrationWithCostTracker:
         assert call_args[1]["details"]["input_tokens"] == 100
         assert call_args[1]["details"]["output_tokens"] == 50
 
-    @patch('leadfactory.cost.gpt_usage_tracker.CostTracker')
+    @patch("leadfactory.cost.gpt_usage_tracker.CostTracker")
     def test_no_cost_tracking_on_failure(self, mock_cost_tracker_class, temp_db):
         """Test that failed requests don't add costs to the cost tracker."""
         mock_cost_tracker = MagicMock()
@@ -382,7 +395,7 @@ class TestIntegrationWithCostTracker:
             input_tokens=100,
             output_tokens=0,
             success=False,
-            error_message="API Error"
+            error_message="API Error",
         )
 
         # Verify cost tracker was NOT called for failed request
@@ -424,9 +437,9 @@ class TestDatabaseOperations:
 
         def add_usage(i):
             try:
-                tracker.track_usage(f"gpt-4o", "test", 100, 50)
+                tracker.track_usage("gpt-4o", "test", 100, 50)
                 results.append(True)
-            except Exception as e:
+            except Exception:
                 results.append(False)
 
         # Create multiple threads

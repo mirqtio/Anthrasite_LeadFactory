@@ -5,7 +5,9 @@ This module provides a configured Supabase client for use across the application
 """
 
 import os
-from supabase import create_client, Client
+
+from supabase import Client, create_client
+
 from leadfactory.config import get_env
 
 # Get Supabase configuration from environment

@@ -19,8 +19,8 @@ class TestDedupePreservationUnit(unittest.TestCase):
             conflict_resolution_rules={
                 "name": "KEEP_PRIMARY",
                 "email": "KEEP_PRIMARY",
-                "phone": "KEEP_PRIMARY"
-            }
+                "phone": "KEEP_PRIMARY",
+            },
         )
 
     def tearDown(self):
@@ -33,8 +33,14 @@ class TestDedupePreservationUnit(unittest.TestCase):
     @patch("leadfactory.pipeline.dedupe_unified.merge_business_records")
     @patch("leadfactory.pipeline.dedupe_unified.update_business_fields")
     @patch("leadfactory.pipeline.dedupe_unified.apply_conflict_resolution")
-    def test_preservation_lifecycle_success(self, mock_apply_conflict, mock_update,
-                                          mock_merge, mock_get_business, mock_preservation_class):
+    def test_preservation_lifecycle_success(
+        self,
+        mock_apply_conflict,
+        mock_update,
+        mock_merge,
+        mock_get_business,
+        mock_preservation_class,
+    ):
         """Test complete preservation lifecycle during successful merge."""
         # Create mock preservation manager
         mock_preservation = MagicMock()
@@ -46,7 +52,7 @@ class TestDedupePreservationUnit(unittest.TestCase):
         # Mock business data
         mock_get_business.side_effect = [
             {"id": 1, "name": "Business A", "email": "a@example.com"},
-            {"id": 2, "name": "Business B", "email": "b@example.com"}
+            {"id": 2, "name": "Business B", "email": "b@example.com"},
         ]
 
         # Mock conflict resolution - no manual review needed
@@ -54,8 +60,8 @@ class TestDedupePreservationUnit(unittest.TestCase):
             {},  # No updates needed
             {
                 "total_conflicts": 0,
-                "manual_review_required": []  # No manual review
-            }
+                "manual_review_required": [],  # No manual review
+            },
         )
 
         # Mock successful operations
@@ -69,7 +75,9 @@ class TestDedupePreservationUnit(unittest.TestCase):
         self.assertEqual(result, 1)
 
         # Verify preservation lifecycle
-        mock_preservation.create_backup.assert_called_once_with(business_ids=[1, 2], operation="merge")
+        mock_preservation.create_backup.assert_called_once_with(
+            business_ids=[1, 2], operation="merge"
+        )
         mock_preservation.create_transaction_savepoint.assert_called_once()
         mock_preservation.release_savepoint.assert_called_once()
         mock_preservation.rollback_to_savepoint.assert_not_called()
@@ -81,8 +89,13 @@ class TestDedupePreservationUnit(unittest.TestCase):
     @patch("leadfactory.pipeline.dedupe_unified.get_business_by_id")
     @patch("leadfactory.pipeline.dedupe_unified.merge_business_records")
     @patch("leadfactory.pipeline.dedupe_unified.apply_conflict_resolution")
-    def test_preservation_rollback_on_failure(self, mock_apply_conflict, mock_merge,
-                                            mock_get_business, mock_preservation_class):
+    def test_preservation_rollback_on_failure(
+        self,
+        mock_apply_conflict,
+        mock_merge,
+        mock_get_business,
+        mock_preservation_class,
+    ):
         """Test preservation rollback when merge fails."""
         # Create mock preservation manager
         mock_preservation = MagicMock()
@@ -94,11 +107,14 @@ class TestDedupePreservationUnit(unittest.TestCase):
         # Mock business data
         mock_get_business.side_effect = [
             {"id": 1, "name": "Business A"},
-            {"id": 2, "name": "Business B"}
+            {"id": 2, "name": "Business B"},
         ]
 
         # Mock conflict resolution
-        mock_apply_conflict.return_value = ({}, {"total_conflicts": 0, "manual_review_required": []})
+        mock_apply_conflict.return_value = (
+            {},
+            {"total_conflicts": 0, "manual_review_required": []},
+        )
 
         # Mock failed merge
         mock_merge.return_value = False
@@ -115,7 +131,9 @@ class TestDedupePreservationUnit(unittest.TestCase):
 
     @patch("leadfactory.pipeline.dedupe_unified.DataPreservationManager")
     @patch("leadfactory.pipeline.dedupe_unified.get_business_by_id")
-    def test_preservation_with_missing_business(self, mock_get_business, mock_preservation_class):
+    def test_preservation_with_missing_business(
+        self, mock_get_business, mock_preservation_class
+    ):
         """Test preservation behavior when businesses don't exist."""
         # Create mock preservation manager
         mock_preservation = MagicMock()
@@ -132,7 +150,9 @@ class TestDedupePreservationUnit(unittest.TestCase):
         self.assertIsNone(result)
 
         # Verify backup was created but no savepoint operations
-        mock_preservation.create_backup.assert_called_once_with(business_ids=[1, 2], operation="merge")
+        mock_preservation.create_backup.assert_called_once_with(
+            business_ids=[1, 2], operation="merge"
+        )
         mock_preservation.rollback_to_savepoint.assert_not_called()
         mock_preservation.release_savepoint.assert_not_called()
 

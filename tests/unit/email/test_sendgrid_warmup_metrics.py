@@ -3,13 +3,15 @@ Unit tests for SendGrid warmup metrics collection and reporting.
 """
 
 import unittest
-from datetime import datetime, timedelta, date
-from unittest.mock import Mock, patch, MagicMock
+from datetime import date, datetime, timedelta
+from unittest.mock import MagicMock, Mock, patch
 
+from leadfactory.email.sendgrid_warmup import WarmupProgress, WarmupStatus
 from leadfactory.email.sendgrid_warmup_metrics import (
-    SendGridWarmupMetricsCollector, create_warmup_metrics_collector, record_warmup_event
+    SendGridWarmupMetricsCollector,
+    create_warmup_metrics_collector,
+    record_warmup_event,
 )
-from leadfactory.email.sendgrid_warmup import WarmupStatus, WarmupProgress
 
 
 class TestSendGridWarmupMetricsCollector(unittest.TestCase):
@@ -21,7 +23,7 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         self.mock_integration = Mock()
         self.collector = SendGridWarmupMetricsCollector(
             warmup_scheduler=self.mock_scheduler,
-            integration_service=self.mock_integration
+            integration_service=self.mock_integration,
         )
 
     def test_collector_initialization(self):
@@ -32,13 +34,15 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
 
         collector_with_services = SendGridWarmupMetricsCollector(
             warmup_scheduler=self.mock_scheduler,
-            integration_service=self.mock_integration
+            integration_service=self.mock_integration,
         )
         self.assertEqual(collector_with_services.warmup_scheduler, self.mock_scheduler)
-        self.assertEqual(collector_with_services.integration_service, self.mock_integration)
+        self.assertEqual(
+            collector_with_services.integration_service, self.mock_integration
+        )
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_STARTED')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_STARTED")
     def test_record_warmup_started(self, mock_metric):
         """Test recording warmup start events."""
         mock_labels = Mock()
@@ -49,8 +53,8 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         mock_metric.labels.assert_called_once_with(ip_address="192.168.1.1")
         mock_labels.inc.assert_called_once()
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_COMPLETED')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_COMPLETED")
     def test_record_warmup_completed(self, mock_metric):
         """Test recording warmup completion events."""
         mock_labels = Mock()
@@ -59,13 +63,12 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         self.collector.record_warmup_completed("192.168.1.1", 14)
 
         mock_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            duration_days="14"
+            ip_address="192.168.1.1", duration_days="14"
         )
         mock_labels.inc.assert_called_once()
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_PAUSED')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_PAUSED")
     def test_record_warmup_paused(self, mock_metric):
         """Test recording warmup pause events."""
         mock_labels = Mock()
@@ -74,13 +77,12 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         self.collector.record_warmup_paused("192.168.1.1", "High bounce rate")
 
         mock_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            reason="High bounce rate"
+            ip_address="192.168.1.1", reason="High bounce rate"
         )
         mock_labels.inc.assert_called_once()
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_RESUMED')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_RESUMED")
     def test_record_warmup_resumed(self, mock_metric):
         """Test recording warmup resume events."""
         mock_labels = Mock()
@@ -91,9 +93,9 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         mock_metric.labels.assert_called_once_with(ip_address="192.168.1.1")
         mock_labels.inc.assert_called_once()
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_STAGE_ADVANCED')
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_STAGE_COMPLETION_TIME')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_STAGE_ADVANCED")
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_STAGE_COMPLETION_TIME")
     def test_record_stage_advancement(self, mock_time_metric, mock_stage_metric):
         """Test recording stage advancement with timing."""
         mock_stage_labels = Mock()
@@ -106,21 +108,18 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
 
         # Check stage advancement metric
         mock_stage_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            from_stage="2",
-            to_stage="3"
+            ip_address="192.168.1.1", from_stage="2", to_stage="3"
         )
         mock_stage_labels.inc.assert_called_once()
 
         # Check timing metric
         mock_time_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            stage="2"
+            ip_address="192.168.1.1", stage="2"
         )
         mock_time_labels.observe.assert_called_once_with(86400.0)
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_EMAILS_SENT')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_EMAILS_SENT")
     def test_record_email_sent(self, mock_metric):
         """Test recording email sent during warmup."""
         mock_labels = Mock()
@@ -129,14 +128,12 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         self.collector.record_email_sent("192.168.1.1", 3, "success")
 
         mock_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            stage="3",
-            status="success"
+            ip_address="192.168.1.1", stage="3", status="success"
         )
         mock_labels.inc.assert_called_once()
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_DAILY_LIMIT_UTILIZATION')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_DAILY_LIMIT_UTILIZATION")
     def test_update_daily_limit_utilization(self, mock_metric):
         """Test updating daily limit utilization gauge."""
         mock_labels = Mock()
@@ -144,14 +141,11 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
 
         self.collector.update_daily_limit_utilization("192.168.1.1", 3, 150, 300)
 
-        mock_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            stage="3"
-        )
+        mock_metric.labels.assert_called_once_with(ip_address="192.168.1.1", stage="3")
         mock_labels.set.assert_called_once_with(50.0)  # 150/300 * 100
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_DELIVERABILITY_RATE')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_DELIVERABILITY_RATE")
     def test_update_deliverability_rate(self, mock_metric):
         """Test updating deliverability rate gauge."""
         mock_labels = Mock()
@@ -159,14 +153,11 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
 
         self.collector.update_deliverability_rate("192.168.1.1", 3, 0.95)
 
-        mock_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            stage="3"
-        )
+        mock_metric.labels.assert_called_once_with(ip_address="192.168.1.1", stage="3")
         mock_labels.set.assert_called_once_with(0.95)
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_REPUTATION_SCORE')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_REPUTATION_SCORE")
     def test_update_reputation_score(self, mock_metric):
         """Test updating IP reputation score gauge."""
         mock_labels = Mock()
@@ -177,8 +168,8 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         mock_metric.labels.assert_called_once_with(ip_address="192.168.1.1")
         mock_labels.set.assert_called_once_with(85.5)
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_THRESHOLD_BREACHES')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_THRESHOLD_BREACHES")
     def test_record_threshold_breach(self, mock_metric):
         """Test recording threshold breach events."""
         mock_labels = Mock()
@@ -187,25 +178,25 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         self.collector.record_threshold_breach("192.168.1.1", "bounce_rate", "critical")
 
         mock_metric.labels.assert_called_once_with(
-            ip_address="192.168.1.1",
-            threshold_type="bounce_rate",
-            severity="critical"
+            ip_address="192.168.1.1", threshold_type="bounce_rate", severity="critical"
         )
         mock_labels.inc.assert_called_once()
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_INTEGRATION_EVENTS')
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_INTEGRATION_EVENTS")
     def test_record_integration_event(self, mock_metric):
         """Test recording integration events."""
         mock_labels = Mock()
         mock_metric.labels.return_value = mock_labels
 
-        self.collector.record_integration_event("192.168.1.1", "rotation_triggered", "ip_rotation")
+        self.collector.record_integration_event(
+            "192.168.1.1", "rotation_triggered", "ip_rotation"
+        )
 
         mock_metric.labels.assert_called_once_with(
             ip_address="192.168.1.1",
             event_type="rotation_triggered",
-            system="ip_rotation"
+            system="ip_rotation",
         )
         mock_labels.inc.assert_called_once()
 
@@ -232,7 +223,7 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=150,
             total_sent_count=750,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         progress2 = WarmupProgress(
             ip_address="192.168.1.2",
@@ -243,7 +234,7 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=500,
             total_sent_count=5000,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
 
         self.mock_scheduler.get_warmup_progress.side_effect = [progress1, progress2]
@@ -254,7 +245,7 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         # Mock integration service rates
         self.mock_integration.get_current_rates.side_effect = [
             {"bounce_rate": 0.02, "spam_rate": 0.001},
-            {"bounce_rate": 0.01, "spam_rate": 0.0005}
+            {"bounce_rate": 0.01, "spam_rate": 0.0005},
         ]
 
         metrics = self.collector.collect_all_metrics()
@@ -299,7 +290,7 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=150,
             total_sent_count=750,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_scheduler.get_warmup_progress.return_value = progress
 
@@ -335,7 +326,7 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=150,
             total_sent_count=750,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_scheduler.get_warmup_progress.return_value = progress
 
@@ -343,7 +334,8 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         self.mock_scheduler.get_current_daily_limit.return_value = 200
 
         self.mock_integration.get_current_rates.return_value = {
-            "bounce_rate": 0.02, "spam_rate": 0.001
+            "bounce_rate": 0.02,
+            "spam_rate": 0.001,
         }
 
         report = self.collector.generate_metrics_report()
@@ -371,26 +363,39 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         """Test convenience function for creating metrics collector."""
         collector = create_warmup_metrics_collector(
             warmup_scheduler=self.mock_scheduler,
-            integration_service=self.mock_integration
+            integration_service=self.mock_integration,
         )
 
         self.assertIsInstance(collector, SendGridWarmupMetricsCollector)
         self.assertEqual(collector.warmup_scheduler, self.mock_scheduler)
         self.assertEqual(collector.integration_service, self.mock_integration)
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_STARTED')
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_COMPLETED')
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_PAUSED')
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_RESUMED')
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_STAGE_ADVANCED')
-    @patch('leadfactory.email.sendgrid_warmup_metrics.WARMUP_THRESHOLD_BREACHES')
-    def test_record_warmup_event_convenience(self, mock_threshold, mock_stage, mock_resumed,
-                                           mock_paused, mock_completed, mock_started):
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_STARTED")
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_COMPLETED")
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_PAUSED")
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_RESUMED")
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_STAGE_ADVANCED")
+    @patch("leadfactory.email.sendgrid_warmup_metrics.WARMUP_THRESHOLD_BREACHES")
+    def test_record_warmup_event_convenience(
+        self,
+        mock_threshold,
+        mock_stage,
+        mock_resumed,
+        mock_paused,
+        mock_completed,
+        mock_started,
+    ):
         """Test convenience function for recording warmup events."""
         # Mock labels for all metrics
-        for mock_metric in [mock_started, mock_completed, mock_paused, mock_resumed,
-                           mock_stage, mock_threshold]:
+        for mock_metric in [
+            mock_started,
+            mock_completed,
+            mock_paused,
+            mock_resumed,
+            mock_stage,
+            mock_threshold,
+        ]:
             mock_labels = Mock()
             mock_metric.labels.return_value = mock_labels
 
@@ -399,24 +404,34 @@ class TestSendGridWarmupMetricsCollector(unittest.TestCase):
         mock_started.labels.assert_called_with(ip_address="192.168.1.1")
 
         record_warmup_event("completed", "192.168.1.1", duration_days=14)
-        mock_completed.labels.assert_called_with(ip_address="192.168.1.1", duration_days="14")
+        mock_completed.labels.assert_called_with(
+            ip_address="192.168.1.1", duration_days="14"
+        )
 
         record_warmup_event("paused", "192.168.1.1", reason="High bounce rate")
-        mock_paused.labels.assert_called_with(ip_address="192.168.1.1", reason="High bounce rate")
+        mock_paused.labels.assert_called_with(
+            ip_address="192.168.1.1", reason="High bounce rate"
+        )
 
         record_warmup_event("resumed", "192.168.1.1")
         mock_resumed.labels.assert_called_with(ip_address="192.168.1.1")
 
         record_warmup_event("stage_advanced", "192.168.1.1", from_stage=2, to_stage=3)
-        mock_stage.labels.assert_called_with(ip_address="192.168.1.1", from_stage="2", to_stage="3")
+        mock_stage.labels.assert_called_with(
+            ip_address="192.168.1.1", from_stage="2", to_stage="3"
+        )
 
-        record_warmup_event("threshold_breach", "192.168.1.1",
-                           threshold_type="bounce_rate", severity="critical")
+        record_warmup_event(
+            "threshold_breach",
+            "192.168.1.1",
+            threshold_type="bounce_rate",
+            severity="critical",
+        )
         mock_threshold.labels.assert_called_with(
             ip_address="192.168.1.1", threshold_type="bounce_rate", severity="critical"
         )
 
-    @patch('leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE', False)
+    @patch("leadfactory.email.sendgrid_warmup_metrics.METRICS_AVAILABLE", False)
     def test_record_warmup_event_no_metrics(self):
         """Test convenience function when metrics not available."""
         # Should not raise exception

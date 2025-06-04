@@ -12,7 +12,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 from leadfactory.pipeline import email_queue
 
 
@@ -175,7 +177,7 @@ def test_email_queue_with_limit(mock_db, mock_email_sender):
             INSERT INTO emails (id, business_id, variant_id, subject, body_text, body_html, status)
             VALUES (?, 1, 'variant_a', ?, ?, ?, 'pending')
             """,
-            (i, f"Subject {i}", f"Body {i}", f"<p>Body {i}</p>")
+            (i, f"Subject {i}", f"Body {i}", f"<p>Body {i}</p>"),
         )
     mock_db.commit()
 
@@ -201,6 +203,7 @@ def test_error_handling(mock_db, mock_email_sender):
     """Test error handling during email sending."""
     # Configure mock to fail on second email
     calls = 0
+
     def side_effect(*args, **kwargs):
         nonlocal calls
         calls += 1

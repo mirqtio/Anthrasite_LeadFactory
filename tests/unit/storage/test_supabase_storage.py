@@ -2,10 +2,12 @@
 Tests for Supabase storage implementation.
 """
 
-import pytest
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
+
+import pytest
+
 from leadfactory.storage.supabase_storage import SupabaseStorage
 
 
@@ -15,7 +17,7 @@ class TestSupabaseStorage:
     @pytest.fixture
     def mock_supabase_client(self):
         """Mock Supabase client for testing."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create:
             mock_client = Mock()
             mock_create.return_value = mock_client
             yield mock_client
@@ -23,31 +25,31 @@ class TestSupabaseStorage:
     @pytest.fixture
     def storage(self, mock_supabase_client):
         """Create SupabaseStorage instance for testing."""
-        with patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             return SupabaseStorage(bucket_name="test-bucket")
 
     def test_initialization_success(self, mock_supabase_client):
         """Test successful SupabaseStorage initialization."""
-        with patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             storage = SupabaseStorage(bucket_name="reports")
 
             assert storage.bucket_name == "reports"
-            assert storage.supabase_url == 'https://test.supabase.co'
-            assert storage.supabase_key == 'test-key'
+            assert storage.supabase_url == "https://test.supabase.co"
+            assert storage.supabase_key == "test-key"
 
     def test_initialization_missing_env_vars(self):
         """Test initialization fails with missing environment variables."""
-        with patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
             mock_get_env.return_value = None
 
             with pytest.raises(ValueError, match="SUPABASE_URL and SUPABASE_KEY"):
@@ -58,9 +60,10 @@ class TestSupabaseStorage:
         # Mock file system
         test_content = b"test file content"
 
-        with patch('pathlib.Path.exists', return_value=True), \
-             patch('pathlib.Path.open', mock_open(read_data=test_content)):
-
+        with (
+            patch("pathlib.Path.exists", return_value=True),
+            patch("pathlib.Path.open", mock_open(read_data=test_content)),
+        ):
             # Mock Supabase upload
             mock_supabase_client.storage.from_.return_value.upload.return_value = {
                 "path": "test/file.pdf"
@@ -70,7 +73,7 @@ class TestSupabaseStorage:
                 file_path="test_file.pdf",
                 storage_path="test/file.pdf",
                 content_type="application/pdf",
-                metadata={"test": "value"}
+                metadata={"test": "value"},
             )
 
             # Verify upload was called correctly
@@ -86,7 +89,7 @@ class TestSupabaseStorage:
 
     def test_upload_file_not_found(self, storage):
         """Test upload fails when file doesn't exist."""
-        with patch('pathlib.Path.exists', return_value=False):
+        with patch("pathlib.Path.exists", return_value=False):
             with pytest.raises(FileNotFoundError):
                 storage.upload_file("nonexistent.pdf", "test/file.pdf")
 
@@ -94,13 +97,16 @@ class TestSupabaseStorage:
         """Test PDF report upload with standardized naming."""
         test_content = b"PDF content"
 
-        with patch('pathlib.Path.exists', return_value=True), \
-             patch('pathlib.Path.open', mock_open(read_data=test_content)), \
-             patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
-
+        with (
+            patch("pathlib.Path.exists", return_value=True),
+            patch("pathlib.Path.open", mock_open(read_data=test_content)),
+            patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime,
+        ):
             # Mock datetime for consistent timestamps
             mock_datetime.utcnow.return_value.strftime.return_value = "20240101_120000"
-            mock_datetime.utcnow.return_value.isoformat.return_value = "2024-01-01T12:00:00"
+            mock_datetime.utcnow.return_value.isoformat.return_value = (
+                "2024-01-01T12:00:00"
+            )
 
             # Mock Supabase upload
             mock_supabase_client.storage.from_.return_value.upload.return_value = {
@@ -111,7 +117,7 @@ class TestSupabaseStorage:
                 pdf_path="test.pdf",
                 report_id="report456",
                 user_id="user123",
-                purchase_id="purchase789"
+                purchase_id="purchase789",
             )
 
             # Verify the storage path follows the expected pattern
@@ -128,13 +134,16 @@ class TestSupabaseStorage:
         """Test PNG image upload with standardized naming."""
         test_content = b"PNG content"
 
-        with patch('pathlib.Path.exists', return_value=True), \
-             patch('pathlib.Path.open', mock_open(read_data=test_content)), \
-             patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
-
+        with (
+            patch("pathlib.Path.exists", return_value=True),
+            patch("pathlib.Path.open", mock_open(read_data=test_content)),
+            patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime,
+        ):
             # Mock datetime for consistent timestamps
             mock_datetime.utcnow.return_value.strftime.return_value = "20240101_120000"
-            mock_datetime.utcnow.return_value.isoformat.return_value = "2024-01-01T12:00:00"
+            mock_datetime.utcnow.return_value.isoformat.return_value = (
+                "2024-01-01T12:00:00"
+            )
 
             # Mock Supabase upload
             mock_supabase_client.storage.from_.return_value.upload.return_value = {
@@ -142,9 +151,7 @@ class TestSupabaseStorage:
             }
 
             result = storage.upload_png_image(
-                png_path="test.png",
-                image_id="image123",
-                category="mockups"
+                png_path="test.png", image_id="image123", category="mockups"
             )
 
             # Verify the storage path follows the expected pattern
@@ -168,8 +175,7 @@ class TestSupabaseStorage:
         # Verify the call
         mock_supabase_client.storage.from_.assert_called_with("test-bucket")
         mock_supabase_client.storage.from_.return_value.create_signed_url.assert_called_with(
-            path="file.pdf",
-            expires_in=3600
+            path="file.pdf", expires_in=3600
         )
 
         assert "token=abc123" in signed_url
@@ -191,12 +197,14 @@ class TestSupabaseStorage:
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test-bucket/report.pdf?token=xyz789"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             # Mock current time
             mock_now = datetime(2024, 1, 1, 12, 0, 0)
             mock_datetime.utcnow.return_value = mock_now
 
-            result = storage.generate_secure_report_url("report.pdf", expires_in_hours=48)
+            result = storage.generate_secure_report_url(
+                "report.pdf", expires_in_hours=48
+            )
 
             # Verify result structure
             assert "signed_url" in result
@@ -214,7 +222,7 @@ class TestSupabaseStorage:
         # Mock Supabase list response
         mock_files = [
             {"name": "file1.pdf", "size": 1024},
-            {"name": "file2.pdf", "size": 2048}
+            {"name": "file2.pdf", "size": 2048},
         ]
         mock_supabase_client.storage.from_.return_value.list.return_value = mock_files
 
@@ -223,8 +231,7 @@ class TestSupabaseStorage:
         # Verify the call
         mock_supabase_client.storage.from_.assert_called_with("test-bucket")
         mock_supabase_client.storage.from_.return_value.list.assert_called_with(
-            path="reports/",
-            limit=50
+            path="reports/", limit=50
         )
 
         assert len(result) == 2
@@ -241,7 +248,9 @@ class TestSupabaseStorage:
 
         # Verify the call
         mock_supabase_client.storage.from_.assert_called_with("test-bucket")
-        mock_supabase_client.storage.from_.return_value.remove.assert_called_with(["file.pdf"])
+        mock_supabase_client.storage.from_.return_value.remove.assert_called_with(
+            ["file.pdf"]
+        )
 
         assert result is True
 
@@ -250,7 +259,7 @@ class TestSupabaseStorage:
         # Mock Supabase list response
         mock_files = [
             {"name": "target.pdf", "size": 1024, "created_at": "2024-01-01T12:00:00Z"},
-            {"name": "other.pdf", "size": 2048, "created_at": "2024-01-01T11:00:00Z"}
+            {"name": "other.pdf", "size": 2048, "created_at": "2024-01-01T11:00:00Z"},
         ]
         mock_supabase_client.storage.from_.return_value.list.return_value = mock_files
 
@@ -278,9 +287,10 @@ class TestSupabaseStorage:
         """Test automatic content type detection."""
         test_content = b"test content"
 
-        with patch('pathlib.Path.exists', return_value=True), \
-             patch('pathlib.Path.open', mock_open(read_data=test_content)):
-
+        with (
+            patch("pathlib.Path.exists", return_value=True),
+            patch("pathlib.Path.open", mock_open(read_data=test_content)),
+        ):
             # Mock Supabase upload
             mock_supabase_client.storage.from_.return_value.upload.return_value = {
                 "path": "test/file.pdf"
@@ -288,7 +298,7 @@ class TestSupabaseStorage:
 
             result = storage.upload_file(
                 file_path="test_file.pdf",  # .pdf extension should auto-detect as application/pdf
-                storage_path="test/file.pdf"
+                storage_path="test/file.pdf",
             )
 
             assert result["content_type"] == "application/pdf"

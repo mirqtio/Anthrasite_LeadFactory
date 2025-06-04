@@ -851,7 +851,7 @@ class ReportGenerator:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{content.get('title', 'E2E Pipeline Report')}</title>
+    <title>{content.get("title", "E2E Pipeline Report")}</title>
     <style>
         body {{ font-family: Arial, sans-serif; margin: 20px; }}
         h1, h2, h3 {{ color: #333; }}
@@ -865,8 +865,8 @@ class ReportGenerator:
     </style>
 </head>
 <body>
-    <h1>{content.get('title', 'E2E Pipeline Report')}</h1>
-    <p>Generated on: {content.get('timestamp', datetime.datetime.now().isoformat())}</p>
+    <h1>{content.get("title", "E2E Pipeline Report")}</h1>
+    <p>Generated on: {content.get("timestamp", datetime.datetime.now().isoformat())}</p>
 """
 
         # Add report-specific content
@@ -1460,7 +1460,7 @@ class ReportGenerator:
             if trend:
                 # Format as a table with fixed width columns
                 output += f"{'Execution ID':<20} {'Status':<10} {'Timestamp':<24} {'Duration (s)':<12}\n"
-                output += f"{'-'*20} {'-'*10} {'-'*24} {'-'*12}\n"
+                output += f"{'-' * 20} {'-' * 10} {'-' * 24} {'-' * 12}\n"
 
                 for execution in trend:
                     status = execution.get("status", "Unknown")

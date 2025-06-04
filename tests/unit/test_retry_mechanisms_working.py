@@ -58,7 +58,7 @@ class TestRetryConfig(unittest.TestCase):
             max_delay=120.0,
             exponential_base=3.0,
             jitter=False,
-            backoff_strategy=RetryStrategy.LINEAR_BACKOFF
+            backoff_strategy=RetryStrategy.LINEAR_BACKOFF,
         )
 
         self.assertEqual(config.max_attempts, 5)
@@ -75,10 +75,7 @@ class TestCircuitBreaker(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.config = CircuitBreakerConfig(
-            failure_threshold=3,
-            recovery_timeout=5.0,
-            success_threshold=2,
-            timeout=10.0
+            failure_threshold=3, recovery_timeout=5.0, success_threshold=2, timeout=10.0
         )
         self.circuit_breaker = CircuitBreaker(self.config)
 
@@ -153,29 +150,34 @@ class TestRetryManager(unittest.TestCase):
     def test_retryable_error_detection(self):
         """Test detection of retryable errors."""
         # Test with retryable exception
-        self.assertTrue(self.retry_manager.is_retryable_error(ConnectionError("Network error")))
+        self.assertTrue(
+            self.retry_manager.is_retryable_error(ConnectionError("Network error"))
+        )
         self.assertTrue(self.retry_manager.is_retryable_error(TimeoutError("Timeout")))
 
         # Test with non-retryable exception
-        self.assertFalse(self.retry_manager.is_retryable_error(ValueError("Invalid value")))
+        self.assertFalse(
+            self.retry_manager.is_retryable_error(ValueError("Invalid value"))
+        )
 
         # Test with PipelineError
         retryable_error = PipelineError(
             category=ErrorCategory.NETWORK,
-            retry_strategy=RetryStrategy.EXPONENTIAL_BACKOFF
+            retry_strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
         )
         self.assertTrue(self.retry_manager.is_retryable_error(retryable_error))
 
         non_retryable_error = PipelineError(
-            category=ErrorCategory.VALIDATION,
-            retry_strategy=RetryStrategy.NONE
+            category=ErrorCategory.VALIDATION, retry_strategy=RetryStrategy.NONE
         )
         self.assertFalse(self.retry_manager.is_retryable_error(non_retryable_error))
 
     def test_delay_calculation(self):
         """Test retry delay calculation."""
         # Test exponential backoff
-        self.retry_manager.retry_config.jitter = False  # Disable jitter for predictable tests
+        self.retry_manager.retry_config.jitter = (
+            False  # Disable jitter for predictable tests
+        )
 
         delay1 = self.retry_manager.calculate_delay(1)
         delay2 = self.retry_manager.calculate_delay(2)
@@ -200,7 +202,9 @@ class TestRetryManager(unittest.TestCase):
         """Test successful execution without retries."""
         mock_func = Mock(return_value="success")
 
-        result = self.retry_manager.execute_with_retry(mock_func, "arg1", kwarg1="value1")
+        result = self.retry_manager.execute_with_retry(
+            mock_func, "arg1", kwarg1="value1"
+        )
 
         self.assertEqual(result, "success")
         mock_func.assert_called_once_with("arg1", kwarg1="value1")
@@ -301,7 +305,9 @@ class TestRetryMonitor(unittest.TestCase):
 
     def test_record_operation_with_retries(self):
         """Test recording operation with retries."""
-        self.monitor.record_operation("test_op", attempts=3, success=True, error_type="ConnectionError")
+        self.monitor.record_operation(
+            "test_op", attempts=3, success=True, error_type="ConnectionError"
+        )
 
         stats = self.monitor.get_operation_stats("test_op")
         self.assertEqual(stats["total_calls"], 1)
@@ -319,14 +325,20 @@ class TestRetryMonitor(unittest.TestCase):
         """Test generation of summary report."""
         # Record various operations
         self.monitor.record_operation("op1", attempts=1, success=True)
-        self.monitor.record_operation("op2", attempts=3, success=True, error_type="ConnectionError")
-        self.monitor.record_operation("op3", attempts=3, success=False, error_type="TimeoutError")
+        self.monitor.record_operation(
+            "op2", attempts=3, success=True, error_type="ConnectionError"
+        )
+        self.monitor.record_operation(
+            "op3", attempts=3, success=False, error_type="TimeoutError"
+        )
 
         report = self.monitor.get_summary_report()
 
         self.assertEqual(report["summary"]["total_operations"], 3)
         self.assertEqual(report["summary"]["retry_rate_percent"], 66.67)  # 2/3 * 100
-        self.assertEqual(report["summary"]["retry_success_rate_percent"], 50.0)  # 1/2 * 100
+        self.assertEqual(
+            report["summary"]["retry_success_rate_percent"], 50.0
+        )  # 1/2 * 100
         self.assertEqual(report["summary"]["total_retry_attempts"], 4)  # (3-1) + (3-1)
 
         self.assertIn("global_stats", report)
@@ -349,7 +361,7 @@ class TestRetryIntegration(unittest.TestCase):
             error_message="Network timeout",
             category=ErrorCategory.NETWORK,
             retry_strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
-            recoverable=True
+            recoverable=True,
         )
 
         self.assertTrue(manager.is_retryable_error(error))
@@ -362,7 +374,7 @@ class TestRetryIntegration(unittest.TestCase):
             error_message="Invalid data",
             category=ErrorCategory.VALIDATION,
             retry_strategy=RetryStrategy.NONE,
-            recoverable=False
+            recoverable=False,
         )
 
         self.assertFalse(manager.is_retryable_error(error_non_retryable))

@@ -1,6 +1,7 @@
 """
 Test the PageSpeed API with real credentials.
 """
+
 import os
 from unittest.mock import MagicMock, patch
 
@@ -10,6 +11,7 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
 
 # Test if the PageSpeed API key is available in the environment
 def test_pagespeed_api_key_in_env():
@@ -23,6 +25,7 @@ def test_pagespeed_api_key_in_env():
 
     assert pagespeed_key is not None, "PageSpeed API key should be set"
     assert len(pagespeed_key) > 10, "PageSpeed API key should be a valid length"
+
 
 def test_pagespeed_api_call():
     """Test if PageSpeed API can be called successfully."""
@@ -43,13 +46,22 @@ def test_pagespeed_api_call():
     response = requests.get(api_url, timeout=30)
 
     # Check if the call was successful
-    assert response.status_code == 200, f"PageSpeed API call failed with status code {response.status_code}"
+    assert response.status_code == 200, (
+        f"PageSpeed API call failed with status code {response.status_code}"
+    )
 
     # Check if the response contains the expected data
     json_response = response.json()
-    assert "lighthouseResult" in json_response, "Response should contain lighthouse results"
-    assert "categories" in json_response["lighthouseResult"], "Response should contain categories"
-    assert "performance" in json_response["lighthouseResult"]["categories"], "Response should contain performance category"
+    assert "lighthouseResult" in json_response, (
+        "Response should contain lighthouse results"
+    )
+    assert "categories" in json_response["lighthouseResult"], (
+        "Response should contain categories"
+    )
+    assert "performance" in json_response["lighthouseResult"]["categories"], (
+        "Response should contain performance category"
+    )
+
 
 @patch("requests.get")
 def test_pagespeed_api_with_mock(mock_get):
@@ -59,25 +71,12 @@ def test_pagespeed_api_with_mock(mock_get):
     mock_response.status_code = 200
     mock_response.json.return_value = {
         "lighthouseResult": {
-            "categories": {
-                "performance": {
-                    "score": 0.95
-                }
-            },
+            "categories": {"performance": {"score": 0.95}},
             "audits": {
-                "speed-index": {
-                    "displayValue": "1.5 s",
-                    "score": 0.98
-                },
-                "first-contentful-paint": {
-                    "displayValue": "0.8 s",
-                    "score": 0.99
-                },
-                "largest-contentful-paint": {
-                    "displayValue": "1.2 s",
-                    "score": 0.97
-                }
-            }
+                "speed-index": {"displayValue": "1.5 s", "score": 0.98},
+                "first-contentful-paint": {"displayValue": "0.8 s", "score": 0.99},
+                "largest-contentful-paint": {"displayValue": "1.2 s", "score": 0.97},
+            },
         }
     }
 

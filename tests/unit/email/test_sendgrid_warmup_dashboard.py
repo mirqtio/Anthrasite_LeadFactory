@@ -3,13 +3,14 @@ Unit tests for SendGrid warmup dashboard and monitoring.
 """
 
 import unittest
-from datetime import datetime, timedelta, date
-from unittest.mock import Mock, patch, MagicMock
+from datetime import date, datetime, timedelta
+from unittest.mock import MagicMock, Mock, patch
 
+from leadfactory.email.sendgrid_warmup import WarmupProgress, WarmupStatus
 from leadfactory.email.sendgrid_warmup_dashboard import (
-    SendGridWarmupDashboard, create_warmup_dashboard
+    SendGridWarmupDashboard,
+    create_warmup_dashboard,
 )
-from leadfactory.email.sendgrid_warmup import WarmupStatus, WarmupProgress
 
 
 class TestSendGridWarmupDashboard(unittest.TestCase):
@@ -21,7 +22,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
         self.mock_integration = Mock()
         self.dashboard = SendGridWarmupDashboard(
             warmup_scheduler=self.mock_scheduler,
-            integration_service=self.mock_integration
+            integration_service=self.mock_integration,
         )
 
     def test_dashboard_initialization(self):
@@ -32,10 +33,12 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
 
         dashboard_with_services = SendGridWarmupDashboard(
             warmup_scheduler=self.mock_scheduler,
-            integration_service=self.mock_integration
+            integration_service=self.mock_integration,
         )
         self.assertEqual(dashboard_with_services.warmup_scheduler, self.mock_scheduler)
-        self.assertEqual(dashboard_with_services.integration_service, self.mock_integration)
+        self.assertEqual(
+            dashboard_with_services.integration_service, self.mock_integration
+        )
 
     def test_get_warmup_metrics_no_scheduler(self):
         """Test metrics collection without scheduler."""
@@ -60,7 +63,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=150,
             total_sent_count=750,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         progress2 = WarmupProgress(
             ip_address="192.168.1.2",
@@ -71,7 +74,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=500,
             total_sent_count=5000,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
 
         self.mock_scheduler.get_warmup_progress.side_effect = [progress1, progress2]
@@ -82,7 +85,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
         # Mock integration service rates
         self.mock_integration.get_current_rates.side_effect = [
             {"bounce_rate": 0.02, "spam_rate": 0.001},
-            {"bounce_rate": 0.01, "spam_rate": 0.0005}
+            {"bounce_rate": 0.01, "spam_rate": 0.0005},
         ]
 
         metrics = self.dashboard.get_warmup_metrics()
@@ -158,7 +161,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=100,
             total_sent_count=300,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_scheduler.get_warmup_progress.return_value = progress
 
@@ -166,7 +169,8 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
         self.mock_scheduler.get_current_daily_limit.return_value = 200
 
         self.mock_integration.get_current_rates.return_value = {
-            "bounce_rate": 0.03, "spam_rate": 0.001
+            "bounce_rate": 0.03,
+            "spam_rate": 0.001,
         }
 
         html = self.dashboard.generate_html_dashboard()
@@ -194,7 +198,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
             total_sent_count=300,
             is_paused=True,
             pause_reason="High bounce rate",
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_scheduler.get_warmup_progress.return_value = progress
 
@@ -203,7 +207,8 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
 
         # High bounce rate to trigger alert
         self.mock_integration.get_current_rates.return_value = {
-            "bounce_rate": 0.08, "spam_rate": 0.002
+            "bounce_rate": 0.08,
+            "spam_rate": 0.002,
         }
 
         html = self.dashboard.generate_html_dashboard()
@@ -214,9 +219,9 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
         self.assertIn("Paused: High bounce rate", html)
         self.assertIn("status paused", html)
 
-    @patch('leadfactory.email.sendgrid_warmup_dashboard.METRICS_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_dashboard.WARMUP_PROGRESS')
-    @patch('leadfactory.email.sendgrid_warmup_dashboard.WARMUP_STATUS_GAUGE')
+    @patch("leadfactory.email.sendgrid_warmup_dashboard.METRICS_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_dashboard.WARMUP_PROGRESS")
+    @patch("leadfactory.email.sendgrid_warmup_dashboard.WARMUP_STATUS_GAUGE")
     def test_update_prometheus_metrics(self, mock_status_gauge, mock_progress):
         """Test Prometheus metrics updates."""
         test_ips = ["192.168.1.1"]
@@ -231,7 +236,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             daily_sent_count=150,
             total_sent_count=750,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_scheduler.get_warmup_progress.return_value = progress
 
@@ -239,7 +244,8 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
         self.mock_scheduler.get_current_daily_limit.return_value = 200
 
         self.mock_integration.get_current_rates.return_value = {
-            "bounce_rate": 0.02, "spam_rate": 0.001
+            "bounce_rate": 0.02,
+            "spam_rate": 0.001,
         }
 
         # Mock the labels method chain
@@ -276,7 +282,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
             stage_start_date=date.today() - timedelta(days=1),
             is_paused=True,
             pause_reason="High bounce rate",
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
 
         # IP 2: Stalled warmup (old last_updated)
@@ -287,7 +293,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
             start_date=date.today() - timedelta(days=5),
             current_date=date.today(),
             stage_start_date=date.today() - timedelta(days=1),
-            last_updated=datetime.now() - timedelta(hours=30)
+            last_updated=datetime.now() - timedelta(hours=30),
         )
 
         self.mock_scheduler.get_warmup_progress.side_effect = [progress1, progress2]
@@ -298,7 +304,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
         # High rates for IP 1
         self.mock_integration.get_current_rates.side_effect = [
             {"bounce_rate": 0.08, "spam_rate": 0.002},
-            {"bounce_rate": 0.01, "spam_rate": 0.0005}
+            {"bounce_rate": 0.01, "spam_rate": 0.0005},
         ]
 
         alerts = self.dashboard.get_alert_conditions()
@@ -322,7 +328,7 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
         """Test convenience function for creating dashboard."""
         dashboard = create_warmup_dashboard(
             warmup_scheduler=self.mock_scheduler,
-            integration_service=self.mock_integration
+            integration_service=self.mock_integration,
         )
 
         self.assertIsInstance(dashboard, SendGridWarmupDashboard)
@@ -339,7 +345,9 @@ class TestSendGridWarmupDashboard(unittest.TestCase):
 
     def test_update_prometheus_metrics_exception_handling(self):
         """Test exception handling in Prometheus metrics update."""
-        self.mock_scheduler.get_all_warmup_ips.side_effect = Exception("Connection error")
+        self.mock_scheduler.get_all_warmup_ips.side_effect = Exception(
+            "Connection error"
+        )
 
         # Should not raise exception
         self.dashboard.update_prometheus_metrics()

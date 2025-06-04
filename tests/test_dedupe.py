@@ -136,9 +136,15 @@ def temp_db():
         )"""
         )
         # Create indexes for businesses table
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_name ON businesses(name)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_source ON businesses(source, source_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_businesses_name ON businesses(name)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_businesses_source ON businesses(source, source_id)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status)"
+        )
         # Create candidate_duplicate_pairs table with all necessary fields
         cursor.execute(
             """
@@ -387,9 +393,13 @@ def test_exact_duplicates(temp_db, mock_llm_verifier):
                         with patch("sys.argv", ["bin/dedupe.py"]):
                             dedupe.main()
                         # Verify the LLM verifier was called
-                        assert mock_llm_verifier.verify_duplicates.called, "Expected verify_duplicates to be called"
+                        assert mock_llm_verifier.verify_duplicates.called, (
+                            "Expected verify_duplicates to be called"
+                        )
                         # Verify that merge_businesses was called
-                        assert mock_merge.called, "Expected merge_businesses to be called"
+                        assert mock_merge.called, (
+                            "Expected merge_businesses to be called"
+                        )
                         # Update the database to reflect the merged status for the test verification
                         cursor.execute(
                             "UPDATE candidate_duplicate_pairs SET status = 'merged', verified_by_llm = 1 WHERE business1_id = ? AND business2_id = ?",
@@ -402,8 +412,12 @@ def test_exact_duplicates(temp_db, mock_llm_verifier):
                         )
                         pair = cursor.fetchone()
                         assert pair is not None, "Duplicate pair not found"
-                        assert pair["status"] == "merged", f"Expected status 'merged', got {pair['status']}"
-                        assert pair["verified_by_llm"] == 1, "Expected verified_by_llm to be 1"
+                        assert pair["status"] == "merged", (
+                            f"Expected status 'merged', got {pair['status']}"
+                        )
+                        assert pair["verified_by_llm"] == 1, (
+                            "Expected verified_by_llm to be 1"
+                        )
     finally:
         conn.close()
 
@@ -556,13 +570,17 @@ def test_fuzzy_matching(temp_db, mock_llm_verifier):
                         with patch("sys.argv", ["bin/dedupe.py"]):
                             dedupe.main()
                         # Verify the matcher was used
-                        assert (
-                            mock_matcher.are_potential_duplicates.called
-                        ), "Expected are_potential_duplicates to be called"
+                        assert mock_matcher.are_potential_duplicates.called, (
+                            "Expected are_potential_duplicates to be called"
+                        )
                         # Verify the LLM verifier was called
-                        assert mock_llm_verifier.verify_duplicates.called, "Expected verify_duplicates to be called"
+                        assert mock_llm_verifier.verify_duplicates.called, (
+                            "Expected verify_duplicates to be called"
+                        )
                         # Verify that merge_businesses was called
-                        assert mock_merge.called, "Expected merge_businesses to be called"
+                        assert mock_merge.called, (
+                            "Expected merge_businesses to be called"
+                        )
                         # Update the database to reflect the merged status for verification
                         cursor.execute(
                             "UPDATE candidate_duplicate_pairs SET status = 'merged', verified_by_llm = 1 WHERE business1_id = ? AND business2_id = ?",
@@ -605,16 +623,20 @@ def test_fuzzy_matching(temp_db, mock_llm_verifier):
         assert pair is not None, "Similar pair not found"
         assert pair["verified_by_llm"] == 1, "Expected LLM verification to be performed"
         # Check the similarity score is as expected
-        assert (
-            0.8 <= pair["similarity_score"] <= 1.0
-        ), f"Expected similarity score between 0.8 and 1.0, got {pair['similarity_score']}"
+        assert 0.8 <= pair["similarity_score"] <= 1.0, (
+            f"Expected similarity score between 0.8 and 1.0, got {pair['similarity_score']}"
+        )
         # Check that the pair was marked as merged
-        assert pair["status"] == "merged", f"Expected status 'merged', got {pair['status']}"
+        assert pair["status"] == "merged", (
+            f"Expected status 'merged', got {pair['status']}"
+        )
         # Verify the merge was performed correctly
         cursor.execute("SELECT * FROM businesses WHERE id IN (3, 4)")
         businesses = {row["id"]: dict(row) for row in cursor.fetchall()}
         # Business 4 should be merged into business 3
-        assert businesses[4]["merged_into"] == 3, "Expected business 4 to be merged into business 3"
+        assert businesses[4]["merged_into"] == 3, (
+            "Expected business 4 to be merged into business 3"
+        )
 
 
 @scenario(FEATURE_FILE, "Handle businesses with different addresses but same name")
@@ -768,7 +790,9 @@ def test_same_name_different_address(temp_db, mock_llm_verifier):
                         with patch("sys.argv", ["bin/dedupe.py"]):
                             dedupe.main()
                         # Verify that flag_for_review was called
-                        assert mock_flag_for_review.called, "Expected flag_for_review to be called"
+                        assert mock_flag_for_review.called, (
+                            "Expected flag_for_review to be called"
+                        )
     finally:
         conn.close()
 
@@ -921,20 +945,20 @@ def test_handle_api_errors(temp_db, mock_llm_verifier):
                             # We expect this to handle the error gracefully
                             dedupe.main()
                         # Verify the matcher was used
-                        assert (
-                            mock_matcher.are_potential_duplicates.called
-                        ), "Expected are_potential_duplicates to be called"
+                        assert mock_matcher.are_potential_duplicates.called, (
+                            "Expected are_potential_duplicates to be called"
+                        )
                         # Verify that an error was logged
                         assert mock_logger.error.called, "Expected error to be logged"
                         # Check that the error message contains the expected text
                         call_args = mock_logger.error.call_args[0]
-                        assert (
-                            "Error processing duplicate pair" in call_args[0]
-                        ), f"Expected error message about processing duplicate pair, got {call_args[0]}"
+                        assert "Error processing duplicate pair" in call_args[0], (
+                            f"Expected error message about processing duplicate pair, got {call_args[0]}"
+                        )
                         # Verify that the process continued
-                        assert (
-                            mock_llm_verifier.verify_duplicates.call_count > 0
-                        ), "Expected verify_duplicates to be called"
+                        assert mock_llm_verifier.verify_duplicates.call_count > 0, (
+                            "Expected verify_duplicates to be called"
+                        )
                         # Verify that the error was handled gracefully
                         # Update the database to reflect the processed status for verification
                         cursor.execute(
@@ -1072,18 +1096,26 @@ def test_skip_processed_businesses(temp_db, mock_llm_verifier):
                 original_process_pair = dedupe.process_duplicate_pair
                 processed_pairs_processed = []
 
-                def mock_process_pair(duplicate_pair, matcher, verifier, is_dry_run=False):
+                def mock_process_pair(
+                    duplicate_pair, matcher, verifier, is_dry_run=False
+                ):
                     # Record which pairs were processed
                     processed_pairs_processed.append(duplicate_pair["id"])
                     # Call the original function
-                    return original_process_pair(duplicate_pair, matcher, verifier, is_dry_run)
+                    return original_process_pair(
+                        duplicate_pair, matcher, verifier, is_dry_run
+                    )
 
                 # Mock the process_duplicate_pair function with our implementation
-                with patch("bin.dedupe.process_duplicate_pair", side_effect=mock_process_pair):
+                with patch(
+                    "bin.dedupe.process_duplicate_pair", side_effect=mock_process_pair
+                ):
                     # Mock the logger to capture info messages
                     with patch("bin.dedupe.logger") as mock_logger:
                         # Mock the flag_for_review function
-                        with patch("bin.dedupe.flag_for_review") as mock_flag_for_review:
+                        with patch(
+                            "bin.dedupe.flag_for_review"
+                        ) as mock_flag_for_review:
                             # Run the deduplication process
                             with patch("sys.argv", ["bin/dedupe.py", "--dry-run"]):
                                 dedupe.main()
@@ -1092,9 +1124,9 @@ def test_skip_processed_businesses(temp_db, mock_llm_verifier):
                                 "Deduplication completed. Success: 0, Errors: 0, Skipped: 1"
                             )
                         # Verify that flag_for_review was not called
-                        assert (
-                            not mock_flag_for_review.called
-                        ), "Expected flag_for_review not to be called for processed businesses"
+                        assert not mock_flag_for_review.called, (
+                            "Expected flag_for_review not to be called for processed businesses"
+                        )
                         # Add a comment about how the current implementation processes all pairs regardless of status
                         # In a real implementation, we would want to skip already processed pairs
                         # To fix this, we would need to modify the main function to skip pairs with status != 'pending'
@@ -1411,7 +1443,9 @@ def run_deduplication(mock_llm_verifier, exact_duplicate_businesses, temp_db):
         conn.commit()
         # Mock the merge_businesses function
         with patch("bin.dedupe.merge_businesses") as mock_merge:
-            mock_merge.return_value = exact_duplicate_businesses[0]  # Return the ID of the merged business
+            mock_merge.return_value = exact_duplicate_businesses[
+                0
+            ]  # Return the ID of the merged business
             # Directly mock the get_potential_duplicates function
             with patch("bin.dedupe.get_potential_duplicates") as mock_get_pairs:
                 # Set up the return value to include our test pair
@@ -1446,13 +1480,17 @@ def run_deduplication(mock_llm_verifier, exact_duplicate_businesses, temp_db):
                         with patch("sys.argv", ["bin/dedupe.py"]):
                             dedupe.main()
                         # Verify the matcher was used
-                        assert (
-                            mock_matcher.are_potential_duplicates.called
-                        ), "Expected are_potential_duplicates to be called"
+                        assert mock_matcher.are_potential_duplicates.called, (
+                            "Expected are_potential_duplicates to be called"
+                        )
                         # Verify the LLM verifier was called
-                        assert mock_llm_verifier.verify_duplicates.called, "Expected verify_duplicates to be called"
+                        assert mock_llm_verifier.verify_duplicates.called, (
+                            "Expected verify_duplicates to be called"
+                        )
                         # Verify that the merge function was called
-                        assert mock_merge.called, "Expected merge_businesses to be called"
+                        assert mock_merge.called, (
+                            "Expected merge_businesses to be called"
+                        )
                         # Since we're mocking the database operations, manually update the database state
                         # to reflect what would have happened if the merge_businesses function was actually called
                         cursor.execute(
@@ -1493,8 +1531,12 @@ def run_deduplication(mock_llm_verifier, exact_duplicate_businesses, temp_db):
                         )
                         pair = cursor.fetchone()
                         assert pair is not None, "Exact duplicate pair not found"
-                        assert pair["verified_by_llm"] == 1, "Expected LLM verification to be performed"
-                        assert pair["status"] == "merged", f"Expected status 'merged', got {pair['status']}"
+                        assert pair["verified_by_llm"] == 1, (
+                            "Expected LLM verification to be performed"
+                        )
+                        assert pair["status"] == "merged", (
+                            f"Expected status 'merged', got {pair['status']}"
+                        )
                         # Verify the merge was performed correctly
                         cursor.execute(
                             "SELECT * FROM businesses WHERE id IN (?, ?)",
@@ -1506,8 +1548,11 @@ def run_deduplication(mock_llm_verifier, exact_duplicate_businesses, temp_db):
                         businesses = {row["id"]: dict(row) for row in cursor.fetchall()}
                         # Second business should be merged into the first
                         assert (
-                            businesses[exact_duplicate_businesses[1]]["merged_into"] == exact_duplicate_businesses[0]
-                        ), f"Expected business {exact_duplicate_businesses[1]} to be merged into business {exact_duplicate_businesses[0]}"
+                            businesses[exact_duplicate_businesses[1]]["merged_into"]
+                            == exact_duplicate_businesses[0]
+                        ), (
+                            f"Expected business {exact_duplicate_businesses[1]} to be merged into business {exact_duplicate_businesses[0]}"
+                        )
     finally:
         cursor.close()
         conn.close()
@@ -1598,9 +1643,9 @@ def run_deduplication_fuzzy(mock_llm_verifier, similar_businesses, temp_db):
                     with patch("sys.argv", ["bin/dedupe.py"]):
                         dedupe.main()
                     # Verify the matcher was used
-                    assert (
-                        mock_matcher.are_potential_duplicates.called
-                    ), "Expected are_potential_duplicates to be called"
+                    assert mock_matcher.are_potential_duplicates.called, (
+                        "Expected are_potential_duplicates to be called"
+                    )
     finally:
         cursor.close()
         conn.close()

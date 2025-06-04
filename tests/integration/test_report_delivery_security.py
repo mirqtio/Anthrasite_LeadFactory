@@ -5,15 +5,16 @@ Tests the complete integration of access control, rate limiting, audit logging,
 and secure URL generation in the report delivery workflow.
 """
 
-import pytest
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
 import os
+import tempfile
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, Mock, patch
 
-from leadfactory.services.report_delivery import ReportDeliveryService
-from leadfactory.security.access_control import UserRole, PDFOperation
+import pytest
+
+from leadfactory.security.access_control import PDFOperation, UserRole
 from leadfactory.security.rate_limiter import RateLimitType
+from leadfactory.services.report_delivery import ReportDeliveryService
 
 
 class TestReportDeliveryServiceSecurity:
@@ -38,14 +39,16 @@ class TestReportDeliveryServiceSecurity:
             secure_validator=self.mock_secure_validator,
             access_control=self.mock_access_control,
             rate_limiter=self.mock_rate_limiter,
-            audit_logger=self.mock_audit_logger
+            audit_logger=self.mock_audit_logger,
         )
 
         # Create test PDF content
-        self.test_pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
+        self.test_pdf_content = (
+            b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
+        )
 
         # Create temporary file for testing
-        self.temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+        self.temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         self.temp_file.write(self.test_pdf_content)
         self.temp_file.close()
 
@@ -58,19 +61,26 @@ class TestReportDeliveryServiceSecurity:
     def test_upload_and_deliver_report_success_with_security(self):
         """Test successful report upload and delivery with security validation."""
         # Mock all dependencies for successful operation
-        self.mock_storage.upload_pdf_report.return_value = {"success": True, "storage_path": "test/path"}
+        self.mock_storage.upload_pdf_report.return_value = {
+            "success": True,
+            "storage_path": "test/path",
+        }
         self.mock_storage.generate_secure_report_url.return_value = {
             "signed_url": "https://storage.example.com/signed-url",
-            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z"
+            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z",
         }
         self.mock_email_service.send_email.return_value = {"success": True}
         self.mock_secure_validator.validate_access_request.return_value = Mock(
-            valid=True,
-            error_message=None,
-            rate_limit_info={}
+            valid=True, error_message=None, rate_limit_info={}
         )
-        self.mock_secure_validator.generate_secure_url.return_value = (True, "https://example.com/secure/link", None)
-        self.mock_link_generator.generate_secure_link.return_value = "https://example.com/secure/link"
+        self.mock_secure_validator.generate_secure_url.return_value = (
+            True,
+            "https://example.com/secure/link",
+            None,
+        )
+        self.mock_link_generator.generate_secure_link.return_value = (
+            "https://example.com/secure/link"
+        )
 
         # Test the upload and delivery
         result = self.service.upload_and_deliver_report(
@@ -79,7 +89,7 @@ class TestReportDeliveryServiceSecurity:
             user_id="test_user_456",
             user_email="test@example.com",
             purchase_id="purchase_789",
-            business_name="Test Business"
+            business_name="Test Business",
         )
 
         # Verify result structure
@@ -108,7 +118,7 @@ class TestReportDeliveryServiceSecurity:
         self.mock_secure_validator.validate_access_request.return_value = Mock(
             valid=False,
             error_message="User not authorized for this report",
-            rate_limit_info={}
+            rate_limit_info={},
         )
 
         # Test the upload and delivery - should raise PermissionError
@@ -119,7 +129,7 @@ class TestReportDeliveryServiceSecurity:
                 user_id="test_user",
                 user_email="test@example.com",
                 purchase_id="purchase_123",
-                business_name="Test Business"
+                business_name="Test Business",
             )
 
         # Verify the exception message
@@ -144,7 +154,10 @@ class TestReportDeliveryServiceSecurity:
         self.mock_secure_validator.validate_access_request.return_value = Mock(
             valid=False,
             error_message="Rate limit exceeded for user",
-            rate_limit_info={"requests_remaining": 0, "reset_time": "2024-01-01T12:00:00Z"}
+            rate_limit_info={
+                "requests_remaining": 0,
+                "reset_time": "2024-01-01T12:00:00Z",
+            },
         )
 
         # Test the upload and delivery - should raise PermissionError
@@ -155,7 +168,7 @@ class TestReportDeliveryServiceSecurity:
                 user_id="test_user",
                 user_email="test@example.com",
                 purchase_id="purchase_123",
-                business_name="Test Business"
+                business_name="Test Business",
             )
 
         # Verify the exception message
@@ -188,20 +201,18 @@ class TestReportDeliveryServiceSecurity:
         self.mock_link_generator.validate_secure_link.return_value = mock_link_data
         self.mock_secure_validator.is_access_revoked.return_value = False
         self.mock_secure_validator.validate_access_request.return_value = Mock(
-            valid=True,
-            error_message=None,
-            rate_limit_info={}
+            valid=True, error_message=None, rate_limit_info={}
         )
         self.mock_storage.generate_secure_report_url.return_value = {
             "signed_url": "https://storage.example.com/signed-url",
-            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z"
+            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z",
         }
 
         # Test validation
         result = self.service.validate_and_get_report_access(
             secure_token="valid_token_123",
             ip_address="192.168.1.1",
-            user_agent="Mozilla/5.0"
+            user_agent="Mozilla/5.0",
         )
 
         # Verify result
@@ -230,7 +241,9 @@ class TestReportDeliveryServiceSecurity:
     def test_validate_and_get_report_access_invalid_token(self):
         """Test validation fails for invalid token."""
         # Mock link generator to raise exception for invalid token
-        self.mock_link_generator.validate_secure_link.side_effect = Exception("Invalid token")
+        self.mock_link_generator.validate_secure_link.side_effect = Exception(
+            "Invalid token"
+        )
         self.mock_secure_validator.is_access_revoked.return_value = False
 
         # Test validation
@@ -251,7 +264,7 @@ class TestReportDeliveryServiceSecurity:
         result = self.service.revoke_report_access(
             token="token_to_revoke",
             reason="Security violation",
-            revoked_by="admin_user"
+            revoked_by="admin_user",
         )
 
         # Verify result
@@ -266,8 +279,7 @@ class TestReportDeliveryServiceSecurity:
 
         # Test revocation
         result = self.service.revoke_report_access(
-            token="token_to_revoke",
-            reason="Security violation"
+            token="token_to_revoke", reason="Security violation"
         )
 
         # Verify result
@@ -286,7 +298,7 @@ class TestReportDeliveryServiceSecurity:
         self.mock_secure_validator.get_access_stats.return_value = {
             "total_attempts": 10,
             "successful_attempts": 8,
-            "failed_attempts": 2
+            "failed_attempts": 2,
         }
 
         # Test getting stats
@@ -301,15 +313,26 @@ class TestReportDeliveryServiceSecurity:
     def test_audit_logging_integration(self):
         """Test that audit events are properly logged during operations."""
         # Mock all dependencies for successful operation
-        self.mock_storage.upload_pdf_report.return_value = {"success": True, "storage_path": "test/path"}
+        self.mock_storage.upload_pdf_report.return_value = {
+            "success": True,
+            "storage_path": "test/path",
+        }
         self.mock_storage.generate_secure_report_url.return_value = {
             "signed_url": "https://storage.example.com/signed-url",
-            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z"
+            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z",
         }
         self.mock_email_service.send_email.return_value = {"success": True}
-        self.mock_secure_validator.validate_access_request.return_value = Mock(valid=True, error_message=None, rate_limit_info={})
-        self.mock_secure_validator.generate_secure_url.return_value = (True, "https://example.com/secure/link", None)
-        self.mock_link_generator.generate_secure_link.return_value = "https://example.com/secure/link"
+        self.mock_secure_validator.validate_access_request.return_value = Mock(
+            valid=True, error_message=None, rate_limit_info={}
+        )
+        self.mock_secure_validator.generate_secure_url.return_value = (
+            True,
+            "https://example.com/secure/link",
+            None,
+        )
+        self.mock_link_generator.generate_secure_link.return_value = (
+            "https://example.com/secure/link"
+        )
 
         # Test operation
         self.service.upload_and_deliver_report(
@@ -318,7 +341,7 @@ class TestReportDeliveryServiceSecurity:
             user_id="test_user",
             user_email="test@example.com",
             purchase_id="purchase_123",
-            business_name="Test Business"
+            business_name="Test Business",
         )
 
         # Verify audit logging was called
@@ -331,7 +354,9 @@ class TestReportDeliveryServiceSecurity:
     def test_security_error_handling(self):
         """Test error handling in security operations."""
         # Mock security service to raise exception
-        self.mock_secure_validator.validate_access_request.side_effect = Exception("Security service error")
+        self.mock_secure_validator.validate_access_request.side_effect = Exception(
+            "Security service error"
+        )
 
         # Test operation - should raise the exception
         with pytest.raises(Exception) as exc_info:
@@ -341,7 +366,7 @@ class TestReportDeliveryServiceSecurity:
                 user_id="test_user",
                 user_email="test@example.com",
                 purchase_id="purchase_123",
-                business_name="Test Business"
+                business_name="Test Business",
             )
 
         # Verify the exception message
@@ -362,25 +387,29 @@ class TestReportDeliveryServiceSecurity:
 
         # First call succeeds, second call rate limited
         self.mock_secure_validator.validate_access_request.side_effect = [
-            Mock(valid=True, error_message=None, rate_limit_info={"requests_remaining": 1}),
-            Mock(valid=False, error_message="Rate limit exceeded", rate_limit_info={"retry_after": datetime.utcnow()})
+            Mock(
+                valid=True,
+                error_message=None,
+                rate_limit_info={"requests_remaining": 1},
+            ),
+            Mock(
+                valid=False,
+                error_message="Rate limit exceeded",
+                rate_limit_info={"retry_after": datetime.utcnow()},
+            ),
         ]
 
         self.mock_storage.generate_secure_report_url.return_value = {
             "signed_url": "https://example.com",
-            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z"
+            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z",
         }
 
         # First access should succeed
-        result1 = self.service.validate_and_get_report_access(
-            secure_token="token1"
-        )
+        result1 = self.service.validate_and_get_report_access(secure_token="token1")
         assert result1["valid"] is True
 
         # Second access should be rate limited
-        result2 = self.service.validate_and_get_report_access(
-            secure_token="token2"
-        )
+        result2 = self.service.validate_and_get_report_access(secure_token="token2")
         assert result2["valid"] is False
         assert "Rate limit exceeded" in result2["error"]
 
@@ -401,12 +430,17 @@ class TestReportDeliveryServiceSecurity:
                 mock_link_data.user_id = f"user_{token_suffix}"
                 mock_link_data.report_id = "shared_report"
                 mock_link_data.metadata = {"storage_path": "reports/shared.pdf"}
-                self.mock_link_generator.validate_secure_link.return_value = mock_link_data
+                self.mock_link_generator.validate_secure_link.return_value = (
+                    mock_link_data
+                )
 
-                self.mock_secure_validator.validate_access_request.return_value = Mock(valid=True, error_message=None, rate_limit_info={})
+                self.mock_secure_validator.validate_access_request.return_value = Mock(
+                    valid=True, error_message=None, rate_limit_info={}
+                )
                 self.mock_storage.generate_secure_report_url.return_value = {
                     "signed_url": f"https://example.com/{token_suffix}",
-                    "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z"
+                    "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat()
+                    + "Z",
                 }
 
                 result = self.service.validate_and_get_report_access(

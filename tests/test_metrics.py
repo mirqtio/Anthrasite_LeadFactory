@@ -18,7 +18,9 @@ try:
     fastapi_available = True
 except ImportError:
     # Skip tests if fastapi is not available
-    pytest.skip("fastapi not installed, skipping metrics tests", allow_module_level=True)
+    pytest.skip(
+        "fastapi not installed, skipping metrics tests", allow_module_level=True
+    )
 
 
 @pytest.fixture
@@ -53,7 +55,10 @@ def test_metrics_endpoint(mock_cost_data, mock_budget_data):
         response = client.get("/metrics")
         # Assert response
         assert response.status_code == 200
-        assert response.headers["Content-Type"] == "text/plain; version=0.0.4; charset=utf-8"
+        assert (
+            response.headers["Content-Type"]
+            == "text/plain; version=0.0.4; charset=utf-8"
+        )
         # Check if metrics are in the response
         metrics = response.text
         assert "lead_factory_daily_cost" in metrics
@@ -110,7 +115,9 @@ def test_http_metrics():
     # Check for HTTP metrics in the response
     # We don't need to check exact values, just that the metrics exist
     assert "http_requests_total" in metrics_text, "HTTP requests metric not found"
-    assert "http_request_duration_seconds" in metrics_text, "HTTP duration metric not found"
+    assert "http_request_duration_seconds" in metrics_text, (
+        "HTTP duration metric not found"
+    )
 
 
 def test_update_metrics(mock_cost_data, mock_budget_data):

@@ -4,10 +4,12 @@ Tests for budget middleware functionality.
 
 import asyncio
 import json
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from dataclasses import dataclass
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+from leadfactory.cost.throttling_service import ThrottlingDecision
 from leadfactory.middleware.budget_middleware import (
     BudgetGuardMiddleware,
     create_budget_middleware,
@@ -16,16 +18,16 @@ from leadfactory.middleware.budget_middleware import (
     create_flask_budget_middleware,
 )
 from leadfactory.middleware.middleware_config import (
-    MiddlewareConfig,
     BudgetMiddlewareOptions,
     FrameworkType,
+    MiddlewareConfig,
 )
-from leadfactory.cost.throttling_service import ThrottlingDecision
 
 
 @dataclass
 class MockRequest:
     """Mock request object for testing."""
+
     path: str = "/api/test"
     method: str = "POST"
     headers: dict = None
@@ -55,24 +57,28 @@ class TestBudgetGuardMiddleware:
             budget_options=BudgetMiddlewareOptions(
                 cache_decisions=False,  # Disable caching for predictable tests
                 fail_open=True,
-            )
+            ),
         )
 
     @pytest.fixture
     def middleware(self, config):
         """Create middleware instance for testing."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetConfig'), \
-             patch('leadfactory.middleware.budget_middleware.ThrottlingService'), \
-             patch('leadfactory.middleware.budget_middleware.GPTUsageTracker'), \
-             patch('leadfactory.middleware.budget_middleware.CostTracker'):
+        with (
+            patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
+            patch("leadfactory.middleware.budget_middleware.ThrottlingService"),
+            patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
+            patch("leadfactory.middleware.budget_middleware.CostTracker"),
+        ):
             return BudgetGuardMiddleware(config)
 
     def test_initialization(self, config):
         """Test middleware initialization."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetConfig'), \
-             patch('leadfactory.middleware.budget_middleware.ThrottlingService'), \
-             patch('leadfactory.middleware.budget_middleware.GPTUsageTracker'), \
-             patch('leadfactory.middleware.budget_middleware.CostTracker'):
+        with (
+            patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
+            patch("leadfactory.middleware.budget_middleware.ThrottlingService"),
+            patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
+            patch("leadfactory.middleware.budget_middleware.CostTracker"),
+        ):
             middleware = BudgetGuardMiddleware(config)
 
             assert middleware.config == config
@@ -104,10 +110,12 @@ class TestBudgetGuardMiddleware:
         """Test request filtering with include-only paths."""
         config.budget_options.include_only_paths = ["/api", "/v1"]
 
-        with patch('leadfactory.middleware.budget_middleware.BudgetConfig'), \
-             patch('leadfactory.middleware.budget_middleware.ThrottlingService'), \
-             patch('leadfactory.middleware.budget_middleware.GPTUsageTracker'), \
-             patch('leadfactory.middleware.budget_middleware.CostTracker'):
+        with (
+            patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
+            patch("leadfactory.middleware.budget_middleware.ThrottlingService"),
+            patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
+            patch("leadfactory.middleware.budget_middleware.CostTracker"),
+        ):
             middleware = BudgetGuardMiddleware(config)
 
         # Only included paths should be processed
@@ -160,6 +168,7 @@ class TestBudgetGuardMiddleware:
 
     def test_extract_request_info_custom_extractors(self, config):
         """Test custom extractor functions."""
+
         def custom_user_extractor(request):
             return "custom_user"
 
@@ -173,10 +182,12 @@ class TestBudgetGuardMiddleware:
         config.budget_options.custom_operation_extractor = custom_operation_extractor
         config.budget_options.custom_cost_extractor = custom_cost_extractor
 
-        with patch('leadfactory.middleware.budget_middleware.BudgetConfig'), \
-             patch('leadfactory.middleware.budget_middleware.ThrottlingService'), \
-             patch('leadfactory.middleware.budget_middleware.GPTUsageTracker'), \
-             patch('leadfactory.middleware.budget_middleware.CostTracker'):
+        with (
+            patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
+            patch("leadfactory.middleware.budget_middleware.ThrottlingService"),
+            patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
+            patch("leadfactory.middleware.budget_middleware.CostTracker"),
+        ):
             middleware = BudgetGuardMiddleware(config)
 
         request = MockRequest()
@@ -191,10 +202,12 @@ class TestBudgetGuardMiddleware:
         config.budget_options.cache_decisions = True
         config.budget_options.cache_ttl_seconds = 60
 
-        with patch('leadfactory.middleware.budget_middleware.BudgetConfig'), \
-             patch('leadfactory.middleware.budget_middleware.ThrottlingService'), \
-             patch('leadfactory.middleware.budget_middleware.GPTUsageTracker'), \
-             patch('leadfactory.middleware.budget_middleware.CostTracker'):
+        with (
+            patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
+            patch("leadfactory.middleware.budget_middleware.ThrottlingService"),
+            patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
+            patch("leadfactory.middleware.budget_middleware.CostTracker"),
+        ):
             middleware = BudgetGuardMiddleware(config)
 
         cache_key = "user123:gpt-4:api_call"
@@ -211,16 +224,18 @@ class TestBudgetGuardMiddleware:
         assert middleware._is_cache_valid(cache_key)
         assert middleware._decision_cache[cache_key] == (decision, cost)
 
-    @patch('time.time')
+    @patch("time.time")
     def test_cache_expiry(self, mock_time, config):
         """Test cache expiry functionality."""
         config.budget_options.cache_decisions = True
         config.budget_options.cache_ttl_seconds = 60
 
-        with patch('leadfactory.middleware.budget_middleware.BudgetConfig'), \
-             patch('leadfactory.middleware.budget_middleware.ThrottlingService'), \
-             patch('leadfactory.middleware.budget_middleware.GPTUsageTracker'), \
-             patch('leadfactory.middleware.budget_middleware.CostTracker'):
+        with (
+            patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
+            patch("leadfactory.middleware.budget_middleware.ThrottlingService"),
+            patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
+            patch("leadfactory.middleware.budget_middleware.CostTracker"),
+        ):
             middleware = BudgetGuardMiddleware(config)
 
         cache_key = "user123:gpt-4:api_call"
@@ -240,7 +255,9 @@ class TestBudgetGuardMiddleware:
 
     def test_make_throttling_decision_allow(self, middleware):
         """Test throttling decision when request is allowed."""
-        middleware.throttling_service.should_throttle.return_value = ThrottlingDecision.ALLOW
+        middleware.throttling_service.should_throttle.return_value = (
+            ThrottlingDecision.ALLOW
+        )
 
         request_info = {
             "user_id": "user123",
@@ -259,7 +276,9 @@ class TestBudgetGuardMiddleware:
 
     def test_make_throttling_decision_throttle(self, middleware):
         """Test throttling decision when request should be throttled."""
-        middleware.throttling_service.should_throttle.return_value = ThrottlingDecision.THROTTLE
+        middleware.throttling_service.should_throttle.return_value = (
+            ThrottlingDecision.THROTTLE
+        )
 
         request_info = {
             "user_id": "user123",
@@ -276,7 +295,9 @@ class TestBudgetGuardMiddleware:
 
     def test_make_throttling_decision_error_fail_open(self, middleware):
         """Test throttling decision when error occurs and fail_open is True."""
-        middleware.throttling_service.should_throttle.side_effect = Exception("Test error")
+        middleware.throttling_service.should_throttle.side_effect = Exception(
+            "Test error"
+        )
 
         request_info = {
             "user_id": "user123",
@@ -295,13 +316,18 @@ class TestBudgetGuardMiddleware:
         """Test throttling decision when error occurs and fail_open is False."""
         config.budget_options.fail_open = False
 
-        with patch('leadfactory.middleware.budget_middleware.BudgetConfig'), \
-             patch('leadfactory.middleware.budget_middleware.ThrottlingService') as mock_throttling, \
-             patch('leadfactory.middleware.budget_middleware.GPTUsageTracker'), \
-             patch('leadfactory.middleware.budget_middleware.CostTracker'):
-
+        with (
+            patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
+            patch(
+                "leadfactory.middleware.budget_middleware.ThrottlingService"
+            ) as mock_throttling,
+            patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
+            patch("leadfactory.middleware.budget_middleware.CostTracker"),
+        ):
             middleware = BudgetGuardMiddleware(config)
-            middleware.throttling_service.should_throttle.side_effect = Exception("Test error")
+            middleware.throttling_service.should_throttle.side_effect = Exception(
+                "Test error"
+            )
 
             request_info = {
                 "user_id": "user123",
@@ -327,7 +353,9 @@ class TestBudgetGuardMiddleware:
 
     def test_process_request_allow(self, middleware):
         """Test processing request that is allowed."""
-        middleware.throttling_service.should_throttle.return_value = ThrottlingDecision.ALLOW
+        middleware.throttling_service.should_throttle.return_value = (
+            ThrottlingDecision.ALLOW
+        )
 
         request = MockRequest(
             path="/api/chat",
@@ -342,7 +370,9 @@ class TestBudgetGuardMiddleware:
 
     def test_process_request_throttle_generic(self, middleware):
         """Test processing request that should be throttled (generic framework)."""
-        middleware.throttling_service.should_throttle.return_value = ThrottlingDecision.THROTTLE
+        middleware.throttling_service.should_throttle.return_value = (
+            ThrottlingDecision.THROTTLE
+        )
 
         request = MockRequest(
             path="/api/chat",
@@ -358,7 +388,9 @@ class TestBudgetGuardMiddleware:
 
     def test_process_request_reject_generic(self, middleware):
         """Test processing request that should be rejected (generic framework)."""
-        middleware.throttling_service.should_throttle.return_value = ThrottlingDecision.REJECT
+        middleware.throttling_service.should_throttle.return_value = (
+            ThrottlingDecision.REJECT
+        )
 
         request = MockRequest(
             path="/api/chat",
@@ -375,7 +407,9 @@ class TestBudgetGuardMiddleware:
     @pytest.mark.asyncio
     async def test_process_request_async(self, middleware):
         """Test async request processing."""
-        middleware.throttling_service.should_throttle.return_value = ThrottlingDecision.ALLOW
+        middleware.throttling_service.should_throttle.return_value = (
+            ThrottlingDecision.ALLOW
+        )
 
         request = MockRequest(
             path="/api/chat",
@@ -392,16 +426,18 @@ class TestBudgetGuardMiddleware:
 class TestFactoryFunctions:
     """Test middleware factory functions."""
 
-    @patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware')
+    @patch("leadfactory.middleware.budget_middleware.BudgetGuardMiddleware")
     def test_create_budget_middleware_default_config(self, mock_middleware):
         """Test creating middleware with default configuration."""
-        with patch('leadfactory.middleware.budget_middleware.MiddlewareConfig') as mock_config:
+        with patch(
+            "leadfactory.middleware.budget_middleware.MiddlewareConfig"
+        ) as mock_config:
             create_budget_middleware()
 
             mock_config.from_environment.assert_called_once()
             mock_middleware.assert_called_once()
 
-    @patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware')
+    @patch("leadfactory.middleware.budget_middleware.BudgetGuardMiddleware")
     def test_create_budget_middleware_custom_config(self, mock_middleware):
         """Test creating middleware with custom configuration."""
         config = MiddlewareConfig()
@@ -411,7 +447,9 @@ class TestFactoryFunctions:
 
     def test_create_express_budget_middleware(self):
         """Test creating Express.js middleware."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware:
             middleware_func = create_express_budget_middleware()
 
             assert callable(middleware_func)
@@ -419,7 +457,9 @@ class TestFactoryFunctions:
 
     def test_create_fastapi_budget_middleware(self):
         """Test creating FastAPI middleware."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware:
             middleware_func = create_fastapi_budget_middleware()
 
             assert callable(middleware_func)
@@ -427,7 +467,9 @@ class TestFactoryFunctions:
 
     def test_create_flask_budget_middleware(self):
         """Test creating Flask middleware."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware:
             middleware_func = create_flask_budget_middleware()
 
             assert callable(middleware_func)
@@ -439,7 +481,9 @@ class TestFrameworkSpecificMiddleware:
 
     def test_express_middleware_allow(self):
         """Test Express middleware when request is allowed."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware_class:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware_class:
             mock_middleware = Mock()
             mock_middleware.process_request.return_value = None
             mock_middleware_class.return_value = mock_middleware
@@ -448,10 +492,10 @@ class TestFrameworkSpecificMiddleware:
 
             # Mock Express request/response/next
             req = {
-                'path': '/api/test',
-                'method': 'POST',
-                'headers': {'X-User-ID': 'user123'},
-                'query': {},
+                "path": "/api/test",
+                "method": "POST",
+                "headers": {"X-User-ID": "user123"},
+                "query": {},
             }
             res = Mock()
             next_func = Mock()
@@ -463,12 +507,14 @@ class TestFrameworkSpecificMiddleware:
 
     def test_express_middleware_block(self):
         """Test Express middleware when request is blocked."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware_class:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware_class:
             mock_middleware = Mock()
             mock_middleware.process_request.return_value = {
-                'status_code': 429,
-                'body': '{"error": "Budget limit exceeded"}',
-                'headers': {'Content-Type': 'application/json'},
+                "status_code": 429,
+                "body": '{"error": "Budget limit exceeded"}',
+                "headers": {"Content-Type": "application/json"},
             }
             mock_middleware_class.return_value = mock_middleware
 
@@ -476,10 +522,10 @@ class TestFrameworkSpecificMiddleware:
 
             # Mock Express request/response/next
             req = {
-                'path': '/api/test',
-                'method': 'POST',
-                'headers': {'X-User-ID': 'user123'},
-                'query': {},
+                "path": "/api/test",
+                "method": "POST",
+                "headers": {"X-User-ID": "user123"},
+                "query": {},
             }
             res = Mock()
             next_func = Mock()
@@ -487,14 +533,16 @@ class TestFrameworkSpecificMiddleware:
             middleware_func(req, res, next_func)
 
             res.status.assert_called_once_with(429)
-            res.set.assert_called_once_with('Content-Type', 'application/json')
+            res.set.assert_called_once_with("Content-Type", "application/json")
             res.send.assert_called_once_with('{"error": "Budget limit exceeded"}')
             next_func.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_fastapi_middleware_allow(self):
         """Test FastAPI middleware when request is allowed."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware_class:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware_class:
             mock_middleware = Mock()
             mock_middleware.process_request_async.return_value = None
             mock_middleware_class.return_value = mock_middleware
@@ -513,14 +561,18 @@ class TestFrameworkSpecificMiddleware:
 
     def test_flask_middleware_allow(self):
         """Test Flask middleware when request is allowed."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware_class:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware_class:
             mock_middleware = Mock()
             mock_middleware.process_request.return_value = None
             mock_middleware_class.return_value = mock_middleware
 
             middleware_func = create_flask_budget_middleware()
 
-            with patch('leadfactory.middleware.budget_middleware.request') as mock_request:
+            with patch(
+                "leadfactory.middleware.budget_middleware.request"
+            ) as mock_request:
                 result = middleware_func()
 
                 assert result is None
@@ -528,7 +580,9 @@ class TestFrameworkSpecificMiddleware:
 
     def test_flask_middleware_block(self):
         """Test Flask middleware when request is blocked."""
-        with patch('leadfactory.middleware.budget_middleware.BudgetGuardMiddleware') as mock_middleware_class:
+        with patch(
+            "leadfactory.middleware.budget_middleware.BudgetGuardMiddleware"
+        ) as mock_middleware_class:
             mock_middleware = Mock()
             mock_response = Mock()
             mock_response.status_code = 429
@@ -537,7 +591,9 @@ class TestFrameworkSpecificMiddleware:
 
             middleware_func = create_flask_budget_middleware()
 
-            with patch('leadfactory.middleware.budget_middleware.request') as mock_request:
+            with patch(
+                "leadfactory.middleware.budget_middleware.request"
+            ) as mock_request:
                 result = middleware_func()
 
                 assert result == mock_response

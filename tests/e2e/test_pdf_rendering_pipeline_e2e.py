@@ -7,28 +7,31 @@ through template processing to final PDF output with quality validation.
 
 import os
 import tempfile
-import pytest
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+
+import pytest
 from reportlab.lib.pagesizes import A4, letter
 
 from leadfactory.services.pdf_generator import (
-    PDFGenerator,
-    PDFConfiguration,
-    OptimizationConfig,
     CompressionLevel,
     ImageQuality,
+    OptimizationConfig,
+    PDFConfiguration,
+    PDFGenerator,
     create_simple_pdf,
 )
+from leadfactory.services.pdf_quality_validator import PDFQualityValidator
 from leadfactory.services.report_template_engine import (
-    ReportTemplateEngine,
     ReportData,
     ReportSection,
+    ReportTemplateEngine,
 )
-from leadfactory.services.pdf_quality_validator import PDFQualityValidator
 
 
-@pytest.mark.skip(reason="Temporarily disabled due to CI hanging issues - threading problems need investigation")
+@pytest.mark.skip(
+    reason="Temporarily disabled due to CI hanging issues - threading problems need investigation"
+)
 @pytest.mark.e2e
 class TestPDFRenderingPipelineE2E:
     """End-to-end tests for the complete PDF rendering pipeline."""
@@ -44,7 +47,12 @@ class TestPDFRenderingPipelineE2E:
         self.pdf_config = PDFConfiguration(
             page_size=A4,
             orientation="portrait",
-            margins={"top": 1.0, "bottom": 1.0, "left": 1.0, "right": 1.0},  # In inches, not points
+            margins={
+                "top": 1.0,
+                "bottom": 1.0,
+                "left": 1.0,
+                "right": 1.0,
+            },  # In inches, not points
             compression=True,
             optimization_config=self.optimization_config,
         )
@@ -78,7 +86,7 @@ class TestPDFRenderingPipelineE2E:
             ],
             "recommendations": [
                 "Short recommendation",
-            ]
+            ],
         }
 
         # Test the complete pipeline
@@ -95,7 +103,9 @@ class TestPDFRenderingPipelineE2E:
 
             # Verify PDF was created
             assert output_path.exists()
-            assert pdf_bytes == str(output_path)  # Should return the path when saving to file
+            assert pdf_bytes == str(
+                output_path
+            )  # Should return the path when saving to file
 
             # Step 2: Validate PDF quality
             validation_result = self.quality_validator.validate_pdf(str(output_path))
@@ -119,22 +129,26 @@ class TestPDFRenderingPipelineE2E:
         # Create report data
         report_data = ReportData(
             title="Template to PDF Pipeline Test",
-            subtitle="Testing HTML to PDF conversion"
+            subtitle="Testing HTML to PDF conversion",
         )
 
-        report_data.add_section(ReportSection(
-            title="Test Section",
-            content="This tests the template to PDF pipeline.",
-            section_type="text",
-            order=1
-        ))
+        report_data.add_section(
+            ReportSection(
+                title="Test Section",
+                content="This tests the template to PDF pipeline.",
+                section_type="text",
+                order=1,
+            )
+        )
 
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / "template_pipeline_test.pdf"
 
             # Step 1: Render HTML template
             html_content = self.template_engine.render_report(report_data)
-            assert "<html" in html_content  # Check for opening html tag (with or without attributes)
+            assert (
+                "<html" in html_content
+            )  # Check for opening html tag (with or without attributes)
             assert "Template to PDF Pipeline Test" in html_content
 
             # Step 2: Convert to PDF content structure
@@ -154,7 +168,9 @@ class TestPDFRenderingPipelineE2E:
 
             # Verify pipeline success
             assert output_path.exists()
-            assert pdf_bytes == str(output_path)  # Should return the path when saving to file
+            assert pdf_bytes == str(
+                output_path
+            )  # Should return the path when saving to file
 
             # Validate final PDF
             validation_result = self.quality_validator.validate_pdf(str(output_path))
@@ -164,17 +180,19 @@ class TestPDFRenderingPipelineE2E:
         """Test pipeline with various optimization settings."""
         report_data = ReportData(
             title="Optimization Test Report",
-            subtitle="Testing PDF optimization pipeline"
+            subtitle="Testing PDF optimization pipeline",
         )
 
         # Add content that will benefit from optimization
         large_content = "This is a large content section. " * 100
-        report_data.add_section(ReportSection(
-            title="Large Content Section",
-            content=large_content,
-            section_type="text",
-            order=1
-        ))
+        report_data.add_section(
+            ReportSection(
+                title="Large Content Section",
+                content=large_content,
+                section_type="text",
+                order=1,
+            )
+        )
 
         optimization_configs = [
             OptimizationConfig(
@@ -216,17 +234,23 @@ class TestPDFRenderingPipelineE2E:
                 )
 
                 assert output_path.exists()
-                assert pdf_bytes == str(output_path)  # Should return the path when saving to file
+                assert pdf_bytes == str(
+                    output_path
+                )  # Should return the path when saving to file
 
                 file_size = output_path.stat().st_size
                 file_sizes.append(file_size)
 
                 # Validate PDF
-                validation_result = self.quality_validator.validate_pdf(str(output_path))
+                validation_result = self.quality_validator.validate_pdf(
+                    str(output_path)
+                )
                 assert validation_result.is_valid
 
             # Verify optimization worked (high compression should produce smaller file)
-            assert file_sizes[1] <= file_sizes[0], "High compression should produce smaller files"
+            assert file_sizes[1] <= file_sizes[0], (
+                "High compression should produce smaller files"
+            )
 
     def test_error_handling_pipeline(self):
         """Test pipeline error handling and recovery."""
@@ -246,7 +270,9 @@ class TestPDFRenderingPipelineE2E:
 
             # Should still create a valid PDF even with minimal content
             assert output_path.exists()
-            assert pdf_bytes == str(output_path)  # Should return the path when saving to file
+            assert pdf_bytes == str(
+                output_path
+            )  # Should return the path when saving to file
 
             # Validate final PDF
             validation_result = self.quality_validator.validate_pdf(str(output_path))
@@ -261,15 +287,17 @@ class TestPDFRenderingPipelineE2E:
             """Generate a PDF in a separate thread."""
             report_data = ReportData(
                 title=f"Concurrent Test Report {thread_id}",
-                subtitle="Testing concurrent pipeline execution"
+                subtitle="Testing concurrent pipeline execution",
             )
 
-            report_data.add_section(ReportSection(
-                title=f"Thread {thread_id} Section",
-                content=f"Content generated by thread {thread_id}",
-                section_type="text",
-                order=1
-            ))
+            report_data.add_section(
+                ReportSection(
+                    title=f"Thread {thread_id} Section",
+                    content=f"Content generated by thread {thread_id}",
+                    section_type="text",
+                    order=1,
+                )
+            )
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 output_path = Path(temp_dir) / f"concurrent_test_{thread_id}.pdf"
@@ -289,19 +317,25 @@ class TestPDFRenderingPipelineE2E:
                 return {
                     "thread_id": thread_id,
                     "success": output_path.exists() and pdf_bytes == str(output_path),
-                    "file_size": output_path.stat().st_size if output_path.exists() else 0,
+                    "file_size": output_path.stat().st_size
+                    if output_path.exists()
+                    else 0,
                 }
 
         # Run multiple threads concurrently
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = [executor.submit(generate_pdf, i) for i in range(3)]
-            results = [future.result() for future in concurrent.futures.as_completed(futures)]
+            results = [
+                future.result() for future in concurrent.futures.as_completed(futures)
+            ]
 
         # Verify all threads succeeded
         assert len(results) == 3
         for result in results:
             assert result["success"], f"Thread {result['thread_id']} failed"
-            assert result["file_size"] > 0, f"Thread {result['thread_id']} produced empty file"
+            assert result["file_size"] > 0, (
+                f"Thread {result['thread_id']} produced empty file"
+            )
 
     @pytest.mark.e2e
     def test_simple_pdf_generation(self):
@@ -365,12 +399,14 @@ class TestPDFPipelinePerformance:
 
         # Add multiple sections (reduced for stability)
         for i in range(5):  # Reduced from 50
-            report_data.sections.append(ReportSection(
-                title=f"Section {i+1}",
-                content=f"Content for section {i+1}. " * 20,  # Reduced content
-                section_type="analysis",
-                order=i+1
-            ))
+            report_data.sections.append(
+                ReportSection(
+                    title=f"Section {i + 1}",
+                    content=f"Content for section {i + 1}. " * 20,  # Reduced content
+                    section_type="analysis",
+                    order=i + 1,
+                )
+            )
 
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / "large_performance_test.pdf"
@@ -388,10 +424,14 @@ class TestPDFPipelinePerformance:
 
             # Verify PDF was created successfully
             assert output_path.exists()
-            assert pdf_bytes == str(output_path)  # Should return the path when saving to file
+            assert pdf_bytes == str(
+                output_path
+            )  # Should return the path when saving to file
 
             # Performance assertions (adjust thresholds as needed)
-            assert generation_time < 30.0, f"PDF generation took too long: {generation_time:.2f}s"
+            assert generation_time < 30.0, (
+                f"PDF generation took too long: {generation_time:.2f}s"
+            )
 
             # Verify file size is reasonable
             file_size_mb = output_path.stat().st_size / (1024 * 1024)
@@ -399,8 +439,9 @@ class TestPDFPipelinePerformance:
 
     def test_memory_usage_pipeline(self):
         """Test memory usage during PDF generation."""
-        import psutil
         import os
+
+        import psutil
 
         process = psutil.Process(os.getpid())
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
@@ -408,18 +449,20 @@ class TestPDFPipelinePerformance:
         # Create memory-intensive report data
         for i in range(3):  # Reduced from 10
             report_data = ReportData(
-                title=f"Memory Test Report {i+1}",
+                title=f"Memory Test Report {i + 1}",
                 subtitle="Memory Usage Analysis",
             )
 
             # Add sections with moderate content
             for j in range(3):  # Reduced from 20
-                report_data.sections.append(ReportSection(
-                    title=f"Section {j}",
-                    content="Content " * 50,  # Reduced content size
-                    section_type="text",
-                    order=j
-                ))
+                report_data.sections.append(
+                    ReportSection(
+                        title=f"Section {j}",
+                        content="Content " * 50,  # Reduced content size
+                        section_type="text",
+                        order=j,
+                    )
+                )
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 output_path = Path(temp_dir) / f"memory_test_{i}.pdf"
@@ -432,10 +475,14 @@ class TestPDFPipelinePerformance:
                 )
 
                 assert output_path.exists()
-                assert pdf_bytes == str(output_path)  # Should return the path when saving to file
+                assert pdf_bytes == str(
+                    output_path
+                )  # Should return the path when saving to file
 
         final_memory = process.memory_info().rss / 1024 / 1024  # MB
         memory_increase = final_memory - initial_memory
 
         # Memory should not increase excessively (adjust threshold as needed)
-        assert memory_increase < 100.0, f"Memory usage increased too much: {memory_increase:.2f}MB"
+        assert memory_increase < 100.0, (
+            f"Memory usage increased too much: {memory_increase:.2f}MB"
+        )

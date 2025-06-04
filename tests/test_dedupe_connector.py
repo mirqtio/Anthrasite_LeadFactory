@@ -35,8 +35,26 @@ class TestDedupeConnectorFunctions:
         # Mock database response
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [
-            (1, 2, "Business A", "Business A Inc", "555-1234", "555-1234", "123 Main St", "123 Main Street"),
-            (3, 4, "Company B", "Company B LLC", None, "555-5678", "456 Oak Ave", "456 Oak Avenue")
+            (
+                1,
+                2,
+                "Business A",
+                "Business A Inc",
+                "555-1234",
+                "555-1234",
+                "123 Main St",
+                "123 Main Street",
+            ),
+            (
+                3,
+                4,
+                "Company B",
+                "Company B LLC",
+                None,
+                "555-5678",
+                "456 Oak Ave",
+                "456 Oak Avenue",
+            ),
         ]
         mock_db_cursor.return_value.__enter__.return_value = mock_cursor
 
@@ -75,10 +93,24 @@ class TestDedupeConnectorFunctions:
         # Mock database response
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = (
-            1, "Test Business", "555-1234", "test@example.com", "www.test.com",
-            "123 Main St", "Anytown", "CA", "12345", "Restaurant",
-            "google", False, False, '{"data": "test"}', None, None,
-            datetime.now(), datetime.now()
+            1,
+            "Test Business",
+            "555-1234",
+            "test@example.com",
+            "www.test.com",
+            "123 Main St",
+            "Anytown",
+            "CA",
+            "12345",
+            "Restaurant",
+            "google",
+            False,
+            False,
+            '{"data": "test"}',
+            None,
+            None,
+            datetime.now(),
+            datetime.now(),
         )
         mock_db_cursor.return_value.__enter__.return_value = mock_cursor
 
@@ -165,7 +197,7 @@ class TestDedupeConnectorFunctions:
         updates = {
             "phone": "555-9999",
             "email": "new@example.com",
-            "category": "Updated Category"
+            "category": "Updated Category",
         }
 
         result = update_business_fields(1, updates)
@@ -219,7 +251,12 @@ class TestDedupeConnectorFunctions:
         # Check insert into review_queue
         insert_query = mock_cursor.execute.call_args_list[1][0][0]
         assert "INSERT INTO review_queue" in insert_query
-        assert mock_cursor.execute.call_args_list[1][0][1] == (1, 2, "Low confidence match", 0.65)
+        assert mock_cursor.execute.call_args_list[1][0][1] == (
+            1,
+            2,
+            "Low confidence match",
+            0.65,
+        )
 
     @patch("leadfactory.utils.e2e_db_connector.db_cursor")
     def test_check_dedupe_tables_exist(self, mock_db_cursor):
@@ -263,7 +300,9 @@ class TestDedupeConnectorFunctions:
         calls = [call[0][0] for call in mock_cursor.execute.call_args_list]
 
         # Should create extension
-        assert any("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch" in call for call in calls)
+        assert any(
+            "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch" in call for call in calls
+        )
 
         # Should create dedupe_log table
         assert any("CREATE TABLE IF NOT EXISTS dedupe_log" in call for call in calls)
@@ -294,13 +333,47 @@ class TestDedupeConnectorIntegration:
         mock_cursor_get = MagicMock()
         mock_cursor_get.fetchone.side_effect = [
             # First business
-            (1, "Business A", "555-1234", None, None, "123 Main St", "City", "ST", "12345",
-             "Restaurant", "google", False, False, '{"google": "data"}', None, None,
-             datetime.now(), datetime.now()),
+            (
+                1,
+                "Business A",
+                "555-1234",
+                None,
+                None,
+                "123 Main St",
+                "City",
+                "ST",
+                "12345",
+                "Restaurant",
+                "google",
+                False,
+                False,
+                '{"google": "data"}',
+                None,
+                None,
+                datetime.now(),
+                datetime.now(),
+            ),
             # Second business
-            (2, "Business A Inc", None, "email@test.com", "www.test.com", "123 Main Street",
-             "City", "ST", "12345", "Restaurant", "yelp", False, False, None, '{"yelp": "data"}',
-             None, datetime.now(), datetime.now())
+            (
+                2,
+                "Business A Inc",
+                None,
+                "email@test.com",
+                "www.test.com",
+                "123 Main Street",
+                "City",
+                "ST",
+                "12345",
+                "Restaurant",
+                "yelp",
+                False,
+                False,
+                None,
+                '{"yelp": "data"}',
+                None,
+                datetime.now(),
+                datetime.now(),
+            ),
         ]
         mock_db_cursor.return_value.__enter__.return_value = mock_cursor_get
 
@@ -316,10 +389,7 @@ class TestDedupeConnectorIntegration:
         mock_db_cursor.return_value.__enter__.return_value = mock_cursor_update
 
         # Update primary with secondary's data
-        updates = {
-            "email": business2["email"],
-            "website": business2["website"]
-        }
+        updates = {"email": business2["email"], "website": business2["website"]}
         update_result = update_business_fields(1, updates)
         assert update_result is True
 

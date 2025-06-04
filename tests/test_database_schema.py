@@ -131,9 +131,9 @@ def test_table_columns(test_db):
     }
     for col, col_type in expected_columns.items():
         assert col in columns, f"Expected column '{col}' not found in businesses table"
-        assert (
-            columns[col].upper() == col_type.upper()
-        ), f"Column '{col}' has type '{columns[col].upper()}', expected '{col_type.upper()}'"
+        assert columns[col].upper() == col_type.upper(), (
+            f"Column '{col}' has type '{columns[col].upper()}', expected '{col_type.upper()}'"
+        )
 
 
 def test_triggers_exist(test_db):
@@ -148,26 +148,36 @@ def test_triggers_exist(test_db):
     """
     )
     triggers = {row[0] for row in cursor.fetchall()}
-    assert "update_businesses_timestamp" in triggers, "Trigger 'update_businesses_timestamp' not found"
-    assert "update_features_timestamp" in triggers, "Trigger 'update_features_timestamp' not found"
+    assert "update_businesses_timestamp" in triggers, (
+        "Trigger 'update_businesses_timestamp' not found"
+    )
+    assert "update_features_timestamp" in triggers, (
+        "Trigger 'update_features_timestamp' not found"
+    )
     # Test that the businesses trigger works
     cursor.execute(
         "INSERT INTO businesses (name, zip, category, source) VALUES ('Test Business', '12345', 'Test', 'test')"
     )
-    cursor.execute("SELECT created_at, updated_at FROM businesses WHERE name = 'Test Business'")
+    cursor.execute(
+        "SELECT created_at, updated_at FROM businesses WHERE name = 'Test Business'"
+    )
     created_at, updated_at = cursor.fetchone()
     # Add a small delay to ensure timestamp changes
     import time
 
     time.sleep(1)
     # Update the business
-    cursor.execute("UPDATE businesses SET name = 'Updated Business' WHERE name = 'Test Business'")
-    cursor.execute("SELECT created_at, updated_at FROM businesses WHERE name = 'Updated Business'")
+    cursor.execute(
+        "UPDATE businesses SET name = 'Updated Business' WHERE name = 'Test Business'"
+    )
+    cursor.execute(
+        "SELECT created_at, updated_at FROM businesses WHERE name = 'Updated Business'"
+    )
     new_created_at, new_updated_at = cursor.fetchone()
     assert created_at == new_created_at, "created_at should not change on update"
-    assert (
-        new_updated_at != updated_at
-    ), "updated_at should be different after update"  # Changed from > to != for reliability
+    assert new_updated_at != updated_at, (
+        "updated_at should be different after update"
+    )  # Changed from > to != for reliability
 
 
 def test_foreign_key_constraints(test_db):
@@ -175,9 +185,13 @@ def test_foreign_key_constraints(test_db):
     cursor = test_db.cursor()
     # Test 1: Cannot insert a feature with a non-existent business_id
     with pytest.raises(sqlite3.IntegrityError) as excinfo:
-        cursor.execute("INSERT INTO features (business_id, tech_stack) VALUES (999, '[]')")
+        cursor.execute(
+            "INSERT INTO features (business_id, tech_stack) VALUES (999, '[]')"
+        )
         test_db.commit()
-    assert "FOREIGN KEY constraint failed" in str(excinfo.value), "Expected foreign key constraint violation"
+    assert "FOREIGN KEY constraint failed" in str(excinfo.value), (
+        "Expected foreign key constraint violation"
+    )
     # Test 2: Can insert a feature with a valid business_id
     cursor.execute(
         "INSERT INTO businesses (name, zip, category, source) VALUES ('Test Business', '12345', 'Test', 'test')"
@@ -190,8 +204,12 @@ def test_foreign_key_constraints(test_db):
     )
     test_db.commit()
     # Verify the feature was inserted
-    cursor.execute("SELECT COUNT(*) FROM features WHERE business_id = ?", (business_id,))
-    assert cursor.fetchone()[0] == 1, "Feature should be inserted with valid business_id"
+    cursor.execute(
+        "SELECT COUNT(*) FROM features WHERE business_id = ?", (business_id,)
+    )
+    assert cursor.fetchone()[0] == 1, (
+        "Feature should be inserted with valid business_id"
+    )
     # Test 3: Verify cascade delete behavior
     # Delete the business - should also delete the feature due to ON DELETE CASCADE
     cursor.execute("DELETE FROM businesses WHERE id = ?", (business_id,))
@@ -200,5 +218,9 @@ def test_foreign_key_constraints(test_db):
     cursor.execute("SELECT COUNT(*) FROM businesses WHERE id = ?", (business_id,))
     assert cursor.fetchone()[0] == 0, "Business should be deleted"
     # Verify the dependent feature was also deleted
-    cursor.execute("SELECT COUNT(*) FROM features WHERE business_id = ?", (business_id,))
-    assert cursor.fetchone()[0] == 0, "Feature should be cascade-deleted when business is deleted"
+    cursor.execute(
+        "SELECT COUNT(*) FROM features WHERE business_id = ?", (business_id,)
+    )
+    assert cursor.fetchone()[0] == 0, (
+        "Feature should be cascade-deleted when business is deleted"
+    )

@@ -8,6 +8,7 @@ Options:
     --limit N        Limit the number of businesses to process (default: all)
     --id BUSINESS_ID Process only the specified business ID
 """
+
 import argparse
 import concurrent.futures
 import json
@@ -31,10 +32,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Local application/library specific imports with try-except for Python 3.9 compatibility during testing
 try:
-    from leadfactory.config.node_config import NodeType, is_api_available, get_enabled_capabilities
-    from leadfactory.utils.logging import get_logger
-    from leadfactory.utils.e2e_db_connector import db_connection
+    from leadfactory.config.node_config import (
+        NodeType,
+        get_enabled_capabilities,
+        is_api_available,
+    )
     from leadfactory.cost.cost_tracking import track_api_cost
+    from leadfactory.utils.e2e_db_connector import db_connection
+    from leadfactory.utils.logging import get_logger
 except ImportError:
     # Fallback for when module is imported in test context
     print("Warning: leadfactory modules not available, using fallback imports")
@@ -62,6 +67,7 @@ PAGESPEED_COST = 0  # PageSpeed API is free
 SCREENSHOT_ONE_COST = 5  # $0.05 per screenshot
 SEMRUSH_SITE_AUDIT_COST = 50  # $0.50 per site audit
 
+
 def get_database_connection(db_path=None):
     """Return appropriate DatabaseConnection implementation based on environment."""
     if db_connection:
@@ -71,19 +77,27 @@ def get_database_connection(db_path=None):
         class _TestingDatabaseConnection:
             def __init__(self, db_path=None):
                 pass
+
             def __enter__(self):
                 return self
+
             def __exit__(self, exc_type, exc_val, exc_tb):
                 pass
+
             def execute(self, query, params=None):
                 return None
+
             def fetchall(self):
                 return []
+
             def fetchone(self):
                 return None
+
             def commit(self):
                 pass
+
         return _TestingDatabaseConnection(db_path)
+
 
 def make_request(
     url,
@@ -107,11 +121,17 @@ def make_request(
     # Simple request implementation for fallback
     try:
         if method.upper() == "GET":
-            response = requests.get(url, headers=headers, params=params, timeout=timeout)
+            response = requests.get(
+                url, headers=headers, params=params, timeout=timeout
+            )
         elif method.upper() == "POST":
-            response = requests.post(url, headers=headers, params=params, data=data, timeout=timeout)
+            response = requests.post(
+                url, headers=headers, params=params, data=data, timeout=timeout
+            )
         else:
-            response = requests.request(method, url, headers=headers, params=params, data=data, timeout=timeout)
+            response = requests.request(
+                method, url, headers=headers, params=params, data=data, timeout=timeout
+            )
 
         response.raise_for_status()
         return response.json() if response.content else {}, None

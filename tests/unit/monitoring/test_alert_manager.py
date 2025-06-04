@@ -5,26 +5,27 @@ Tests for Alert Manager System
 Tests for the purchase metrics alert manager and notification system.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from leadfactory.monitoring.alert_manager import (
+    Alert,
     AlertManager,
     AlertRule,
-    Alert,
     AlertSeverity,
     AlertType,
     EmailNotificationChannel,
     SlackNotificationChannel,
-    WebhookNotificationChannel
+    WebhookNotificationChannel,
 )
 from leadfactory.monitoring.metrics_aggregator import (
-    MetricsAggregator,
     AggregatedMetric,
-    AggregationPeriod
+    AggregationPeriod,
+    MetricsAggregator,
 )
 
 
@@ -48,7 +49,7 @@ class TestAlertManager:
             refund_count=2,
             refund_amount_cents=10000,
             audit_type_breakdown={},
-            geographic_breakdown={}
+            geographic_breakdown={},
         )
 
         mock.get_aggregated_metrics.return_value = [mock_metric]
@@ -75,7 +76,7 @@ class TestAlertManager:
             "conversion_rate_low",
             "no_purchases_6h",
             "high_refund_rate",
-            "stripe_fees_spike"
+            "stripe_fees_spike",
         ]
 
         for rule_name in expected_rules:
@@ -90,7 +91,7 @@ class TestAlertManager:
             severity=AlertSeverity.MEDIUM,
             metric_name="total_purchases",
             condition="> 100",
-            threshold_value=100
+            threshold_value=100,
         )
 
         alert_manager.add_alert_rule(custom_rule)
@@ -108,7 +109,7 @@ class TestAlertManager:
             severity=AlertSeverity.LOW,
             metric_name="total_purchases",
             condition="> 0",
-            threshold_value=0
+            threshold_value=0,
         )
 
         alert_manager.add_alert_rule(test_rule)
@@ -132,10 +133,12 @@ class TestAlertManager:
             refund_count=0,
             refund_amount_cents=0,
             audit_type_breakdown={},
-            geographic_breakdown={}
+            geographic_breakdown={},
         )
 
-        mock_metrics_aggregator.get_aggregated_metrics.return_value = [low_revenue_metric]
+        mock_metrics_aggregator.get_aggregated_metrics.return_value = [
+            low_revenue_metric
+        ]
 
         # Check alerts
         alert_manager.check_alerts()
@@ -158,7 +161,7 @@ class TestAlertManager:
             refund_count=1,
             refund_amount_cents=5000,
             audit_type_breakdown={},
-            geographic_breakdown={}
+            geographic_breakdown={},
         )
 
         mock_metrics_aggregator.get_aggregated_metrics.return_value = [good_metric]
@@ -183,10 +186,12 @@ class TestAlertManager:
             refund_count=0,
             refund_amount_cents=0,
             audit_type_breakdown={},
-            geographic_breakdown={}
+            geographic_breakdown={},
         )
 
-        mock_metrics_aggregator.get_aggregated_metrics.return_value = [low_revenue_metric]
+        mock_metrics_aggregator.get_aggregated_metrics.return_value = [
+            low_revenue_metric
+        ]
 
         # First check should trigger alert
         alert_manager.check_alerts()
@@ -228,20 +233,27 @@ class TestAlertManager:
             refund_count=2,
             refund_amount_cents=1000,
             audit_type_breakdown={},
-            geographic_breakdown={}
+            geographic_breakdown={},
         )
 
         # Test different metric extractions
-        assert alert_manager._extract_metric_value(metric, "total_revenue_cents") == 50000
+        assert (
+            alert_manager._extract_metric_value(metric, "total_revenue_cents") == 50000
+        )
         assert alert_manager._extract_metric_value(metric, "total_purchases") == 10
         assert alert_manager._extract_metric_value(metric, "conversion_rate") == 0.025
-        assert alert_manager._extract_metric_value(metric, "average_order_value_cents") == 5000
+        assert (
+            alert_manager._extract_metric_value(metric, "average_order_value_cents")
+            == 5000
+        )
 
         # Test calculated metrics
         refund_rate = alert_manager._extract_metric_value(metric, "refund_rate")
         assert refund_rate == 0.2  # 2 refunds / 10 purchases
 
-        stripe_fee_percentage = alert_manager._extract_metric_value(metric, "stripe_fee_percentage")
+        stripe_fee_percentage = alert_manager._extract_metric_value(
+            metric, "stripe_fee_percentage"
+        )
         assert stripe_fee_percentage == 0.03  # 1500 / 50000
 
         # Test unknown metric
@@ -261,7 +273,9 @@ class TestAlertManager:
         # Verify initial values
         assert status["active_alerts_count"] == 0
         assert status["total_rules"] == len(alert_manager.alert_rules)
-        assert status["enabled_rules"] == len([r for r in alert_manager.alert_rules.values() if r.enabled])
+        assert status["enabled_rules"] == len(
+            [r for r in alert_manager.alert_rules.values() if r.enabled]
+        )
 
 
 class TestAlertRule:
@@ -280,7 +294,7 @@ class TestAlertRule:
             comparison_period=AggregationPeriod.DAILY,
             enabled=True,
             cooldown_minutes=30,
-            tags=["test", "monitoring"]
+            tags=["test", "monitoring"],
         )
 
         assert rule.name == "test_rule"
@@ -301,7 +315,7 @@ class TestAlertRule:
                 severity=AlertSeverity.LOW,
                 metric_name="test",
                 condition="",  # Empty condition
-                threshold_value=0
+                threshold_value=0,
             )
 
 
@@ -320,7 +334,7 @@ class TestAlert:
             threshold_value=100,
             timestamp=timestamp,
             metadata={"test": "value"},
-            resolved=False
+            resolved=False,
         )
 
         assert alert.rule_name == "test_rule"
@@ -340,11 +354,11 @@ class TestEmailNotificationChannel:
     def test_email_channel_creation(self):
         """Test email notification channel creation."""
         config = {
-            'smtp_server': 'smtp.example.com',
-            'smtp_port': 587,
-            'username': 'test@example.com',
-            'password': 'password',
-            'recipients': ['admin@example.com']
+            "smtp_server": "smtp.example.com",
+            "smtp_port": 587,
+            "username": "test@example.com",
+            "password": "password",
+            "recipients": ["admin@example.com"],
         }
 
         channel = EmailNotificationChannel("email", config)
@@ -352,15 +366,15 @@ class TestEmailNotificationChannel:
         assert channel.name == "email"
         assert channel.config == config
 
-    @patch('smtplib.SMTP')
+    @patch("smtplib.SMTP")
     def test_email_send_alert(self, mock_smtp):
         """Test email alert sending."""
         config = {
-            'smtp_server': 'smtp.example.com',
-            'smtp_port': 587,
-            'username': 'test@example.com',
-            'password': 'password',
-            'recipients': ['admin@example.com']
+            "smtp_server": "smtp.example.com",
+            "smtp_port": 587,
+            "username": "test@example.com",
+            "password": "password",
+            "recipients": ["admin@example.com"],
         }
 
         channel = EmailNotificationChannel("email", config)
@@ -371,7 +385,7 @@ class TestEmailNotificationChannel:
             message="Test message",
             current_value=10,
             threshold_value=20,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
 
         # Mock SMTP connection
@@ -382,13 +396,13 @@ class TestEmailNotificationChannel:
 
         assert result == True
         mock_server.starttls.assert_called_once()
-        mock_server.login.assert_called_once_with('test@example.com', 'password')
+        mock_server.login.assert_called_once_with("test@example.com", "password")
         mock_server.send_message.assert_called_once()
 
     def test_email_send_alert_missing_config(self):
         """Test email alert with missing configuration."""
         config = {
-            'smtp_server': 'smtp.example.com',
+            "smtp_server": "smtp.example.com",
             # Missing required fields
         }
 
@@ -400,7 +414,7 @@ class TestEmailNotificationChannel:
             message="Test message",
             current_value=10,
             threshold_value=20,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
 
         result = channel.send_alert(alert)
@@ -412,17 +426,17 @@ class TestSlackNotificationChannel:
 
     def test_slack_channel_creation(self):
         """Test Slack notification channel creation."""
-        config = {'webhook_url': 'https://hooks.slack.com/webhook'}
+        config = {"webhook_url": "https://hooks.slack.com/webhook"}
 
         channel = SlackNotificationChannel("slack", config)
 
         assert channel.name == "slack"
         assert channel.config == config
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_slack_send_alert(self, mock_post):
         """Test Slack alert sending."""
-        config = {'webhook_url': 'https://hooks.slack.com/webhook'}
+        config = {"webhook_url": "https://hooks.slack.com/webhook"}
 
         channel = SlackNotificationChannel("slack", config)
 
@@ -432,7 +446,7 @@ class TestSlackNotificationChannel:
             message="Test message",
             current_value=5,
             threshold_value=10,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
 
         # Mock successful response
@@ -447,8 +461,8 @@ class TestSlackNotificationChannel:
 
         # Verify request payload
         call_args = mock_post.call_args
-        assert call_args[1]['json']['text'] == "Purchase Metrics Alert: test_alert"
-        assert len(call_args[1]['json']['attachments']) == 1
+        assert call_args[1]["json"]["text"] == "Purchase Metrics Alert: test_alert"
+        assert len(call_args[1]["json"]["attachments"]) == 1
 
     def test_slack_send_alert_missing_webhook(self):
         """Test Slack alert with missing webhook URL."""
@@ -462,7 +476,7 @@ class TestSlackNotificationChannel:
             message="Test message",
             current_value=10,
             threshold_value=20,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
 
         result = channel.send_alert(alert)
@@ -472,12 +486,12 @@ class TestSlackNotificationChannel:
 class TestWebhookNotificationChannel:
     """Test webhook notification channel."""
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_webhook_send_alert(self, mock_post):
         """Test webhook alert sending."""
         config = {
-            'url': 'https://example.com/webhook',
-            'headers': {'Authorization': 'Bearer token'}
+            "url": "https://example.com/webhook",
+            "headers": {"Authorization": "Bearer token"},
         }
 
         channel = WebhookNotificationChannel("webhook", config)
@@ -488,7 +502,7 @@ class TestWebhookNotificationChannel:
             message="Test message",
             current_value=15,
             threshold_value=20,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
 
         # Mock successful response
@@ -503,9 +517,9 @@ class TestWebhookNotificationChannel:
 
         # Verify request details
         call_args = mock_post.call_args
-        assert call_args[0][0] == 'https://example.com/webhook'
-        assert 'Authorization' in call_args[1]['headers']
-        assert call_args[1]['json']['rule_name'] == "test_alert"
+        assert call_args[0][0] == "https://example.com/webhook"
+        assert "Authorization" in call_args[1]["headers"]
+        assert call_args[1]["json"]["rule_name"] == "test_alert"
 
 
 @pytest.mark.integration
@@ -515,7 +529,7 @@ class TestAlertManagerIntegration:
     def test_full_alert_workflow(self):
         """Test complete alert workflow with notification channels."""
         # Create temporary metrics aggregator
-        fd, db_path = tempfile.mkstemp(suffix='.db')
+        fd, db_path = tempfile.mkstemp(suffix=".db")
         os.close(fd)
 
         try:
@@ -538,7 +552,7 @@ class TestAlertManagerIntegration:
                 gross_amount_cents=100,  # Very low amount
                 net_amount_cents=90,
                 stripe_fee_cents=10,
-                audit_type="basic"
+                audit_type="basic",
             )
 
             # Aggregate metrics

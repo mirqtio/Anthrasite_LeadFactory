@@ -251,25 +251,25 @@ class SendGridWarmupDashboard:
             <div class="container">
                 <div class="header">
                     <h1>SendGrid Warmup Dashboard</h1>
-                    <p>Last updated: {metrics['timestamp']}</p>
+                    <p>Last updated: {metrics["timestamp"]}</p>
                 </div>
 
                 <div class="summary">
                     <div class="summary-card">
                         <h3>Total IPs</h3>
-                        <div class="value">{metrics['summary']['total_ips']}</div>
+                        <div class="value">{metrics["summary"]["total_ips"]}</div>
                     </div>
                     <div class="summary-card">
                         <h3>In Progress</h3>
-                        <div class="value">{metrics['summary']['in_progress']}</div>
+                        <div class="value">{metrics["summary"]["in_progress"]}</div>
                     </div>
                     <div class="summary-card">
                         <h3>Completed</h3>
-                        <div class="value">{metrics['summary']['completed']}</div>
+                        <div class="value">{metrics["summary"]["completed"]}</div>
                     </div>
                     <div class="summary-card">
                         <h3>Paused</h3>
-                        <div class="value">{metrics['summary']['paused']}</div>
+                        <div class="value">{metrics["summary"]["paused"]}</div>
                     </div>
                 </div>
 
@@ -297,14 +297,14 @@ class SendGridWarmupDashboard:
                     <div class="ip-card">
                         <div class="ip-header">
                             <div class="ip-address">{ip}</div>
-                            <div class="status {status_class}">{data['status']}</div>
+                            <div class="status {status_class}">{data["status"]}</div>
                         </div>
 
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: {progress_percent}%"></div>
                         </div>
                         <div style="text-align: center; margin-top: 5px;">
-                            Stage {data['stage']} - {progress_percent:.1f}% Complete
+                            Stage {data["stage"]} - {progress_percent:.1f}% Complete
                         </div>
 
                         {alerts_html}
@@ -312,19 +312,19 @@ class SendGridWarmupDashboard:
                         <div class="metrics">
                             <div class="metric">
                                 <div class="metric-label">Daily Sent</div>
-                                <div class="metric-value">{data['daily_sent']}</div>
+                                <div class="metric-value">{data["daily_sent"]}</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-label">Daily Limit</div>
-                                <div class="metric-value">{data['daily_limit']}</div>
+                                <div class="metric-value">{data["daily_limit"]}</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-label">Bounce Rate</div>
-                                <div class="metric-value">{data.get('bounce_rate', 0):.3f}</div>
+                                <div class="metric-value">{data.get("bounce_rate", 0):.3f}</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-label">Spam Rate</div>
-                                <div class="metric-value">{data.get('spam_rate', 0):.3f}</div>
+                                <div class="metric-value">{data.get("spam_rate", 0):.3f}</div>
                             </div>
                         </div>
                     </div>

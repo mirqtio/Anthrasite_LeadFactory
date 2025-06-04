@@ -2,20 +2,21 @@
 Unit tests for the Report Template Engine.
 """
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
+
+import pytest
 
 from leadfactory.services.report_template_engine import (
-    ReportTemplateEngine,
     ReportData,
     ReportSection,
-    format_financial_data,
+    ReportTemplateEngine,
     create_comparison_table,
-    generate_executive_summary
+    format_financial_data,
+    generate_executive_summary,
 )
 
 
@@ -25,10 +26,7 @@ class TestReportSection:
     def test_report_section_creation(self):
         """Test creating a report section."""
         section = ReportSection(
-            title="Test Section",
-            content="Test content",
-            section_type="text",
-            order=1
+            title="Test Section", content="Test content", section_type="text", order=1
         )
 
         assert section.title == "Test Section"
@@ -41,9 +39,7 @@ class TestReportSection:
         """Test creating a report section with metadata."""
         metadata = {"priority": "high", "category": "summary"}
         section = ReportSection(
-            title="Test Section",
-            content="Test content",
-            metadata=metadata
+            title="Test Section", content="Test content", metadata=metadata
         )
 
         assert section.metadata == metadata
@@ -55,9 +51,7 @@ class TestReportData:
     def test_report_data_creation(self):
         """Test creating report data."""
         report = ReportData(
-            title="Test Report",
-            subtitle="Test Subtitle",
-            company_name="Test Company"
+            title="Test Report", subtitle="Test Subtitle", company_name="Test Company"
         )
 
         assert report.title == "Test Report"
@@ -150,16 +144,14 @@ class TestReportTemplateEngine:
     def test_render_simple_report(self):
         """Test rendering a simple report."""
         report = ReportData(
-            title="Test Report",
-            subtitle="Test Subtitle",
-            company_name="Test Company"
+            title="Test Report", subtitle="Test Subtitle", company_name="Test Company"
         )
 
         section = ReportSection(
             title="Test Section",
             content="This is test content.",
             section_type="text",
-            order=1
+            order=1,
         )
         report.add_section(section)
 
@@ -177,17 +169,11 @@ class TestReportTemplateEngine:
 
         table_data = {
             "headers": ["Name", "Value"],
-            "rows": [
-                ["Item 1", "100"],
-                ["Item 2", "200"]
-            ]
+            "rows": [["Item 1", "100"], ["Item 2", "200"]],
         }
 
         section = ReportSection(
-            title="Table Section",
-            content=table_data,
-            section_type="table",
-            order=1
+            title="Table Section", content=table_data, section_type="table", order=1
         )
         report.add_section(section)
 
@@ -206,10 +192,7 @@ class TestReportTemplateEngine:
         list_items = ["Item 1", "Item 2", "Item 3"]
 
         section = ReportSection(
-            title="List Section",
-            content=list_items,
-            section_type="list",
-            order=1
+            title="List Section", content=list_items, section_type="list", order=1
         )
         report.add_section(section)
 
@@ -230,16 +213,13 @@ class TestReportTemplateEngine:
             "chart_type": "bar",
             "data": [
                 {"label": "Category A", "value": 85},
-                {"label": "Category B", "value": 65}
+                {"label": "Category B", "value": 65},
             ],
-            "max_value": 100
+            "max_value": 100,
         }
 
         section = ReportSection(
-            title="Chart Section",
-            content=chart_data,
-            section_type="chart",
-            order=1
+            title="Chart Section", content=chart_data, section_type="chart", order=1
         )
         report.add_section(section)
 
@@ -282,8 +262,7 @@ class TestReportTemplateEngine:
     def test_render_with_confidential_metadata(self):
         """Test rendering report with confidential metadata."""
         report = ReportData(
-            title="Confidential Report",
-            metadata={"confidential": True}
+            title="Confidential Report", metadata={"confidential": True}
         )
 
         html_content = self.engine.render_report(report)
@@ -297,11 +276,7 @@ class TestHelperFunctions:
 
     def test_format_financial_data(self):
         """Test formatting financial data."""
-        data = {
-            "revenue": 1234567.89,
-            "costs": 987654.32,
-            "profit": 246913.57
-        }
+        data = {"revenue": 1234567.89, "costs": 987654.32, "profit": 246913.57}
 
         formatted = format_financial_data(data)
 
@@ -357,15 +332,11 @@ class TestHelperFunctions:
 
     def test_generate_executive_summary(self):
         """Test generating executive summary."""
-        metrics = {
-            "conversion_rate": 2.5,
-            "cost_per_lead": 45.20,
-            "lead_volume": 1250
-        }
+        metrics = {"conversion_rate": 2.5, "cost_per_lead": 45.20, "lead_volume": 1250}
         recommendations = [
             "Optimize landing pages",
             "Improve lead scoring",
-            "Implement automation"
+            "Implement automation",
         ]
 
         summary = generate_executive_summary(metrics, recommendations)
@@ -404,47 +375,55 @@ class TestTemplateIntegration:
             title="Complete Test Report",
             subtitle="All Section Types",
             company_name="Test Corp",
-            metadata={"confidential": True}
+            metadata={"confidential": True},
         )
 
         # Text section
-        report.add_section(ReportSection(
-            title="Summary",
-            content=["First paragraph.", "Second paragraph."],
-            section_type="text",
-            order=1
-        ))
+        report.add_section(
+            ReportSection(
+                title="Summary",
+                content=["First paragraph.", "Second paragraph."],
+                section_type="text",
+                order=1,
+            )
+        )
 
         # List section
-        report.add_section(ReportSection(
-            title="Action Items",
-            content=["Action 1", "Action 2", "Action 3"],
-            section_type="list",
-            order=2
-        ))
+        report.add_section(
+            ReportSection(
+                title="Action Items",
+                content=["Action 1", "Action 2", "Action 3"],
+                section_type="list",
+                order=2,
+            )
+        )
 
         # Table section
-        report.add_section(ReportSection(
-            title="Metrics",
-            content={
-                "headers": ["Metric", "Value"],
-                "rows": [["KPI 1", "100"], ["KPI 2", "200"]]
-            },
-            section_type="table",
-            order=3
-        ))
+        report.add_section(
+            ReportSection(
+                title="Metrics",
+                content={
+                    "headers": ["Metric", "Value"],
+                    "rows": [["KPI 1", "100"], ["KPI 2", "200"]],
+                },
+                section_type="table",
+                order=3,
+            )
+        )
 
         # Chart section
-        report.add_section(ReportSection(
-            title="Performance",
-            content={
-                "chart_type": "bar",
-                "data": [{"label": "Q1", "value": 75}],
-                "max_value": 100
-            },
-            section_type="chart",
-            order=4
-        ))
+        report.add_section(
+            ReportSection(
+                title="Performance",
+                content={
+                    "chart_type": "bar",
+                    "data": [{"label": "Q1", "value": 75}],
+                    "max_value": 100,
+                },
+                section_type="chart",
+                order=4,
+            )
+        )
 
         html_content = self.engine.render_report(report)
 

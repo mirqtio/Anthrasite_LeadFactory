@@ -29,9 +29,7 @@ class TestDedicatedIP(unittest.TestCase):
     def test_dedicated_ip_creation(self):
         """Test creating a DedicatedIP instance."""
         ip = DedicatedIP(
-            ip_address="192.168.1.1",
-            status=IPStatus.ACTIVE,
-            pool_name="test-pool"
+            ip_address="192.168.1.1", status=IPStatus.ACTIVE, pool_name="test-pool"
         )
 
         self.assertEqual(ip.ip_address, "192.168.1.1")
@@ -55,7 +53,7 @@ class TestDedicatedIP(unittest.TestCase):
             daily_volume=1000,
             bounce_rate=0.02,
             spam_rate=0.001,
-            metadata={"test": "value"}
+            metadata={"test": "value"},
         )
 
         data = ip.to_dict()
@@ -84,7 +82,7 @@ class TestDedicatedIP(unittest.TestCase):
             "daily_volume": 1000,
             "bounce_rate": 0.02,
             "spam_rate": 0.001,
-            "metadata": {"test": "value"}
+            "metadata": {"test": "value"},
         }
 
         ip = DedicatedIP.from_dict(data)
@@ -120,7 +118,7 @@ class TestIPPool(unittest.TestCase):
             name="test-pool",
             ips=["192.168.1.1", "192.168.1.2"],
             created_at=now,
-            metadata={"test": "value"}
+            metadata={"test": "value"},
         )
 
         data = pool.to_dict()
@@ -137,7 +135,7 @@ class TestIPPool(unittest.TestCase):
             "name": "test-pool",
             "ips": ["192.168.1.1", "192.168.1.2"],
             "created_at": now.isoformat(),
-            "metadata": {"test": "value"}
+            "metadata": {"test": "value"},
         }
 
         pool = IPPool.from_dict(data)
@@ -159,7 +157,9 @@ class TestSendGridIPProvisioner(unittest.TestCase):
         self.db_path = self.temp_db.name
 
         # Create provisioner instance
-        self.provisioner = SendGridIPProvisioner(api_key="test-key", db_path=self.db_path)
+        self.provisioner = SendGridIPProvisioner(
+            api_key="test-key", db_path=self.db_path
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -206,7 +206,7 @@ class TestSendGridIPProvisioner(unittest.TestCase):
             pool_name="test-pool",
             provisioned_at=datetime.now(),
             health_status=IPHealthStatus.HEALTHY,
-            reputation_score=95.0
+            reputation_score=95.0,
         )
 
         # Store IP
@@ -265,7 +265,7 @@ class TestSendGridIPProvisioner(unittest.TestCase):
             name="test-pool",
             ips=["192.168.1.1", "192.168.1.2"],
             created_at=datetime.now(),
-            metadata={"test": "value"}
+            metadata={"test": "value"},
         )
 
         # Store pool
@@ -318,14 +318,28 @@ class TestSendGridIPProvisioner(unittest.TestCase):
     def test_get_ip_status_summary(self):
         """Test getting IP status summary."""
         # Create test IPs with different statuses
-        ip1 = DedicatedIP("192.168.1.1", IPStatus.ACTIVE, "pool1",
-                         health_status=IPHealthStatus.HEALTHY,
-                         reputation_score=95.0, daily_volume=1000)
-        ip2 = DedicatedIP("192.168.1.2", IPStatus.PROVISIONING, "pool1",
-                         health_status=IPHealthStatus.UNKNOWN)
-        ip3 = DedicatedIP("192.168.1.3", IPStatus.ACTIVE, "pool2",
-                         health_status=IPHealthStatus.WARNING,
-                         reputation_score=85.0, daily_volume=500)
+        ip1 = DedicatedIP(
+            "192.168.1.1",
+            IPStatus.ACTIVE,
+            "pool1",
+            health_status=IPHealthStatus.HEALTHY,
+            reputation_score=95.0,
+            daily_volume=1000,
+        )
+        ip2 = DedicatedIP(
+            "192.168.1.2",
+            IPStatus.PROVISIONING,
+            "pool1",
+            health_status=IPHealthStatus.UNKNOWN,
+        )
+        ip3 = DedicatedIP(
+            "192.168.1.3",
+            IPStatus.ACTIVE,
+            "pool2",
+            health_status=IPHealthStatus.WARNING,
+            reputation_score=85.0,
+            daily_volume=500,
+        )
 
         # Store IPs
         self.provisioner._store_dedicated_ip(ip1)
@@ -351,7 +365,9 @@ class TestSendGridIPProvisioner(unittest.TestCase):
         # Create test IPs
         ip1 = DedicatedIP("192.168.1.1", IPStatus.ACTIVE, "pool1")
         ip2 = DedicatedIP("192.168.1.2", IPStatus.ACTIVE, "pool1")
-        ip3 = DedicatedIP("192.168.1.3", IPStatus.PROVISIONING, "pool1")  # Should be skipped
+        ip3 = DedicatedIP(
+            "192.168.1.3", IPStatus.PROVISIONING, "pool1"
+        )  # Should be skipped
 
         # Store IPs
         self.provisioner._store_dedicated_ip(ip1)
@@ -422,7 +438,7 @@ class TestConvenienceFunctions(unittest.TestCase):
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
 
-    @patch('leadfactory.email.sendgrid_ip_provisioning.SendGridIPProvisioner')
+    @patch("leadfactory.email.sendgrid_ip_provisioning.SendGridIPProvisioner")
     def test_get_ip_provisioner(self, mock_provisioner_class):
         """Test get_ip_provisioner convenience function."""
         mock_instance = Mock()
@@ -430,10 +446,12 @@ class TestConvenienceFunctions(unittest.TestCase):
 
         result = get_ip_provisioner(api_key="test-key", db_path=self.db_path)
 
-        mock_provisioner_class.assert_called_once_with(api_key="test-key", db_path=self.db_path)
+        mock_provisioner_class.assert_called_once_with(
+            api_key="test-key", db_path=self.db_path
+        )
         self.assertEqual(result, mock_instance)
 
-    @patch('leadfactory.email.sendgrid_ip_provisioning.get_ip_provisioner')
+    @patch("leadfactory.email.sendgrid_ip_provisioning.get_ip_provisioner")
     def test_provision_dedicated_ip_convenience(self, mock_get_provisioner):
         """Test provision_dedicated_ip convenience function."""
         mock_provisioner = Mock()
@@ -446,12 +464,15 @@ class TestConvenienceFunctions(unittest.TestCase):
         mock_provisioner.provision_dedicated_ip.assert_called_once_with("test-pool")
         self.assertEqual(result, (True, "Success", None))
 
-    @patch('leadfactory.email.sendgrid_ip_provisioning.get_ip_provisioner')
+    @patch("leadfactory.email.sendgrid_ip_provisioning.get_ip_provisioner")
     def test_check_ip_health_convenience(self, mock_get_provisioner):
         """Test check_ip_health convenience function."""
         mock_provisioner = Mock()
         mock_get_provisioner.return_value = mock_provisioner
-        mock_provisioner.check_ip_health.return_value = (IPHealthStatus.HEALTHY, {"test": "data"})
+        mock_provisioner.check_ip_health.return_value = (
+            IPHealthStatus.HEALTHY,
+            {"test": "data"},
+        )
 
         result = check_ip_health("192.168.1.1")
 
@@ -459,7 +480,7 @@ class TestConvenienceFunctions(unittest.TestCase):
         mock_provisioner.check_ip_health.assert_called_once_with("192.168.1.1")
         self.assertEqual(result, (IPHealthStatus.HEALTHY, {"test": "data"}))
 
-    @patch('leadfactory.email.sendgrid_ip_provisioning.get_ip_provisioner')
+    @patch("leadfactory.email.sendgrid_ip_provisioning.get_ip_provisioner")
     def test_get_ip_status_summary_convenience(self, mock_get_provisioner):
         """Test get_ip_status_summary convenience function."""
         mock_provisioner = Mock()

@@ -174,7 +174,7 @@ class PostgresStorage(StorageInterface):
 
             query = f"""
                 UPDATE businesses
-                SET {', '.join(set_conditions)}
+                SET {", ".join(set_conditions)}
                 WHERE id = %s
             """
 
@@ -198,7 +198,7 @@ class PostgresStorage(StorageInterface):
             placeholders = ", ".join(["%s"] * len(fields))
 
             query = f"""
-                INSERT INTO businesses ({', '.join(fields)})
+                INSERT INTO businesses ({", ".join(fields)})
                 VALUES ({placeholders})
                 RETURNING id
             """
@@ -715,11 +715,11 @@ class PostgresStorage(StorageInterface):
         if seconds < 60:
             return f"{seconds:.0f} seconds"
         elif seconds < 3600:
-            return f"{seconds/60:.1f} minutes"
+            return f"{seconds / 60:.1f} minutes"
         elif seconds < 86400:
-            return f"{seconds/3600:.1f} hours"
+            return f"{seconds / 3600:.1f} hours"
         else:
-            return f"{seconds/86400:.1f} days"
+            return f"{seconds / 86400:.1f} days"
 
     # Asset Management Methods
     def get_businesses_needing_screenshots(
@@ -1093,7 +1093,7 @@ class PostgresStorage(StorageInterface):
     def read_text(self, file_path: str) -> str:
         """Read text content from a file."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 return f.read()
         except Exception as e:
             logger.error(f"Error reading file {file_path}: {e}")

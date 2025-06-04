@@ -1,6 +1,7 @@
 """
 Simple CLI tests that verify the CLI functionality works.
 """
+
 import os
 import subprocess
 
@@ -21,7 +22,7 @@ class TestCLIFunctionality:
             self.cli_command + ["--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "Anthrasite Lead Factory CLI" in result.stdout
@@ -35,7 +36,7 @@ class TestCLIFunctionality:
             self.cli_command + ["--version"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
 
@@ -45,7 +46,7 @@ class TestCLIFunctionality:
             self.cli_command + ["pipeline", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "Pipeline operations" in result.stdout
@@ -60,7 +61,7 @@ class TestCLIFunctionality:
             self.cli_command + ["admin", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "Administrative operations" in result.stdout
@@ -71,7 +72,7 @@ class TestCLIFunctionality:
             self.cli_command + ["dev", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "Development and testing operations" in result.stdout
@@ -82,7 +83,7 @@ class TestCLIFunctionality:
             self.cli_command + ["pipeline", "scrape", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -95,7 +96,7 @@ class TestCLIFunctionality:
             self.cli_command + ["pipeline", "enrich", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -108,7 +109,7 @@ class TestCLIFunctionality:
             self.cli_command + ["pipeline", "dedupe", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -120,7 +121,7 @@ class TestCLIFunctionality:
             self.cli_command + ["pipeline", "email", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -133,7 +134,7 @@ class TestCLIFunctionality:
             self.cli_command + ["--verbose", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
 
@@ -143,7 +144,7 @@ class TestCLIFunctionality:
             self.cli_command + ["--dry-run", "--help"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
         assert result.returncode == 0
 
@@ -179,6 +180,7 @@ class TestCLIStructure:
         """Test that Click dependency is available."""
         try:
             import click
+
             assert click is not None
         except ImportError:
             pytest.fail("Click framework should be installed")
@@ -191,7 +193,9 @@ class TestCLIStructure:
         with open(requirements_path) as f:
             requirements_content = f.read()
 
-        assert "click" in requirements_content.lower(), "Click should be in requirements.txt"
+        assert "click" in requirements_content.lower(), (
+            "Click should be in requirements.txt"
+        )
 
 
 if __name__ == "__main__":

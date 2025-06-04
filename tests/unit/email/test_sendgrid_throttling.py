@@ -8,20 +8,20 @@ metrics tracking, and integration with warm-up schedules.
 import json
 import tempfile
 import unittest
-from datetime import datetime, date, timedelta
-from unittest.mock import Mock, patch
+from datetime import date, datetime, timedelta
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 from leadfactory.email.sendgrid_throttling import (
+    EmailBatch,
+    QueuePriority,
     SendGridThrottler,
+    SendMetrics,
     ThrottleConfig,
     ThrottleStatus,
-    QueuePriority,
-    EmailBatch,
-    SendMetrics,
-    get_throttler,
-    create_email_batch,
     check_send_capacity,
+    create_email_batch,
+    get_throttler,
 )
 from leadfactory.email.sendgrid_warmup import SendGridWarmupScheduler, WarmupStatus
 
@@ -227,15 +227,21 @@ class TestSendGridThrottler(unittest.TestCase):
         # Check that tables exist by querying them
         with self.throttler._get_db_connection() as conn:
             # Check email_batches table
-            cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='email_batches'")
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='email_batches'"
+            )
             self.assertIsNotNone(cursor.fetchone())
 
             # Check send_metrics table
-            cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='send_metrics'")
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='send_metrics'"
+            )
             self.assertIsNotNone(cursor.fetchone())
 
             # Check throttle_events table
-            cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='throttle_events'")
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='throttle_events'"
+            )
             self.assertIsNotNone(cursor.fetchone())
 
     def test_get_daily_limit_default(self):
@@ -321,7 +327,7 @@ class TestSendGridThrottler(unittest.TestCase):
         self.assertTrue(can_send)
         self.assertEqual(reason, "Throttling disabled")
 
-    @patch('leadfactory.email.sendgrid_throttling.SendGridThrottler.get_daily_limit')
+    @patch("leadfactory.email.sendgrid_throttling.SendGridThrottler.get_daily_limit")
     def test_can_send_now_daily_limit_exceeded(self, mock_get_limit):
         """Test send capacity check with daily limit exceeded."""
         mock_get_limit.return_value = 100
@@ -357,15 +363,29 @@ class TestSendGridThrottler(unittest.TestCase):
 
         # Check database
         with self.throttler._get_db_connection() as conn:
-            row = conn.execute("SELECT * FROM email_batches WHERE batch_id = ?", ("test-batch-1",)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM email_batches WHERE batch_id = ?", ("test-batch-1",)
+            ).fetchone()
             self.assertIsNotNone(row)
 
     def test_get_next_batch_priority_order(self):
         """Test getting next batch respects priority order."""
         # Queue batches with different priorities
-        high_batch = create_email_batch("high-batch", "192.168.1.1", [{"to": "test@example.com"}], QueuePriority.HIGH)
-        normal_batch = create_email_batch("normal-batch", "192.168.1.1", [{"to": "test@example.com"}], QueuePriority.NORMAL)
-        low_batch = create_email_batch("low-batch", "192.168.1.1", [{"to": "test@example.com"}], QueuePriority.LOW)
+        high_batch = create_email_batch(
+            "high-batch",
+            "192.168.1.1",
+            [{"to": "test@example.com"}],
+            QueuePriority.HIGH,
+        )
+        normal_batch = create_email_batch(
+            "normal-batch",
+            "192.168.1.1",
+            [{"to": "test@example.com"}],
+            QueuePriority.NORMAL,
+        )
+        low_batch = create_email_batch(
+            "low-batch", "192.168.1.1", [{"to": "test@example.com"}], QueuePriority.LOW
+        )
 
         # Queue in reverse priority order
         self.throttler.queue_email_batch(low_batch)
@@ -446,8 +466,12 @@ class TestSendGridThrottler(unittest.TestCase):
     def test_get_throttle_status(self):
         """Test getting throttle status."""
         # Queue some batches
-        batch1 = create_email_batch("batch1", "192.168.1.1", [{"to": "test1@example.com"}], QueuePriority.HIGH)
-        batch2 = create_email_batch("batch2", "192.168.1.1", [{"to": "test2@example.com"}], QueuePriority.NORMAL)
+        batch1 = create_email_batch(
+            "batch1", "192.168.1.1", [{"to": "test1@example.com"}], QueuePriority.HIGH
+        )
+        batch2 = create_email_batch(
+            "batch2", "192.168.1.1", [{"to": "test2@example.com"}], QueuePriority.NORMAL
+        )
 
         self.throttler.queue_email_batch(batch1)
         self.throttler.queue_email_batch(batch2)
@@ -503,7 +527,9 @@ class TestConvenienceFunctions(unittest.TestCase):
     def test_create_email_batch(self):
         """Test creating email batch."""
         emails = [{"to": "test@example.com", "subject": "Test"}]
-        batch = create_email_batch("test-batch", "192.168.1.1", emails, QueuePriority.HIGH)
+        batch = create_email_batch(
+            "test-batch", "192.168.1.1", emails, QueuePriority.HIGH
+        )
 
         self.assertEqual(batch.batch_id, "test-batch")
         self.assertEqual(batch.ip_address, "192.168.1.1")
@@ -520,7 +546,7 @@ class TestConvenienceFunctions(unittest.TestCase):
 
     def test_check_send_capacity_default_throttler(self):
         """Test checking send capacity with default throttler."""
-        with patch('leadfactory.email.sendgrid_throttling.get_throttler') as mock_get:
+        with patch("leadfactory.email.sendgrid_throttling.get_throttler") as mock_get:
             mock_throttler = Mock()
             mock_throttler.can_send_now.return_value = (True, "OK")
             mock_get.return_value = mock_throttler

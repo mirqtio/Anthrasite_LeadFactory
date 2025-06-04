@@ -7,14 +7,15 @@ import os
 import sys
 import unittest
 from datetime import datetime
-from unittest.mock import MagicMock, Mock, patch, mock_open
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 try:
     # Try to import the actual modules
-    from leadfactory.storage.interface import StorageInterface
-    from leadfactory.storage.postgres_storage import PostgresStorage
     from leadfactory.pipeline.data_preservation import DataPreservationManager
     from leadfactory.storage.factory import get_storage
+    from leadfactory.storage.interface import StorageInterface
+    from leadfactory.storage.postgres_storage import PostgresStorage
+
     IMPORTS_AVAILABLE = True
 except ImportError:
     # Create mock classes if imports fail
@@ -55,14 +56,16 @@ class TestStorageDataPreservation(unittest.TestCase):
         self.mock_connection.cursor.return_value = cursor_context
 
         # Create PostgresStorage instance with mocked database functions
-        with patch('leadfactory.storage.postgres_storage.db_connection') as mock_db_conn:
+        with patch(
+            "leadfactory.storage.postgres_storage.db_connection"
+        ) as mock_db_conn:
             mock_db_conn.return_value.__enter__.return_value = self.mock_connection
             mock_db_conn.return_value.__exit__.return_value = None
             self.storage = PostgresStorage()
 
     def tearDown(self):
         """Clean up after tests."""
-        if hasattr(self, 'storage'):
+        if hasattr(self, "storage"):
             # Reset mock calls
             self.mock_connection.reset_mock()
             self.mock_cursor.reset_mock()
@@ -95,28 +98,28 @@ class TestStorageDataPreservation(unittest.TestCase):
         # Setup
         backup_id = "backup_123"
         expected_metadata = {
-            'backup_id': backup_id,
-            'operation_type': 'merge',
-            'business_ids': [1, 2, 3],
-            'backup_path': '/path/to/backup',
-            'backup_size': 1024,
-            'checksum': 'abc123',
-            'created_at': datetime.now(),
-            'restored_at': None,
-            'restored_by': None
+            "backup_id": backup_id,
+            "operation_type": "merge",
+            "business_ids": [1, 2, 3],
+            "backup_path": "/path/to/backup",
+            "backup_size": 1024,
+            "checksum": "abc123",
+            "created_at": datetime.now(),
+            "restored_at": None,
+            "restored_by": None,
         }
 
         # Mock cursor to return metadata
         self.mock_cursor.fetchone.return_value = (
             backup_id,
-            'merge',
+            "merge",
             [1, 2, 3],
-            '/path/to/backup',
+            "/path/to/backup",
             1024,
-            'abc123',
+            "abc123",
             datetime.now(),
             None,
-            None
+            None,
         )
 
         # Execute
@@ -124,7 +127,7 @@ class TestStorageDataPreservation(unittest.TestCase):
 
         # Verify
         self.assertIsNotNone(result)
-        self.assertEqual(result['backup_id'], backup_id)
+        self.assertEqual(result["backup_id"], backup_id)
         self.mock_cursor.execute.assert_called()
 
     def test_get_backup_metadata_not_found(self):
@@ -183,8 +186,13 @@ class TestStorageDataPreservation(unittest.TestCase):
 
         # Execute
         result = self.storage.log_dedupe_operation(
-            operation_type, business1_id, business2_id,
-            operation_data, status, None, user_id
+            operation_type,
+            business1_id,
+            business2_id,
+            operation_data,
+            status,
+            None,
+            user_id,
         )
 
         # Verify
@@ -207,8 +215,12 @@ class TestStorageDataPreservation(unittest.TestCase):
 
         # Execute
         result = self.storage.log_dedupe_operation(
-            operation_type, business1_id, business2_id,
-            operation_data, status, error_message
+            operation_type,
+            business1_id,
+            business2_id,
+            operation_data,
+            status,
+            error_message,
         )
 
         # Verify
@@ -222,20 +234,29 @@ class TestStorageDataPreservation(unittest.TestCase):
         business_id = 1
         expected_trail = [
             {
-                'operation_type': 'merge',
-                'business1_id': 1,
-                'business2_id': 2,
-                'operation_data': {'test': 'data'},
-                'status': 'success',
-                'error_message': None,
-                'created_at': datetime.now(),
-                'user_id': 'user_123'
+                "operation_type": "merge",
+                "business1_id": 1,
+                "business2_id": 2,
+                "operation_data": {"test": "data"},
+                "status": "success",
+                "error_message": None,
+                "created_at": datetime.now(),
+                "user_id": "user_123",
             }
         ]
 
         # Mock cursor to return trail data
         self.mock_cursor.fetchall.return_value = [
-            ('merge', 1, 2, {'test': 'data'}, 'success', None, datetime.now(), 'user_123')
+            (
+                "merge",
+                1,
+                2,
+                {"test": "data"},
+                "success",
+                None,
+                datetime.now(),
+                "user_123",
+            )
         ]
 
         # Execute
@@ -243,7 +264,7 @@ class TestStorageDataPreservation(unittest.TestCase):
 
         # Verify
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]['operation_type'], 'merge')
+        self.assertEqual(result[0]["operation_type"], "merge")
         self.mock_cursor.execute.assert_called()
 
     def test_create_savepoint(self):
@@ -274,7 +295,9 @@ class TestStorageDataPreservation(unittest.TestCase):
 
         # Verify
         self.assertTrue(result)
-        self.mock_cursor.execute.assert_called_with(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
+        self.mock_cursor.execute.assert_called_with(
+            f"ROLLBACK TO SAVEPOINT {savepoint_name}"
+        )
 
     def test_release_savepoint(self):
         """Test releasing savepoint."""
@@ -289,23 +312,25 @@ class TestStorageDataPreservation(unittest.TestCase):
 
         # Verify
         self.assertTrue(result)
-        self.mock_cursor.execute.assert_called_with(f"RELEASE SAVEPOINT {savepoint_name}")
+        self.mock_cursor.execute.assert_called_with(
+            f"RELEASE SAVEPOINT {savepoint_name}"
+        )
 
     def test_get_related_business_data(self):
         """Test retrieving related business data."""
         # Setup
         business_ids = [1, 2, 3]
         expected_data = [
-            {'id': 1, 'name': 'Business 1', 'phone': '123-456-7890'},
-            {'id': 2, 'name': 'Business 2', 'phone': '234-567-8901'},
-            {'id': 3, 'name': 'Business 3', 'phone': '345-678-9012'}
+            {"id": 1, "name": "Business 1", "phone": "123-456-7890"},
+            {"id": 2, "name": "Business 2", "phone": "234-567-8901"},
+            {"id": 3, "name": "Business 3", "phone": "345-678-9012"},
         ]
 
         # Mock cursor to return business data
         self.mock_cursor.fetchall.return_value = [
-            (1, 'Business 1', '123-456-7890'),
-            (2, 'Business 2', '234-567-8901'),
-            (3, 'Business 3', '345-678-9012')
+            (1, "Business 1", "123-456-7890"),
+            (2, "Business 2", "234-567-8901"),
+            (3, "Business 3", "345-678-9012"),
         ]
 
         # Execute
@@ -313,8 +338,8 @@ class TestStorageDataPreservation(unittest.TestCase):
 
         # Verify
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0]['id'], 1)
-        self.assertEqual(result[0]['name'], 'Business 1')
+        self.assertEqual(result[0]["id"], 1)
+        self.assertEqual(result[0]["name"], "Business 1")
         self.mock_cursor.execute.assert_called()
 
     def test_database_error_handling(self):
@@ -323,7 +348,9 @@ class TestStorageDataPreservation(unittest.TestCase):
         self.mock_cursor.execute.side_effect = Exception("Database error")
 
         # Execute and verify exception handling
-        result = self.storage.record_backup_metadata("test", "merge", [1], "/path", 1024, "checksum")
+        result = self.storage.record_backup_metadata(
+            "test", "merge", [1], "/path", 1024, "checksum"
+        )
         self.assertFalse(result)
 
         result = self.storage.log_dedupe_operation("merge", 1, 2, {}, "success")
@@ -345,14 +372,17 @@ class TestDataPreservationManager(unittest.TestCase):
         self.mock_storage = Mock(spec=StorageInterface)
 
         # Create DataPreservationManager with mocked storage by patching the decorator
-        with patch('leadfactory.pipeline.data_preservation.get_storage', return_value=self.mock_storage):
+        with patch(
+            "leadfactory.pipeline.data_preservation.get_storage",
+            return_value=self.mock_storage,
+        ):
             self.manager = DataPreservationManager()
             # Manually set the storage to our mock since the decorator might not work in tests
             self.manager.storage = self.mock_storage
 
     def tearDown(self):
         """Clean up after tests."""
-        if hasattr(self, 'mock_storage'):
+        if hasattr(self, "mock_storage"):
             self.mock_storage.reset_mock()
 
     def test_create_backup_with_storage(self):
@@ -363,9 +393,9 @@ class TestDataPreservationManager(unittest.TestCase):
 
         self.mock_storage.record_backup_metadata.return_value = True
         self.mock_storage.get_related_business_data.return_value = [
-            {'id': 1, 'name': 'Business 1'},
-            {'id': 2, 'name': 'Business 2'},
-            {'id': 3, 'name': 'Business 3'}
+            {"id": 1, "name": "Business 1"},
+            {"id": 2, "name": "Business 2"},
+            {"id": 3, "name": "Business 3"},
         ]
 
         # Execute
@@ -373,9 +403,13 @@ class TestDataPreservationManager(unittest.TestCase):
 
         # Verify
         self.assertIsNotNone(result)  # Should return a generated backup ID
-        self.assertTrue(result.startswith(operation_type))  # Should start with operation type
+        self.assertTrue(
+            result.startswith(operation_type)
+        )  # Should start with operation type
         self.mock_storage.record_backup_metadata.assert_called_once()
-        self.mock_storage.get_related_business_data.assert_called_once_with(business_ids)
+        self.mock_storage.get_related_business_data.assert_called_once_with(
+            business_ids
+        )
 
     def test_restore_backup_with_storage(self):
         """Test backup restoration using storage interface."""
@@ -384,19 +418,20 @@ class TestDataPreservationManager(unittest.TestCase):
         user_id = "user_456"
 
         self.mock_storage.get_backup_metadata.return_value = {
-            'backup_id': backup_id,
-            'business_ids': [1, 2, 3],
-            'backup_path': '/path/to/backup',
-            'checksum': 'abc123'
+            "backup_id": backup_id,
+            "business_ids": [1, 2, 3],
+            "backup_path": "/path/to/backup",
+            "checksum": "abc123",
         }
         self.mock_storage.update_backup_restored.return_value = True
 
         # Mock file operations
-        with patch('builtins.open', mock_open(read_data='{"test": "data"}')), \
-             patch('os.path.exists', return_value=True), \
-             patch('hashlib.sha256') as mock_hash:
-
-            mock_hash.return_value.hexdigest.return_value = 'abc123'
+        with (
+            patch("builtins.open", mock_open(read_data='{"test": "data"}')),
+            patch("os.path.exists", return_value=True),
+            patch("hashlib.sha256") as mock_hash,
+        ):
+            mock_hash.return_value.hexdigest.return_value = "abc123"
 
             # Execute
             result = self.manager.restore_backup(backup_id, user_id)
@@ -404,7 +439,9 @@ class TestDataPreservationManager(unittest.TestCase):
         # Verify
         self.assertTrue(result)
         self.mock_storage.get_backup_metadata.assert_called_once_with(backup_id)
-        self.mock_storage.update_backup_restored.assert_called_once_with(backup_id, user_id)
+        self.mock_storage.update_backup_restored.assert_called_once_with(
+            backup_id, user_id
+        )
 
     def test_log_operation_with_storage(self):
         """Test operation logging using storage interface."""
@@ -419,21 +456,25 @@ class TestDataPreservationManager(unittest.TestCase):
 
         # Execute
         self.manager.log_operation(
-            operation_type, business1_id, business2_id,
-            operation_data, status
+            operation_type, business1_id, business2_id, operation_data, status
         )
 
         # Verify
         self.mock_storage.log_dedupe_operation.assert_called_once_with(
-            operation_type, business1_id, business2_id,
-            operation_data, status, None, None
+            operation_type,
+            business1_id,
+            business2_id,
+            operation_data,
+            status,
+            None,
+            None,
         )
 
     def test_get_audit_trail_with_storage(self):
         """Test audit trail retrieval using storage interface."""
         # Setup
         business_id = 1
-        expected_trail = [{'operation_type': 'merge', 'status': 'success'}]
+        expected_trail = [{"operation_type": "merge", "status": "success"}]
 
         self.mock_storage.get_audit_trail.return_value = expected_trail
 
@@ -443,7 +484,9 @@ class TestDataPreservationManager(unittest.TestCase):
         # Verify
         self.assertEqual(result, expected_trail)
         # The actual call includes additional parameters with defaults
-        self.mock_storage.get_audit_trail.assert_called_once_with(business_id, None, None, None, 100)
+        self.mock_storage.get_audit_trail.assert_called_once_with(
+            business_id, None, None, None, 100
+        )
 
     def test_transaction_savepoints_with_storage(self):
         """Test transaction savepoint operations using storage interface."""
@@ -469,5 +512,5 @@ class TestDataPreservationManager(unittest.TestCase):
         self.mock_storage.release_savepoint.assert_called_once_with(savepoint_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

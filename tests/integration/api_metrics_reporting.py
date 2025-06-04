@@ -133,8 +133,12 @@ class APIMetricsReport:
             "total_cost": df["cost"].sum(),
             "total_tokens": int(df["token_count"].sum()),
             "time_period": {
-                "start": df["datetime"].min().strftime("%Y-%m-%d %H:%M:%S") if "datetime" in df else None,
-                "end": df["datetime"].max().strftime("%Y-%m-%d %H:%M:%S") if "datetime" in df else None,
+                "start": df["datetime"].min().strftime("%Y-%m-%d %H:%M:%S")
+                if "datetime" in df
+                else None,
+                "end": df["datetime"].max().strftime("%Y-%m-%d %H:%M:%S")
+                if "datetime" in df
+                else None,
             },
             "request_time": {
                 "mean": df["request_time"].mean(),
@@ -143,7 +147,7 @@ class APIMetricsReport:
                 "max": df["request_time"].max(),
                 "p95": df["request_time"].quantile(0.95),
             },
-            "api_breakdown": {}
+            "api_breakdown": {},
         }
 
         # Per-API statistics
@@ -160,11 +164,13 @@ class APIMetricsReport:
                     "max": api_df["request_time"].max(),
                     "p95": api_df["request_time"].quantile(0.95),
                 },
-                "success_rate": len(api_df[api_df["status_code"] < 400]) / len(api_df) if len(api_df) > 0 else 0,
+                "success_rate": len(api_df[api_df["status_code"] < 400]) / len(api_df)
+                if len(api_df) > 0
+                else 0,
                 "endpoints": {
                     endpoint: len(api_df[api_df["endpoint"] == endpoint])
                     for endpoint in self._endpoints[api]
-                }
+                },
             }
 
         return stats
@@ -214,8 +220,15 @@ class APIMetricsReport:
         sns.boxplot(x="api", y="request_time", data=df)
 
         # Add points for individual measurements
-        sns.stripplot(x="api", y="request_time", data=df,
-                     size=4, color=".3", linewidth=0, alpha=0.3)
+        sns.stripplot(
+            x="api",
+            y="request_time",
+            data=df,
+            size=4,
+            color=".3",
+            linewidth=0,
+            alpha=0.3,
+        )
 
         # Add titles and labels
         plt.title("API Request Times (seconds)", fontsize=16)
@@ -281,7 +294,9 @@ class APIMetricsReport:
 
         # Add total cost as text
         total_cost = cost_by_api["cost"].sum()
-        plt.figtext(0.5, 0.01, f"Total Cost: ${total_cost:.6f}", fontsize=12, ha="center")
+        plt.figtext(
+            0.5, 0.01, f"Total Cost: ${total_cost:.6f}", fontsize=12, ha="center"
+        )
 
         # Add cost values on bars
         for i, cost in enumerate(cost_by_api["cost"]):
@@ -318,7 +333,9 @@ class APIMetricsReport:
 
         # Prepare time-series data
         df_time = df.set_index("datetime").sort_index()
-        requests_by_time = df_time.groupby([pd.Grouper(freq="1H"), "api"]).size().unstack(fill_value=0)
+        requests_by_time = (
+            df_time.groupby([pd.Grouper(freq="1H"), "api"]).size().unstack(fill_value=0)
+        )
 
         plt.figure(figsize=(15, 8))
         sns.set_style("whitegrid")
@@ -369,11 +386,15 @@ class APIMetricsReport:
         plots_dir = self.report_dir / "plots"
         plots_dir.mkdir(exist_ok=True)
 
-        request_times_plot = self.plot_request_times_by_api(str(plots_dir / "request_times.png"))
+        request_times_plot = self.plot_request_times_by_api(
+            str(plots_dir / "request_times.png")
+        )
         cost_plot = self.plot_cost_by_api(str(plots_dir / "costs.png"))
 
         try:
-            time_plot = self.plot_requests_over_time(str(plots_dir / "requests_time.png"))
+            time_plot = self.plot_requests_over_time(
+                str(plots_dir / "requests_time.png")
+            )
             has_time_plot = True
         except ValueError:
             has_time_plot = False
@@ -383,7 +404,7 @@ class APIMetricsReport:
         <!DOCTYPE html>
         <html>
         <head>
-            <title>API Metrics Report - {datetime.datetime.now().strftime('%Y-%m-%d')}</title>
+            <title>API Metrics Report - {datetime.datetime.now().strftime("%Y-%m-%d")}</title>
             <style>
                 body {{ font-family: Arial, sans-serif; margin: 20px; }}
                 h1, h2, h3 {{ color: #2c3e50; }}
@@ -402,29 +423,29 @@ class APIMetricsReport:
         </head>
         <body>
             <div class="container">
-                <h1>API Metrics Report - {datetime.datetime.now().strftime('%Y-%m-%d')}</h1>
+                <h1>API Metrics Report - {datetime.datetime.now().strftime("%Y-%m-%d")}</h1>
 
                 <div class="section">
                     <h2>Summary</h2>
                     <div class="summary">
                         <div class="summary-box">
-                            <div class="metric">{stats['total_calls']}</div>
+                            <div class="metric">{stats["total_calls"]}</div>
                             <div class="metric-label">Total API Calls</div>
                         </div>
                         <div class="summary-box">
-                            <div class="metric">{stats['unique_apis']}</div>
+                            <div class="metric">{stats["unique_apis"]}</div>
                             <div class="metric-label">Unique APIs</div>
                         </div>
                         <div class="summary-box">
-                            <div class="metric">${stats['total_cost']:.6f}</div>
+                            <div class="metric">${stats["total_cost"]:.6f}</div>
                             <div class="metric-label">Total Cost</div>
                         </div>
                         <div class="summary-box">
-                            <div class="metric">{stats['total_tokens']}</div>
+                            <div class="metric">{stats["total_tokens"]}</div>
                             <div class="metric-label">Total Tokens</div>
                         </div>
                         <div class="summary-box">
-                            <div class="metric">{stats['request_time']['mean']*1000:.2f}ms</div>
+                            <div class="metric">{stats["request_time"]["mean"] * 1000:.2f}ms</div>
                             <div class="metric-label">Avg Request Time</div>
                         </div>
                     </div>
@@ -448,11 +469,11 @@ class APIMetricsReport:
             html += f"""
                         <tr>
                             <td>{api}</td>
-                            <td>{api_stats['calls']}</td>
-                            <td>${api_stats['cost']:.6f}</td>
-                            <td>{api_stats['tokens']}</td>
-                            <td>{api_stats['request_time']['mean']*1000:.2f}</td>
-                            <td>{api_stats['success_rate']*100:.1f}%</td>
+                            <td>{api_stats["calls"]}</td>
+                            <td>${api_stats["cost"]:.6f}</td>
+                            <td>{api_stats["tokens"]}</td>
+                            <td>{api_stats["request_time"]["mean"] * 1000:.2f}</td>
+                            <td>{api_stats["success_rate"] * 100:.1f}%</td>
                         </tr>
             """
 

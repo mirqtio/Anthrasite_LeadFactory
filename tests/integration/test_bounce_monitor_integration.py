@@ -5,20 +5,21 @@ Integration tests for the Bounce Rate Monitoring System.
 Tests integration with SendGrid webhook handling and real database operations.
 """
 
-import pytest
-import tempfile
-import os
 import json
+import os
+import tempfile
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import the modules under test
 from leadfactory.services.bounce_monitor import (
-    BounceRateMonitor,
-    BounceRateConfig,
     BounceEvent,
+    BounceRateConfig,
+    BounceRateMonitor,
+    CalculationMethod,
     SamplingPeriod,
-    CalculationMethod
 )
 
 
@@ -28,7 +29,7 @@ class TestBounceMonitorIntegration:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        fd, path = tempfile.mkstemp(suffix='.db')
+        fd, path = tempfile.mkstemp(suffix=".db")
         os.close(fd)
         yield path
         os.unlink(path)
@@ -43,7 +44,7 @@ class TestBounceMonitorIntegration:
             minimum_sample_size=5,
             warning_threshold=0.05,
             critical_threshold=0.10,
-            block_threshold=0.15
+            block_threshold=0.15,
         )
 
     @pytest.fixture
@@ -97,7 +98,7 @@ class TestBounceMonitorIntegration:
                 bounce_type=bounce_type,
                 reason=f"Bounce reason {i}",
                 timestamp=datetime.now(),
-                message_id=f"msg_{i}"
+                message_id=f"msg_{i}",
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -115,16 +116,16 @@ class TestBounceMonitorIntegration:
 
         # Step 4: Verify threshold violations
         violations = monitor.check_thresholds()
-        assert len(violations['blocked']) == 1
-        assert violations['blocked'][0].ip_address == ip_address
-        assert violations['blocked'][0].subuser == subuser
+        assert len(violations["blocked"]) == 1
+        assert violations["blocked"][0].ip_address == ip_address
+        assert violations["blocked"][0].subuser == subuser
 
     def test_multiple_ip_subuser_monitoring(self, monitor):
         """Test monitoring multiple IP/subuser combinations simultaneously."""
         test_combinations = [
-            ("192.168.1.100", "marketing", 100, 3),    # 3% bounce rate - active
-            ("192.168.1.101", "sales", 100, 7),        # 7% bounce rate - warning
-            ("192.168.1.102", "support", 100, 12),     # 12% bounce rate - critical
+            ("192.168.1.100", "marketing", 100, 3),  # 3% bounce rate - active
+            ("192.168.1.101", "sales", 100, 7),  # 7% bounce rate - warning
+            ("192.168.1.102", "support", 100, 12),  # 12% bounce rate - critical
             ("192.168.1.103", "newsletter", 100, 18),  # 18% bounce rate - blocked
         ]
 
@@ -142,7 +143,7 @@ class TestBounceMonitorIntegration:
                     subuser=subuser,
                     bounce_type="hard",
                     reason="Invalid email address",
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(),
                 )
                 monitor.record_bounce_event(bounce_event)
 
@@ -158,13 +159,13 @@ class TestBounceMonitorIntegration:
 
         # Check threshold violations
         violations = monitor.check_thresholds()
-        assert len(violations['warning']) == 1
-        assert len(violations['critical']) == 1
-        assert len(violations['blocked']) == 1
+        assert len(violations["warning"]) == 1
+        assert len(violations["critical"]) == 1
+        assert len(violations["blocked"]) == 1
 
-        assert violations['warning'][0].subuser == "sales"
-        assert violations['critical'][0].subuser == "support"
-        assert violations['blocked'][0].subuser == "newsletter"
+        assert violations["warning"][0].subuser == "sales"
+        assert violations["critical"][0].subuser == "support"
+        assert violations["blocked"][0].subuser == "newsletter"
 
     def test_time_window_filtering(self, monitor):
         """Test that time window filtering works correctly."""
@@ -184,7 +185,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Recent bounce",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -198,7 +199,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Old bounce",
-                timestamp=old_timestamp
+                timestamp=old_timestamp,
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -217,11 +218,7 @@ class TestBounceMonitorIntegration:
             monitor.record_sent_email(ip_address, subuser, f"user{i}@example.com")
 
         # Record different types of bounces
-        bounce_types = [
-            ("hard", 5),
-            ("soft", 3),
-            ("block", 2)
-        ]
+        bounce_types = [("hard", 5), ("soft", 3), ("block", 2)]
 
         bounce_index = 0
         for bounce_type, count in bounce_types:
@@ -232,7 +229,7 @@ class TestBounceMonitorIntegration:
                     subuser=subuser,
                     bounce_type=bounce_type,
                     reason=f"{bounce_type} bounce reason",
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(),
                 )
                 monitor.record_bounce_event(bounce_event)
                 bounce_index += 1
@@ -243,7 +240,7 @@ class TestBounceMonitorIntegration:
         assert stats.soft_bounces == 3
         assert stats.block_bounces == 2
         assert stats.total_bounced == 10
-        assert stats.bounce_rate == 10/30  # 33.3%
+        assert stats.bounce_rate == 10 / 30  # 33.3%
 
     def test_stats_reset_functionality(self, monitor):
         """Test resetting statistics for an IP/subuser combination."""
@@ -261,7 +258,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Initial bounce",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -295,7 +292,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Recent bounce",
-                timestamp=recent_timestamp
+                timestamp=recent_timestamp,
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -308,7 +305,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Old bounce",
-                timestamp=old_timestamp
+                timestamp=old_timestamp,
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -346,7 +343,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Concurrent bounce 1",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             bounce_event2 = BounceEvent(
                 email=f"batch2_{i}@example.com",
@@ -354,7 +351,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="soft",
                 reason="Concurrent bounce 2",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event1)
             monitor.record_bounce_event(bounce_event2)
@@ -393,7 +390,7 @@ class TestBounceMonitorIntegration:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Below minimum sample",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -422,7 +419,7 @@ class TestBounceMonitorIntegration:
                         subuser=subuser,
                         bounce_type="hard",
                         reason="Performance test bounce",
-                        timestamp=datetime.now()
+                        timestamp=datetime.now(),
                     )
                     monitor.record_bounce_event(bounce_event)
 
@@ -453,7 +450,7 @@ class TestSendGridWebhookIntegration:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        fd, path = tempfile.mkstemp(suffix='.db')
+        fd, path = tempfile.mkstemp(suffix=".db")
         os.close(fd)
         yield path
         os.unlink(path)
@@ -465,7 +462,7 @@ class TestSendGridWebhookIntegration:
             warning_threshold=0.05,
             critical_threshold=0.10,
             block_threshold=0.15,
-            minimum_sample_size=5
+            minimum_sample_size=5,
         )
         return BounceRateMonitor(config=config, db_path=temp_db)
 
@@ -482,7 +479,7 @@ class TestSendGridWebhookIntegration:
                 "type": "bounce",
                 "sg_message_id": "msg1",
                 "ip": "192.168.1.100",
-                "subuser": "marketing"
+                "subuser": "marketing",
             },
             {
                 "email": "bounce2@example.com",
@@ -493,7 +490,7 @@ class TestSendGridWebhookIntegration:
                 "type": "bounce",
                 "sg_message_id": "msg2",
                 "ip": "192.168.1.100",
-                "subuser": "marketing"
+                "subuser": "marketing",
             },
             {
                 "email": "blocked@example.com",
@@ -504,8 +501,8 @@ class TestSendGridWebhookIntegration:
                 "type": "blocked",
                 "sg_message_id": "msg3",
                 "ip": "192.168.1.100",
-                "subuser": "marketing"
-            }
+                "subuser": "marketing",
+            },
         ]
 
         # Process webhook events
@@ -527,14 +524,16 @@ class TestSendGridWebhookIntegration:
                 bounce_type=bounce_type,
                 reason=event_data["reason"],
                 timestamp=datetime.fromtimestamp(event_data["timestamp"]),
-                message_id=event_data["sg_message_id"]
+                message_id=event_data["sg_message_id"],
             )
 
             monitor.record_bounce_event(bounce_event)
 
         # Record some sent emails for the same IP/subuser
         for i in range(20):
-            monitor.record_sent_email("192.168.1.100", "marketing", f"user{i}@example.com")
+            monitor.record_sent_email(
+                "192.168.1.100", "marketing", f"user{i}@example.com"
+            )
 
         # Verify processing
         stats = monitor.get_ip_subuser_stats("192.168.1.100", "marketing")
@@ -542,7 +541,7 @@ class TestSendGridWebhookIntegration:
         assert stats.hard_bounces == 1  # 5.1.1 status
         assert stats.soft_bounces == 1  # 4.2.2 status
         assert stats.block_bounces == 1  # blocked event
-        assert stats.bounce_rate == 3/20  # 15%
+        assert stats.bounce_rate == 3 / 20  # 15%
 
     def test_webhook_batch_processing(self, monitor):
         """Test processing batches of webhook events efficiently."""
@@ -563,7 +562,7 @@ class TestSendGridWebhookIntegration:
                 bounce_type="hard" if i % 2 == 0 else "soft",
                 reason=f"Batch bounce reason {i}",
                 timestamp=datetime.now(),
-                message_id=f"batch_msg_{i}"
+                message_id=f"batch_msg_{i}",
             )
             bounce_events.append(bounce_event)
 

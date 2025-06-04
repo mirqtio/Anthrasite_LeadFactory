@@ -2,20 +2,21 @@
 Tests for Email A/B Testing functionality.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from datetime import datetime
 
-from leadfactory.ab_testing.email_ab_test import EmailABTest
+import pytest
+
 from leadfactory.ab_testing.ab_test_manager import ABTestManager
+from leadfactory.ab_testing.email_ab_test import EmailABTest
 from leadfactory.email.templates import EmailPersonalization
 
 
 @pytest.fixture
 def temp_db():
     """Create temporary database for testing."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
     yield db_path
     try:
@@ -42,14 +43,14 @@ def test_create_subject_line_test(email_ab_test):
         {"subject": "Your audit report is ready!", "weight": 0.25},
         {"subject": "Don't miss your business insights!", "weight": 0.25},
         {"subject": "🎉 Your report is here - download now!", "weight": 0.25},
-        {"subject": "Action required: Review your audit results", "weight": 0.25}
+        {"subject": "Action required: Review your audit results", "weight": 0.25},
     ]
 
     test_id = email_ab_test.create_subject_line_test(
         name="Q1 Report Delivery Subject Test",
         description="Test different subject line urgency levels",
         subject_variants=subject_variants,
-        target_sample_size=1000
+        target_sample_size=1000,
     )
 
     assert test_id is not None
@@ -59,21 +60,21 @@ def test_create_subject_line_test(email_ab_test):
     test_config = email_ab_test.test_manager.get_test_config(test_id)
     assert test_config.name == "Q1 Report Delivery Subject Test"
     assert len(test_config.variants) == 4
-    assert test_config.metadata['test_type'] == 'subject_line'
+    assert test_config.metadata["test_type"] == "subject_line"
 
 
 def test_create_cta_test(email_ab_test):
     """Test creating CTA button A/B test."""
     cta_variants = [
         {"text": "View Your Report", "style": "primary", "weight": 0.5},
-        {"text": "Download Now", "style": "primary", "weight": 0.5}
+        {"text": "Download Now", "style": "primary", "weight": 0.5},
     ]
 
     test_id = email_ab_test.create_cta_test(
         name="CTA Button Test",
         description="Test different CTA button text",
         cta_variants=cta_variants,
-        target_sample_size=500
+        target_sample_size=500,
     )
 
     assert test_id is not None
@@ -87,13 +88,13 @@ def test_get_email_variant_for_user(email_ab_test):
     """Test getting email variant assignment for user."""
     subject_variants = [
         {"subject": "Variant A", "weight": 0.5},
-        {"subject": "Variant B", "weight": 0.5}
+        {"subject": "Variant B", "weight": 0.5},
     ]
 
     test_id = email_ab_test.create_subject_line_test(
         name="User Assignment Test",
         description="Test user assignment",
-        subject_variants=subject_variants
+        subject_variants=subject_variants,
     )
 
     # Start the test
@@ -107,20 +108,20 @@ def test_get_email_variant_for_user(email_ab_test):
         user_id=user_id,
         user_email=user_email,
         test_id=test_id,
-        email_type="report_delivery"
+        email_type="report_delivery",
     )
 
     assert variant_id is not None
     assert variant_config is not None
-    assert 'subject' in variant_config
-    assert variant_config['subject'] in ["Variant A", "Variant B"]
+    assert "subject" in variant_config
+    assert variant_config["subject"] in ["Variant A", "Variant B"]
 
     # Test consistency - same user should get same variant
     variant_id_2, variant_config_2 = email_ab_test.get_email_variant_for_user(
         user_id=user_id,
         user_email=user_email,
         test_id=test_id,
-        email_type="report_delivery"
+        email_type="report_delivery",
     )
 
     assert variant_id == variant_id_2
@@ -133,28 +134,26 @@ def test_get_email_variant_no_active_test(email_ab_test):
     user_email = "test@example.com"
 
     variant_id, variant_config = email_ab_test.get_email_variant_for_user(
-        user_id=user_id,
-        user_email=user_email,
-        email_type="report_delivery"
+        user_id=user_id, user_email=user_email, email_type="report_delivery"
     )
 
     # Should return default variant
     assert variant_id == "default"
-    assert variant_config['subject'] == "Your audit report is ready!"
-    assert variant_config['template'] == "report_delivery"
+    assert variant_config["subject"] == "Your audit report is ready!"
+    assert variant_config["template"] == "report_delivery"
 
 
 def test_generate_email_with_variant(email_ab_test):
     """Test generating personalized email with A/B test variant."""
     subject_variants = [
         {"subject": "Custom Subject A", "weight": 0.5},
-        {"subject": "Custom Subject B", "weight": 0.5}
+        {"subject": "Custom Subject B", "weight": 0.5},
     ]
 
     test_id = email_ab_test.create_subject_line_test(
         name="Email Generation Test",
         description="Test email generation",
-        subject_variants=subject_variants
+        subject_variants=subject_variants,
     )
 
     email_ab_test.test_manager.start_test(test_id)
@@ -167,7 +166,7 @@ def test_generate_email_with_variant(email_ab_test):
         report_link="https://example.com/report/123",
         agency_cta_link="https://example.com/agency",
         purchase_date=datetime.utcnow(),
-        expiry_date=datetime.utcnow()
+        expiry_date=datetime.utcnow(),
     )
 
     # Generate email
@@ -175,26 +174,24 @@ def test_generate_email_with_variant(email_ab_test):
         user_id="john_doe_123",
         personalization=personalization,
         test_id=test_id,
-        email_type="report_delivery"
+        email_type="report_delivery",
     )
 
     assert variant_id is not None
     assert email_template is not None
-    assert 'subject' in email_template
-    assert 'html_content' in email_template
-    assert email_template['subject'] in ["Custom Subject A", "Custom Subject B"]
+    assert "subject" in email_template
+    assert "html_content" in email_template
+    assert email_template["subject"] in ["Custom Subject A", "Custom Subject B"]
 
 
 def test_record_email_event(email_ab_test):
     """Test recording email events for A/B testing."""
-    subject_variants = [
-        {"subject": "Test Subject", "weight": 1.0}
-    ]
+    subject_variants = [{"subject": "Test Subject", "weight": 1.0}]
 
     test_id = email_ab_test.create_subject_line_test(
         name="Event Recording Test",
         description="Test event recording",
-        subject_variants=subject_variants
+        subject_variants=subject_variants,
     )
 
     email_ab_test.test_manager.start_test(test_id)
@@ -208,39 +205,39 @@ def test_record_email_event(email_ab_test):
         test_id=test_id,
         user_id=user_id,
         event_type="sent",
-        metadata={"email_id": "test_email_123"}
+        metadata={"email_id": "test_email_123"},
     )
 
     email_ab_test.record_email_event(
         test_id=test_id,
         user_id=user_id,
         event_type="opened",
-        metadata={"timestamp": datetime.utcnow().isoformat()}
+        metadata={"timestamp": datetime.utcnow().isoformat()},
     )
 
     # Get test results to verify events were recorded
     results = email_ab_test.test_manager.get_test_results(test_id)
-    assert results['total_assignments'] == 1
+    assert results["total_assignments"] == 1
 
     # Check variant results
-    variant_results = results['variant_results']
+    variant_results = results["variant_results"]
     assert len(variant_results) == 1
 
     variant_data = list(variant_results.values())[0]
-    assert variant_data['assignments'] == 1
+    assert variant_data["assignments"] == 1
 
 
 def test_get_email_test_performance(email_ab_test):
     """Test getting email test performance metrics."""
     subject_variants = [
         {"subject": "Performance Test A", "weight": 0.5},
-        {"subject": "Performance Test B", "weight": 0.5}
+        {"subject": "Performance Test B", "weight": 0.5},
     ]
 
     test_id = email_ab_test.create_subject_line_test(
         name="Performance Test",
         description="Test performance metrics",
-        subject_variants=subject_variants
+        subject_variants=subject_variants,
     )
 
     email_ab_test.test_manager.start_test(test_id)
@@ -262,10 +259,10 @@ def test_get_email_test_performance(email_ab_test):
     # Get performance metrics
     performance = email_ab_test.get_email_test_performance(test_id)
 
-    assert performance['test_id'] == test_id
-    assert performance['test_name'] == "Performance Test"
-    assert 'email_metrics' in performance
-    assert performance['total_assignments'] == 10
+    assert performance["test_id"] == test_id
+    assert performance["test_name"] == "Performance Test"
+    assert "email_metrics" in performance
+    assert performance["total_assignments"] == 10
 
 
 def test_invalid_subject_variants(email_ab_test):
@@ -275,7 +272,7 @@ def test_invalid_subject_variants(email_ab_test):
         email_ab_test.create_subject_line_test(
             name="Invalid Test",
             description="Test",
-            subject_variants=[{"subject": "Only one"}]
+            subject_variants=[{"subject": "Only one"}],
         )
 
     # Test missing subject field
@@ -283,10 +280,7 @@ def test_invalid_subject_variants(email_ab_test):
         email_ab_test.create_subject_line_test(
             name="Invalid Test",
             description="Test",
-            subject_variants=[
-                {"subject": "Valid"},
-                {"text": "Missing subject field"}
-            ]
+            subject_variants=[{"subject": "Valid"}, {"text": "Missing subject field"}],
         )
 
 
@@ -296,13 +290,13 @@ def test_subject_line_length_warning(email_ab_test, caplog):
 
     subject_variants = [
         {"subject": "Short subject", "weight": 0.5},
-        {"subject": long_subject, "weight": 0.5}
+        {"subject": long_subject, "weight": 0.5},
     ]
 
     test_id = email_ab_test.create_subject_line_test(
         name="Long Subject Test",
         description="Test long subject warning",
-        subject_variants=subject_variants
+        subject_variants=subject_variants,
     )
 
     assert test_id is not None

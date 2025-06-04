@@ -319,11 +319,11 @@ def test_rate_limiting():
         rotation_event = rotation_service.execute_rotation(
             from_ip="192.168.1.1",
             from_subuser="user1",
-            to_ip=f"192.168.1.{i+2}",
-            to_subuser=f"user{i+2}",
+            to_ip=f"192.168.1.{i + 2}",
+            to_subuser=f"user{i + 2}",
             reason=RotationReason.MANUAL_ROTATION,
         )
-        assert rotation_event.success == True, f"Rotation {i+1} should succeed"
+        assert rotation_event.success == True, f"Rotation {i + 1} should succeed"
 
     # Next rotation should fail due to rate limit
     rotation_event = rotation_service.execute_rotation(

@@ -9,19 +9,19 @@ import sqlite3
 import tempfile
 import unittest
 from datetime import date, datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Import the module under test
 from leadfactory.email.sendgrid_warmup import (
     SendGridWarmupScheduler,
     WarmupConfiguration,
     WarmupProgress,
-    WarmupStatus,
     WarmupStage,
-    get_warmup_scheduler,
+    WarmupStatus,
+    advance_warmup_if_needed,
     check_warmup_limits,
+    get_warmup_scheduler,
     record_warmup_emails_sent,
-    advance_warmup_if_needed
 )
 
 
@@ -57,7 +57,7 @@ class TestWarmupConfiguration(unittest.TestCase):
         """Test custom configuration."""
         custom_schedule = {
             1: {"daily_limit": 1000, "duration_days": 1, "description": "Test stage 1"},
-            2: {"daily_limit": 2000, "duration_days": 1, "description": "Test stage 2"}
+            2: {"daily_limit": 2000, "duration_days": 1, "description": "Test stage 2"},
         }
 
         config = WarmupConfiguration(
@@ -67,7 +67,7 @@ class TestWarmupConfiguration(unittest.TestCase):
             spam_rate_threshold=0.002,
             stage_duration_days=1,
             total_stages=2,
-            alert_email="test@example.com"
+            alert_email="test@example.com",
         )
 
         self.assertEqual(config.stage_schedule, custom_schedule)
@@ -85,7 +85,7 @@ class TestSendGridWarmupScheduler(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         # Create temporary database
-        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix='.db')
+        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
         self.temp_db.close()
         self.db_path = self.temp_db.name
 
@@ -108,15 +108,21 @@ class TestSendGridWarmupScheduler(unittest.TestCase):
         cursor = conn.cursor()
 
         # Check sendgrid_warmup_progress table
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sendgrid_warmup_progress'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='sendgrid_warmup_progress'"
+        )
         self.assertIsNotNone(cursor.fetchone())
 
         # Check sendgrid_warmup_daily_logs table
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sendgrid_warmup_daily_logs'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='sendgrid_warmup_daily_logs'"
+        )
         self.assertIsNotNone(cursor.fetchone())
 
         # Check sendgrid_warmup_events table
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sendgrid_warmup_events'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='sendgrid_warmup_events'"
+        )
         self.assertIsNotNone(cursor.fetchone())
 
         conn.close()
@@ -359,7 +365,7 @@ class TestConvenienceFunctions(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         # Create temporary database
-        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix='.db')
+        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
         self.temp_db.close()
         self.db_path = self.temp_db.name
 
@@ -420,7 +426,7 @@ class TestWarmupIntegration(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         # Create temporary database
-        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix='.db')
+        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
         self.temp_db.close()
         self.db_path = self.temp_db.name
 
@@ -450,7 +456,9 @@ class TestWarmupIntegration(unittest.TestCase):
             progress = self.scheduler.get_warmup_progress(self.test_ip)
 
             # Get current stage config
-            stage_config = self.scheduler.config.stage_schedule.get(progress.current_stage, {})
+            stage_config = self.scheduler.config.stage_schedule.get(
+                progress.current_stage, {}
+            )
             daily_limit = stage_config.get("daily_limit", 0)
 
             # Send emails up to daily limit for current stage
@@ -458,7 +466,9 @@ class TestWarmupIntegration(unittest.TestCase):
                 emails_to_send = min(daily_limit, 1000)  # Send in batches
                 for batch in range(0, emails_to_send, 100):
                     batch_size = min(100, emails_to_send - batch)
-                    can_send, reason = self.scheduler.can_send_email(self.test_ip, batch_size)
+                    can_send, reason = self.scheduler.can_send_email(
+                        self.test_ip, batch_size
+                    )
                     if can_send:
                         self.scheduler.record_email_sent(self.test_ip, batch_size)
 
@@ -506,5 +516,5 @@ class TestWarmupIntegration(unittest.TestCase):
         self.assertTrue(can_send)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

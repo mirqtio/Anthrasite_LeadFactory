@@ -4,6 +4,7 @@ Fix typing issues in Python files for Python 3.9 compatibility.
 This script updates deprecated typing imports and replaces Dict, List, and Tuple
 with their lowercase equivalents.
 """
+
 import os
 import re
 from pathlib import Path

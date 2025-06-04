@@ -9,23 +9,24 @@ Tests the comprehensive budget configuration system including:
 - Runtime updates and persistence
 """
 
-import os
 import json
-import tempfile
+import os
 import sqlite3
-import pytest
-from unittest.mock import patch, MagicMock
+import tempfile
 from datetime import datetime
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from leadfactory.cost.budget_config import (
-    BudgetConfiguration,
-    BudgetLimit,
-    AlertThreshold,
-    BudgetPeriod,
     AlertLevel,
+    AlertThreshold,
+    BudgetConfiguration,
     BudgetConfigurationError,
+    BudgetLimit,
+    BudgetPeriod,
     get_budget_config,
-    reset_budget_config
+    reset_budget_config,
 )
 
 
@@ -39,7 +40,7 @@ class TestBudgetLimit:
             period=BudgetPeriod.DAILY,
             model="gpt-4o",
             endpoint="/chat/completions",
-            description="Daily limit for GPT-4o"
+            description="Daily limit for GPT-4o",
         )
 
         assert limit.amount == 100.0
@@ -68,9 +69,7 @@ class TestAlertThreshold:
     def test_alert_threshold_creation(self):
         """Test creating an alert threshold."""
         threshold = AlertThreshold(
-            level=AlertLevel.WARNING,
-            percentage=0.8,
-            enabled=True
+            level=AlertLevel.WARNING, percentage=0.8, enabled=True
         )
 
         assert threshold.level == AlertLevel.WARNING
@@ -84,10 +83,14 @@ class TestAlertThreshold:
 
     def test_alert_threshold_validation(self):
         """Test alert threshold validation."""
-        with pytest.raises(ValueError, match="Alert percentage must be between 0 and 1"):
+        with pytest.raises(
+            ValueError, match="Alert percentage must be between 0 and 1"
+        ):
             AlertThreshold(level=AlertLevel.WARNING, percentage=1.5)
 
-        with pytest.raises(ValueError, match="Alert percentage must be between 0 and 1"):
+        with pytest.raises(
+            ValueError, match="Alert percentage must be between 0 and 1"
+        ):
             AlertThreshold(level=AlertLevel.CRITICAL, percentage=0.0)
 
 
@@ -106,6 +109,7 @@ class TestBudgetConfiguration:
     def teardown_method(self):
         """Clean up test environment."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
         reset_budget_config()
 
@@ -115,7 +119,9 @@ class TestBudgetConfiguration:
 
         assert config.db_path == self.db_path
         assert config.is_enabled() is True
-        assert len(config.get_all_alert_thresholds()) == 2  # Default warning and critical
+        assert (
+            len(config.get_all_alert_thresholds()) == 2
+        )  # Default warning and critical
 
         # Check default thresholds
         warning = config.get_alert_threshold(AlertLevel.WARNING)
@@ -138,9 +144,9 @@ class TestBudgetConfiguration:
             """)
             tables = [row[0] for row in cursor.fetchall()]
 
-        assert 'budget_limits' in tables
-        assert 'alert_thresholds' in tables
-        assert 'config_settings' in tables
+        assert "budget_limits" in tables
+        assert "alert_thresholds" in tables
+        assert "config_settings" in tables
 
     def test_add_budget_limit(self):
         """Test adding budget limits."""
@@ -151,7 +157,7 @@ class TestBudgetConfiguration:
             amount=100.0,
             period=BudgetPeriod.DAILY,
             model="gpt-4o",
-            description="Daily GPT-4o limit"
+            description="Daily GPT-4o limit",
         )
 
         assert budget_id == "daily_gpt-4o"
@@ -173,9 +179,7 @@ class TestBudgetConfiguration:
 
         # Add model-specific limit
         config.add_budget_limit(
-            amount=50.0,
-            period=BudgetPeriod.DAILY,
-            model="gpt-3.5-turbo"
+            amount=50.0, period=BudgetPeriod.DAILY, model="gpt-3.5-turbo"
         )
 
         # Test exact match
@@ -241,11 +245,11 @@ class TestBudgetConfiguration:
     def test_environment_variable_loading(self):
         """Test loading configuration from environment variables."""
         env_vars = {
-            'BUDGET_ENABLED': 'false',
-            'BUDGET_LIMIT_DAILY_GPT4O_CHAT': '150.0',
-            'BUDGET_LIMIT_WEEKLY_ALL_ALL': '500.0',
-            'BUDGET_WARNING_THRESHOLD': '0.85',
-            'BUDGET_CRITICAL_THRESHOLD': '0.98'
+            "BUDGET_ENABLED": "false",
+            "BUDGET_LIMIT_DAILY_GPT4O_CHAT": "150.0",
+            "BUDGET_LIMIT_WEEKLY_ALL_ALL": "500.0",
+            "BUDGET_WARNING_THRESHOLD": "0.85",
+            "BUDGET_CRITICAL_THRESHOLD": "0.98",
         }
 
         with patch.dict(os.environ, env_vars, clear=False):
@@ -255,7 +259,9 @@ class TestBudgetConfiguration:
             assert config.is_enabled() is False
 
             # Check budget limits
-            daily_limit = config.get_budget_limit(BudgetPeriod.DAILY, model="gpt4o", endpoint="chat")
+            daily_limit = config.get_budget_limit(
+                BudgetPeriod.DAILY, model="gpt4o", endpoint="chat"
+            )
             assert daily_limit is not None
             assert daily_limit.amount == 150.0
 
@@ -273,35 +279,27 @@ class TestBudgetConfiguration:
     def test_file_configuration_loading(self):
         """Test loading configuration from JSON file."""
         config_data = {
-            'enabled': True,
-            'budget_limits': [
+            "enabled": True,
+            "budget_limits": [
                 {
-                    'amount': 75.0,
-                    'period': 'daily',
-                    'model': 'gpt-3.5-turbo',
-                    'description': 'Daily GPT-3.5 limit'
+                    "amount": 75.0,
+                    "period": "daily",
+                    "model": "gpt-3.5-turbo",
+                    "description": "Daily GPT-3.5 limit",
                 },
                 {
-                    'amount': 300.0,
-                    'period': 'monthly',
-                    'description': 'Monthly total limit'
-                }
+                    "amount": 300.0,
+                    "period": "monthly",
+                    "description": "Monthly total limit",
+                },
             ],
-            'alert_thresholds': [
-                {
-                    'level': 'warning',
-                    'percentage': 0.7,
-                    'enabled': True
-                },
-                {
-                    'level': 'critical',
-                    'percentage': 0.9,
-                    'enabled': True
-                }
-            ]
+            "alert_thresholds": [
+                {"level": "warning", "percentage": 0.7, "enabled": True},
+                {"level": "critical", "percentage": 0.9, "enabled": True},
+            ],
         }
 
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, "w") as f:
             json.dump(config_data, f)
 
         config = BudgetConfiguration(config_file=self.config_file, db_path=self.db_path)
@@ -326,7 +324,9 @@ class TestBudgetConfiguration:
         """Test database persistence of configuration."""
         # Create config and add data
         config1 = BudgetConfiguration(db_path=self.db_path)
-        config1.add_budget_limit(amount=100.0, period=BudgetPeriod.DAILY, model="gpt-4o")
+        config1.add_budget_limit(
+            amount=100.0, period=BudgetPeriod.DAILY, model="gpt-4o"
+        )
         config1.set_alert_threshold(AlertLevel.WARNING, 0.75)
         config1.set_enabled(False)
 
@@ -359,14 +359,19 @@ class TestBudgetConfiguration:
 
         issues = config.validate_configuration()
         assert len(issues) > 0
-        assert any("Warning threshold must be less than critical threshold" in issue for issue in issues)
+        assert any(
+            "Warning threshold must be less than critical threshold" in issue
+            for issue in issues
+        )
 
     def test_export_import_configuration(self):
         """Test configuration export and import."""
         config1 = BudgetConfiguration(db_path=self.db_path)
 
         # Add some configuration
-        config1.add_budget_limit(amount=100.0, period=BudgetPeriod.DAILY, model="gpt-4o")
+        config1.add_budget_limit(
+            amount=100.0, period=BudgetPeriod.DAILY, model="gpt-4o"
+        )
         config1.add_budget_limit(amount=500.0, period=BudgetPeriod.WEEKLY)
         config1.set_alert_threshold(AlertLevel.WARNING, 0.75)
         config1.set_enabled(False)
@@ -374,10 +379,10 @@ class TestBudgetConfiguration:
         # Export configuration
         exported = config1.export_configuration()
 
-        assert exported['enabled'] is False
-        assert len(exported['budget_limits']) == 2
-        assert len(exported['alert_thresholds']) == 2
-        assert 'exported_at' in exported
+        assert exported["enabled"] is False
+        assert len(exported["budget_limits"]) == 2
+        assert len(exported["alert_thresholds"]) == 2
+        assert "exported_at" in exported
 
         # Create new config and import
         config2 = BudgetConfiguration(db_path=os.path.join(self.temp_dir, "test2.db"))
@@ -407,10 +412,10 @@ class TestBudgetConfiguration:
         config = BudgetConfiguration(db_path=self.db_path)
 
         invalid_data = {
-            'budget_limits': [
+            "budget_limits": [
                 {
-                    'amount': -50.0,  # Invalid negative amount
-                    'period': 'daily'
+                    "amount": -50.0,  # Invalid negative amount
+                    "period": "daily",
                 }
             ]
         }
@@ -473,6 +478,7 @@ class TestConfigurationIntegration:
     def teardown_method(self):
         """Clean up test environment."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
         reset_budget_config()
 
@@ -485,27 +491,22 @@ class TestConfigurationIntegration:
 
         # Create config file with different data
         config_data = {
-            'enabled': False,
-            'budget_limits': [
-                {
-                    'amount': 200.0,
-                    'period': 'daily',
-                    'description': 'File limit'
-                }
-            ]
+            "enabled": False,
+            "budget_limits": [
+                {"amount": 200.0, "period": "daily", "description": "File limit"}
+            ],
         }
 
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, "w") as f:
             json.dump(config_data, f)
 
         # Set environment variables with different data
-        env_vars = {
-            'BUDGET_ENABLED': 'true',
-            'BUDGET_LIMIT_DAILY_ALL_ALL': '300.0'
-        }
+        env_vars = {"BUDGET_ENABLED": "true", "BUDGET_LIMIT_DAILY_ALL_ALL": "300.0"}
 
         with patch.dict(os.environ, env_vars, clear=False):
-            config2 = BudgetConfiguration(config_file=self.config_file, db_path=self.db_path)
+            config2 = BudgetConfiguration(
+                config_file=self.config_file, db_path=self.db_path
+            )
 
             # Environment should override everything
             assert config2.is_enabled() is True  # Environment override
@@ -522,7 +523,9 @@ class TestConfigurationIntegration:
         config.add_budget_limit(amount=100.0, period=BudgetPeriod.DAILY, model="gpt-4o")
 
         # Update configuration at runtime
-        config.add_budget_limit(amount=150.0, period=BudgetPeriod.DAILY, model="gpt-4o")  # Override
+        config.add_budget_limit(
+            amount=150.0, period=BudgetPeriod.DAILY, model="gpt-4o"
+        )  # Override
         config.set_alert_threshold(AlertLevel.WARNING, 0.85)
 
         # Verify updates
@@ -547,35 +550,30 @@ class TestConfigurationIntegration:
 
         # Set up hierarchy: general -> model-specific -> endpoint-specific
         config.add_budget_limit(amount=1000.0, period=BudgetPeriod.MONTHLY)  # General
-        config.add_budget_limit(amount=300.0, period=BudgetPeriod.MONTHLY, model="gpt-4o")  # Model-specific
+        config.add_budget_limit(
+            amount=300.0, period=BudgetPeriod.MONTHLY, model="gpt-4o"
+        )  # Model-specific
         config.add_budget_limit(
             amount=100.0,
             period=BudgetPeriod.MONTHLY,
             model="gpt-4o",
-            endpoint="/chat/completions"
+            endpoint="/chat/completions",
         )  # Endpoint-specific
 
         # Test most specific match
         limit = config.get_budget_limit(
-            BudgetPeriod.MONTHLY,
-            model="gpt-4o",
-            endpoint="/chat/completions"
+            BudgetPeriod.MONTHLY, model="gpt-4o", endpoint="/chat/completions"
         )
         assert limit.amount == 100.0
 
         # Test model fallback
         limit = config.get_budget_limit(
-            BudgetPeriod.MONTHLY,
-            model="gpt-4o",
-            endpoint="/embeddings"
+            BudgetPeriod.MONTHLY, model="gpt-4o", endpoint="/embeddings"
         )
         assert limit.amount == 300.0
 
         # Test general fallback
-        limit = config.get_budget_limit(
-            BudgetPeriod.MONTHLY,
-            model="gpt-3.5-turbo"
-        )
+        limit = config.get_budget_limit(BudgetPeriod.MONTHLY, model="gpt-3.5-turbo")
         assert limit.amount == 1000.0
 
         # Test no match

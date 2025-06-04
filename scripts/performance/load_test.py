@@ -4,18 +4,19 @@ Load testing script for scalable LeadFactory architecture.
 Tests throughput, latency, and error rates at various load levels.
 """
 
-import asyncio
-import aiohttp
 import argparse
+import asyncio
 import json
 import logging
+import statistics
+import sys
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-import statistics
-import sys
 from pathlib import Path
+from typing import Dict, List, Optional
+
+import aiohttp
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -288,9 +289,9 @@ class LoadTester:
         print(f"Failed:              {results.failed_requests:,}")
         print(f"Error Rate:          {results.error_rate:.2f}%")
         print(f"Throughput:          {results.throughput_rps:.2f} RPS")
-        print(f"Avg Response Time:   {results.avg_response_time*1000:.2f}ms")
-        print(f"95th Percentile:     {results.p95_response_time*1000:.2f}ms")
-        print(f"99th Percentile:     {results.p99_response_time*1000:.2f}ms")
+        print(f"Avg Response Time:   {results.avg_response_time * 1000:.2f}ms")
+        print(f"95th Percentile:     {results.p95_response_time * 1000:.2f}ms")
+        print(f"99th Percentile:     {results.p99_response_time * 1000:.2f}ms")
 
         print("\nResults by Endpoint:")
         print("-" * 80)
@@ -304,7 +305,7 @@ class LoadTester:
 
             print(
                 f"{endpoint:<20} {total:>6} requests, {successful:>6} successful, "
-                f"{error_rate:>5.1f}% errors, {avg_time*1000:>7.2f}ms avg"
+                f"{error_rate:>5.1f}% errors, {avg_time * 1000:>7.2f}ms avg"
             )
 
 
@@ -388,11 +389,11 @@ async def main():
 
         if results.p95_response_time <= 5.0:  # Less than 5 seconds
             print(
-                f"✅ PASS: Response time acceptable ({results.p95_response_time*1000:.2f}ms <= 5000ms)"
+                f"✅ PASS: Response time acceptable ({results.p95_response_time * 1000:.2f}ms <= 5000ms)"
             )
         else:
             print(
-                f"❌ FAIL: Response time too high ({results.p95_response_time*1000:.2f}ms > 5000ms)"
+                f"❌ FAIL: Response time too high ({results.p95_response_time * 1000:.2f}ms > 5000ms)"
             )
 
     except Exception as e:

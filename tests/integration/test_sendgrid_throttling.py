@@ -6,25 +6,25 @@ rate limiting enforcement, queue management, and system resilience.
 """
 
 import tempfile
-import unittest
 import time
-from datetime import datetime, date, timedelta
+import unittest
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from unittest.mock import Mock
 
 from leadfactory.email.sendgrid_throttling import (
+    EmailBatch,
+    QueuePriority,
     SendGridThrottler,
+    SendMetrics,
     ThrottleConfig,
     ThrottleStatus,
-    QueuePriority,
-    EmailBatch,
-    SendMetrics,
     create_email_batch,
 )
 from leadfactory.email.sendgrid_warmup import (
     SendGridWarmupScheduler,
-    WarmupStatus,
     WarmupStage,
+    WarmupStatus,
 )
 
 
@@ -74,7 +74,10 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
         batch2 = create_email_batch(
             "batch-2",
             ip_address,
-            [{"to": f"test{i+5}@example.com", "subject": f"Test {i+5}"} for i in range(3)],
+            [
+                {"to": f"test{i + 5}@example.com", "subject": f"Test {i + 5}"}
+                for i in range(3)
+            ],
             QueuePriority.NORMAL,
         )
 
@@ -90,7 +93,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
                 break
 
             # Simulate sending
-            can_send, reason = self.throttler.can_send_now(next_batch.ip_address, len(next_batch.emails))
+            can_send, reason = self.throttler.can_send_now(
+                next_batch.ip_address, len(next_batch.emails)
+            )
             if can_send:
                 self.throttler.record_send_success(next_batch, len(next_batch.emails))
                 processed_batches.append(next_batch)
@@ -104,7 +109,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
 
         # Verify processing
         self.assertEqual(len(processed_batches), 2)
-        self.assertEqual(processed_batches[0].priority, QueuePriority.HIGH)  # High priority first
+        self.assertEqual(
+            processed_batches[0].priority, QueuePriority.HIGH
+        )  # High priority first
 
         # Check metrics
         metrics = self.throttler.get_current_metrics(ip_address)
@@ -133,7 +140,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
             QueuePriority.NORMAL,
         )
 
-        can_send, reason = self.throttler.can_send_now(ip_address, len(large_batch.emails))
+        can_send, reason = self.throttler.can_send_now(
+            ip_address, len(large_batch.emails)
+        )
         self.assertFalse(can_send)
         self.assertIn("Daily limit exceeded", reason)
 
@@ -143,7 +152,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
 
         # Send up to burst limit
         for i in range(self.config.burst_limit):
-            batch = create_email_batch(f"burst-{i}", ip_address, [{"to": "test@example.com"}])
+            batch = create_email_batch(
+                f"burst-{i}", ip_address, [{"to": "test@example.com"}]
+            )
             self.assertTrue(self.throttler.queue_email_batch(batch))
 
             next_batch = self.throttler.get_next_batch(ip_address)
@@ -171,9 +182,15 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
         ip_address = "192.168.1.4"
 
         # Create batches with different priorities
-        low_batch = create_email_batch("low", ip_address, [{"to": "low@example.com"}], QueuePriority.LOW)
-        normal_batch = create_email_batch("normal", ip_address, [{"to": "normal@example.com"}], QueuePriority.NORMAL)
-        high_batch = create_email_batch("high", ip_address, [{"to": "high@example.com"}], QueuePriority.HIGH)
+        low_batch = create_email_batch(
+            "low", ip_address, [{"to": "low@example.com"}], QueuePriority.LOW
+        )
+        normal_batch = create_email_batch(
+            "normal", ip_address, [{"to": "normal@example.com"}], QueuePriority.NORMAL
+        )
+        high_batch = create_email_batch(
+            "high", ip_address, [{"to": "high@example.com"}], QueuePriority.HIGH
+        )
 
         # Queue in reverse priority order
         self.throttler.queue_email_batch(low_batch)
@@ -229,7 +246,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
         ip_address = "192.168.1.6"
 
         # Create batch
-        batch = create_email_batch("retry-batch", ip_address, [{"to": "test@example.com"}])
+        batch = create_email_batch(
+            "retry-batch", ip_address, [{"to": "test@example.com"}]
+        )
         self.throttler.queue_email_batch(batch)
 
         # Get batch and simulate failure
@@ -257,7 +276,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
 
         # Send multiple batches
         for i in range(10):
-            batch = create_email_batch(f"hourly-{i}", ip_address, [{"to": f"test{i}@example.com"}])
+            batch = create_email_batch(
+                f"hourly-{i}", ip_address, [{"to": f"test{i}@example.com"}]
+            )
             self.throttler.queue_email_batch(batch)
 
             next_batch = self.throttler.get_next_batch(ip_address)
@@ -315,7 +336,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
         ip_address = "192.168.1.10"
 
         # Create and queue batch
-        batch = create_email_batch("persistent-batch", ip_address, [{"to": "test@example.com"}])
+        batch = create_email_batch(
+            "persistent-batch", ip_address, [{"to": "test@example.com"}]
+        )
         self.throttler.queue_email_batch(batch)
 
         # Record some metrics
@@ -342,7 +365,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
 
         # Check batch persistence
         with new_throttler._get_db_connection() as conn:
-            row = conn.execute("SELECT * FROM email_batches WHERE batch_id = ?", ("persistent-batch",)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM email_batches WHERE batch_id = ?", ("persistent-batch",)
+            ).fetchone()
             self.assertIsNotNone(row)
 
     def test_throttle_status_monitoring(self):
@@ -350,8 +375,12 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
         ip_address = "192.168.1.11"
 
         # Queue batches with different priorities
-        high_batch = create_email_batch("high", ip_address, [{"to": "high@example.com"}], QueuePriority.HIGH)
-        normal_batch = create_email_batch("normal", ip_address, [{"to": "normal@example.com"}], QueuePriority.NORMAL)
+        high_batch = create_email_batch(
+            "high", ip_address, [{"to": "high@example.com"}], QueuePriority.HIGH
+        )
+        normal_batch = create_email_batch(
+            "normal", ip_address, [{"to": "normal@example.com"}], QueuePriority.NORMAL
+        )
 
         self.throttler.queue_email_batch(high_batch)
         self.throttler.queue_email_batch(normal_batch)
@@ -378,7 +407,9 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
         ip_address = "192.168.1.12"
 
         # Test with corrupted batch data
-        batch = create_email_batch("error-batch", ip_address, [{"to": "test@example.com"}])
+        batch = create_email_batch(
+            "error-batch", ip_address, [{"to": "test@example.com"}]
+        )
 
         # Queue batch successfully
         self.assertTrue(self.throttler.queue_email_batch(batch))
@@ -389,15 +420,21 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
 
         # Record failure multiple times to exceed max attempts
         for attempt in range(next_batch.max_attempts):
-            self.throttler.record_send_failure(next_batch, f"Error attempt {attempt + 1}")
+            self.throttler.record_send_failure(
+                next_batch, f"Error attempt {attempt + 1}"
+            )
 
         # Batch should be removed after max attempts
         with self.throttler._get_db_connection() as conn:
-            row = conn.execute("SELECT * FROM email_batches WHERE batch_id = ?", ("error-batch",)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM email_batches WHERE batch_id = ?", ("error-batch",)
+            ).fetchone()
             # Should be None after max attempts exceeded
 
         # System should still be functional
-        new_batch = create_email_batch("recovery-batch", ip_address, [{"to": "recovery@example.com"}])
+        new_batch = create_email_batch(
+            "recovery-batch", ip_address, [{"to": "recovery@example.com"}]
+        )
         self.assertTrue(self.throttler.queue_email_batch(new_batch))
 
         can_send, reason = self.throttler.can_send_now(ip_address, 1)

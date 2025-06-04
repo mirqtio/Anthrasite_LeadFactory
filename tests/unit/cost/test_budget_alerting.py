@@ -55,7 +55,7 @@ class TestAlertMessage(unittest.TestCase):
             endpoint="chat",
             current_cost=50.0,
             budget_limit=100.0,
-            utilization_percentage=50.0
+            utilization_percentage=50.0,
         )
 
         self.assertEqual(alert.alert_type, AlertType.THRESHOLD_WARNING)
@@ -76,18 +76,18 @@ class TestAlertMessage(unittest.TestCase):
             message="Budget has been exceeded",
             service="openai",
             current_cost=150.0,
-            budget_limit=100.0
+            budget_limit=100.0,
         )
 
         alert_dict = alert.to_dict()
 
-        self.assertEqual(alert_dict['alert_type'], 'budget_exceeded')
-        self.assertEqual(alert_dict['severity'], 'critical')
-        self.assertEqual(alert_dict['title'], 'Budget Exceeded')
-        self.assertEqual(alert_dict['service'], 'openai')
-        self.assertEqual(alert_dict['current_cost'], 150.0)
-        self.assertIn('timestamp', alert_dict)
-        self.assertIsInstance(alert_dict['timestamp'], str)
+        self.assertEqual(alert_dict["alert_type"], "budget_exceeded")
+        self.assertEqual(alert_dict["severity"], "critical")
+        self.assertEqual(alert_dict["title"], "Budget Exceeded")
+        self.assertEqual(alert_dict["service"], "openai")
+        self.assertEqual(alert_dict["current_cost"], 150.0)
+        self.assertIn("timestamp", alert_dict)
+        self.assertIsInstance(alert_dict["timestamp"], str)
 
 
 class TestAlertRateLimiter(unittest.TestCase):
@@ -120,7 +120,7 @@ class TestAlertRateLimiter(unittest.TestCase):
         self.assertFalse(self.rate_limiter.should_send_alert(alert_key))
 
         # Simulate time passing (mock the timestamps)
-        with patch('leadfactory.cost.budget_alerting.datetime') as mock_datetime:
+        with patch("leadfactory.cost.budget_alerting.datetime") as mock_datetime:
             # Set current time to 2 minutes later
             future_time = datetime.now() + timedelta(minutes=2)
             mock_datetime.now.return_value = future_time
@@ -164,7 +164,7 @@ class TestAlertAggregator(unittest.TestCase):
             title="Alert 1",
             message="Message 1",
             service="openai",
-            model="gpt-4o"
+            model="gpt-4o",
         )
 
         alert2 = AlertMessage(
@@ -173,7 +173,7 @@ class TestAlertAggregator(unittest.TestCase):
             title="Alert 2",
             message="Message 2",
             service="openai",
-            model="gpt-4o"
+            model="gpt-4o",
         )
 
         # First alert should be collected
@@ -191,7 +191,7 @@ class TestAlertAggregator(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         # Add alert
@@ -199,7 +199,7 @@ class TestAlertAggregator(unittest.TestCase):
         self.assertIsNone(result1)
 
         # Mock time passing
-        with patch('leadfactory.cost.budget_alerting.datetime') as mock_datetime:
+        with patch("leadfactory.cost.budget_alerting.datetime") as mock_datetime:
             future_time = datetime.now() + timedelta(minutes=2)
             mock_datetime.now.return_value = future_time
 
@@ -209,12 +209,14 @@ class TestAlertAggregator(unittest.TestCase):
                 severity=AlertLevel.WARNING,
                 title="Test Alert 2",
                 message="Test message 2",
-                service="openai"
+                service="openai",
             )
 
             result2 = self.aggregator.add_alert(alert2)
             self.assertIsNotNone(result2)
-            self.assertEqual(len(result2), 2)  # Should return both alerts (first + second)
+            self.assertEqual(
+                len(result2), 2
+            )  # Should return both alerts (first + second)
 
     def test_aggregator_flush_all(self):
         """Test flushing all pending alerts."""
@@ -223,7 +225,7 @@ class TestAlertAggregator(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Alert 1",
             message="Message 1",
-            service="openai"
+            service="openai",
         )
 
         alert2 = AlertMessage(
@@ -231,7 +233,7 @@ class TestAlertAggregator(unittest.TestCase):
             severity=AlertLevel.CRITICAL,
             title="Alert 2",
             message="Message 2",
-            service="semrush"
+            service="semrush",
         )
 
         self.aggregator.add_alert(alert1)
@@ -240,8 +242,12 @@ class TestAlertAggregator(unittest.TestCase):
         flushed = self.aggregator.flush_all()
 
         self.assertEqual(len(flushed), 2)  # Two different aggregation keys
-        self.assertTrue(any("threshold_warning:openai:all" in key for key in flushed.keys()))
-        self.assertTrue(any("budget_exceeded:semrush:all" in key for key in flushed.keys()))
+        self.assertTrue(
+            any("threshold_warning:openai:all" in key for key in flushed.keys())
+        )
+        self.assertTrue(
+            any("budget_exceeded:semrush:all" in key for key in flushed.keys())
+        )
 
 
 class TestMessageTemplates(unittest.TestCase):
@@ -262,18 +268,18 @@ class TestMessageTemplates(unittest.TestCase):
             model="gpt-4o",
             current_cost=80.0,
             budget_limit=100.0,
-            utilization_percentage=80.0
+            utilization_percentage=80.0,
         )
 
         template = self.templates.threshold_warning(alert)
 
-        self.assertIn('subject', template)
-        self.assertIn('text', template)
-        self.assertIn('html', template)
-        self.assertIn('80.0%', template['subject'])
-        self.assertIn('openai', template['text'])
-        self.assertIn('$80.00', template['text'])
-        self.assertIn('<table>', template['html'])
+        self.assertIn("subject", template)
+        self.assertIn("text", template)
+        self.assertIn("html", template)
+        self.assertIn("80.0%", template["subject"])
+        self.assertIn("openai", template["text"])
+        self.assertIn("$80.00", template["text"])
+        self.assertIn("<table>", template["html"])
 
     def test_budget_exceeded_template(self):
         """Test budget exceeded message template."""
@@ -286,15 +292,15 @@ class TestMessageTemplates(unittest.TestCase):
             model="gpt-4o",
             current_cost=120.0,
             budget_limit=100.0,
-            utilization_percentage=120.0
+            utilization_percentage=120.0,
         )
 
         template = self.templates.budget_exceeded(alert)
 
-        self.assertIn('CRITICAL', template['subject'])
-        self.assertIn('IMMEDIATE ACTION', template['text'])
-        self.assertIn('$20.00', template['text'])  # Overage
-        self.assertIn('color: red', template['html'])
+        self.assertIn("CRITICAL", template["subject"])
+        self.assertIn("IMMEDIATE ACTION", template["text"])
+        self.assertIn("$20.00", template["text"])  # Overage
+        self.assertIn("color: red", template["html"])
 
     def test_throttling_activated_template(self):
         """Test throttling activation message template."""
@@ -304,14 +310,14 @@ class TestMessageTemplates(unittest.TestCase):
             title="Throttling Active",
             message="Throttling has been activated",
             service="openai",
-            model="gpt-4o"
+            model="gpt-4o",
         )
 
         template = self.templates.throttling_activated(alert)
 
-        self.assertIn('Throttling Activated', template['subject'])
-        self.assertIn('throttling has been activated', template['text'].lower())
-        self.assertIn('openai', template['text'])
+        self.assertIn("Throttling Activated", template["subject"])
+        self.assertIn("throttling has been activated", template["text"].lower())
+        self.assertIn("openai", template["text"])
 
 
 class TestNotificationConfig(unittest.TestCase):
@@ -338,7 +344,7 @@ class TestNotificationConfig(unittest.TestCase):
             slack_enabled=True,
             slack_webhook_url="https://hooks.slack.com/test",
             rate_limit_window_minutes=30,
-            max_alerts_per_window=5
+            max_alerts_per_window=5,
         )
 
         self.assertTrue(config.email_enabled)
@@ -361,7 +367,7 @@ class TestBudgetNotificationService(unittest.TestCase):
             email_enabled=False,
             slack_enabled=False,
             webhook_enabled=False,
-            aggregation_enabled=False  # Disable for simpler testing
+            aggregation_enabled=False,  # Disable for simpler testing
         )
         self.service = BudgetNotificationService(self.config)
 
@@ -371,7 +377,7 @@ class TestBudgetNotificationService(unittest.TestCase):
         self.assertIsNotNone(self.service.rate_limiter)
         self.assertIsNotNone(self.service.templates)
 
-    @patch('leadfactory.cost.budget_alerting.logger')
+    @patch("leadfactory.cost.budget_alerting.logger")
     def test_send_log_alert(self, mock_logger):
         """Test sending alert to logger."""
         alert = AlertMessage(
@@ -379,7 +385,7 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         result = self.service._send_log_alert(alert)
@@ -394,16 +400,16 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             result = self.service._send_console_alert(alert)
 
             self.assertTrue(result)
             self.assertEqual(mock_print.call_count, 2)  # Title and message
 
-    @patch('leadfactory.cost.budget_alerting.smtplib.SMTP')
+    @patch("leadfactory.cost.budget_alerting.smtplib.SMTP")
     def test_send_email_alert_success(self, mock_smtp_class):
         """Test successful email alert sending."""
         # Configure email
@@ -426,7 +432,7 @@ class TestBudgetNotificationService(unittest.TestCase):
             service="openai",
             current_cost=50.0,
             budget_limit=100.0,
-            utilization_percentage=50.0
+            utilization_percentage=50.0,
         )
 
         result = self.service._send_email_alert(alert)
@@ -443,14 +449,14 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         result = self.service._send_email_alert(alert)
 
         self.assertFalse(result)  # Should fail due to incomplete config
 
-    @patch('leadfactory.cost.budget_alerting.requests.post')
+    @patch("leadfactory.cost.budget_alerting.requests.post")
     def test_send_slack_alert_success(self, mock_post):
         """Test successful Slack alert sending."""
         self.service.config.slack_webhook_url = "https://hooks.slack.com/test"
@@ -467,7 +473,7 @@ class TestBudgetNotificationService(unittest.TestCase):
             message="Budget has been exceeded",
             service="openai",
             current_cost=120.0,
-            budget_limit=100.0
+            budget_limit=100.0,
         )
 
         result = self.service._send_slack_alert(alert)
@@ -477,12 +483,12 @@ class TestBudgetNotificationService(unittest.TestCase):
 
         # Check payload structure
         call_args = mock_post.call_args
-        payload = call_args[1]['json']
-        self.assertEqual(payload['channel'], '#alerts')
-        self.assertEqual(len(payload['attachments']), 1)
-        self.assertEqual(payload['attachments'][0]['color'], 'danger')
+        payload = call_args[1]["json"]
+        self.assertEqual(payload["channel"], "#alerts")
+        self.assertEqual(len(payload["attachments"]), 1)
+        self.assertEqual(payload["attachments"][0]["color"], "danger")
 
-    @patch('leadfactory.cost.budget_alerting.requests.post')
+    @patch("leadfactory.cost.budget_alerting.requests.post")
     def test_send_webhook_alert_success(self, mock_post):
         """Test successful webhook alert sending."""
         self.service.config.webhook_urls = ["https://example.com/webhook"]
@@ -496,7 +502,7 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Throttling Active",
             message="Throttling activated",
-            service="openai"
+            service="openai",
         )
 
         result = self.service._send_webhook_alert(alert)
@@ -506,11 +512,11 @@ class TestBudgetNotificationService(unittest.TestCase):
 
         # Check payload
         call_args = mock_post.call_args
-        payload = call_args[1]['json']
-        self.assertEqual(payload['alert_type'], 'throttling_activated')
-        self.assertEqual(payload['service'], 'openai')
+        payload = call_args[1]["json"]
+        self.assertEqual(payload["alert_type"], "throttling_activated")
+        self.assertEqual(payload["service"], "openai")
 
-    @patch('leadfactory.cost.budget_alerting.requests.post')
+    @patch("leadfactory.cost.budget_alerting.requests.post")
     def test_send_webhook_alert_failure(self, mock_post):
         """Test webhook alert failure handling."""
         self.service.config.webhook_urls = ["https://example.com/webhook"]
@@ -522,7 +528,7 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         result = self.service._send_webhook_alert(alert)
@@ -539,7 +545,7 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         # First alert should succeed
@@ -561,11 +567,11 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         # Alert should be aggregated, not sent immediately
-        with patch.object(self.service, '_send_single_alert') as mock_send:
+        with patch.object(self.service, "_send_single_alert") as mock_send:
             result = self.service.send_alert(alert)
 
             self.assertTrue(result)
@@ -582,32 +588,35 @@ class TestBudgetNotificationService(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         # Add alert to aggregation
         self.service.send_alert(alert)
 
         # Flush should send aggregated alert
-        with patch.object(self.service, '_send_single_alert') as mock_send:
+        with patch.object(self.service, "_send_single_alert") as mock_send:
             mock_send.return_value = True
             result = self.service.flush_pending_alerts()
 
             self.assertTrue(result)
             mock_send.assert_called_once()
 
-    @patch.dict('os.environ', {
-        'BUDGET_ALERT_EMAIL_ENABLED': 'true',
-        'BUDGET_ALERT_SMTP_HOST': 'smtp.test.com',
-        'BUDGET_ALERT_EMAIL_TO': 'admin@test.com,user@test.com'
-    })
+    @patch.dict(
+        "os.environ",
+        {
+            "BUDGET_ALERT_EMAIL_ENABLED": "true",
+            "BUDGET_ALERT_SMTP_HOST": "smtp.test.com",
+            "BUDGET_ALERT_EMAIL_TO": "admin@test.com,user@test.com",
+        },
+    )
     def test_load_config_from_environment(self):
         """Test loading configuration from environment variables."""
         service = BudgetNotificationService()
 
         self.assertTrue(service.config.email_enabled)
-        self.assertEqual(service.config.email_smtp_host, 'smtp.test.com')
-        self.assertEqual(service.config.email_to, ['admin@test.com', 'user@test.com'])
+        self.assertEqual(service.config.email_smtp_host, "smtp.test.com")
+        self.assertEqual(service.config.email_to, ["admin@test.com", "user@test.com"])
 
 
 class TestAsyncFunctionality(unittest.TestCase):
@@ -618,7 +627,7 @@ class TestAsyncFunctionality(unittest.TestCase):
         self.config = NotificationConfig(log_enabled=True)
         self.service = BudgetNotificationService(self.config)
 
-    @patch.object(BudgetNotificationService, 'send_alert')
+    @patch.object(BudgetNotificationService, "send_alert")
     def test_send_alert_async(self, mock_send_alert):
         """Test async alert sending."""
         mock_send_alert.return_value = True
@@ -628,7 +637,7 @@ class TestAsyncFunctionality(unittest.TestCase):
             severity=AlertLevel.WARNING,
             title="Test Alert",
             message="Test message",
-            service="openai"
+            service="openai",
         )
 
         async def test_async():
@@ -672,7 +681,7 @@ class TestGlobalFunctions(unittest.TestCase):
 
         self.assertIsNot(service1, service2)
 
-    @patch.object(BudgetNotificationService, 'send_alert')
+    @patch.object(BudgetNotificationService, "send_alert")
     def test_send_budget_alert_convenience(self, mock_send_alert):
         """Test the convenience function for sending budget alerts."""
         mock_send_alert.return_value = True
@@ -685,7 +694,7 @@ class TestGlobalFunctions(unittest.TestCase):
             service="openai",
             model="gpt-4o",
             current_cost=50.0,
-            budget_limit=100.0
+            budget_limit=100.0,
         )
 
         self.assertTrue(result)
@@ -699,7 +708,7 @@ class TestGlobalFunctions(unittest.TestCase):
         self.assertEqual(alert.model, "gpt-4o")
         self.assertEqual(alert.current_cost, 50.0)
 
-    @patch.object(BudgetNotificationService, 'send_alert_async')
+    @patch.object(BudgetNotificationService, "send_alert_async")
     def test_send_budget_alert_async_convenience(self, mock_send_alert_async):
         """Test the async convenience function for sending budget alerts."""
         mock_send_alert_async.return_value = asyncio.Future()
@@ -711,7 +720,7 @@ class TestGlobalFunctions(unittest.TestCase):
                 severity=AlertLevel.CRITICAL,
                 title="Budget Exceeded",
                 message="Budget exceeded",
-                service="openai"
+                service="openai",
             )
             return result
 
@@ -726,5 +735,5 @@ class TestGlobalFunctions(unittest.TestCase):
             loop.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

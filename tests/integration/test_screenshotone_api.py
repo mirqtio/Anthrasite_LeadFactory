@@ -18,8 +18,7 @@ def test_screenshotone_basic_screenshot(screenshotone_api, api_metrics_logger):
     url = "https://example.com"
 
     screenshot = screenshotone_api.take_screenshot(
-        url=url,
-        metrics_logger=api_metrics_logger
+        url=url, metrics_logger=api_metrics_logger
     )
 
     assert isinstance(screenshot, bytes)
@@ -29,22 +28,29 @@ def test_screenshotone_basic_screenshot(screenshotone_api, api_metrics_logger):
     assert screenshot.startswith(b"\x89PNG"), "Screenshot data is not a valid PNG"
 
 
-@pytest.mark.parametrize("url", [
-    "https://google.com",
-    "https://github.com",
-    "https://wikipedia.org",
-    "https://python.org"
-])
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://google.com",
+        "https://github.com",
+        "https://wikipedia.org",
+        "https://python.org",
+    ],
+)
 def test_screenshotone_different_websites(screenshotone_api, api_metrics_logger, url):
     """Test taking screenshots of different websites."""
     # Skip some real API tests to avoid excessive API usage
-    if APITestConfig.should_use_real_api("screenshotone") and url != "https://example.com":
+    if (
+        APITestConfig.should_use_real_api("screenshotone")
+        and url != "https://example.com"
+    ):
         if os.environ.get("TEST_ALL_SCREENSHOTS") != "1":
-            pytest.skip("Skipping to avoid excessive API usage. Set TEST_ALL_SCREENSHOTS=1 to run all.")
+            pytest.skip(
+                "Skipping to avoid excessive API usage. Set TEST_ALL_SCREENSHOTS=1 to run all."
+            )
 
     screenshot = screenshotone_api.take_screenshot(
-        url=url,
-        metrics_logger=api_metrics_logger
+        url=url, metrics_logger=api_metrics_logger
     )
 
     assert isinstance(screenshot, bytes)
@@ -59,10 +65,7 @@ def test_screenshotone_options(screenshotone_api, api_metrics_logger):
     # Test different dimensions
     for width, height in [(800, 600), (1024, 768), (1280, 1024)]:
         screenshot = screenshotone_api.take_screenshot(
-            url=url,
-            width=width,
-            height=height,
-            metrics_logger=api_metrics_logger
+            url=url, width=width, height=height, metrics_logger=api_metrics_logger
         )
 
         assert isinstance(screenshot, bytes)
@@ -75,9 +78,7 @@ def test_screenshotone_full_page(screenshotone_api, api_metrics_logger):
     url = "https://example.com"
 
     screenshot = screenshotone_api.take_screenshot(
-        url=url,
-        full_page=True,
-        metrics_logger=api_metrics_logger
+        url=url, full_page=True, metrics_logger=api_metrics_logger
     )
 
     assert isinstance(screenshot, bytes)
@@ -98,13 +99,17 @@ def test_screenshotone_api_error_handling(screenshotone_api):
         from tests.integration.api_fixtures import (
             screenshotone_api as screenshotone_api_fixture,
         )
+
         invalid_screenshotone_api = screenshotone_api_fixture(None)
 
         # Test error handling
         with pytest.raises(Exception) as excinfo:
             invalid_screenshotone_api.take_screenshot(url="https://example.com")
 
-        assert any(term in str(excinfo.value).lower() for term in ["authentication", "api key", "invalid", "unauthorized"])
+        assert any(
+            term in str(excinfo.value).lower()
+            for term in ["authentication", "api key", "invalid", "unauthorized"]
+        )
 
 
 @pytest.mark.real_api
@@ -118,7 +123,9 @@ def test_screenshotone_api_invalid_url(screenshotone_api):
     with pytest.raises(Exception) as excinfo:
         screenshotone_api.take_screenshot(url="invalid-url")
 
-    assert any(term in str(excinfo.value).lower() for term in ["url", "invalid", "format"])
+    assert any(
+        term in str(excinfo.value).lower() for term in ["url", "invalid", "format"]
+    )
 
 
 def test_screenshotone_api_metrics_tracking(screenshotone_api, api_metrics_logger):
@@ -128,8 +135,7 @@ def test_screenshotone_api_metrics_tracking(screenshotone_api, api_metrics_logge
 
     # Take screenshot
     screenshotone_api.take_screenshot(
-        url="https://example.com",
-        metrics_logger=api_metrics_logger
+        url="https://example.com", metrics_logger=api_metrics_logger
     )
 
     # Check that metrics were logged
@@ -151,8 +157,7 @@ def test_screenshotone_save_screenshot(screenshotone_api, api_metrics_logger, tm
 
     # Take screenshot
     screenshot = screenshotone_api.take_screenshot(
-        url=url,
-        metrics_logger=api_metrics_logger
+        url=url, metrics_logger=api_metrics_logger
     )
 
     # Save to disk

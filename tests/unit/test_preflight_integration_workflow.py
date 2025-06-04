@@ -66,10 +66,16 @@ except ImportError:
 
         def log_validation_error(self, error):
             self.error_count += 1
-            self.logger.error(f"[{error.error_code.value}] {error.component}: {error.message}")
+            self.logger.error(
+                f"[{error.error_code.value}] {error.component}: {error.message}"
+            )
 
-        def log_validation_summary(self, total_components, failed_components, total_errors):
-            self.logger.info(f"Validation summary: {total_components} total, {failed_components} failed, {total_errors} errors")
+        def log_validation_summary(
+            self, total_components, failed_components, total_errors
+        ):
+            self.logger.info(
+                f"Validation summary: {total_components} total, {failed_components} failed, {total_errors} errors"
+            )
 
 
 class TestPreflightIntegrationWorkflow(unittest.TestCase):
@@ -83,7 +89,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
             "GOOGLE_API_KEY": "test_google_key",
             "SCREENSHOTONE_API_KEY": "test_screenshot_key",
             "SENDGRID_API_KEY": "test_sendgrid_key",
-            "SENDGRID_FROM_EMAIL": "test@example.com"
+            "SENDGRID_FROM_EMAIL": "test@example.com",
         }
 
     def test_validation_logger_workflow(self):
@@ -102,7 +108,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
             error_code=ValidationErrorCode.DATABASE_CONNECTION_FAILED,
             severity=ValidationSeverity.CRITICAL,
             component="database",
-            message="Connection failed"
+            message="Connection failed",
         )
 
         logger.log_validation_error(error)
@@ -119,7 +125,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
             severity=ValidationSeverity.ERROR,
             component="test_module",
             message="Module not found",
-            remediation_steps=["Install the required module"]
+            remediation_steps=["Install the required module"],
         )
 
         # Test error properties
@@ -195,20 +201,20 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
                 ValidationErrorCode.DATABASE_CONNECTION_FAILED,
                 ValidationSeverity.CRITICAL,
                 "database",
-                "Connection failed"
+                "Connection failed",
             ),
             ValidationError(
                 ValidationErrorCode.MODULE_IMPORT_FAILED,
                 ValidationSeverity.ERROR,
                 "module_loader",
-                "Module not found"
+                "Module not found",
             ),
             ValidationError(
                 ValidationErrorCode.FILE_NOT_FOUND,
                 ValidationSeverity.WARNING,
                 "file_checker",
-                "Config file missing"
-            )
+                "Config file missing",
+            ),
         ]
 
         # Log all errors
@@ -260,7 +266,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
             ("dependencies", "Missing dependency"),
             ("components", "Component not found"),
             ("network", "Network unreachable"),
-            ("database", "Database connection failed")
+            ("database", "Database connection failed"),
         ]
 
         for component, message in workflow_errors:
@@ -268,7 +274,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
                 ValidationErrorCode.SERVICE_UNAVAILABLE,
                 ValidationSeverity.ERROR,
                 component,
-                message
+                message,
             )
             logger.log_validation_error(error)
 
@@ -285,7 +291,9 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
         mock_logger = Mock()
 
         # Set up scenario where some components fail but workflow continues
-        mock_validator.validate_dependencies.side_effect = Exception("Dependency check failed")
+        mock_validator.validate_dependencies.side_effect = Exception(
+            "Dependency check failed"
+        )
         mock_validator.validate_components.return_value = True
         mock_validator.validate.return_value = False  # Overall failure due to exception
 
@@ -313,7 +321,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
             ("DATABASE_URL", "database connection string"),
             ("API_KEYS", "external service credentials"),
             ("FILE_PATHS", "required file locations"),
-            ("NETWORK_ENDPOINTS", "service connectivity")
+            ("NETWORK_ENDPOINTS", "service connectivity"),
         ]
 
         logger = ValidationLogger()
@@ -328,12 +336,14 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
                     ValidationErrorCode.ENV_VAR_MISSING,
                     ValidationSeverity.WARNING,
                     config_type,
-                    f"Optional {description} not configured"
+                    f"Optional {description} not configured",
                 )
                 logger.log_validation_error(error)
 
         # Verify configuration validation workflow
-        self.assertEqual(logger.error_count, 1)  # Only one warning for optional API keys
+        self.assertEqual(
+            logger.error_count, 1
+        )  # Only one warning for optional API keys
 
         summary = logger.log_validation_summary(1, 1, 1)
         self.assertIsNone(summary)
@@ -349,9 +359,9 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
 
         # Set up successful workflow
         mock_dependency_validator.validate.return_value = []  # No errors
-        mock_component_validator.validate.return_value = []   # No errors
-        mock_network_validator.validate.return_value = []     # No errors
-        mock_database_validator.validate.return_value = []    # No errors
+        mock_component_validator.validate.return_value = []  # No errors
+        mock_network_validator.validate.return_value = []  # No errors
+        mock_database_validator.validate.return_value = []  # No errors
 
         mock_logger.error_count = 0
         mock_logger.get_error_summary.return_value = {"total_errors": 0}
@@ -362,7 +372,7 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
             mock_component_validator,
             mock_network_validator,
             mock_database_validator,
-            mock_logger
+            mock_logger,
         )
 
         # Verify all validators were called
@@ -412,7 +422,9 @@ class TestPreflightIntegrationWorkflow(unittest.TestCase):
         # Return overall success (all must pass)
         return all(results)
 
-    def _run_full_workflow_simulation(self, dep_validator, comp_validator, net_validator, db_validator, logger):
+    def _run_full_workflow_simulation(
+        self, dep_validator, comp_validator, net_validator, db_validator, logger
+    ):
         """Helper method to simulate a full workflow with multiple validators."""
         # Run all validation stages
         dep_errors = dep_validator.validate()

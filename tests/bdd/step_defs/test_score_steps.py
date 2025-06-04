@@ -29,10 +29,15 @@ except ImportError:
             cursor = db_conn.cursor()
             cursor.execute(
                 "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-                (75, '{"tech_stack_score": 25, "performance_score": 25, "contact_score": 25, "total": 75}', business_id)
+                (
+                    75,
+                    '{"tech_stack_score": 25, "performance_score": 25, "contact_score": 25, "total": 75}',
+                    business_id,
+                ),
             )
             db_conn.commit()
             return {"score": 75, "business_id": business_id}
+
     score = MockScore()
 
 # Import shared steps to ensure 'the database is initialized' step is available
@@ -88,23 +93,21 @@ def business_with_enriched_info(score_db_conn):
         (
             "Test Business",
             "https://example.com",
-            json.dumps({
-                "cms": "WordPress",
-                "analytics": "Google Analytics",
-                "server": "Nginx",
-                "javascript": "React"
-            }),
-            json.dumps({
-                "page_speed": 85,
-                "mobile_friendly": True,
-                "accessibility": 90
-            }),
-            json.dumps({
-                "name": "John Doe",
-                "position": "CEO",
-                "email": "john@example.com"
-            })
-        )
+            json.dumps(
+                {
+                    "cms": "WordPress",
+                    "analytics": "Google Analytics",
+                    "server": "Nginx",
+                    "javascript": "React",
+                }
+            ),
+            json.dumps(
+                {"page_speed": 85, "mobile_friendly": True, "accessibility": 90}
+            ),
+            json.dumps(
+                {"name": "John Doe", "position": "CEO", "email": "john@example.com"}
+            ),
+        ),
     )
     score_db_conn.commit()
 
@@ -135,7 +138,11 @@ def score_the_business(business_with_enriched_info):
         cursor = db_conn.cursor()
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (75, '{"tech_stack_score": 25, "performance_score": 25, "contact_score": 25, "total": 75}', business_id)
+            (
+                75,
+                '{"tech_stack_score": 25, "performance_score": 25, "contact_score": 25, "total": 75}',
+                business_id,
+            ),
         )
         db_conn.commit()
         result = {"score": 75, "business_id": business_id}
@@ -157,7 +164,9 @@ def check_score_range(business_with_enriched_info, min, max):
     score_value = cursor.fetchone()[0]
 
     assert score_value is not None, "Score should not be None"
-    assert min <= score_value <= max, f"Score {score_value} should be between {min} and {max}"
+    assert min <= score_value <= max, (
+        f"Score {score_value} should be between {min} and {max}"
+    )
 
 
 @then("the score details should include component scores")
@@ -176,9 +185,15 @@ def check_score_details(business_with_enriched_info):
     score_details = json.loads(score_details_json)
 
     # Verify component scores exist
-    assert "tech_stack_score" in score_details, "Score details should include tech stack score"
-    assert "performance_score" in score_details, "Score details should include performance score"
-    assert "contact_score" in score_details, "Score details should include contact score"
+    assert "tech_stack_score" in score_details, (
+        "Score details should include tech stack score"
+    )
+    assert "performance_score" in score_details, (
+        "Score details should include performance score"
+    )
+    assert "contact_score" in score_details, (
+        "Score details should include contact score"
+    )
     assert "total" in score_details, "Score details should include total score"
 
 
@@ -198,7 +213,11 @@ def compare_tech_stack_scores(business_with_enriched_info):
     if original_score is None:
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', business_id)
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                business_id,
+            ),
         )
         db_conn.commit()
         original_score = 85
@@ -219,17 +238,13 @@ def compare_tech_stack_scores(business_with_enriched_info):
             "Minimal Tech Business",
             "https://minimal.com",
             json.dumps({"cms": "Basic CMS"}),  # Minimal tech stack
-            json.dumps({
-                "page_speed": 85,
-                "mobile_friendly": True,
-                "accessibility": 90
-            }),  # Same performance as original
-            json.dumps({
-                "name": "Jane Smith",
-                "position": "CEO",
-                "email": "jane@minimal.com"
-            })  # Similar contact info
-        )
+            json.dumps(
+                {"page_speed": 85, "mobile_friendly": True, "accessibility": 90}
+            ),  # Same performance as original
+            json.dumps(
+                {"name": "Jane Smith", "position": "CEO", "email": "jane@minimal.com"}
+            ),  # Similar contact info
+        ),
     )
     db_conn.commit()
 
@@ -242,7 +257,11 @@ def compare_tech_stack_scores(business_with_enriched_info):
     if isinstance(minimal_score_result, MagicMock):
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (65, '{"tech_stack_score": 15, "performance_score": 25, "contact_score": 25, "total": 65}', minimal_id)
+            (
+                65,
+                '{"tech_stack_score": 15, "performance_score": 25, "contact_score": 25, "total": 65}',
+                minimal_id,
+            ),
         )
         db_conn.commit()
 
@@ -251,7 +270,9 @@ def compare_tech_stack_scores(business_with_enriched_info):
     minimal_score = cursor.fetchone()[0]
 
     # The business with more tech stack items should have a higher score
-    assert original_score > minimal_score, f"Business with better tech stack ({original_score}) should score higher than business with minimal tech stack ({minimal_score})"
+    assert original_score > minimal_score, (
+        f"Business with better tech stack ({original_score}) should score higher than business with minimal tech stack ({minimal_score})"
+    )
 
 
 @then("businesses with better performance should score higher")
@@ -270,7 +291,11 @@ def compare_performance_scores(business_with_enriched_info):
     if original_score is None:
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', business_id)
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                business_id,
+            ),
         )
         db_conn.commit()
         original_score = 85
@@ -290,23 +315,25 @@ def compare_performance_scores(business_with_enriched_info):
         (
             "Poor Performance Business",
             "https://poorperf.com",
-            json.dumps({
-                "cms": "WordPress",
-                "analytics": "Google Analytics",
-                "server": "Nginx",
-                "javascript": "React"
-            }),  # Same tech stack as original
-            json.dumps({
-                "page_speed": 30,  # Poor page speed
-                "mobile_friendly": False,  # Not mobile friendly
-                "accessibility": 40  # Poor accessibility
-            }),
-            json.dumps({
-                "name": "Bob Johnson",
-                "position": "CEO",
-                "email": "bob@poorperf.com"
-            })  # Similar contact info
-        )
+            json.dumps(
+                {
+                    "cms": "WordPress",
+                    "analytics": "Google Analytics",
+                    "server": "Nginx",
+                    "javascript": "React",
+                }
+            ),  # Same tech stack as original
+            json.dumps(
+                {
+                    "page_speed": 30,  # Poor page speed
+                    "mobile_friendly": False,  # Not mobile friendly
+                    "accessibility": 40,  # Poor accessibility
+                }
+            ),
+            json.dumps(
+                {"name": "Bob Johnson", "position": "CEO", "email": "bob@poorperf.com"}
+            ),  # Similar contact info
+        ),
     )
     db_conn.commit()
 
@@ -319,7 +346,11 @@ def compare_performance_scores(business_with_enriched_info):
     if isinstance(poor_perf_score_result, MagicMock):
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (70, '{"tech_stack_score": 35, "performance_score": 10, "contact_score": 25, "total": 70}', poor_perf_id)
+            (
+                70,
+                '{"tech_stack_score": 35, "performance_score": 10, "contact_score": 25, "total": 70}',
+                poor_perf_id,
+            ),
         )
         db_conn.commit()
 
@@ -328,4 +359,6 @@ def compare_performance_scores(business_with_enriched_info):
     poor_perf_score = cursor.fetchone()[0]
 
     # The business with better performance should have a higher score
-    assert original_score > poor_perf_score, f"Business with better performance ({original_score}) should score higher than business with poor performance ({poor_perf_score})"
+    assert original_score > poor_perf_score, (
+        f"Business with better performance ({original_score}) should score higher than business with poor performance ({poor_perf_score})"
+    )

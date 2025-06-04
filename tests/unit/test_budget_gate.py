@@ -11,7 +11,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 from leadfactory.cost import budget_gate
 
 
@@ -59,7 +61,7 @@ def mock_db():
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-4', 1000, 0.05, ?, 'verification')
         """,
-        (past_month,)
+        (past_month,),
     )
 
     # Current month costs
@@ -69,7 +71,7 @@ def mock_db():
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-4', 2000, 0.10, ?, 'mockup')
         """,
-        (current_date,)
+        (current_date,),
     )
 
     cursor.execute(
@@ -77,7 +79,7 @@ def mock_db():
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-3.5-turbo', 5000, 0.05, ?, 'email')
         """,
-        (current_date,)
+        (current_date,),
     )
 
     # Insert budget settings
@@ -147,7 +149,7 @@ def test_check_budget_status_warning(mock_db):
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-4', 78000, 3.85, ?, 'large_operation')
         """,
-        (current_date,)
+        (current_date,),
     )
     mock_db.commit()
 
@@ -171,7 +173,7 @@ def test_check_budget_status_paused(mock_db):
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-4', 92000, 4.6, ?, 'large_operation')
         """,
-        (current_date,)
+        (current_date,),
     )
     mock_db.commit()
 
@@ -190,7 +192,7 @@ def test_update_budget_settings(mock_db):
         "monthly_budget": 100.0,
         "daily_budget": 10.0,
         "warning_threshold": 0.7,
-        "pause_threshold": 0.9
+        "pause_threshold": 0.9,
     }
 
     result = budget_gate.update_budget_settings(mock_db, new_settings)
@@ -200,7 +202,9 @@ def test_update_budget_settings(mock_db):
 
     # Verify database was updated
     cursor = mock_db.cursor()
-    cursor.execute("SELECT monthly_budget, daily_budget, warning_threshold, pause_threshold FROM budget_settings")
+    cursor.execute(
+        "SELECT monthly_budget, daily_budget, warning_threshold, pause_threshold FROM budget_settings"
+    )
     settings = cursor.fetchone()
 
     assert settings[0] == 100.0
@@ -258,14 +262,18 @@ def test_can_proceed_with_operation(mock_db):
 def test_log_api_cost(mock_db):
     """Test logging new API costs."""
     # Call the function
-    result = budget_gate.log_api_cost(mock_db, model="gpt-4", tokens=3000, cost=0.15, purpose="test", business_id=1)
+    result = budget_gate.log_api_cost(
+        mock_db, model="gpt-4", tokens=3000, cost=0.15, purpose="test", business_id=1
+    )
 
     # Verify the result
     assert result is True
 
     # Verify database was updated
     cursor = mock_db.cursor()
-    cursor.execute("SELECT model, tokens, cost, purpose, business_id FROM api_costs WHERE purpose = 'test'")
+    cursor.execute(
+        "SELECT model, tokens, cost, purpose, business_id FROM api_costs WHERE purpose = 'test'"
+    )
     cost_entry = cursor.fetchone()
 
     assert cost_entry[0] == "gpt-4"

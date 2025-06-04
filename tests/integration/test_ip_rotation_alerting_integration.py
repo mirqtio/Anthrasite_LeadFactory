@@ -2,23 +2,24 @@
 Integration tests for IP rotation alerting system.
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
+import pytest
+
 from leadfactory.services.ip_rotation import (
     IPRotationService,
-    RotationConfig,
     IPSubuserPool,
     IPSubuserStatus,
+    RotationConfig,
+    RotationEvent,
     RotationReason,
-    RotationEvent
 )
 from leadfactory.services.ip_rotation_alerting import (
-    IPRotationAlerting,
     AlertingConfig,
-    AlertType,
     AlertSeverity,
+    AlertType,
+    IPRotationAlerting,
 )
 
 
@@ -69,7 +70,7 @@ class TestIPRotationAlertingIntegration:
             from_subuser="user1",
             to_ip="192.168.1.2",
             to_subuser="user2",
-            reason=RotationReason.MANUAL_ROTATION
+            reason=RotationReason.MANUAL_ROTATION,
         )
 
         # Verify rotation was successful
@@ -97,7 +98,7 @@ class TestIPRotationAlertingIntegration:
             from_subuser="user1",
             to_ip="999.999.999.999",
             to_subuser="nonexistent",
-            reason=RotationReason.MANUAL_ROTATION
+            reason=RotationReason.MANUAL_ROTATION,
         )
 
         # Verify rotation succeeded (the service allows rotation to any IP)
@@ -132,7 +133,7 @@ class TestIPRotationAlertingIntegration:
                 from_subuser="user1",
                 to_ip="192.168.1.3",
                 to_subuser="user3",
-                reason=RotationReason.MANUAL_ROTATION
+                reason=RotationReason.MANUAL_ROTATION,
             )
             assert False, "Expected ValueError to be raised"
         except ValueError:
@@ -140,8 +141,11 @@ class TestIPRotationAlertingIntegration:
 
         # Verify cooldown violation alert was generated
         assert len(self.alerting_service.alert_history) >= 1
-        cooldown_alerts = [alert for alert in self.alerting_service.alert_history
-                          if "cooldown" in alert.message.lower()]
+        cooldown_alerts = [
+            alert
+            for alert in self.alerting_service.alert_history
+            if "cooldown" in alert.message.lower()
+        ]
         assert len(cooldown_alerts) >= 1
         alert = cooldown_alerts[0]
         assert alert.alert_type == AlertType.SYSTEM_ERROR
@@ -176,7 +180,8 @@ class TestIPRotationAlertingIntegration:
 
         # Find threshold breach alert
         threshold_alerts = [
-            alert for alert in self.alerting_service.alert_history
+            alert
+            for alert in self.alerting_service.alert_history
             if alert.alert_type == AlertType.THRESHOLD_BREACH
         ]
         assert len(threshold_alerts) >= 1
@@ -189,7 +194,8 @@ class TestIPRotationAlertingIntegration:
 
         # Find rotation alert
         rotation_alerts = [
-            alert for alert in self.alerting_service.alert_history
+            alert
+            for alert in self.alerting_service.alert_history
             if alert.alert_type == AlertType.ROTATION_EXECUTED
         ]
         assert len(rotation_alerts) >= 1
@@ -230,7 +236,8 @@ class TestIPRotationAlertingIntegration:
 
         # Verify IP disabled alert was generated
         disabled_alerts = [
-            alert for alert in self.alerting_service.alert_history
+            alert
+            for alert in self.alerting_service.alert_history
             if alert.alert_type == AlertType.IP_DISABLED
         ]
         assert len(disabled_alerts) >= 1
@@ -343,7 +350,8 @@ class TestIPRotationAlertingIntegration:
 
         # Verify no errors occurred (no additional error alerts)
         error_alerts = [
-            alert for alert in self.alerting_service.alert_history[initial_alert_count:]
+            alert
+            for alert in self.alerting_service.alert_history[initial_alert_count:]
             if alert.alert_type == AlertType.SYSTEM_ERROR
         ]
         assert len(error_alerts) == 0
@@ -372,6 +380,7 @@ class TestIPRotationAlertingIntegration:
 
         # Add old alert manually
         from leadfactory.services.ip_rotation_alerting import Alert
+
         old_alert = Alert(
             alert_type=AlertType.ROTATION_EXECUTED,
             severity=AlertSeverity.INFO,

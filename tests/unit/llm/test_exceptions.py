@@ -1,18 +1,19 @@
 """Tests for LLM exception handling and classification."""
 
 import pytest
+
 from leadfactory.llm.exceptions import (
-    LLMError,
-    LLMConnectionError,
-    LLMRateLimitError,
+    AllProvidersFailedError,
     LLMAuthenticationError,
-    LLMQuotaExceededError,
+    LLMConnectionError,
+    LLMError,
     LLMModelNotFoundError,
+    LLMProviderError,
+    LLMQuotaExceededError,
+    LLMRateLimitError,
     LLMTimeoutError,
     LLMValidationError,
-    LLMProviderError,
-    AllProvidersFailedError,
-    classify_error
+    classify_error,
 )
 
 
@@ -30,7 +31,9 @@ class TestLLMError:
     def test_init_with_details(self):
         """Test initialization with details."""
         metadata = {"key": "value"}
-        error = LLMError("Test error", provider="openai", status_code=500, metadata=metadata)
+        error = LLMError(
+            "Test error", provider="openai", status_code=500, metadata=metadata
+        )
 
         assert str(error) == "Test error"
         assert error.provider == "openai"
@@ -57,7 +60,7 @@ class TestAllProvidersFailedError:
         """Test initialization."""
         provider_errors = {
             "openai": Exception("OpenAI failed"),
-            "anthropic": Exception("Anthropic failed")
+            "anthropic": Exception("Anthropic failed"),
         }
 
         error = AllProvidersFailedError(provider_errors)
@@ -77,7 +80,7 @@ class TestErrorClassification:
             "Network timeout",
             "DNS resolution failed",
             "Connection timeout",
-            "Host unreachable"
+            "Host unreachable",
         ]
 
         for message in test_cases:
@@ -90,11 +93,7 @@ class TestErrorClassification:
 
     def test_classify_rate_limit_error(self):
         """Test classification of rate limit errors."""
-        test_cases = [
-            "Rate limit exceeded",
-            "Too many requests",
-            "Quota exceeded"
-        ]
+        test_cases = ["Rate limit exceeded", "Too many requests", "Quota exceeded"]
 
         for message in test_cases:
             error = Exception(message)
@@ -118,7 +117,7 @@ class TestErrorClassification:
             ("Unauthorized", 401),
             ("Invalid API key", None),
             ("Authentication failed", None),
-            ("Forbidden", 403)
+            ("Forbidden", 403),
         ]
 
         for message, status_code in test_cases:
@@ -135,7 +134,7 @@ class TestErrorClassification:
             ("Quota exceeded", None),
             ("Billing limit reached", None),
             ("Payment required", 402),
-            ("Insufficient credits", None)
+            ("Insufficient credits", None),
         ]
 
         for message, status_code in test_cases:
@@ -151,7 +150,7 @@ class TestErrorClassification:
         test_cases = [
             ("Model not found", 404),
             ("Invalid model", None),
-            ("Model does not exist", None)
+            ("Model does not exist", None),
         ]
 
         for message, status_code in test_cases:
@@ -167,7 +166,7 @@ class TestErrorClassification:
         test_cases = [
             ("Request timeout", 408),
             ("Timed out", None),
-            ("Operation timeout", None)
+            ("Operation timeout", None),
         ]
 
         for message, status_code in test_cases:
@@ -183,7 +182,7 @@ class TestErrorClassification:
         test_cases = [
             ("Validation failed", 400),
             ("Invalid request", None),
-            ("Bad request", 400)
+            ("Bad request", 400),
         ]
 
         for message, status_code in test_cases:
@@ -208,7 +207,7 @@ class TestErrorClassification:
             ("Rate limit exceeded. Retry after: 60 seconds", 60),
             ("Too many requests. Retry-after 30", 30),
             ("Quota exceeded, retry after 120 seconds", 120),
-            ("Rate limited", None)  # No retry-after info
+            ("Rate limited", None),  # No retry-after info
         ]
 
         for message, expected_retry_after in test_cases:

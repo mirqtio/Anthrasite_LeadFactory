@@ -11,7 +11,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 from leadfactory.pipeline import enrich
 
 
@@ -70,10 +72,11 @@ def mock_db():
 @pytest.fixture
 def mock_apis():
     """Mock all external APIs used in the enrichment process."""
-    with patch("requests.get") as mock_get, \
-         patch("requests.post") as mock_post, \
-         patch("utils.io.track_api_cost") as mock_track_cost:
-
+    with (
+        patch("requests.get") as mock_get,
+        patch("requests.post") as mock_post,
+        patch("utils.io.track_api_cost") as mock_track_cost,
+    ):
         # Configure mock responses
         mock_get_response = MagicMock()
         mock_get_response.status_code = 200
@@ -81,11 +84,9 @@ def mock_apis():
             "data": {
                 "email": "contact@example.com",
                 "phone": "555-123-4567",
-                "contact_info": json.dumps({
-                    "first_name": "John",
-                    "last_name": "Doe",
-                    "position": "CEO"
-                })
+                "contact_info": json.dumps(
+                    {"first_name": "John", "last_name": "Doe", "position": "CEO"}
+                ),
             }
         }
         mock_get.return_value = mock_get_response
@@ -93,23 +94,14 @@ def mock_apis():
         mock_post_response = MagicMock()
         mock_post_response.status_code = 200
         mock_post_response.json.return_value = {
-            "tech_stack": json.dumps({
-                "cms": "WordPress",
-                "analytics": "Google Analytics",
-                "server": "Nginx"
-            }),
-            "performance": json.dumps({
-                "page_speed": 85,
-                "mobile_friendly": True
-            })
+            "tech_stack": json.dumps(
+                {"cms": "WordPress", "analytics": "Google Analytics", "server": "Nginx"}
+            ),
+            "performance": json.dumps({"page_speed": 85, "mobile_friendly": True}),
         }
         mock_post.return_value = mock_post_response
 
-        yield {
-            "get": mock_get,
-            "post": mock_post,
-            "track_cost": mock_track_cost
-        }
+        yield {"get": mock_get, "post": mock_post, "track_cost": mock_track_cost}
 
 
 def test_enrich_business(mock_db, mock_apis):
@@ -126,7 +118,9 @@ def test_enrich_business(mock_db, mock_apis):
 
     # Verify the database was updated
     cursor = mock_db.cursor()
-    cursor.execute("SELECT email, phone, tech_stack, performance, enriched_at FROM businesses WHERE id = 1")
+    cursor.execute(
+        "SELECT email, phone, tech_stack, performance, enriched_at FROM businesses WHERE id = 1"
+    )
     business = cursor.fetchone()
 
     assert business[0] == "contact@example.com"
@@ -143,7 +137,7 @@ def test_enrich_tech_stack(mock_db, mock_apis):
         "technologies": [
             {"name": "WordPress", "categories": ["CMS"]},
             {"name": "Google Analytics", "categories": ["Analytics"]},
-            {"name": "Nginx", "categories": ["Web Server"]}
+            {"name": "Nginx", "categories": ["Web Server"]},
         ]
     }
 
@@ -173,7 +167,7 @@ def test_enrich_contact_info(mock_db, mock_apis):
         "name": "John Doe",
         "email": "john@example.com",
         "phone": "555-123-4567",
-        "title": "CEO"
+        "title": "CEO",
     }
     mock_apis["get"].return_value.json.return_value = {"data": contact_data}
 
@@ -199,11 +193,7 @@ def test_enrich_contact_info(mock_db, mock_apis):
 def test_enrich_performance_data(mock_db, mock_apis):
     """Test the performance data enrichment function."""
     # Configure mock to return specific performance data
-    performance_data = {
-        "page_speed": 85,
-        "mobile_score": 90,
-        "accessibility": 75
-    }
+    performance_data = {"page_speed": 85, "mobile_score": 90, "accessibility": 75}
     mock_apis["post"].return_value.json.return_value = {"data": performance_data}
 
     # Call the function

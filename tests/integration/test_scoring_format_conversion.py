@@ -19,7 +19,9 @@ class TestScoringFormatConversion(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         # Load actual scoring rules for testing
-        self.current_rules_path = Path(__file__).parent.parent.parent / "etc" / "scoring_rules.yml"
+        self.current_rules_path = (
+            Path(__file__).parent.parent.parent / "etc" / "scoring_rules.yml"
+        )
         self.converter = RuleConverter()
 
         # Sample test businesses
@@ -35,7 +37,7 @@ class TestScoringFormatConversion(unittest.TestCase):
                 "category": ["restaurant"],
                 "state": "NY",
                 "review_count": 15,
-                "website": "https://example-restaurant.com"
+                "website": "https://example-restaurant.com",
             },
             # Medium audit potential business
             {
@@ -47,7 +49,7 @@ class TestScoringFormatConversion(unittest.TestCase):
                 "category": ["retail"],
                 "state": "WA",
                 "review_count": 45,
-                "website": "https://example-store.com"
+                "website": "https://example-store.com",
             },
             # Low audit potential business (modern tech)
             {
@@ -59,7 +61,7 @@ class TestScoringFormatConversion(unittest.TestCase):
                 "category": ["professional_service"],
                 "state": "IN",
                 "review_count": 120,
-                "website": "https://modern-business.com"
+                "website": "https://modern-business.com",
             },
             # Exclusion case (no website)
             {
@@ -68,8 +70,8 @@ class TestScoringFormatConversion(unittest.TestCase):
                 "category": ["entertainment"],
                 "state": "CA",
                 "review_count": 5,
-                "website_missing": True
-            }
+                "website_missing": True,
+            },
         ]
 
     def test_legacy_to_simplified_conversion(self):
@@ -77,10 +79,11 @@ class TestScoringFormatConversion(unittest.TestCase):
         if not self.current_rules_path.exists():
             self.skipTest("Legacy scoring rules file not found")
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as output_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yml", delete=False
+        ) as output_file:
             success = self.converter.convert_legacy_to_simplified(
-                str(self.current_rules_path),
-                output_file.name
+                str(self.current_rules_path), output_file.name
             )
 
             self.assertTrue(success, "Conversion should succeed")
@@ -106,10 +109,11 @@ class TestScoringFormatConversion(unittest.TestCase):
             self.skipTest("Legacy scoring rules file not found")
 
         # Convert to simplified format
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as simplified_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yml", delete=False
+        ) as simplified_file:
             success = self.converter.convert_legacy_to_simplified(
-                str(self.current_rules_path),
-                simplified_file.name
+                str(self.current_rules_path), simplified_file.name
             )
             self.assertTrue(success)
 
@@ -151,10 +155,11 @@ class TestScoringFormatConversion(unittest.TestCase):
         legacy_config = legacy_parser.load_and_validate()
 
         # Convert to simplified
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as simplified_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yml", delete=False
+        ) as simplified_file:
             success = self.converter.convert_legacy_to_simplified(
-                str(self.current_rules_path),
-                simplified_file.name
+                str(self.current_rules_path), simplified_file.name
             )
             self.assertTrue(success)
 
@@ -166,11 +171,19 @@ class TestScoringFormatConversion(unittest.TestCase):
             rule_names = [rule.name for rule in simplified_engine.rules]
 
             # Should have technology-related rules
-            tech_rules = [name for name in rule_names if "jquery" in name.lower() or "tech" in name.lower()]
+            tech_rules = [
+                name
+                for name in rule_names
+                if "jquery" in name.lower() or "tech" in name.lower()
+            ]
             self.assertGreater(len(tech_rules), 0, "Should preserve technology rules")
 
             # Should have performance-related rules
-            perf_rules = [name for name in rule_names if "performance" in name.lower() or "lcp" in name.lower()]
+            perf_rules = [
+                name
+                for name in rule_names
+                if "performance" in name.lower() or "lcp" in name.lower()
+            ]
             self.assertGreater(len(perf_rules), 0, "Should preserve performance rules")
 
     def test_template_system_functionality(self):
@@ -181,33 +194,36 @@ class TestScoringFormatConversion(unittest.TestCase):
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
                     "name": "jquery_old",
                     "description": "jQuery is outdated",
                     "condition": {"tech_stack_contains": "jQuery"},
-                    "score": 15
+                    "score": 15,
                 },
                 {
                     "name": "performance_bad",
                     "description": "Performance is poor",
                     "condition": {"performance_score_lt": 50},
-                    "score": 20
-                }
+                    "score": 20,
+                },
             ],
-            "multipliers": []
+            "multipliers": [],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as legacy_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yml", delete=False
+        ) as legacy_file:
             yaml.dump(test_legacy_config, legacy_file)
             legacy_file.flush()
 
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as simplified_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".yml", delete=False
+            ) as simplified_file:
                 success = self.converter.convert_legacy_to_simplified(
-                    legacy_file.name,
-                    simplified_file.name
+                    legacy_file.name, simplified_file.name
                 )
                 self.assertTrue(success)
 
@@ -228,22 +244,37 @@ class TestScoringFormatConversion(unittest.TestCase):
         test_legacy_config = {
             "settings": {"base_score": 50, "high_score_threshold": 75},
             "rules": [
-                {"name": "high_impact", "score": 20, "condition": {"tech_stack_contains": "jQuery"}},
-                {"name": "medium_impact", "score": 10, "condition": {"performance_score_lt": 60}},
+                {
+                    "name": "high_impact",
+                    "score": 20,
+                    "condition": {"tech_stack_contains": "jQuery"},
+                },
+                {
+                    "name": "medium_impact",
+                    "score": 10,
+                    "condition": {"performance_score_lt": 60},
+                },
                 {"name": "low_impact", "score": 5, "condition": {"state_equals": "NY"}},
-                {"name": "negative_impact", "score": -15, "condition": {"tech_stack_contains": "React"}}
+                {
+                    "name": "negative_impact",
+                    "score": -15,
+                    "condition": {"tech_stack_contains": "React"},
+                },
             ],
-            "multipliers": []
+            "multipliers": [],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as legacy_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yml", delete=False
+        ) as legacy_file:
             yaml.dump(test_legacy_config, legacy_file)
             legacy_file.flush()
 
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as simplified_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".yml", delete=False
+            ) as simplified_file:
                 success = self.converter.convert_legacy_to_simplified(
-                    legacy_file.name,
-                    simplified_file.name
+                    legacy_file.name, simplified_file.name
                 )
                 self.assertTrue(success)
 
@@ -255,12 +286,16 @@ class TestScoringFormatConversion(unittest.TestCase):
                 exclusions = converted.get("exclusions", [])
 
                 # High score rules should have high audit potential
-                high_rule = next((r for r in opportunities if r["name"] == "high_impact"), None)
+                high_rule = next(
+                    (r for r in opportunities if r["name"] == "high_impact"), None
+                )
                 self.assertIsNotNone(high_rule)
                 self.assertEqual(high_rule.get("audit_potential"), "high")
 
                 # Negative score rules should be in exclusions
-                negative_rule = next((r for r in exclusions if r["name"] == "negative_impact"), None)
+                negative_rule = next(
+                    (r for r in exclusions if r["name"] == "negative_impact"), None
+                )
                 self.assertIsNotNone(negative_rule)
 
     def test_performance_conditions_conversion(self):
@@ -271,30 +306,29 @@ class TestScoringFormatConversion(unittest.TestCase):
                 {
                     "name": "slow_lcp",
                     "condition": {"lcp_gt": 2500},  # milliseconds
-                    "score": 15
+                    "score": 15,
                 },
-                {
-                    "name": "high_cls",
-                    "condition": {"cls_gt": 0.25},
-                    "score": 10
-                },
+                {"name": "high_cls", "condition": {"cls_gt": 0.25}, "score": 10},
                 {
                     "name": "poor_performance",
                     "condition": {"performance_score_lt": 50},
-                    "score": 20
-                }
+                    "score": 20,
+                },
             ],
-            "multipliers": []
+            "multipliers": [],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as legacy_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yml", delete=False
+        ) as legacy_file:
             yaml.dump(test_legacy_config, legacy_file)
             legacy_file.flush()
 
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as simplified_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".yml", delete=False
+            ) as simplified_file:
                 success = self.converter.convert_legacy_to_simplified(
-                    legacy_file.name,
-                    simplified_file.name
+                    legacy_file.name, simplified_file.name
                 )
                 self.assertTrue(success)
 
@@ -305,7 +339,7 @@ class TestScoringFormatConversion(unittest.TestCase):
                 slow_business = {
                     "performance_score": 40,
                     "lcp": 3000,  # This should trigger LCP rule
-                    "cls": 0.3    # This should trigger CLS rule
+                    "cls": 0.3,  # This should trigger CLS rule
                 }
 
                 result = engine.score_business(slow_business)
@@ -315,5 +349,5 @@ class TestScoringFormatConversion(unittest.TestCase):
                 self.assertGreater(result["final_score"], 50)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

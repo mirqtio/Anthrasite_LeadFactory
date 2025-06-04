@@ -18,7 +18,9 @@ class MockSendGridEmailSender:
         self.base_url = "https://api.sendgrid.com/v3"
         self.headers = {"Authorization": "Bearer test_key"}
 
-    def get_bounce_rate(self, days: int = 7, ip_pool: str = None, subuser: str = None) -> float:
+    def get_bounce_rate(
+        self, days: int = 7, ip_pool: str = None, subuser: str = None
+    ) -> float:
         """Mock implementation of bounce rate calculation."""
         try:
             # Mock the requests.get call
@@ -35,7 +37,9 @@ class MockSendGridEmailSender:
                 url = f"{self.base_url}/subusers/{subuser}/stats"
 
             # This will be mocked in tests
-            response = requests.get(url, headers=self.headers, params=params, timeout=30)
+            response = requests.get(
+                url, headers=self.headers, params=params, timeout=30
+            )
 
             if response.status_code == 200:
                 data = response.json()
@@ -58,7 +62,9 @@ class MockSendGridEmailSender:
         except Exception:
             return 0.0
 
-    def get_spam_rate(self, days: int = 7, ip_pool: str = None, subuser: str = None) -> float:
+    def get_spam_rate(
+        self, days: int = 7, ip_pool: str = None, subuser: str = None
+    ) -> float:
         """Mock implementation of spam rate calculation."""
         try:
             url = f"{self.base_url}/stats"
@@ -73,7 +79,9 @@ class MockSendGridEmailSender:
             if subuser:
                 url = f"{self.base_url}/subusers/{subuser}/stats"
 
-            response = requests.get(url, headers=self.headers, params=params, timeout=30)
+            response = requests.get(
+                url, headers=self.headers, params=params, timeout=30
+            )
 
             if response.status_code == 200:
                 data = response.json()
@@ -112,14 +120,8 @@ class TestBounceHandling:
             {
                 "date": "2024-01-01",
                 "stats": [
-                    {
-                        "metrics": {
-                            "requests": 100,
-                            "bounces": 5,
-                            "delivered": 95
-                        }
-                    }
-                ]
+                    {"metrics": {"requests": 100, "bounces": 5, "delivered": 95}}
+                ],
             }
         ]
 
@@ -142,15 +144,7 @@ class TestBounceHandling:
         mock_response_data = [
             {
                 "date": "2024-01-01",
-                "stats": [
-                    {
-                        "metrics": {
-                            "requests": 0,
-                            "bounces": 0,
-                            "delivered": 0
-                        }
-                    }
-                ]
+                "stats": [{"metrics": {"requests": 0, "bounces": 0, "delivered": 0}}],
             }
         ]
 
@@ -215,14 +209,8 @@ class TestBounceHandling:
             {
                 "date": "2024-01-01",
                 "stats": [
-                    {
-                        "metrics": {
-                            "requests": 1000,
-                            "spam_reports": 2,
-                            "delivered": 998
-                        }
-                    }
-                ]
+                    {"metrics": {"requests": 1000, "spam_reports": 2, "delivered": 998}}
+                ],
             }
         ]
 
@@ -237,16 +225,21 @@ class TestBounceHandling:
         # Assert
         assert spam_rate == 0.002  # 2 spam reports out of 1000 requests = 0.2%
 
-    @pytest.mark.parametrize("bounce_count,request_count,expected_rate", [
-        (0, 100, 0.0),      # No bounces
-        (5, 100, 0.05),     # 5% bounce rate
-        (10, 100, 0.10),    # 10% bounce rate
-        (25, 100, 0.25),    # 25% bounce rate (high)
-        (1, 10, 0.10),      # Small volume
-        (100, 1000, 0.10),  # Large volume
-    ])
+    @pytest.mark.parametrize(
+        "bounce_count,request_count,expected_rate",
+        [
+            (0, 100, 0.0),  # No bounces
+            (5, 100, 0.05),  # 5% bounce rate
+            (10, 100, 0.10),  # 10% bounce rate
+            (25, 100, 0.25),  # 25% bounce rate (high)
+            (1, 10, 0.10),  # Small volume
+            (100, 1000, 0.10),  # Large volume
+        ],
+    )
     @patch("requests.get")
-    def test_bounce_rate_calculations(self, mock_requests_get, bounce_count, request_count, expected_rate):
+    def test_bounce_rate_calculations(
+        self, mock_requests_get, bounce_count, request_count, expected_rate
+    ):
         """Test bounce rate calculations with various scenarios."""
         # Arrange
         mock_response_data = [
@@ -257,10 +250,10 @@ class TestBounceHandling:
                         "metrics": {
                             "requests": request_count,
                             "bounces": bounce_count,
-                            "delivered": request_count - bounce_count
+                            "delivered": request_count - bounce_count,
                         }
                     }
-                ]
+                ],
             }
         ]
 
@@ -282,13 +275,13 @@ class TestBounceThresholds:
     def test_bounce_threshold_detection(self):
         """Test detection of bounce rates exceeding thresholds."""
         # Define common bounce rate thresholds
-        warning_threshold = 0.05   # 5%
+        warning_threshold = 0.05  # 5%
         critical_threshold = 0.10  # 10%
 
         test_cases = [
-            (0.02, "normal"),     # Below warning threshold
-            (0.07, "warning"),    # Above warning, below critical
-            (0.15, "critical"),   # Above critical threshold
+            (0.02, "normal"),  # Below warning threshold
+            (0.07, "warning"),  # Above warning, below critical
+            (0.15, "critical"),  # Above critical threshold
         ]
 
         for bounce_rate, expected_status in test_cases:
@@ -304,13 +297,13 @@ class TestBounceThresholds:
     def test_spam_threshold_detection(self):
         """Test detection of spam rates exceeding thresholds."""
         # Define common spam rate thresholds
-        warning_threshold = 0.001   # 0.1%
+        warning_threshold = 0.001  # 0.1%
         critical_threshold = 0.005  # 0.5%
 
         test_cases = [
-            (0.0005, "normal"),    # Below warning threshold
-            (0.003, "warning"),    # Above warning, below critical
-            (0.008, "critical"),   # Above critical threshold
+            (0.0005, "normal"),  # Below warning threshold
+            (0.003, "warning"),  # Above warning, below critical
+            (0.008, "critical"),  # Above critical threshold
         ]
 
         for spam_rate, expected_status in test_cases:

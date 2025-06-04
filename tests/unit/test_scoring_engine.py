@@ -20,6 +20,7 @@ try:
         ScoringRulesConfig,
         ScoringSettings,
     )
+
     SCORING_MODULES_AVAILABLE = True
 except ImportError as e:
     # If imports fail, create mock classes for basic testing
@@ -38,14 +39,14 @@ class TestScoringRulesParser:
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
                     "name": "test_rule",
                     "description": "Test rule",
                     "condition": {"tech_stack_contains": "React"},
-                    "score": 10
+                    "score": 10,
                 }
             ],
             "multipliers": [
@@ -53,9 +54,9 @@ class TestScoringRulesParser:
                     "name": "test_multiplier",
                     "description": "Test multiplier",
                     "condition": {"vertical_in": ["SaaS"]},
-                    "multiplier": 1.5
+                    "multiplier": 1.5,
                 }
-            ]
+            ],
         }
 
         config_file = tmp_path / "test_config.yml"
@@ -96,15 +97,15 @@ class TestScoringRulesParser:
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
                     "name": "invalid_rule",
                     "condition": {"tech_stack_contains": "React"},
-                    "score": 200  # Invalid: exceeds max
+                    "score": 200,  # Invalid: exceeds max
                 }
-            ]
+            ],
         }
 
         config_file = tmp_path / "invalid_config.yml"
@@ -123,7 +124,7 @@ class TestScoringRulesParser:
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
@@ -131,22 +132,22 @@ class TestScoringRulesParser:
                     "condition": {"tech_stack_contains": "React"},
                     "score": 10,
                     "enabled": True,
-                    "priority": 2
+                    "priority": 2,
                 },
                 {
                     "name": "disabled_rule",
                     "condition": {"tech_stack_contains": "Vue"},
                     "score": 5,
-                    "enabled": False
+                    "enabled": False,
                 },
                 {
                     "name": "high_priority_rule",
                     "condition": {"tech_stack_contains": "Angular"},
                     "score": 15,
                     "enabled": True,
-                    "priority": 5
-                }
-            ]
+                    "priority": 5,
+                },
+            ],
         }
 
         config_file = tmp_path / "test_config.yml"
@@ -201,28 +202,22 @@ class TestRuleEvaluator:
         business = {"tech_stack": {"jQuery": "2.1.4"}}
 
         # Test less than
-        condition = RuleCondition(tech_stack_version_lt={
-            "technology": "jQuery",
-            "version": "3.0.0"
-        })
+        condition = RuleCondition(
+            tech_stack_version_lt={"technology": "jQuery", "version": "3.0.0"}
+        )
         assert evaluator._evaluate_condition(business, condition) is True
 
         # Test greater than
-        condition = RuleCondition(tech_stack_version_gt={
-            "technology": "jQuery",
-            "version": "2.0.0"
-        })
+        condition = RuleCondition(
+            tech_stack_version_gt={"technology": "jQuery", "version": "2.0.0"}
+        )
         assert evaluator._evaluate_condition(business, condition) is True
 
     def test_numeric_comparisons(self):
         """Test numeric field comparisons."""
         evaluator = RuleEvaluator()
 
-        business = {
-            "employee_count": 50,
-            "revenue": 1000000,
-            "founded_year": 2015
-        }
+        business = {"employee_count": 50, "revenue": 1000000, "founded_year": 2015}
 
         # Test greater than
         condition = RuleCondition(employee_count_gt=25)
@@ -244,7 +239,7 @@ class TestRuleEvaluator:
             "location": "San Francisco, CA",
             "city": "San Francisco",
             "state": "California",
-            "country": "USA"
+            "country": "USA",
         }
 
         condition = RuleCondition(location_in=["San Francisco", "New York"])
@@ -260,28 +255,25 @@ class TestRuleEvaluator:
         business = {
             "tech_stack": ["React", "Node.js"],
             "employee_count": 50,
-            "vertical": "SaaS"
+            "vertical": "SaaS",
         }
 
         # Test all_of
-        condition = RuleCondition(all_of=[
-            {"tech_stack_contains": "React"},
-            {"employee_count_gt": 25}
-        ])
+        condition = RuleCondition(
+            all_of=[{"tech_stack_contains": "React"}, {"employee_count_gt": 25}]
+        )
         assert evaluator._evaluate_condition(business, condition) is True
 
         # Test any_of
-        condition = RuleCondition(any_of=[
-            {"tech_stack_contains": "Vue"},
-            {"employee_count_gt": 25}
-        ])
+        condition = RuleCondition(
+            any_of=[{"tech_stack_contains": "Vue"}, {"employee_count_gt": 25}]
+        )
         assert evaluator._evaluate_condition(business, condition) is True
 
         # Test none_of
-        condition = RuleCondition(none_of=[
-            {"tech_stack_contains": "Vue"},
-            {"employee_count_gt": 100}
-        ])
+        condition = RuleCondition(
+            none_of=[{"tech_stack_contains": "Vue"}, {"employee_count_gt": 100}]
+        )
         assert evaluator._evaluate_condition(business, condition) is True
 
     def test_evaluate_rule(self):
@@ -292,7 +284,7 @@ class TestRuleEvaluator:
         rule = ScoringRule(
             name="react_bonus",
             condition=RuleCondition(tech_stack_contains="React"),
-            score=15
+            score=15,
         )
 
         matched, score = evaluator.evaluate_rule(business, rule)
@@ -303,7 +295,7 @@ class TestRuleEvaluator:
         rule = ScoringRule(
             name="vue_bonus",
             condition=RuleCondition(tech_stack_contains="Vue"),
-            score=10
+            score=10,
         )
 
         matched, score = evaluator.evaluate_rule(business, rule)
@@ -322,9 +314,9 @@ class TestScoringEngine:
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
-            "rules": []
+            "rules": [],
         }
 
         config_file = tmp_path / "test_config.yml"
@@ -344,27 +336,27 @@ class TestScoringEngine:
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
                     "name": "react_bonus",
                     "condition": {"tech_stack_contains": "React"},
-                    "score": 15
+                    "score": 15,
                 },
                 {
                     "name": "jquery_bonus",
                     "condition": {"tech_stack_contains": "jQuery"},
-                    "score": 10
-                }
+                    "score": 10,
+                },
             ],
             "multipliers": [
                 {
                     "name": "saas_multiplier",
                     "condition": {"vertical_in": ["SaaS"]},
-                    "multiplier": 1.5
+                    "multiplier": 1.5,
                 }
-            ]
+            ],
         }
 
         config_file = tmp_path / "test_config.yml"
@@ -379,7 +371,7 @@ class TestScoringEngine:
             "id": 1,
             "name": "Test Company",
             "tech_stack": ["React", "Node.js"],
-            "vertical": "SaaS"
+            "vertical": "SaaS",
         }
 
         result = engine.score_business(business)
@@ -397,15 +389,15 @@ class TestScoringEngine:
                 "base_score": 90,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
                     "name": "big_bonus",
                     "condition": {"tech_stack_contains": "React"},
-                    "score": 50
+                    "score": 50,
                 }
-            ]
+            ],
         }
 
         config_file = tmp_path / "test_config.yml"
@@ -415,11 +407,7 @@ class TestScoringEngine:
         engine = ScoringEngine(str(config_file))
         engine.load_rules()
 
-        business = {
-            "id": 1,
-            "name": "Test Company",
-            "tech_stack": ["React"]
-        }
+        business = {"id": 1, "name": "Test Company", "tech_stack": ["React"]}
 
         result = engine.score_business(business)
 
@@ -433,9 +421,9 @@ class TestScoringEngine:
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
-            "rules": []
+            "rules": [],
         }
 
         config_file = tmp_path / "test_config.yml"
@@ -470,32 +458,32 @@ class TestScoringEngine:
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
                     "name": "positive_rule",
                     "condition": {"tech_stack_contains": "React"},
-                    "score": 15
+                    "score": 15,
                 },
                 {
                     "name": "negative_rule",
                     "condition": {"tech_stack_contains": "Legacy"},
-                    "score": -10
+                    "score": -10,
                 },
                 {
                     "name": "neutral_rule",
                     "condition": {"tech_stack_contains": "Python"},
-                    "score": 0
-                }
+                    "score": 0,
+                },
             ],
             "multipliers": [
                 {
                     "name": "test_multiplier",
                     "condition": {"vertical_in": ["SaaS"]},
-                    "multiplier": 1.5
+                    "multiplier": 1.5,
                 }
-            ]
+            ],
         }
 
         config_file = tmp_path / "test_config.yml"

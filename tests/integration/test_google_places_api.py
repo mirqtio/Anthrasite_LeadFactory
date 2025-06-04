@@ -13,16 +13,18 @@ import pytest
 from tests.integration.api_test_config import APITestConfig
 
 
-@pytest.mark.parametrize("query", [
-    "HVAC contractors in New York",
-    "Plumbers in Seattle",
-    "Veterinarians in Carmel Indiana"
-])
+@pytest.mark.parametrize(
+    "query",
+    [
+        "HVAC contractors in New York",
+        "Plumbers in Seattle",
+        "Veterinarians in Carmel Indiana",
+    ],
+)
 def test_google_places_search_queries(google_places_api, api_metrics_logger, query):
     """Test that Google Places search works with different queries."""
     result = google_places_api.place_search(
-        query=query,
-        metrics_logger=api_metrics_logger
+        query=query, metrics_logger=api_metrics_logger
     )
 
     assert "results" in result
@@ -43,8 +45,7 @@ def test_google_places_details(google_places_api, api_metrics_logger):
     if APITestConfig.should_use_real_api("google"):
         # First get a place ID from search
         search_result = google_places_api.place_search(
-            query="HVAC contractors in New York",
-            metrics_logger=api_metrics_logger
+            query="HVAC contractors in New York", metrics_logger=api_metrics_logger
         )
 
         assert "results" in search_result
@@ -57,8 +58,7 @@ def test_google_places_details(google_places_api, api_metrics_logger):
 
     # Now get place details
     result = google_places_api.place_details(
-        place_id=place_id,
-        metrics_logger=api_metrics_logger
+        place_id=place_id, metrics_logger=api_metrics_logger
     )
 
     assert "result" in result
@@ -81,7 +81,7 @@ def test_google_places_api_invalid_place_id(google_places_api, api_metrics_logge
 
     result = google_places_api.place_details(
         place_id="invalid_place_id_that_does_not_exist",
-        metrics_logger=api_metrics_logger
+        metrics_logger=api_metrics_logger,
     )
 
     assert "status" in result
@@ -101,6 +101,7 @@ def test_google_places_api_error_handling(google_places_api):
         from tests.integration.api_fixtures import (
             google_places_api as google_api_fixture,
         )
+
         invalid_google_api = google_api_fixture(None)
 
         # Test error handling
@@ -117,14 +118,12 @@ def test_google_places_api_with_location_bias(google_places_api, api_metrics_log
 
     # Without location bias
     result1 = google_places_api.place_search(
-        query=query,
-        metrics_logger=api_metrics_logger
+        query=query, metrics_logger=api_metrics_logger
     )
 
     # With location bias for New York
     result2 = google_places_api.place_search(
-        query=f"{query} in New York",
-        metrics_logger=api_metrics_logger
+        query=f"{query} in New York", metrics_logger=api_metrics_logger
     )
 
     assert "results" in result1
@@ -133,7 +132,11 @@ def test_google_places_api_with_location_bias(google_places_api, api_metrics_log
     assert result2["status"] == "OK"
 
     # If using real API, results should be different due to location bias
-    if APITestConfig.should_use_real_api("google") and result1["results"] and result2["results"]:
+    if (
+        APITestConfig.should_use_real_api("google")
+        and result1["results"]
+        and result2["results"]
+    ):
         place_ids_1 = {place["place_id"] for place in result1["results"]}
         place_ids_2 = {place["place_id"] for place in result2["results"]}
 
@@ -152,7 +155,7 @@ def test_google_places_api_rate_limit_handling(google_places_api, api_metrics_lo
     for i in range(5):
         result = google_places_api.place_search(
             query=f"HVAC contractors in New York query {i}",  # Vary query to avoid caching
-            metrics_logger=api_metrics_logger
+            metrics_logger=api_metrics_logger,
         )
 
         assert "results" in result

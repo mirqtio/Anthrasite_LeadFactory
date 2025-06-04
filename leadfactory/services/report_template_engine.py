@@ -657,7 +657,7 @@ def create_comparison_table(
     headers = ["Metric", title_before, title_after, "Change"]
     rows = []
 
-    for key in before.keys():
+    for key in before:
         if key in after:
             before_val = before[key]
             after_val = after[key]

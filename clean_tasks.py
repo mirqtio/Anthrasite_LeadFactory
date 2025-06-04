@@ -11,7 +11,7 @@ from datetime import datetime
 
 def clean_tasks():
     # Read the current tasks.json
-    with open("tasks/tasks.json", "r") as f:
+    with open("tasks/tasks.json") as f:
         data = json.load(f)
 
     original_count = len(data["tasks"])
@@ -44,14 +44,14 @@ def clean_tasks():
     data["tasks"] = cleaned_tasks
 
     # Backup the original
-    backup_path = f'tasks/tasks.json.backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    backup_path = f"tasks/tasks.json.backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     os.rename("tasks/tasks.json", backup_path)
 
     # Write the cleaned version
     with open("tasks/tasks.json", "w") as f:
         json.dump(data, f, indent=2)
 
-    print(f"Cleaned tasks.json:")
+    print("Cleaned tasks.json:")
     print(f"- Original tasks: {original_count}")
     print(f"- Cleaned tasks: {len(cleaned_tasks)}")
     print(f"- Removed: {original_count - len(cleaned_tasks)}")

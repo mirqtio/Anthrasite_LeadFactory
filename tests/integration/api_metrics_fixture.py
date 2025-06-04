@@ -29,6 +29,7 @@ from tests.integration.api_test_config import should_test_api, use_real_apis
 @dataclass
 class APIMetric:
     """Class to store metrics for an API call."""
+
     api: str
     endpoint: str
     request_time: float
@@ -60,21 +61,28 @@ class APIMetricsLogger:
         self.metrics_dir.mkdir(parents=True, exist_ok=True)
 
         # Configure log file handler
-        self.log_to_file = os.environ.get("LEADFACTORY_LOG_METRICS_TO_FILE", "true").lower() in ("true", "1", "yes")
+        self.log_to_file = os.environ.get(
+            "LEADFACTORY_LOG_METRICS_TO_FILE", "true"
+        ).lower() in ("true", "1", "yes")
         if self.log_to_file:
-            self.metrics_file = self.metrics_dir / f"api_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
+            self.metrics_file = (
+                self.metrics_dir
+                / f"api_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
+            )
             file_handler = logging.FileHandler(self.metrics_file)
             file_handler.setFormatter(logging.Formatter("%(message)s"))
             self.logger.addHandler(file_handler)
             self.logger.setLevel(logging.INFO)
 
-    def log_api_call(self,
-                     api: str,
-                     endpoint: str,
-                     request_time: float,
-                     status_code: int,
-                     cost: Optional[float] = None,
-                     token_count: Optional[int] = None) -> None:
+    def log_api_call(
+        self,
+        api: str,
+        endpoint: str,
+        request_time: float,
+        status_code: int,
+        cost: Optional[float] = None,
+        token_count: Optional[int] = None,
+    ) -> None:
         """
         Log an API call with metrics.
 
@@ -95,7 +103,7 @@ class APIMetricsLogger:
             request_time=request_time,
             status_code=status_code,
             cost=cost,
-            token_count=token_count
+            token_count=token_count,
         )
 
         metric_dict = metric.to_dict()
@@ -122,8 +130,9 @@ class APIMetricsLogger:
 
     def get_metrics_for_endpoint(self, api: str, endpoint: str) -> list[dict[str, Any]]:
         """Get all metrics for a specific API endpoint."""
-        return [m for m in self.metrics
-                if m["api"] == api and m["endpoint"] == endpoint]
+        return [
+            m for m in self.metrics if m["api"] == api and m["endpoint"] == endpoint
+        ]
 
     def get_total_cost(self, api: Optional[str] = None) -> float:
         """Get total cost across all APIs or for a specific API."""
@@ -170,9 +179,10 @@ class APIMetricsLogger:
                     "calls": len(self.get_metrics_for_api(api)),
                     "cost": self.get_total_cost(api),
                     "tokens": self.get_total_tokens(api),
-                    "average_request_time": self.get_average_request_time(api)
-                } for api in apis
-            }
+                    "average_request_time": self.get_average_request_time(api),
+                }
+                for api in apis
+            },
         }
 
 
@@ -181,7 +191,12 @@ def api_metrics_logger():
     """Fixture providing an API metrics logger for tests."""
     # Check if metrics logging is enabled in environment
     import os
-    enabled = os.environ.get("LEADFACTORY_LOG_API_METRICS", "true").lower() in ("true", "1", "yes")
+
+    enabled = os.environ.get("LEADFACTORY_LOG_API_METRICS", "true").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
 
     logger = APIMetricsLogger(enabled=enabled)
     yield logger
@@ -213,23 +228,20 @@ def calculate_openai_cost(model: str, token_count: int) -> float:
     model_prices = {
         # GPT-3.5 Turbo
         "gpt-3.5-turbo": {
-            "input": 0.0015,   # $0.0015 per 1K input tokens
-            "output": 0.002    # $0.002 per 1K output tokens
+            "input": 0.0015,  # $0.0015 per 1K input tokens
+            "output": 0.002,  # $0.002 per 1K output tokens
         },
         # GPT-4
         "gpt-4": {
-            "input": 0.03,     # $0.03 per 1K input tokens
-            "output": 0.06     # $0.06 per 1K output tokens
+            "input": 0.03,  # $0.03 per 1K input tokens
+            "output": 0.06,  # $0.06 per 1K output tokens
         },
         "gpt-4-turbo": {
-            "input": 0.01,     # $0.01 per 1K input tokens
-            "output": 0.03     # $0.03 per 1K output tokens
+            "input": 0.01,  # $0.01 per 1K input tokens
+            "output": 0.03,  # $0.03 per 1K output tokens
         },
         # Default fallback
-        "default": {
-            "input": 0.01,
-            "output": 0.03
-        }
+        "default": {"input": 0.01, "output": 0.03},
     }
 
     # Get pricing for the model, use default if not found
@@ -255,6 +267,7 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
         def search_businesses(api_key, location, term):
             # Function implementation
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -309,7 +322,9 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
 
                     # Claude pricing (estimated for 2025)
                     input_cost = input_tokens * 0.000008  # $0.008 per 1K input tokens
-                    output_cost = output_tokens * 0.000024  # $0.024 per 1K output tokens
+                    output_cost = (
+                        output_tokens * 0.000024
+                    )  # $0.024 per 1K output tokens
                     cost = input_cost + output_cost
 
                 # Google Vertex AI API (estimated)
@@ -324,7 +339,7 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
                     request_time=time.time() - start_time,
                     status_code=status_code,
                     cost=cost,
-                    token_count=token_count
+                    token_count=token_count,
                 )
                 return result
             except Exception as e:
@@ -336,5 +351,7 @@ def api_metric_decorator(api_name: str, endpoint: str = ""):
                     status_code=500,  # Internal error
                 )
                 raise e
+
         return wrapper
+
     return decorator

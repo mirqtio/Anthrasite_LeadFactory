@@ -401,8 +401,8 @@ class ABTestManager:
     ) -> str:
         """Assign a variant using consistent hashing for stability."""
         # Create a hash based on user_id and test_id for consistency
-        hash_input = f"{user_id}:{test_id}".encode("utf-8")
-        hash_value = int(hashlib.md5(hash_input).hexdigest(), 16)
+        hash_input = f"{user_id}:{test_id}".encode()
+        hash_value = int(hashlib.md5(hash_input, usedforsecurity=False).hexdigest(), 16)
 
         # Normalize to [0, 1) range
         normalized = (hash_value % 10000) / 10000.0

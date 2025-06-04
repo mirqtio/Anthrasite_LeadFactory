@@ -9,7 +9,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 from leadfactory.pipeline import scrape
 
 
@@ -28,7 +30,7 @@ def mock_scrape_api():
                     "state": "CA",
                     "zip": "12345",
                     "phone": "555-123-4567",
-                    "website": "http://test1.com"
+                    "website": "http://test1.com",
                 },
                 {
                     "name": "Test Business 2",
@@ -37,8 +39,8 @@ def mock_scrape_api():
                     "state": "NY",
                     "zip": "67890",
                     "phone": "555-987-6543",
-                    "website": "http://test2.com"
-                }
+                    "website": "http://test2.com",
+                },
             ]
         }
         mock_get.return_value = mock_response
@@ -63,6 +65,7 @@ def test_scrape_businesses(mock_scrape_api):
 
 def test_scrape_with_filters(mock_scrape_api):
     """Test scraping businesses with filters."""
+
     # Set up mock to return different data based on parameters
     def mock_get_side_effect(*args, **kwargs):
         mock_response = MagicMock()
@@ -77,7 +80,7 @@ def test_scrape_with_filters(mock_scrape_api):
                         "address": "123 Main St",
                         "city": "Anytown",
                         "state": "CA",
-                        "zip": "12345"
+                        "zip": "12345",
                     }
                 ]
             }
@@ -120,7 +123,7 @@ def test_transform_scraped_data():
             "region": "CA",
             "postal_code": "12345",
             "telephone": "555-123-4567",
-            "web_url": "http://test.com"
+            "web_url": "http://test.com",
         }
     ]
 

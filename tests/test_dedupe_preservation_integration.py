@@ -21,8 +21,8 @@ class TestDedupePreservationIntegration(unittest.TestCase):
             conflict_resolution_rules={
                 "name": "KEEP_PRIMARY",
                 "email": "KEEP_PRIMARY",  # Changed to avoid manual review
-                "phone": "KEEP_PRIMARY"   # Changed to avoid manual review
-            }
+                "phone": "KEEP_PRIMARY",  # Changed to avoid manual review
+            },
         )
 
     def tearDown(self):
@@ -35,8 +35,9 @@ class TestDedupePreservationIntegration(unittest.TestCase):
     @patch("leadfactory.pipeline.dedupe_unified.get_business_by_id")
     @patch("leadfactory.pipeline.dedupe_unified.merge_business_records")
     @patch("leadfactory.pipeline.dedupe_unified.update_business_fields")
-    def test_merge_with_preservation_success(self, mock_update, mock_merge,
-                                           mock_get_business, mock_preservation_class):
+    def test_merge_with_preservation_success(
+        self, mock_update, mock_merge, mock_get_business, mock_preservation_class
+    ):
         """Test successful merge with data preservation."""
         # Create mock preservation manager
         mock_preservation = MagicMock()
@@ -48,7 +49,7 @@ class TestDedupePreservationIntegration(unittest.TestCase):
         # Mock business data
         mock_get_business.side_effect = [
             {"id": 1, "name": "Business A", "email": "a@example.com"},
-            {"id": 2, "name": "Business B", "email": "b@example.com"}
+            {"id": 2, "name": "Business B", "email": "b@example.com"},
         ]
 
         # Mock successful operations
@@ -69,8 +70,9 @@ class TestDedupePreservationIntegration(unittest.TestCase):
     @patch("leadfactory.pipeline.dedupe_unified.get_business_by_id")
     @patch("leadfactory.pipeline.dedupe_unified.merge_business_records")
     @patch("leadfactory.pipeline.dedupe_unified.update_business_fields")
-    def test_merge_with_preservation_failure(self, mock_update, mock_merge,
-                                           mock_get_business, mock_preservation_class):
+    def test_merge_with_preservation_failure(
+        self, mock_update, mock_merge, mock_get_business, mock_preservation_class
+    ):
         """Test failed merge with data preservation rollback."""
         # Create mock preservation manager
         mock_preservation = MagicMock()
@@ -82,7 +84,7 @@ class TestDedupePreservationIntegration(unittest.TestCase):
         # Mock business data
         mock_get_business.side_effect = [
             {"id": 1, "name": "Business A", "email": "a@example.com"},
-            {"id": 2, "name": "Business B", "email": "b@example.com"}
+            {"id": 2, "name": "Business B", "email": "b@example.com"},
         ]
 
         # Mock failed merge
@@ -101,8 +103,9 @@ class TestDedupePreservationIntegration(unittest.TestCase):
     @patch("leadfactory.pipeline.dedupe_unified.DataPreservationManager")
     @patch("leadfactory.pipeline.dedupe_unified.get_business_by_id")
     @patch("leadfactory.pipeline.dedupe_unified.add_to_review_queue")
-    def test_merge_with_manual_review(self, mock_add_review, mock_get_business,
-                                    mock_preservation_class):
+    def test_merge_with_manual_review(
+        self, mock_add_review, mock_get_business, mock_preservation_class
+    ):
         """Test merge that requires manual review."""
         # Create config that requires manual review
         config = DedupeConfig(
@@ -110,8 +113,8 @@ class TestDedupePreservationIntegration(unittest.TestCase):
             manual_review_fields=["email"],
             conflict_resolution_rules={
                 "name": "KEEP_PRIMARY",
-                "email": "MANUAL_REVIEW"
-            }
+                "email": "MANUAL_REVIEW",
+            },
         )
 
         # Create mock preservation manager
@@ -123,7 +126,7 @@ class TestDedupePreservationIntegration(unittest.TestCase):
         # Mock business data with conflicting emails
         mock_get_business.side_effect = [
             {"id": 1, "name": "Business A", "email": "a@example.com"},
-            {"id": 2, "name": "Business B", "email": "b@example.com"}
+            {"id": 2, "name": "Business B", "email": "b@example.com"},
         ]
 
         # Mock review queue
@@ -144,8 +147,9 @@ class TestDedupePreservationIntegration(unittest.TestCase):
 
     @patch("leadfactory.pipeline.dedupe_unified.DataPreservationManager")
     @patch("leadfactory.pipeline.dedupe_unified.get_business_by_id")
-    def test_merge_with_invalid_businesses(self, mock_get_business,
-                                         mock_preservation_class):
+    def test_merge_with_invalid_businesses(
+        self, mock_get_business, mock_preservation_class
+    ):
         """Test merge with invalid business IDs."""
         # Create mock preservation manager
         mock_preservation = MagicMock()

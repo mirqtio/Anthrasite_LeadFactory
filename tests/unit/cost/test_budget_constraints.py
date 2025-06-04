@@ -6,9 +6,10 @@ tier-based limitations.
 """
 
 import json
-import pytest
 from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Try to import the real module, fall back to mocks if not available
 try:
@@ -17,18 +18,21 @@ try:
         BudgetLimit,
         BudgetStatus,
         CostEstimate,
-        budget_constraints,
         budget_check,
+        budget_constraints,
         estimate_cost,
-        get_budget_summary
+        get_budget_summary,
     )
+
     IMPORTS_AVAILABLE = True
 except ImportError:
     # Create mock classes for testing when imports aren't available
     IMPORTS_AVAILABLE = False
 
     class CostEstimate:
-        def __init__(self, service, operation, estimated_cost, confidence, details=None):
+        def __init__(
+            self, service, operation, estimated_cost, confidence, details=None
+        ):
             self.service = service
             self.operation = operation
             self.estimated_cost = estimated_cost
@@ -36,7 +40,14 @@ except ImportError:
             self.details = details or {}
 
     class BudgetLimit:
-        def __init__(self, name, limit_amount, period, warning_threshold=0.8, critical_threshold=0.95):
+        def __init__(
+            self,
+            name,
+            limit_amount,
+            period,
+            warning_threshold=0.8,
+            critical_threshold=0.95,
+        ):
             self.name = name
             self.limit_amount = limit_amount
             self.period = period
@@ -44,8 +55,16 @@ except ImportError:
             self.critical_threshold = critical_threshold
 
     class BudgetStatus:
-        def __init__(self, current_spent, limit, remaining, utilization_percent,
-                     is_warning, is_critical, is_exceeded):
+        def __init__(
+            self,
+            current_spent,
+            limit,
+            remaining,
+            utilization_percent,
+            is_warning,
+            is_critical,
+            is_exceeded,
+        ):
             self.current_spent = current_spent
             self.limit = limit
             self.remaining = remaining
@@ -97,7 +116,7 @@ class TestCostEstimate:
             operation="gpt-4o",
             estimated_cost=0.05,
             confidence=0.8,
-            details={"tokens": 1000}
+            details={"tokens": 1000},
         )
 
         assert estimate.service == "openai"
@@ -117,7 +136,7 @@ class TestBudgetLimit:
             limit_amount=50.0,
             period="daily",
             warning_threshold=0.8,
-            critical_threshold=0.95
+            critical_threshold=0.95,
         )
 
         assert limit.name == "daily"
@@ -140,7 +159,7 @@ class TestBudgetStatus:
             utilization_percent=60.0,
             is_warning=False,
             is_critical=False,
-            is_exceeded=False
+            is_exceeded=False,
         )
 
         assert status.current_spent == 30.0
@@ -180,19 +199,22 @@ class TestBudgetConstraints:
             assert "semrush" in bc.cost_models
         else:
             # Mock implementation has basic structure
-            assert hasattr(bc, 'budget_limits')
-            assert hasattr(bc, 'cost_tracker')
-            assert hasattr(bc, 'cost_models')
+            assert hasattr(bc, "budget_limits")
+            assert hasattr(bc, "cost_tracker")
+            assert hasattr(bc, "cost_models")
 
     def test_load_budget_limits_from_env(self):
         """Test loading budget limits from environment variables."""
         if IMPORTS_AVAILABLE:
-            with patch.dict('os.environ', {
-                'DAILY_BUDGET_LIMIT': '75.0',
-                'MONTHLY_BUDGET_LIMIT': '1500.0',
-                'DAILY_WARNING_THRESHOLD': '0.7',
-                'DAILY_CRITICAL_THRESHOLD': '0.85'
-            }):
+            with patch.dict(
+                "os.environ",
+                {
+                    "DAILY_BUDGET_LIMIT": "75.0",
+                    "MONTHLY_BUDGET_LIMIT": "1500.0",
+                    "DAILY_WARNING_THRESHOLD": "0.7",
+                    "DAILY_CRITICAL_THRESHOLD": "0.85",
+                },
+            ):
                 bc = BudgetConstraints()
 
                 assert bc.budget_limits["daily"].limit_amount == 75.0
@@ -202,7 +224,7 @@ class TestBudgetConstraints:
         else:
             # Mock implementation - just verify it doesn't crash
             bc = BudgetConstraints()
-            assert hasattr(bc, 'budget_limits')
+            assert hasattr(bc, "budget_limits")
 
     def test_estimate_openai_operation_cost(self):
         """Test estimating OpenAI operation costs."""
@@ -365,11 +387,15 @@ class TestBudgetConstraints:
             pytest.skip("Skipping detailed test with mock implementation")
 
         # Mock a very expensive operation
-        with patch.object(self.budget_constraints, 'estimate_operation_cost') as mock_estimate:
+        with patch.object(
+            self.budget_constraints, "estimate_operation_cost"
+        ) as mock_estimate:
             mock_estimate.return_value = CostEstimate("openai", "gpt-4o", 100.0, 0.9)
 
-            can_execute, reason, warnings = self.budget_constraints.can_execute_operation(
-                "openai", "gpt-4o", {"tokens": 50000}
+            can_execute, reason, warnings = (
+                self.budget_constraints.can_execute_operation(
+                    "openai", "gpt-4o", {"tokens": 50000}
+                )
             )
 
             assert not can_execute
@@ -415,7 +441,7 @@ class TestBudgetConstraints:
         operations = [
             ("openai", "gpt-4o", {"tokens": 1000}),
             ("semrush", "domain-overview", {"domain": "example.com"}),
-            ("gpu", "screenshot", {"url": "https://example.com"})
+            ("gpu", "screenshot", {"url": "https://example.com"}),
         ]
 
         simulation = self.budget_constraints.simulate_pipeline_costs(operations)
@@ -444,13 +470,17 @@ class TestBudgetConstraints:
         # Create operations that would exceed budget
         expensive_operations = [
             ("openai", "gpt-4o", {"tokens": 50000}),
-            ("openai", "gpt-4o", {"tokens": 50000})
+            ("openai", "gpt-4o", {"tokens": 50000}),
         ]
 
-        simulation = self.budget_constraints.simulate_pipeline_costs(expensive_operations)
+        simulation = self.budget_constraints.simulate_pipeline_costs(
+            expensive_operations
+        )
 
         # Should flag budget concerns
-        total_cost = sum(estimate.estimated_cost for estimate in simulation["operation_estimates"])
+        total_cost = sum(
+            estimate.estimated_cost for estimate in simulation["operation_estimates"]
+        )
         assert total_cost > 0
 
     def test_get_budget_report(self):
@@ -471,39 +501,62 @@ class TestBudgetConstraints:
             pytest.skip("Skipping detailed test with mock implementation")
 
         # Create mock BudgetStatus objects for testing
-        from leadfactory.cost.budget_constraints import BudgetStatus, BudgetLimit
+        from leadfactory.cost.budget_constraints import BudgetLimit, BudgetStatus
 
         # Create a test budget limit
         test_limit = BudgetLimit(
-            name="test", limit_amount=100.0, period="daily",
-            warning_threshold=0.8, critical_threshold=0.95
+            name="test",
+            limit_amount=100.0,
+            period="daily",
+            warning_threshold=0.8,
+            critical_threshold=0.95,
         )
 
         # Test normal status
         normal_status = BudgetStatus(
-            current_spent=50.0, limit=test_limit, remaining=50.0,
-            utilization_percent=50.0, is_exceeded=False, is_critical=False, is_warning=False
+            current_spent=50.0,
+            limit=test_limit,
+            remaining=50.0,
+            utilization_percent=50.0,
+            is_exceeded=False,
+            is_critical=False,
+            is_warning=False,
         )
         assert self.budget_constraints._get_status_level(normal_status) == "normal"
 
         # Test warning status
         warning_status = BudgetStatus(
-            current_spent=85.0, limit=test_limit, remaining=15.0,
-            utilization_percent=85.0, is_exceeded=False, is_critical=False, is_warning=True
+            current_spent=85.0,
+            limit=test_limit,
+            remaining=15.0,
+            utilization_percent=85.0,
+            is_exceeded=False,
+            is_critical=False,
+            is_warning=True,
         )
         assert self.budget_constraints._get_status_level(warning_status) == "warning"
 
         # Test critical status
         critical_status = BudgetStatus(
-            current_spent=96.0, limit=test_limit, remaining=4.0,
-            utilization_percent=96.0, is_exceeded=False, is_critical=True, is_warning=False
+            current_spent=96.0,
+            limit=test_limit,
+            remaining=4.0,
+            utilization_percent=96.0,
+            is_exceeded=False,
+            is_critical=True,
+            is_warning=False,
         )
         assert self.budget_constraints._get_status_level(critical_status) == "critical"
 
         # Test exceeded status
         exceeded_status = BudgetStatus(
-            current_spent=110.0, limit=test_limit, remaining=-10.0,
-            utilization_percent=110.0, is_exceeded=True, is_critical=False, is_warning=False
+            current_spent=110.0,
+            limit=test_limit,
+            remaining=-10.0,
+            utilization_percent=110.0,
+            is_exceeded=True,
+            is_critical=False,
+            is_warning=False,
         )
         assert self.budget_constraints._get_status_level(exceeded_status) == "exceeded"
 
@@ -518,7 +571,9 @@ class TestBudgetConstraintsConvenienceFunctions:
     def test_budget_check(self):
         """Test budget_check convenience function."""
         if IMPORTS_AVAILABLE:
-            with patch.object(budget_constraints, 'can_execute_operation') as mock_method:
+            with patch.object(
+                budget_constraints, "can_execute_operation"
+            ) as mock_method:
                 mock_method.return_value = (True, "OK", [])
 
                 can_execute, reason = budget_check("openai", "gpt-4o", {"tokens": 1000})
@@ -537,7 +592,9 @@ class TestBudgetConstraintsConvenienceFunctions:
     def test_estimate_cost(self):
         """Test estimate_cost convenience function."""
         if IMPORTS_AVAILABLE:
-            with patch.object(budget_constraints, 'estimate_operation_cost') as mock_method:
+            with patch.object(
+                budget_constraints, "estimate_operation_cost"
+            ) as mock_method:
                 mock_estimate = CostEstimate("openai", "gpt-4o", 0.05, 0.9)
                 mock_method.return_value = mock_estimate
 
@@ -555,10 +612,10 @@ class TestBudgetConstraintsConvenienceFunctions:
     def test_get_budget_summary(self):
         """Test get_budget_summary convenience function."""
         if IMPORTS_AVAILABLE:
-            with patch.object(budget_constraints, 'get_budget_report') as mock_method:
+            with patch.object(budget_constraints, "get_budget_report") as mock_method:
                 mock_summary = {
                     "daily": {"status": "ok", "current": 5.0, "limit": 10.0},
-                    "monthly": {"status": "warning", "current": 80.0, "limit": 100.0}
+                    "monthly": {"status": "warning", "current": 80.0, "limit": 100.0},
                 }
                 mock_method.return_value = mock_summary
 
@@ -592,7 +649,7 @@ class TestBudgetConstraintsIntegration:
     def test_cost_tracker_integration(self):
         """Test integration with cost tracker."""
         if IMPORTS_AVAILABLE:
-            with patch.object(budget_constraints, 'cost_tracker') as mock_tracker:
+            with patch.object(budget_constraints, "cost_tracker") as mock_tracker:
                 mock_tracker.get_daily_cost.return_value = 15.0
 
                 # Test that budget constraints can access cost tracker
@@ -606,17 +663,17 @@ class TestBudgetConstraintsIntegration:
     def test_environment_variable_integration(self):
         """Test that environment variables are properly loaded."""
         if IMPORTS_AVAILABLE:
-            with patch.dict('os.environ', {
-                'DAILY_BUDGET_LIMIT': '50.0',
-                'MONTHLY_BUDGET_LIMIT': '1000.0'
-            }):
+            with patch.dict(
+                "os.environ",
+                {"DAILY_BUDGET_LIMIT": "50.0", "MONTHLY_BUDGET_LIMIT": "1000.0"},
+            ):
                 # Create new instance to test env var loading
                 bc = BudgetConstraints()
-                assert hasattr(bc, 'budget_limits')
+                assert hasattr(bc, "budget_limits")
         else:
             # Test with mock implementation
             bc = BudgetConstraints()
-            assert hasattr(bc, 'budget_limits')
+            assert hasattr(bc, "budget_limits")
 
 
 if __name__ == "__main__":

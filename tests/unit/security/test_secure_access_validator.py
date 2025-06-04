@@ -5,18 +5,19 @@ Tests server-side validation, access control integration,
 rate limiting, token revocation, and audit logging.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from leadfactory.security.secure_access_validator import (
-    SecureAccessValidator,
-    AccessRequest,
-    ValidationResult,
-    get_secure_access_validator
-)
-from leadfactory.security.access_control import UserRole, PDFOperation
+import pytest
+
+from leadfactory.security.access_control import PDFOperation, UserRole
 from leadfactory.security.rate_limiter import RateLimitType
+from leadfactory.security.secure_access_validator import (
+    AccessRequest,
+    SecureAccessValidator,
+    ValidationResult,
+    get_secure_access_validator,
+)
 
 
 class TestAccessRequest:
@@ -30,7 +31,7 @@ class TestAccessRequest:
             operation=PDFOperation.VIEW,
             ip_address="192.168.1.1",
             user_agent="Test Agent",
-            token="test_token"
+            token="test_token",
         )
 
         assert request.user_id == "test_user"
@@ -50,7 +51,7 @@ class TestAccessValidationResult:
             valid=True,
             user_context=None,
             rate_limit_info={"requests_remaining": 10},
-            error_message=None
+            error_message=None,
         )
 
         assert result.valid is True
@@ -70,9 +71,20 @@ class TestSecureAccessValidator:
         self.mock_audit_logger = Mock()
 
         # Create validator with mocked dependencies
-        with patch('leadfactory.security.secure_access_validator.get_access_control_service', return_value=self.mock_access_control), \
-             patch('leadfactory.security.secure_access_validator.get_rate_limiter', return_value=self.mock_rate_limiter), \
-             patch('leadfactory.security.secure_access_validator.get_audit_logger', return_value=self.mock_audit_logger):
+        with (
+            patch(
+                "leadfactory.security.secure_access_validator.get_access_control_service",
+                return_value=self.mock_access_control,
+            ),
+            patch(
+                "leadfactory.security.secure_access_validator.get_rate_limiter",
+                return_value=self.mock_rate_limiter,
+            ),
+            patch(
+                "leadfactory.security.secure_access_validator.get_audit_logger",
+                return_value=self.mock_audit_logger,
+            ),
+        ):
             self.validator = SecureAccessValidator()
 
     def test_validate_access_request_success(self):
@@ -92,7 +104,7 @@ class TestSecureAccessValidator:
             user_id="test_user",
             resource_id="test_resource",
             operation=PDFOperation.VIEW,
-            ip_address="192.168.1.1"
+            ip_address="192.168.1.1",
         )
 
         # Validate request
@@ -111,7 +123,7 @@ class TestSecureAccessValidator:
         request = AccessRequest(
             user_id="revoked_user",
             resource_id="test_resource",
-            operation=PDFOperation.VIEW
+            operation=PDFOperation.VIEW,
         )
 
         # Validate request
@@ -130,7 +142,7 @@ class TestSecureAccessValidator:
         request = AccessRequest(
             user_id="test_user",
             resource_id="test_resource",
-            operation=PDFOperation.DELETE
+            operation=PDFOperation.DELETE,
         )
 
         # Validate request
@@ -148,14 +160,16 @@ class TestSecureAccessValidator:
         mock_rate_result = Mock()
         mock_rate_result.allowed = False
         mock_rate_result.violation = Mock()
-        mock_rate_result.violation.retry_after = datetime.utcnow() + timedelta(minutes=5)
+        mock_rate_result.violation.retry_after = datetime.utcnow() + timedelta(
+            minutes=5
+        )
         self.mock_rate_limiter.check_rate_limit.return_value = mock_rate_result
 
         # Create test request
         request = AccessRequest(
             user_id="test_user",
             resource_id="test_resource",
-            operation=PDFOperation.GENERATE
+            operation=PDFOperation.GENERATE,
         )
 
         # Validate request
@@ -176,9 +190,13 @@ class TestSecureAccessValidator:
         self.mock_rate_limiter.check_rate_limit.return_value = mock_rate_result
 
         # Mock secure link generator
-        with patch('leadfactory.security.secure_access_validator.SecureLinkGenerator') as mock_generator_class:
+        with patch(
+            "leadfactory.security.secure_access_validator.SecureLinkGenerator"
+        ) as mock_generator_class:
             mock_generator = Mock()
-            mock_generator.generate_secure_link.return_value = "https://example.com/secure-link"
+            mock_generator.generate_secure_link.return_value = (
+                "https://example.com/secure-link"
+            )
             mock_generator_class.return_value = mock_generator
 
             # Generate secure URL
@@ -187,7 +205,7 @@ class TestSecureAccessValidator:
                 resource_id="test_resource",
                 operation=PDFOperation.VIEW,
                 base_url="https://example.com",
-                metadata={"storage_path": "/path/to/file"}
+                metadata={"storage_path": "/path/to/file"},
             )
 
             assert result["success"] is True
@@ -204,7 +222,7 @@ class TestSecureAccessValidator:
             user_id="revoked_user",
             resource_id="test_resource",
             operation=PDFOperation.VIEW,
-            base_url="https://example.com"
+            base_url="https://example.com",
         )
 
         assert result["success"] is False
@@ -216,9 +234,7 @@ class TestSecureAccessValidator:
 
         # Revoke access
         success = self.validator.revoke_access(
-            token=token,
-            reason="Security breach",
-            revoked_by="admin_user"
+            token=token, reason="Security breach", revoked_by="admin_user"
         )
 
         assert success is True
@@ -246,7 +262,7 @@ class TestSecureAccessValidator:
             "revoked_at": datetime.utcnow() - timedelta(days=2),
             "expires_at": datetime.utcnow() - timedelta(days=1),
             "reason": "Test",
-            "revoked_by": "admin"
+            "revoked_by": "admin",
         }
 
         # Cleanup expired revocations
@@ -264,7 +280,7 @@ class TestSecureAccessValidator:
             "total_attempts": 10,
             "successful_attempts": 8,
             "failed_attempts": 2,
-            "last_access": datetime.utcnow()
+            "last_access": datetime.utcnow(),
         }
 
         stats = self.validator.get_access_stats(user_id)
@@ -290,7 +306,7 @@ class TestSecureAccessValidator:
             user_id="test_user",
             resource_id="test_resource",
             operation=PDFOperation.VIEW,
-            resource_owner_id="test_user"  # Same as user_id
+            resource_owner_id="test_user",  # Same as user_id
         )
 
         # Validate request
@@ -301,7 +317,7 @@ class TestSecureAccessValidator:
             user_context=result.user_context,
             operation=PDFOperation.VIEW,
             resource_id="test_resource",
-            resource_owner_id="test_user"
+            resource_owner_id="test_user",
         )
 
     def test_audit_logging_on_validation(self):
@@ -319,7 +335,7 @@ class TestSecureAccessValidator:
             user_id="test_user",
             resource_id="test_resource",
             operation=PDFOperation.VIEW,
-            ip_address="192.168.1.1"
+            ip_address="192.168.1.1",
         )
 
         # Validate request
@@ -331,13 +347,15 @@ class TestSecureAccessValidator:
     def test_error_handling_in_validation(self):
         """Test error handling during validation."""
         # Setup mocks to raise exception
-        self.mock_access_control.is_user_revoked.side_effect = Exception("Database error")
+        self.mock_access_control.is_user_revoked.side_effect = Exception(
+            "Database error"
+        )
 
         # Create test request
         request = AccessRequest(
             user_id="test_user",
             resource_id="test_resource",
-            operation=PDFOperation.VIEW
+            operation=PDFOperation.VIEW,
         )
 
         # Validate request
@@ -352,10 +370,13 @@ class TestSecureAccessValidatorSingleton:
 
     def test_singleton_instance(self):
         """Test that get_secure_access_validator returns the same instance."""
-        with patch('leadfactory.security.secure_access_validator.get_access_control_service'), \
-             patch('leadfactory.security.secure_access_validator.get_rate_limiter'), \
-             patch('leadfactory.security.secure_access_validator.get_audit_logger'):
-
+        with (
+            patch(
+                "leadfactory.security.secure_access_validator.get_access_control_service"
+            ),
+            patch("leadfactory.security.secure_access_validator.get_rate_limiter"),
+            patch("leadfactory.security.secure_access_validator.get_audit_logger"),
+        ):
             validator1 = get_secure_access_validator()
             validator2 = get_secure_access_validator()
 

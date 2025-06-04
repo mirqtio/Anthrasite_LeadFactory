@@ -114,8 +114,7 @@ class SendGridWarmupIntegration:
         self.integration_events: List[Dict] = []
 
         logger.info(
-            f"Warmup integration initialized with mode: "
-            f"{self._get_integration_mode()}"
+            f"Warmup integration initialized with mode: {self._get_integration_mode()}"
         )
 
     def _get_integration_mode(self) -> IntegrationMode:

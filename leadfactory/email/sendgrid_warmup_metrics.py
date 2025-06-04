@@ -306,7 +306,7 @@ class SendGridWarmupMetricsCollector:
                                     - rates.get("spam_rate", 0.0),
                                 }
                             )
-                    except Exception as e:
+                    except Exception:
                         # Integration service error - continue without rates
                         pass
 
@@ -373,7 +373,7 @@ class SendGridWarmupMetricsCollector:
                 report.append(f"    Deliverability: {data['deliverability_rate']:.3f}")
 
             if data["is_paused"]:
-                report.append(f"    PAUSED")
+                report.append("    PAUSED")
 
             report.append("")
 

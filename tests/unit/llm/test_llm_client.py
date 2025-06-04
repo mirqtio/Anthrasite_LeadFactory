@@ -7,23 +7,24 @@ error handling, rate limiting, and cost tracking.
 
 import json
 import time
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
 
 from leadfactory.llm import (
+    LLMAPIError,
+    LLMAuthenticationError,
     LLMClient,
     LLMConfig,
-    LLMProvider,
     LLMError,
-    LLMAPIError,
-    LLMRateLimitError,
-    LLMAuthenticationError,
     LLMModelNotFoundError,
+    LLMProvider,
     LLMQuotaExceededError,
+    LLMRateLimitError,
+    LLMServiceUnavailableError,
     LLMTimeoutError,
-    LLMServiceUnavailableError
 )
-from leadfactory.llm.config import ProviderConfig, FallbackStrategy
+from leadfactory.llm.config import FallbackStrategy, ProviderConfig
 
 
 @pytest.fixture
@@ -42,7 +43,7 @@ def mock_config():
         cost_per_input_token=0.005 / 1000,
         cost_per_output_token=0.015 / 1000,
         enabled=True,
-        priority=1
+        priority=1,
     )
 
     # Configure Anthropic provider
@@ -56,7 +57,7 @@ def mock_config():
         cost_per_input_token=0.015 / 1000,
         cost_per_output_token=0.075 / 1000,
         enabled=True,
-        priority=2
+        priority=2,
     )
 
     # Configure Ollama provider
@@ -70,7 +71,7 @@ def mock_config():
         cost_per_input_token=0.0,
         cost_per_output_token=0.0,
         enabled=True,
-        priority=3
+        priority=3,
     )
 
     config.fallback_strategy = FallbackStrategy.SMART_FALLBACK
@@ -82,7 +83,7 @@ def mock_config():
 @pytest.fixture
 def mock_usage_tracker():
     """Create a mock usage tracker."""
-    with patch('leadfactory.llm.client.GPTUsageTracker') as mock_tracker_class:
+    with patch("leadfactory.llm.client.GPTUsageTracker") as mock_tracker_class:
         mock_tracker = Mock()
         mock_tracker_class.return_value = mock_tracker
         yield mock_tracker
@@ -91,7 +92,9 @@ def mock_usage_tracker():
 @pytest.fixture
 def llm_client(mock_config, mock_usage_tracker):
     """Create an LLM client with mocked dependencies."""
-    with patch('leadfactory.llm.client.LLMConfig.from_environment', return_value=mock_config):
+    with patch(
+        "leadfactory.llm.client.LLMConfig.from_environment", return_value=mock_config
+    ):
         client = LLMClient(mock_config)
         return client
 
@@ -106,9 +109,14 @@ class TestLLMClientInitialization:
         assert client.config == mock_config
         assert len(client.config.get_available_providers()) == 3
 
-    def test_client_initialization_without_config(self, mock_config, mock_usage_tracker):
+    def test_client_initialization_without_config(
+        self, mock_config, mock_usage_tracker
+    ):
         """Test client initialization loads config from environment."""
-        with patch('leadfactory.llm.client.LLMConfig.from_environment', return_value=mock_config):
+        with patch(
+            "leadfactory.llm.client.LLMConfig.from_environment",
+            return_value=mock_config,
+        ):
             client = LLMClient()
             assert client.config is not None
 
@@ -123,7 +131,7 @@ class TestLLMClientInitialization:
 class TestProviderClients:
     """Test provider client creation and management."""
 
-    @patch('openai.OpenAI')
+    @patch("openai.OpenAI")
     def test_create_openai_client(self, mock_openai_class, llm_client):
         """Test OpenAI client creation."""
         mock_client = Mock()
@@ -133,12 +141,10 @@ class TestProviderClients:
 
         assert client == mock_client
         mock_openai_class.assert_called_once_with(
-            api_key="mock-openai-key",
-            timeout=30.0,
-            max_retries=0
+            api_key="mock-openai-key", timeout=30.0, max_retries=0
         )
 
-    @patch('anthropic.Anthropic')
+    @patch("anthropic.Anthropic")
     def test_create_anthropic_client(self, mock_anthropic_class, llm_client):
         """Test Anthropic client creation."""
         mock_client = Mock()
@@ -148,12 +154,10 @@ class TestProviderClients:
 
         assert client == mock_client
         mock_anthropic_class.assert_called_once_with(
-            api_key="mock-anthropic-key",
-            timeout=30.0,
-            max_retries=0
+            api_key="mock-anthropic-key", timeout=30.0, max_retries=0
         )
 
-    @patch('requests.Session')
+    @patch("requests.Session")
     def test_create_ollama_client(self, mock_session_class, llm_client):
         """Test Ollama client creation."""
         mock_client = Mock()
@@ -166,7 +170,7 @@ class TestProviderClients:
 
     def test_client_caching(self, llm_client):
         """Test that provider clients are cached."""
-        with patch('requests.Session') as mock_session_class:
+        with patch("requests.Session") as mock_session_class:
             mock_client = Mock()
             mock_session_class.return_value = mock_client
 
@@ -195,14 +199,14 @@ class TestRateLimiting:
         # Fill up the rate limiter
         rate_limiter = llm_client._rate_limiters[LLMProvider.OPENAI]
         now = time.time()
-        rate_limiter['requests'] = [now] * 5  # Exactly at limit
+        rate_limiter["requests"] = [now] * 5  # Exactly at limit
 
         # Should still allow one more
         result = llm_client._check_rate_limits(LLMProvider.OPENAI, 100)
         assert result is True
 
         # Add one more to exceed limit
-        rate_limiter['requests'].append(now)
+        rate_limiter["requests"].append(now)
         result = llm_client._check_rate_limits(LLMProvider.OPENAI, 100)
         assert result is False
 
@@ -214,7 +218,7 @@ class TestRateLimiting:
         # Fill up the rate limiter
         rate_limiter = llm_client._rate_limiters[LLMProvider.OPENAI]
         now = time.time()
-        rate_limiter['tokens'] = [(now, 500), (now, 400)]  # 900 tokens
+        rate_limiter["tokens"] = [(now, 500), (now, 400)]  # 900 tokens
 
         # Should allow 100 more tokens
         result = llm_client._check_rate_limits(LLMProvider.OPENAI, 100)
@@ -230,15 +234,15 @@ class TestRateLimiting:
 
         # Add old entries (more than 1 minute ago)
         old_time = time.time() - 120  # 2 minutes ago
-        rate_limiter['requests'] = [old_time] * 3
-        rate_limiter['tokens'] = [(old_time, 100)] * 3
+        rate_limiter["requests"] = [old_time] * 3
+        rate_limiter["tokens"] = [(old_time, 100)] * 3
 
         # Check rate limits (this should clean up old entries)
         llm_client._check_rate_limits(LLMProvider.OPENAI, 100)
 
         # Old entries should be cleaned up
-        assert len(rate_limiter['requests']) == 0
-        assert len(rate_limiter['tokens']) == 0
+        assert len(rate_limiter["requests"]) == 0
+        assert len(rate_limiter["tokens"]) == 0
 
 
 class TestChatCompletion:
@@ -259,16 +263,19 @@ class TestChatCompletion:
         mock_response.usage.total_tokens = 15
         mock_response.model = "gpt-4o"
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
             mock_client.chat.completions.create.return_value = mock_response
             mock_get_client.return_value = mock_client
 
             result = llm_client.chat_completion(messages)
 
-            assert result['choices'][0]['message']['content'] == "Hello! How can I help you?"
-            assert result['usage']['total_tokens'] == 15
-            assert result['provider'] == LLMProvider.OPENAI.value
+            assert (
+                result["choices"][0]["message"]["content"]
+                == "Hello! How can I help you?"
+            )
+            assert result["usage"]["total_tokens"] == 15
+            assert result["provider"] == LLMProvider.OPENAI.value
 
     def test_successful_completion_anthropic(self, llm_client):
         """Test successful completion with Anthropic."""
@@ -283,20 +290,22 @@ class TestChatCompletion:
         mock_response.usage.output_tokens = 10
         mock_response.model = "claude-3-opus-20240229"
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
             mock_client.messages.create.return_value = mock_response
             mock_get_client.return_value = mock_client
 
             # Force use of Anthropic
             result = llm_client.chat_completion(
-                messages,
-                provider=LLMProvider.ANTHROPIC
+                messages, provider=LLMProvider.ANTHROPIC
             )
 
-            assert result['choices'][0]['message']['content'] == "Hello! How can I help you?"
-            assert result['usage']['total_tokens'] == 15
-            assert result['provider'] == LLMProvider.ANTHROPIC.value
+            assert (
+                result["choices"][0]["message"]["content"]
+                == "Hello! How can I help you?"
+            )
+            assert result["usage"]["total_tokens"] == 15
+            assert result["provider"] == LLMProvider.ANTHROPIC.value
 
     def test_successful_completion_ollama(self, llm_client):
         """Test successful completion with Ollama."""
@@ -307,22 +316,22 @@ class TestChatCompletion:
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "response": "Hello! How can I help you?",
-            "done": True
+            "done": True,
         }
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
             mock_client.post.return_value = mock_response
             mock_get_client.return_value = mock_client
 
             # Force use of Ollama
-            result = llm_client.chat_completion(
-                messages,
-                provider=LLMProvider.OLLAMA
-            )
+            result = llm_client.chat_completion(messages, provider=LLMProvider.OLLAMA)
 
-            assert result['choices'][0]['message']['content'] == "Hello! How can I help you?"
-            assert result['provider'] == LLMProvider.OLLAMA.value
+            assert (
+                result["choices"][0]["message"]["content"]
+                == "Hello! How can I help you?"
+            )
+            assert result["provider"] == LLMProvider.OLLAMA.value
 
     def test_fallback_on_rate_limit(self, llm_client):
         """Test fallback when primary provider is rate limited."""
@@ -337,20 +346,24 @@ class TestChatCompletion:
         mock_anthropic_response.usage.output_tokens = 10
         mock_anthropic_response.model = "claude-3-opus-20240229"
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
+
             def side_effect(provider):
                 if provider == LLMProvider.OPENAI:
                     # First call raises rate limit error
                     mock_openai_client = Mock()
-                    mock_openai_client.chat.completions.create.side_effect = LLMRateLimitError(
-                        "Rate limit exceeded",
-                        provider=LLMProvider.OPENAI.value
+                    mock_openai_client.chat.completions.create.side_effect = (
+                        LLMRateLimitError(
+                            "Rate limit exceeded", provider=LLMProvider.OPENAI.value
+                        )
                     )
                     return mock_openai_client
                 elif provider == LLMProvider.ANTHROPIC:
                     # Second call succeeds
                     mock_anthropic_client = Mock()
-                    mock_anthropic_client.messages.create.return_value = mock_anthropic_response
+                    mock_anthropic_client.messages.create.return_value = (
+                        mock_anthropic_response
+                    )
                     return mock_anthropic_client
 
             mock_get_client.side_effect = side_effect
@@ -358,30 +371,28 @@ class TestChatCompletion:
             result = llm_client.chat_completion(messages)
 
             # Should get response from Anthropic (fallback)
-            assert result['choices'][0]['message']['content'] == "Hello from Claude!"
-            assert result['provider'] == LLMProvider.ANTHROPIC.value
+            assert result["choices"][0]["message"]["content"] == "Hello from Claude!"
+            assert result["provider"] == LLMProvider.ANTHROPIC.value
 
     def test_all_providers_fail(self, llm_client):
         """Test behavior when all providers fail."""
         messages = [{"role": "user", "content": "Hello"}]
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
+
             def side_effect(provider):
                 mock_client = Mock()
                 if provider == LLMProvider.OPENAI:
                     mock_client.chat.completions.create.side_effect = LLMRateLimitError(
-                        "Rate limit exceeded",
-                        provider=LLMProvider.OPENAI.value
+                        "Rate limit exceeded", provider=LLMProvider.OPENAI.value
                     )
                 elif provider == LLMProvider.ANTHROPIC:
                     mock_client.messages.create.side_effect = LLMAuthenticationError(
-                        "Invalid API key",
-                        provider=LLMProvider.ANTHROPIC.value
+                        "Invalid API key", provider=LLMProvider.ANTHROPIC.value
                     )
                 elif provider == LLMProvider.OLLAMA:
                     mock_client.post.side_effect = LLMServiceUnavailableError(
-                        "Service unavailable",
-                        provider=LLMProvider.OLLAMA.value
+                        "Service unavailable", provider=LLMProvider.OLLAMA.value
                     )
                 return mock_client
 
@@ -396,19 +407,16 @@ class TestChatCompletion:
         """Test failure when using specific provider with fallback disabled."""
         messages = [{"role": "user", "content": "Hello"}]
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
             mock_client.chat.completions.create.side_effect = LLMAuthenticationError(
-                "Invalid API key",
-                provider=LLMProvider.OPENAI.value
+                "Invalid API key", provider=LLMProvider.OPENAI.value
             )
             mock_get_client.return_value = mock_client
 
             with pytest.raises(LLMAuthenticationError):
                 llm_client.chat_completion(
-                    messages,
-                    provider=LLMProvider.OPENAI,
-                    fallback=False
+                    messages, provider=LLMProvider.OPENAI, fallback=False
                 )
 
     def test_cost_limit_exceeded(self, llm_client):
@@ -432,11 +440,10 @@ class TestFallbackStrategies:
         llm_client.config.fallback_strategy = FallbackStrategy.FAIL_FAST
         messages = [{"role": "user", "content": "Hello"}]
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
             mock_client.chat.completions.create.side_effect = LLMRateLimitError(
-                "Rate limit exceeded",
-                provider=LLMProvider.OPENAI.value
+                "Rate limit exceeded", provider=LLMProvider.OPENAI.value
             )
             mock_get_client.return_value = mock_client
 
@@ -517,7 +524,12 @@ class TestUtilityMethods:
         short_tokens = llm_client._estimate_token_count(short_messages)
 
         # Long message
-        long_messages = [{"role": "user", "content": "This is a much longer message that should have more tokens"}]
+        long_messages = [
+            {
+                "role": "user",
+                "content": "This is a much longer message that should have more tokens",
+            }
+        ]
         long_tokens = llm_client._estimate_token_count(long_messages)
 
         assert long_tokens > short_tokens
@@ -531,7 +543,7 @@ class TestErrorHandling:
         """Test that OpenAI errors are properly mapped."""
         messages = [{"role": "user", "content": "Hello"}]
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
 
             # Mock different OpenAI error types
@@ -542,9 +554,7 @@ class TestErrorHandling:
 
             with pytest.raises(LLMRateLimitError):
                 llm_client.chat_completion(
-                    messages,
-                    provider=LLMProvider.OPENAI,
-                    fallback=False
+                    messages, provider=LLMProvider.OPENAI, fallback=False
                 )
 
     def test_usage_tracking_on_success(self, llm_client):
@@ -562,7 +572,7 @@ class TestErrorHandling:
         mock_response.usage.total_tokens = 15
         mock_response.model = "gpt-4o"
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
             mock_client.chat.completions.create.return_value = mock_response
             mock_get_client.return_value = mock_client
@@ -572,31 +582,28 @@ class TestErrorHandling:
             # Verify usage was tracked
             llm_client.usage_tracker.track_usage.assert_called_once()
             call_args = llm_client.usage_tracker.track_usage.call_args
-            assert call_args[1]['success'] is True
-            assert call_args[1]['input_tokens'] == 5
-            assert call_args[1]['output_tokens'] == 10
+            assert call_args[1]["success"] is True
+            assert call_args[1]["input_tokens"] == 5
+            assert call_args[1]["output_tokens"] == 10
 
     def test_usage_tracking_on_failure(self, llm_client):
         """Test that usage is tracked on failed requests."""
         messages = [{"role": "user", "content": "Hello"}]
 
-        with patch.object(llm_client, '_get_provider_client') as mock_get_client:
+        with patch.object(llm_client, "_get_provider_client") as mock_get_client:
             mock_client = Mock()
             mock_client.chat.completions.create.side_effect = LLMRateLimitError(
-                "Rate limit exceeded",
-                provider=LLMProvider.OPENAI.value
+                "Rate limit exceeded", provider=LLMProvider.OPENAI.value
             )
             mock_get_client.return_value = mock_client
 
             with pytest.raises(LLMRateLimitError):
                 llm_client.chat_completion(
-                    messages,
-                    provider=LLMProvider.OPENAI,
-                    fallback=False
+                    messages, provider=LLMProvider.OPENAI, fallback=False
                 )
 
             # Verify usage was tracked
             llm_client.usage_tracker.track_usage.assert_called()
             call_args = llm_client.usage_tracker.track_usage.call_args
-            assert call_args[1]['success'] is False
-            assert 'Rate limit exceeded' in call_args[1]['error_message']
+            assert call_args[1]["success"] is False
+            assert "Rate limit exceeded" in call_args[1]["error_message"]

@@ -5,7 +5,7 @@ import sys
 
 def add_new_tasks():
     # Read the current tasks.json
-    with open("tasks/tasks.json", "r") as f:
+    with open("tasks/tasks.json") as f:
         data = json.load(f)
 
     # New task 33: Stripe fee & tax tracking

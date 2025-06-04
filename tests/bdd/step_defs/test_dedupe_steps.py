@@ -34,12 +34,7 @@ except ImportError:
 
     def mock_deduplicate(*args, **kwargs):
         """Mock deduplicate function"""
-        return {
-            "processed": 1,
-            "merged": 1,
-            "skipped": 0,
-            "errors": 0
-        }
+        return {"processed": 1, "merged": 1, "skipped": 0, "errors": 0}
 
     dedupe = MockDedupe()
     dedupe.deduplicate = mock_deduplicate
@@ -249,7 +244,9 @@ def db_initialized(temp_db):
 def api_keys_configured():
     """Configure API keys for testing."""
     # Mock environment variables for API keys
-    with patch.dict(os.environ, {"OLLAMA_API_KEY": "test_key", "OPENAI_API_KEY": "test_key"}):
+    with patch.dict(
+        os.environ, {"OLLAMA_API_KEY": "test_key", "OPENAI_API_KEY": "test_key"}
+    ):
         pass
 
 
@@ -423,19 +420,14 @@ def run_deduplication(mock_llm_verifier, exact_duplicate_businesses, temp_db):
 
     with patch("bin.dedupe.process_duplicate_pair", mock_process):
         # Simulate the deduplication process result
-        result = {
-            "processed": 2,
-            "merged": 1,
-            "skipped": 0,
-            "errors": 0
-        }
+        result = {"processed": 2, "merged": 1, "skipped": 0, "errors": 0}
 
     # Store the result for verification in then steps
     return {
         "result": result,
         "mock_process": mock_process,
         "conn": conn,
-        "db_path": path
+        "db_path": path,
     }
 
 
@@ -445,7 +437,9 @@ def run_deduplication_fuzzy(context, mock_llm_verifier, similar_businesses, temp
     path, conn = temp_db
 
     # Create matcher and verifier
-    matcher = dedupe.LevenshteinMatcher(threshold=0.7)  # Lower threshold for fuzzy matching
+    matcher = dedupe.LevenshteinMatcher(
+        threshold=0.7
+    )  # Lower threshold for fuzzy matching
 
     # Mock process_duplicate_pair to avoid actual DB changes
     with patch("bin.dedupe.process_duplicate_pair") as mock_process:
@@ -475,7 +469,7 @@ def run_deduplication_fuzzy(context, mock_llm_verifier, similar_businesses, temp
         context["deduplication_results"] = {
             "mock_process": mock_process,
             "candidates": candidates,
-            "matcher": matcher
+            "matcher": matcher,
         }
 
         return context["deduplication_results"]
@@ -516,14 +510,20 @@ def all_contact_info_retained(run_deduplication):
 @then("the similar businesses should be identified")
 def similar_businesses_identified(context):
     """Verify that similar businesses were identified."""
-    assert "deduplication_results" in context, "Deduplication process should have been run"
-    assert context["deduplication_results"]["mock_process"].called, "Expected process_duplicate_pair to be called"
+    assert "deduplication_results" in context, (
+        "Deduplication process should have been run"
+    )
+    assert context["deduplication_results"]["mock_process"].called, (
+        "Expected process_duplicate_pair to be called"
+    )
 
 
 @then("the similar businesses should be verified with LLM")
 def similar_businesses_verified(mock_llm_verifier):
     """Verify that similar businesses were verified with LLM."""
-    assert mock_llm_verifier.verify_duplicates.called, "Expected verify_duplicates to be called"
+    assert mock_llm_verifier.verify_duplicates.called, (
+        "Expected verify_duplicates to be called"
+    )
 
 
 @then("the confirmed duplicates should be merged")

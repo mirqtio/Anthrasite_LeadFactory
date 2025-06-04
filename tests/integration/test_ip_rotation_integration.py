@@ -5,28 +5,36 @@ These tests verify the integration between the IP rotation service,
 bounce monitor, and threshold detector.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from datetime import datetime, timedelta
 
-from leadfactory.services.ip_rotation import (
-    IPRotationService, RotationConfig, RotationReason,
-    create_default_rotation_config
-)
+import pytest
+
 from leadfactory.services.bounce_monitor import (
-    BounceRateMonitor, BounceRateConfig, BounceEvent
+    BounceEvent,
+    BounceRateConfig,
+    BounceRateMonitor,
+)
+from leadfactory.services.ip_rotation import (
+    IPRotationService,
+    RotationConfig,
+    RotationReason,
+    create_default_rotation_config,
 )
 from leadfactory.services.threshold_detector import (
-    ThresholdDetector, ThresholdConfig, ThresholdBreach, ThresholdSeverity,
-    create_default_threshold_config
+    ThresholdBreach,
+    ThresholdConfig,
+    ThresholdDetector,
+    ThresholdSeverity,
+    create_default_threshold_config,
 )
 
 
 @pytest.fixture
 def temp_db():
     """Create a temporary database for testing."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp_db:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp_db:
         db_path = tmp_db.name
     yield db_path
     if os.path.exists(db_path):
@@ -71,7 +79,7 @@ class TestIPRotationIntegration:
             from_subuser="user1",
             to_ip="192.168.1.2",
             to_subuser="user2",
-            reason=RotationReason.MANUAL_ROTATION
+            reason=RotationReason.MANUAL_ROTATION,
         )
 
         assert rotation_event.success == True
@@ -99,7 +107,7 @@ class TestIPRotationIntegration:
             severity=ThresholdSeverity.HIGH,
             breach_time=datetime.now(),
             sample_size=100,
-            time_window_hours=24
+            time_window_hours=24,
         )
 
         # Handle the breach
@@ -117,14 +125,16 @@ class TestIPRotationIntegration:
         rotation_service.add_ip_subuser("192.168.1.1", "user1", priority=5)
 
         # Record some bounce events
-        bounce_monitor.record_bounce_event(BounceEvent(
-            email="test@example.com",
-            ip_address="192.168.1.1",
-            subuser="user1",
-            bounce_type="hard",
-            reason="mailbox_full",
-            timestamp=datetime.now()
-        ))
+        bounce_monitor.record_bounce_event(
+            BounceEvent(
+                email="test@example.com",
+                ip_address="192.168.1.1",
+                subuser="user1",
+                bounce_type="hard",
+                reason="mailbox_full",
+                timestamp=datetime.now(),
+            )
+        )
 
         # Update performance metrics from bounce monitor
         rotation_service.update_performance_metrics()
@@ -153,7 +163,7 @@ class TestIPRotationIntegration:
             severity=ThresholdSeverity.HIGH,
             breach_time=datetime.now(),
             sample_size=100,
-            time_window_hours=24
+            time_window_hours=24,
         )
 
         # Handle the breach - should not rotate
@@ -171,8 +181,7 @@ class TestIPRotationIntegration:
 
         # Try to get alternatives
         alternatives = rotation_service.get_available_alternatives(
-            exclude_ip="192.168.1.1",
-            exclude_subuser="user1"
+            exclude_ip="192.168.1.1", exclude_subuser="user1"
         )
 
         assert len(alternatives) == 0
@@ -193,7 +202,7 @@ class TestIPRotationIntegration:
             from_subuser="user1",
             to_ip="192.168.1.2",
             to_subuser="user2",
-            reason=RotationReason.MANUAL_ROTATION
+            reason=RotationReason.MANUAL_ROTATION,
         )
         assert rotation_event1.success == True
 
@@ -203,7 +212,7 @@ class TestIPRotationIntegration:
             from_subuser="user2",
             to_ip="192.168.1.1",
             to_subuser="user1",
-            reason=RotationReason.MANUAL_ROTATION
+            reason=RotationReason.MANUAL_ROTATION,
         )
         assert rotation_event2.success == False
         assert "cooldown" in rotation_event2.error_message.lower()
@@ -224,9 +233,9 @@ class TestIPRotationIntegration:
             rotation_event = rotation_service.execute_rotation(
                 from_ip="192.168.1.1",
                 from_subuser="user1",
-                to_ip=f"192.168.1.{i+2}",
-                to_subuser=f"user{i+2}",
-                reason=RotationReason.MANUAL_ROTATION
+                to_ip=f"192.168.1.{i + 2}",
+                to_subuser=f"user{i + 2}",
+                reason=RotationReason.MANUAL_ROTATION,
             )
             if rotation_event.success:
                 success_count += 1
@@ -246,7 +255,7 @@ class TestIPRotationIntegration:
             from_subuser="user1",
             to_ip="192.168.1.2",
             to_subuser="user2",
-            reason=RotationReason.MANUAL_ROTATION
+            reason=RotationReason.MANUAL_ROTATION,
         )
 
         # Get pool status
@@ -275,8 +284,7 @@ class TestIPRotationIntegration:
 
         # Get alternatives - should prefer user2 due to better performance
         alternatives = rotation_service.get_available_alternatives(
-            exclude_ip="192.168.1.1",
-            exclude_subuser="user1"
+            exclude_ip="192.168.1.1", exclude_subuser="user1"
         )
 
         assert len(alternatives) == 1

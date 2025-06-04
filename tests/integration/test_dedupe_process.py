@@ -12,7 +12,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 # Import test utilities
 from tests.utils import (
@@ -94,11 +96,7 @@ def populated_dedupe_db(dedupe_db):
     """Create a test database populated with businesses."""
     # Insert test businesses
     business_ids = insert_test_businesses_batch(
-        dedupe_db,
-        count=20,
-        complete=True,
-        score_range=(30, 90),
-        include_tech=True
+        dedupe_db, count=20, complete=True, score_range=(30, 90), include_tech=True
     )
 
     # Create some duplicate pairs
@@ -106,14 +104,10 @@ def populated_dedupe_db(dedupe_db):
         dedupe_db,
         business_ids,
         pair_count=8,
-        verified_ratio=0.25  # 25% already verified, 75% pending
+        verified_ratio=0.25,  # 25% already verified, 75% pending
     )
 
-    return {
-        "db": dedupe_db,
-        "business_ids": business_ids,
-        "pair_ids": pair_ids
-    }
+    return {"db": dedupe_db, "business_ids": business_ids, "pair_ids": pair_ids}
 
 
 # Test data for different business pair scenarios
@@ -128,7 +122,7 @@ duplicate_test_cases = [
             "zip": "62701",
             "phone": "555-123-4567",
             "email": "info@acme.com",
-            "website": "http://www.acme.com"
+            "website": "http://www.acme.com",
         },
         "business2": {
             "name": "Acme Corporation",
@@ -138,10 +132,10 @@ duplicate_test_cases = [
             "zip": "62701",
             "phone": "555-123-4567",
             "email": "info@acme.com",
-            "website": "http://www.acme.com"
+            "website": "http://www.acme.com",
         },
         "expected_similarity": 1.0,
-        "expected_duplicate": True
+        "expected_duplicate": True,
     },
     {
         "id": "similar_name_same_address",
@@ -153,7 +147,7 @@ duplicate_test_cases = [
             "zip": "90210",
             "phone": "555-987-6543",
             "email": "contact@techsolutions.com",
-            "website": "http://www.techsolutions.com"
+            "website": "http://www.techsolutions.com",
         },
         "business2": {
             "name": "Tech Solutions",
@@ -163,10 +157,10 @@ duplicate_test_cases = [
             "zip": "90210",
             "phone": "555-987-6543",
             "email": "info@techsolutions.com",
-            "website": "http://www.tech-solutions.com"
+            "website": "http://www.tech-solutions.com",
         },
         "expected_similarity": 0.9,
-        "expected_duplicate": True
+        "expected_duplicate": True,
     },
     {
         "id": "different_name_same_address",
@@ -178,7 +172,7 @@ duplicate_test_cases = [
             "zip": "10001",
             "phone": "555-111-2222",
             "email": "appointments@citydental.com",
-            "website": "http://www.citydental.com"
+            "website": "http://www.citydental.com",
         },
         "business2": {
             "name": "Downtown Dental Care",
@@ -188,10 +182,10 @@ duplicate_test_cases = [
             "zip": "10001",
             "phone": "555-222-3333",
             "email": "info@downtowndental.com",
-            "website": "http://www.downtowndental.com"
+            "website": "http://www.downtowndental.com",
         },
         "expected_similarity": 0.4,
-        "expected_duplicate": False
+        "expected_duplicate": False,
     },
     {
         "id": "similar_name_different_address",
@@ -203,7 +197,7 @@ duplicate_test_cases = [
             "zip": "97201",
             "phone": "555-444-5555",
             "email": "info@greengarden.com",
-            "website": "http://www.greengarden.com"
+            "website": "http://www.greengarden.com",
         },
         "business2": {
             "name": "Green Garden Landscapers",
@@ -213,10 +207,10 @@ duplicate_test_cases = [
             "zip": "97204",
             "phone": "555-666-7777",
             "email": "contact@greengardenlandscapers.com",
-            "website": "http://www.greengardenlandscapers.com"
+            "website": "http://www.greengardenlandscapers.com",
         },
         "expected_similarity": 0.5,
-        "expected_duplicate": False
+        "expected_duplicate": False,
     },
     {
         "id": "completely_different",
@@ -228,7 +222,7 @@ duplicate_test_cases = [
             "zip": "17055",
             "phone": "555-888-9999",
             "email": "service@joesauto.com",
-            "website": "http://www.joesauto.com"
+            "website": "http://www.joesauto.com",
         },
         "business2": {
             "name": "Fresh Bakery",
@@ -238,11 +232,11 @@ duplicate_test_cases = [
             "zip": "44444",
             "phone": "555-000-1111",
             "email": "orders@freshbakery.com",
-            "website": "http://www.freshbakery.com"
+            "website": "http://www.freshbakery.com",
         },
         "expected_similarity": 0.1,
-        "expected_duplicate": False
-    }
+        "expected_duplicate": False,
+    },
 ]
 
 
@@ -269,8 +263,8 @@ def dedupe_pair_db(dedupe_db, request):
             test_case["business1"].get("zip", ""),
             test_case["business1"].get("phone", ""),
             test_case["business1"].get("email", ""),
-            test_case["business1"].get("website", "")
-        )
+            test_case["business1"].get("website", ""),
+        ),
     )
     business1_id = cursor.lastrowid
 
@@ -289,8 +283,8 @@ def dedupe_pair_db(dedupe_db, request):
             test_case["business2"].get("zip", ""),
             test_case["business2"].get("phone", ""),
             test_case["business2"].get("email", ""),
-            test_case["business2"].get("website", "")
-        )
+            test_case["business2"].get("website", ""),
+        ),
     )
     business2_id = cursor.lastrowid
 
@@ -305,12 +299,17 @@ def dedupe_pair_db(dedupe_db, request):
         "business1_id": business1_id,
         "business2_id": business2_id,
         "expected_similarity": test_case["expected_similarity"],
-        "expected_duplicate": test_case["expected_duplicate"]
+        "expected_duplicate": test_case["expected_duplicate"],
     }
 
 
 # Test deduplication process with different business pairs
-@pytest.mark.parametrize("dedupe_pair_db", duplicate_test_cases, ids=[case["id"] for case in duplicate_test_cases], indirect=True)
+@pytest.mark.parametrize(
+    "dedupe_pair_db",
+    duplicate_test_cases,
+    ids=[case["id"] for case in duplicate_test_cases],
+    indirect=True,
+)
 def test_dedupe_pair_matching(dedupe_pair_db):
     """Test matching of different business pairs."""
     db = dedupe_pair_db["db"]
@@ -337,11 +336,13 @@ def test_dedupe_pair_matching(dedupe_pair_db):
     is_duplicate = matcher.are_potential_duplicates(business1, business2)
 
     # Verify results
-    assert abs(similarity - expected_similarity) < 0.2, \
+    assert abs(similarity - expected_similarity) < 0.2, (
         f"Expected similarity around {expected_similarity}, got {similarity}"
+    )
 
-    assert is_duplicate == expected_duplicate, \
+    assert is_duplicate == expected_duplicate, (
         f"Expected duplicate={expected_duplicate}, got {is_duplicate}"
+    )
 
 
 # Test the complete deduplication process
@@ -350,11 +351,12 @@ def test_dedupe_process_flow(populated_dedupe_db):
     db = populated_dedupe_db["db"]
 
     # Mock the functions from the dedupe module
-    with patch("bin.dedupe.get_database_connection") as mock_get_db, \
-         patch("bin.dedupe.get_potential_duplicates") as mock_get_duplicates, \
-         patch("bin.dedupe.get_business_by_id") as mock_get_business, \
-         patch("bin.dedupe.process_duplicate_pair") as mock_process_pair:
-
+    with (
+        patch("bin.dedupe.get_database_connection") as mock_get_db,
+        patch("bin.dedupe.get_potential_duplicates") as mock_get_duplicates,
+        patch("bin.dedupe.get_business_by_id") as mock_get_business,
+        patch("bin.dedupe.process_duplicate_pair") as mock_process_pair,
+    ):
         # Configure the mocks
         mock_get_db.return_value = db
 
@@ -387,7 +389,9 @@ def test_dedupe_process_flow(populated_dedupe_db):
             is_duplicate = similarity >= 0.7
 
             # Verify with LLM
-            is_verified, confidence, reasoning = verifier.verify_duplicates(business1, business2)
+            is_verified, confidence, reasoning = verifier.verify_duplicates(
+                business1, business2
+            )
 
             # Update the pair status
             status = "merged" if is_verified and is_duplicate else "rejected"
@@ -399,14 +403,14 @@ def test_dedupe_process_flow(populated_dedupe_db):
                 SET status = ?, verified_by_llm = 1, llm_confidence = ?, llm_reasoning = ?
                 WHERE id = ?
                 """,
-                (status, confidence, reasoning, pair["id"])
+                (status, confidence, reasoning, pair["id"]),
             )
 
             # If merged, update the business
             if status == "merged":
                 cursor.execute(
                     "UPDATE businesses SET merged_into = ? WHERE id = ?",
-                    (pair["business1_id"], pair["business2_id"])
+                    (pair["business1_id"], pair["business2_id"]),
                 )
 
             db.commit()
@@ -415,7 +419,7 @@ def test_dedupe_process_flow(populated_dedupe_db):
                 "pair_id": pair["id"],
                 "is_duplicate": is_duplicate,
                 "verified": is_verified,
-                "status": status
+                "status": status,
             }
 
         mock_process_pair.side_effect = process_pair_side_effect
@@ -448,15 +452,20 @@ def test_dedupe_process_flow(populated_dedupe_db):
         for result in results:
             assert "pair_id" in result, "Missing pair_id in result"
             assert "status" in result, "Missing status in result"
-            assert result["status"] in ["merged", "rejected"], f"Invalid status: {result['status']}"
+            assert result["status"] in ["merged", "rejected"], (
+                f"Invalid status: {result['status']}"
+            )
 
         # Check the database was updated
-        cursor.execute("SELECT COUNT(*) FROM candidate_duplicate_pairs WHERE status = 'pending'")
+        cursor.execute(
+            "SELECT COUNT(*) FROM candidate_duplicate_pairs WHERE status = 'pending'"
+        )
         pending_count = cursor.fetchone()[0]
 
         # The number of pending pairs should be reduced
-        assert pending_count < len(pending_pairs), \
+        assert pending_count < len(pending_pairs), (
             f"Expected fewer pending pairs, still have {pending_count} pending"
+        )
 
         # Check that some businesses were merged
         cursor.execute("SELECT COUNT(*) FROM businesses WHERE merged_into IS NOT NULL")
@@ -473,11 +482,15 @@ def test_dedupe_batch_processing(populated_dedupe_db):
 
     # Get current counts of pending, merged, and rejected pairs
     cursor = db.cursor()
-    cursor.execute("SELECT status, COUNT(*) FROM candidate_duplicate_pairs GROUP BY status")
+    cursor.execute(
+        "SELECT status, COUNT(*) FROM candidate_duplicate_pairs GROUP BY status"
+    )
     initial_counts = {row[0]: row[1] for row in cursor.fetchall()}
 
     # Get pending pairs
-    cursor.execute("SELECT * FROM candidate_duplicate_pairs WHERE status = 'pending' LIMIT 5")
+    cursor.execute(
+        "SELECT * FROM candidate_duplicate_pairs WHERE status = 'pending' LIMIT 5"
+    )
     pending_pairs = [dict(row) for row in cursor.fetchall()]
 
     # Skip test if no pending pairs (might happen due to test order)
@@ -501,7 +514,9 @@ def test_dedupe_batch_processing(populated_dedupe_db):
         matcher.calculate_similarity(business1, business2)
 
         # Verify with LLM
-        is_duplicate, confidence, reasoning = verifier.verify_duplicates(business1, business2)
+        is_duplicate, confidence, reasoning = verifier.verify_duplicates(
+            business1, business2
+        )
 
         # Update the pair status
         status = "merged" if is_duplicate else "rejected"
@@ -512,20 +527,22 @@ def test_dedupe_batch_processing(populated_dedupe_db):
             SET status = ?, verified_by_llm = 1, llm_confidence = ?, llm_reasoning = ?
             WHERE id = ?
             """,
-            (status, confidence, reasoning, pair["id"])
+            (status, confidence, reasoning, pair["id"]),
         )
 
         # If merged, update the business
         if status == "merged":
             cursor.execute(
                 "UPDATE businesses SET merged_into = ? WHERE id = ?",
-                (pair["business1_id"], pair["business2_id"])
+                (pair["business1_id"], pair["business2_id"]),
             )
 
     db.commit()
 
     # Get updated counts
-    cursor.execute("SELECT status, COUNT(*) FROM candidate_duplicate_pairs GROUP BY status")
+    cursor.execute(
+        "SELECT status, COUNT(*) FROM candidate_duplicate_pairs GROUP BY status"
+    )
     updated_counts = {row[0]: row[1] for row in cursor.fetchall()}
 
     # Verify results
@@ -539,12 +556,14 @@ def test_dedupe_batch_processing(populated_dedupe_db):
     rejected_after = updated_counts.get("rejected", 0)
 
     # Check that pending count decreased
-    assert pending_after < pending_before, \
+    assert pending_after < pending_before, (
         f"Expected pending count to decrease from {pending_before}, got {pending_after}"
+    )
 
     # Check that merged or rejected counts increased
-    assert merged_after + rejected_after > merged_before + rejected_before, \
+    assert merged_after + rejected_after > merged_before + rejected_before, (
         "Expected merged or rejected count to increase"
+    )
 
     # Check that some businesses were merged (relaxed assertion)
     cursor.execute("SELECT COUNT(*) FROM businesses WHERE merged_into IS NOT NULL")

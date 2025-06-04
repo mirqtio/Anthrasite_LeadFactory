@@ -10,6 +10,7 @@ Options:
     --dry-run        Run without actually sending emails
     --force          Force sending emails even if they've been sent before
 """
+
 import argparse
 import base64
 import html

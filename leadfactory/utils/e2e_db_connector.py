@@ -450,7 +450,7 @@ def update_business_fields(business_id: int, updates: dict[str, Any]) -> bool:
 
     query = f"""
     UPDATE businesses
-    SET {', '.join(set_clauses)}, updated_at = NOW()
+    SET {", ".join(set_clauses)}, updated_at = NOW()
     WHERE id = %s
     """
 

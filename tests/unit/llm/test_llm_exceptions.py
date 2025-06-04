@@ -8,18 +8,18 @@ logic for the LLM fallback system.
 import pytest
 
 from leadfactory.llm.exceptions import (
-    LLMError,
     LLMAPIError,
-    LLMRateLimitError,
     LLMAuthenticationError,
+    LLMContentFilterError,
+    LLMContextLengthError,
+    LLMError,
     LLMModelNotFoundError,
     LLMQuotaExceededError,
-    LLMTimeoutError,
-    LLMContextLengthError,
-    LLMContentFilterError,
+    LLMRateLimitError,
     LLMServiceUnavailableError,
+    LLMTimeoutError,
     classify_error,
-    create_llm_exception
+    create_llm_exception,
 )
 
 
@@ -28,11 +28,7 @@ class TestLLMExceptions:
 
     def test_base_llm_error(self):
         """Test base LLM error functionality."""
-        error = LLMError(
-            message="Test error",
-            provider="openai",
-            model="gpt-4o"
-        )
+        error = LLMError(message="Test error", provider="openai", model="gpt-4o")
 
         assert str(error) == "Test error (Provider: openai, Model: gpt-4o)"
         assert error.provider == "openai"
@@ -43,9 +39,7 @@ class TestLLMExceptions:
         """Test LLM error with original exception."""
         original = ValueError("Original error")
         error = LLMError(
-            message="Wrapped error",
-            provider="anthropic",
-            original_error=original
+            message="Wrapped error", provider="anthropic", original_error=original
         )
 
         assert error.original_error == original
@@ -62,10 +56,7 @@ class TestLLMExceptions:
     def test_llm_api_error(self):
         """Test LLM API error with status code."""
         error = LLMAPIError(
-            message="API error",
-            status_code=500,
-            provider="openai",
-            model="gpt-4o"
+            message="API error", status_code=500, provider="openai", model="gpt-4o"
         )
 
         assert error.status_code == 500
@@ -74,9 +65,7 @@ class TestLLMExceptions:
     def test_llm_rate_limit_error(self):
         """Test LLM rate limit error with retry information."""
         error = LLMRateLimitError(
-            message="Rate limited",
-            retry_after=60,
-            provider="anthropic"
+            message="Rate limited", retry_after=60, provider="anthropic"
         )
 
         assert error.retry_after == 60
@@ -84,10 +73,7 @@ class TestLLMExceptions:
 
     def test_llm_authentication_error(self):
         """Test LLM authentication error."""
-        error = LLMAuthenticationError(
-            message="Invalid API key",
-            provider="openai"
-        )
+        error = LLMAuthenticationError(message="Invalid API key", provider="openai")
 
         assert str(error) == "Invalid API key (Provider: openai)"
 
@@ -97,7 +83,7 @@ class TestLLMExceptions:
             message="Model not found",
             available_models=["gpt-4o", "gpt-3.5-turbo"],
             provider="openai",
-            model="gpt-5"
+            model="gpt-5",
         )
 
         assert error.available_models == ["gpt-4o", "gpt-3.5-turbo"]
@@ -106,9 +92,7 @@ class TestLLMExceptions:
     def test_llm_quota_exceeded_error(self):
         """Test LLM quota exceeded error with quota type."""
         error = LLMQuotaExceededError(
-            message="Daily quota exceeded",
-            quota_type="daily",
-            provider="anthropic"
+            message="Daily quota exceeded", quota_type="daily", provider="anthropic"
         )
 
         assert error.quota_type == "daily"
@@ -117,9 +101,7 @@ class TestLLMExceptions:
     def test_llm_timeout_error(self):
         """Test LLM timeout error with duration."""
         error = LLMTimeoutError(
-            message="Request timed out",
-            timeout_duration=30.0,
-            provider="ollama"
+            message="Request timed out", timeout_duration=30.0, provider="ollama"
         )
 
         assert error.timeout_duration == 30.0
@@ -132,7 +114,7 @@ class TestLLMExceptions:
             max_tokens=4096,
             requested_tokens=5000,
             provider="openai",
-            model="gpt-4o"
+            model="gpt-4o",
         )
 
         assert error.max_tokens == 4096
@@ -142,9 +124,7 @@ class TestLLMExceptions:
     def test_llm_content_filter_error(self):
         """Test LLM content filter error."""
         error = LLMContentFilterError(
-            message="Content filtered",
-            filter_type="safety",
-            provider="openai"
+            message="Content filtered", filter_type="safety", provider="openai"
         )
 
         assert error.filter_type == "safety"
@@ -153,9 +133,7 @@ class TestLLMExceptions:
     def test_llm_service_unavailable_error(self):
         """Test LLM service unavailable error."""
         error = LLMServiceUnavailableError(
-            message="Service down",
-            estimated_recovery_time=300,
-            provider="ollama"
+            message="Service down", estimated_recovery_time=300, provider="ollama"
         )
 
         assert error.estimated_recovery_time == 300
@@ -167,11 +145,7 @@ class TestErrorClassification:
 
     def test_classify_rate_limit_patterns(self):
         """Test classification of rate limit error patterns."""
-        patterns = [
-            "rate_limit_exceeded",
-            "rate limited",
-            "too many requests"
-        ]
+        patterns = ["rate_limit_exceeded", "rate limited", "too many requests"]
 
         for pattern in patterns:
             error_class = classify_error(pattern)
@@ -183,7 +157,7 @@ class TestErrorClassification:
             "invalid_api_key",
             "incorrect_api_key",
             "authentication_error",
-            "permission_error"
+            "permission_error",
         ]
 
         for pattern in patterns:
@@ -192,11 +166,7 @@ class TestErrorClassification:
 
     def test_classify_quota_patterns(self):
         """Test classification of quota exceeded patterns."""
-        patterns = [
-            "quota_exceeded",
-            "billing limit exceeded",
-            "usage limit reached"
-        ]
+        patterns = ["quota_exceeded", "billing limit exceeded", "usage limit reached"]
 
         for pattern in patterns:
             error_class = classify_error(pattern)
@@ -204,11 +174,7 @@ class TestErrorClassification:
 
     def test_classify_model_not_found_patterns(self):
         """Test classification of model not found patterns."""
-        patterns = [
-            "model_not_found",
-            "model does not exist",
-            "invalid model"
-        ]
+        patterns = ["model_not_found", "model does not exist", "invalid model"]
 
         for pattern in patterns:
             error_class = classify_error(pattern)
@@ -220,7 +186,7 @@ class TestErrorClassification:
             "service_unavailable",
             "overloaded_error",
             "connection_error",
-            "server error"
+            "server error",
         ]
 
         for pattern in patterns:
@@ -229,11 +195,7 @@ class TestErrorClassification:
 
     def test_classify_timeout_patterns(self):
         """Test classification of timeout patterns."""
-        patterns = [
-            "timeout",
-            "request timed out",
-            "deadline exceeded"
-        ]
+        patterns = ["timeout", "request timed out", "deadline exceeded"]
 
         for pattern in patterns:
             error_class = classify_error(pattern)
@@ -244,7 +206,7 @@ class TestErrorClassification:
         patterns = [
             "context_length_exceeded",
             "maximum context length",
-            "token limit exceeded"
+            "token limit exceeded",
         ]
 
         for pattern in patterns:
@@ -256,7 +218,7 @@ class TestErrorClassification:
         patterns = [
             "content_filter",
             "content policy violation",
-            "inappropriate content"
+            "inappropriate content",
         ]
 
         for pattern in patterns:
@@ -273,7 +235,7 @@ class TestErrorClassification:
             500: LLMServiceUnavailableError,
             502: LLMServiceUnavailableError,
             503: LLMServiceUnavailableError,
-            504: LLMTimeoutError
+            504: LLMTimeoutError,
         }
 
         for status_code, expected_class in status_code_mappings.items():
@@ -288,16 +250,10 @@ class TestErrorClassification:
     def test_classify_with_provider_context(self):
         """Test classification with provider context."""
         # Provider-specific patterns
-        error_class = classify_error(
-            "rate limited",
-            provider="anthropic"
-        )
+        error_class = classify_error("rate limited", provider="anthropic")
         assert error_class == LLMRateLimitError
 
-        error_class = classify_error(
-            "model not loaded",
-            provider="ollama"
-        )
+        error_class = classify_error("model not loaded", provider="ollama")
         assert error_class == LLMModelNotFoundError
 
 
@@ -311,7 +267,7 @@ class TestCreateLLMException:
             provider="openai",
             model="gpt-4o",
             status_code=429,
-            retry_after=60
+            retry_after=60,
         )
 
         assert isinstance(exception, LLMRateLimitError)
@@ -326,7 +282,7 @@ class TestCreateLLMException:
             error_message="Invalid API key",
             provider="anthropic",
             status_code=401,
-            original_error=original_error
+            original_error=original_error,
         )
 
         assert isinstance(exception, LLMAuthenticationError)
@@ -340,7 +296,7 @@ class TestCreateLLMException:
             provider="openai",
             model="nonexistent-model",
             status_code=404,
-            available_models=["gpt-4o", "gpt-3.5-turbo"]
+            available_models=["gpt-4o", "gpt-3.5-turbo"],
         )
 
         assert isinstance(exception, LLMModelNotFoundError)
@@ -352,7 +308,7 @@ class TestCreateLLMException:
         exception = create_llm_exception(
             error_message="Daily quota exceeded",
             provider="anthropic",
-            quota_type="daily"
+            quota_type="daily",
         )
 
         assert isinstance(exception, LLMQuotaExceededError)
@@ -364,7 +320,7 @@ class TestCreateLLMException:
             error_message="Request timed out",
             provider="ollama",
             status_code=504,
-            timeout_duration=30.0
+            timeout_duration=30.0,
         )
 
         assert isinstance(exception, LLMTimeoutError)
@@ -376,7 +332,7 @@ class TestCreateLLMException:
             error_message="Service temporarily unavailable",
             provider="ollama",
             status_code=503,
-            estimated_recovery_time=300
+            estimated_recovery_time=300,
         )
 
         assert isinstance(exception, LLMServiceUnavailableError)
@@ -389,7 +345,7 @@ class TestCreateLLMException:
             provider="openai",
             model="gpt-4o",
             max_tokens=4096,
-            requested_tokens=5000
+            requested_tokens=5000,
         )
 
         assert isinstance(exception, LLMContextLengthError)
@@ -401,7 +357,7 @@ class TestCreateLLMException:
         exception = create_llm_exception(
             error_message="Content filtered for safety",
             provider="openai",
-            filter_type="safety"
+            filter_type="safety",
         )
 
         assert isinstance(exception, LLMContentFilterError)
@@ -413,7 +369,7 @@ class TestCreateLLMException:
             error_message="Unknown error occurred",
             provider="openai",
             model="gpt-4o",
-            status_code=418  # Unknown status code
+            status_code=418,  # Unknown status code
         )
 
         assert isinstance(exception, LLMAPIError)
@@ -430,12 +386,12 @@ class TestCreateLLMException:
             model="test_model",
             status_code=500,
             original_error=original_error,
-            custom_field="custom_value"
+            custom_field="custom_value",
         )
 
         assert exception.provider == "test_provider"
         assert exception.model == "test_model"
         assert exception.original_error == original_error
         # Custom fields should be passed through
-        assert hasattr(exception, 'custom_field')
+        assert hasattr(exception, "custom_field")
         assert exception.custom_field == "custom_value"

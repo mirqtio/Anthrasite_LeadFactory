@@ -5,18 +5,22 @@ Tests for Purchase Monitoring System
 Tests for the comprehensive purchase monitoring and dashboard functionality.
 """
 
-import pytest
 import asyncio
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+from leadfactory.monitoring.metrics_aggregator import (
+    AggregatedMetric,
+    AggregationPeriod,
+)
 from leadfactory.monitoring.purchase_monitoring import (
-    PurchaseMonitor,
+    DashboardData,
     MonitoringPeriod,
     PurchaseKPI,
-    DashboardData
+    PurchaseMonitor,
 )
-from leadfactory.monitoring.metrics_aggregator import AggregatedMetric, AggregationPeriod
 
 
 class TestPurchaseMonitor:
@@ -29,7 +33,7 @@ class TestPurchaseMonitor:
         mock.get_purchase_analytics_summary.return_value = {
             "timestamp": datetime.now().isoformat(),
             "daily_metrics": {"total_revenue_cents": 10000},
-            "monthly_metrics": {"total_revenue_cents": 50000}
+            "monthly_metrics": {"total_revenue_cents": 50000},
         }
         return mock
 
@@ -43,7 +47,7 @@ class TestPurchaseMonitor:
                     "transaction_id": "txn_123",
                     "gross_amount_cents": 5000,
                     "audit_type": "basic",
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
             ]
         }
@@ -66,7 +70,7 @@ class TestPurchaseMonitor:
             refund_count=1,
             refund_amount_cents=500,
             audit_type_breakdown={"basic": {"purchases": 10, "revenue_cents": 50000}},
-            geographic_breakdown={}
+            geographic_breakdown={},
         )
 
         mock.get_aggregated_metrics.return_value = [mock_metric]
@@ -74,7 +78,7 @@ class TestPurchaseMonitor:
         mock.get_metrics_summary.return_value = {
             "raw_metrics_count": 100,
             "aggregated_metrics_count": 10,
-            "conversion_events_count": 50
+            "conversion_events_count": 50,
         }
         return mock
 
@@ -88,13 +92,18 @@ class TestPurchaseMonitor:
             "total_rules": 5,
             "enabled_rules": 5,
             "notification_channels": 2,
-            "recent_alerts_24h": 0
+            "recent_alerts_24h": 0,
         }
         return mock
 
     @pytest.fixture
-    def purchase_monitor(self, mock_metrics_tracker, mock_financial_tracker,
-                        mock_metrics_aggregator, mock_alert_manager):
+    def purchase_monitor(
+        self,
+        mock_metrics_tracker,
+        mock_financial_tracker,
+        mock_metrics_aggregator,
+        mock_alert_manager,
+    ):
         """Create purchase monitor with mocked dependencies."""
         monitor = PurchaseMonitor(update_interval_seconds=60)
         monitor.metrics_tracker = mock_metrics_tracker
@@ -105,7 +114,9 @@ class TestPurchaseMonitor:
 
     def test_initialization(self):
         """Test purchase monitor initialization."""
-        monitor = PurchaseMonitor(update_interval_seconds=300, enable_realtime_alerts=True)
+        monitor = PurchaseMonitor(
+            update_interval_seconds=300, enable_realtime_alerts=True
+        )
 
         assert monitor.update_interval == 300
         assert monitor.enable_realtime_alerts == True
@@ -115,8 +126,7 @@ class TestPurchaseMonitor:
     def test_get_dashboard_data(self, purchase_monitor):
         """Test dashboard data generation."""
         dashboard_data = purchase_monitor.get_dashboard_data(
-            MonitoringPeriod.DAILY,
-            lookback_days=30
+            MonitoringPeriod.DAILY, lookback_days=30
         )
 
         assert isinstance(dashboard_data, DashboardData)
@@ -131,7 +141,13 @@ class TestPurchaseMonitor:
 
         # Verify KPIs are calculated
         kpi_names = [kpi.name for kpi in dashboard_data.kpis]
-        expected_kpis = ["Total Revenue", "Total Purchases", "Average Order Value", "Conversion Rate", "Stripe Fee Rate"]
+        expected_kpis = [
+            "Total Revenue",
+            "Total Purchases",
+            "Average Order Value",
+            "Conversion Rate",
+            "Stripe Fee Rate",
+        ]
 
         for expected_kpi in expected_kpis:
             assert expected_kpi in kpi_names
@@ -162,14 +178,14 @@ class TestPurchaseMonitor:
     def test_export_dashboard_data_json(self, purchase_monitor):
         """Test JSON export of dashboard data."""
         exported_data = purchase_monitor.export_dashboard_data(
-            MonitoringPeriod.DAILY,
-            "json"
+            MonitoringPeriod.DAILY, "json"
         )
 
         assert isinstance(exported_data, str)
 
         # Should be valid JSON
         import json
+
         parsed_data = json.loads(exported_data)
         assert "timestamp" in parsed_data
         assert "period" in parsed_data
@@ -178,8 +194,7 @@ class TestPurchaseMonitor:
     def test_export_dashboard_data_csv(self, purchase_monitor):
         """Test CSV export of dashboard data."""
         exported_data = purchase_monitor.export_dashboard_data(
-            MonitoringPeriod.DAILY,
-            "csv"
+            MonitoringPeriod.DAILY, "csv"
         )
 
         assert isinstance(exported_data, str)
@@ -234,7 +249,9 @@ class TestPurchaseMonitor:
     async def test_monitoring_loop_error_handling(self, purchase_monitor):
         """Test monitoring loop handles errors gracefully."""
         # Mock an error in metrics aggregation
-        purchase_monitor.metrics_aggregator.aggregate_metrics.side_effect = Exception("Test error")
+        purchase_monitor.metrics_aggregator.aggregate_metrics.side_effect = Exception(
+            "Test error"
+        )
 
         # Start monitoring for a short time
         await purchase_monitor.start_monitoring()
@@ -262,7 +279,7 @@ class TestDashboardIntegration:
                 unit="USD",
                 change_percentage=10.5,
                 trend="up",
-                target=150.0
+                target=150.0,
             )
         ]
 
@@ -274,7 +291,7 @@ class TestDashboardIntegration:
             conversion_metrics={"conversion_rate": 0.025},
             alert_summary={"active_alerts_count": 0},
             recent_transactions=[],
-            performance_trends={}
+            performance_trends={},
         )
 
         # Should be able to access all fields
@@ -287,11 +304,7 @@ class TestDashboardIntegration:
         """Test KPI calculation with edge cases."""
         # Test KPI with no change percentage
         kpi = PurchaseKPI(
-            name="Stable KPI",
-            value=50.0,
-            unit="%",
-            change_percentage=None,
-            trend=None
+            name="Stable KPI", value=50.0, unit="%", change_percentage=None, trend=None
         )
 
         assert kpi.change_percentage is None
@@ -299,10 +312,7 @@ class TestDashboardIntegration:
 
         # Test KPI with target
         kpi_with_target = PurchaseKPI(
-            name="Target KPI",
-            value=80.0,
-            unit="%",
-            target=100.0
+            name="Target KPI", value=80.0, unit="%", target=100.0
         )
 
         assert kpi_with_target.target == 100.0
@@ -319,7 +329,7 @@ class TestMonitoringPeriods:
             MonitoringPeriod.HOURLY,
             MonitoringPeriod.DAILY,
             MonitoringPeriod.WEEKLY,
-            MonitoringPeriod.MONTHLY
+            MonitoringPeriod.MONTHLY,
         ]
 
         for period in expected_periods:

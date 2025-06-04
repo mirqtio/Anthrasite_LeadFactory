@@ -31,6 +31,7 @@ class TestDataPreservationManager(unittest.TestCase):
         """Clean up test environment."""
         # Clean up temp directory
         import shutil
+
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
@@ -39,7 +40,9 @@ class TestDataPreservationManager(unittest.TestCase):
         """Test audit table creation."""
         mock_cursor_instance = MagicMock()
         mock_conn_instance = MagicMock()
-        mock_conn_instance.cursor.return_value.__enter__.return_value = mock_cursor_instance
+        mock_conn_instance.cursor.return_value.__enter__.return_value = (
+            mock_cursor_instance
+        )
         mock_connection.return_value.__enter__.return_value = mock_conn_instance
 
         # Create a new manager to trigger table creation
@@ -56,7 +59,7 @@ class TestDataPreservationManager(unittest.TestCase):
         # Mock business data
         mock_get_business.side_effect = [
             {"id": 1, "name": "Business 1", "email": "test1@example.com"},
-            {"id": 2, "name": "Business 2", "email": "test2@example.com"}
+            {"id": 2, "name": "Business 2", "email": "test2@example.com"},
         ]
 
         mock_cursor_instance = MagicMock()
@@ -90,7 +93,7 @@ class TestDataPreservationManager(unittest.TestCase):
             business1_id=1,
             business2_id=2,
             operation_data={"test": "data"},
-            status="success"
+            status="success",
         )
 
         # Verify insert was called
@@ -106,9 +109,15 @@ class TestDataPreservationManager(unittest.TestCase):
             (1, "merge", 1, 2, "{}", None, "success", None, datetime.now())
         ]
         mock_cursor_instance.description = [
-            ("id",), ("operation_type",), ("business1_id",), ("business2_id",),
-            ("operation_data",), ("user_id",), ("status",), ("error_message",),
-            ("created_at",)
+            ("id",),
+            ("operation_type",),
+            ("business1_id",),
+            ("business2_id",),
+            ("operation_data",),
+            ("user_id",),
+            ("status",),
+            ("error_message",),
+            ("created_at",),
         ]
         mock_cursor.return_value.__enter__.return_value = mock_cursor_instance
 
@@ -124,7 +133,9 @@ class TestDataPreservationManager(unittest.TestCase):
         """Test savepoint operations."""
         mock_cursor_instance = MagicMock()
         mock_conn_instance = MagicMock()
-        mock_conn_instance.cursor.return_value.__enter__.return_value = mock_cursor_instance
+        mock_conn_instance.cursor.return_value.__enter__.return_value = (
+            mock_cursor_instance
+        )
         mock_connection.return_value.__enter__.return_value = mock_conn_instance
 
         # Test create savepoint
@@ -135,12 +146,16 @@ class TestDataPreservationManager(unittest.TestCase):
         # Test rollback
         result = self.manager.rollback_to_savepoint("test_savepoint")
         self.assertTrue(result)
-        mock_cursor_instance.execute.assert_called_with("ROLLBACK TO SAVEPOINT test_savepoint")
+        mock_cursor_instance.execute.assert_called_with(
+            "ROLLBACK TO SAVEPOINT test_savepoint"
+        )
 
         # Test release
         result = self.manager.release_savepoint("test_savepoint")
         self.assertTrue(result)
-        mock_cursor_instance.execute.assert_called_with("RELEASE SAVEPOINT test_savepoint")
+        mock_cursor_instance.execute.assert_called_with(
+            "RELEASE SAVEPOINT test_savepoint"
+        )
 
 
 class TestDataPreservationDecorator(unittest.TestCase):

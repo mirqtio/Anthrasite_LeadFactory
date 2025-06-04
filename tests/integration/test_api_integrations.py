@@ -15,10 +15,7 @@ def test_yelp_api_business_search(yelp_api, api_metrics_logger):
     """Test searching for businesses using Yelp API."""
     # This test will be skipped unless --use-real-apis is specified
     result = yelp_api.business_search(
-        term="plumber",
-        location="New York",
-        limit=3,
-        metrics_logger=api_metrics_logger
+        term="plumber", location="New York", limit=3, metrics_logger=api_metrics_logger
     )
 
     assert "businesses" in result
@@ -49,8 +46,7 @@ def test_google_places_api_search(google_places_api, api_metrics_logger):
     """Test searching for places using Google Places API."""
     # This test will be skipped unless --use-real-apis is specified
     result = google_places_api.place_search(
-        query="HVAC contractors in New York",
-        metrics_logger=api_metrics_logger
+        query="HVAC contractors in New York", metrics_logger=api_metrics_logger
     )
 
     assert "results" in result
@@ -81,13 +77,13 @@ def test_openai_api_chat_completion(openai_api, api_metrics_logger):
     # This test will be skipped unless --use-real-apis is specified
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "What is the capital of France?"}
+        {"role": "user", "content": "What is the capital of France?"},
     ]
 
     result = openai_api.chat_completion(
         messages=messages,
         model="gpt-3.5-turbo",  # Use a less expensive model for testing
-        metrics_logger=api_metrics_logger
+        metrics_logger=api_metrics_logger,
     )
 
     assert "choices" in result
@@ -102,7 +98,7 @@ def test_openai_api_mock_chat_completion(openai_api):
     # This test always uses the mock API
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "What is the capital of France?"}
+        {"role": "user", "content": "What is the capital of France?"},
     ]
 
     result = openai_api.chat_completion(messages=messages)
@@ -129,7 +125,7 @@ def test_sendgrid_api_send_email(sendgrid_api, api_metrics_logger):
         to_email=to_email,
         subject=subject,
         content=content,
-        metrics_logger=api_metrics_logger
+        metrics_logger=api_metrics_logger,
     )
 
     assert "status_code" in result
@@ -143,7 +139,7 @@ def test_sendgrid_api_mock_send_email(sendgrid_api):
         from_email="test@example.com",
         to_email="test@example.com",
         subject="Test Email",
-        content="<p>Test content</p>"
+        content="<p>Test content</p>",
     )
 
     assert "status_code" in result
@@ -156,9 +152,7 @@ def test_screenshotone_api_take_screenshot(screenshotone_api, api_metrics_logger
     """Test taking screenshots using ScreenshotOne API."""
     # This test will be skipped unless --use-real-apis is specified
     screenshot = screenshotone_api.take_screenshot(
-        url="https://example.com",
-        full_page=True,
-        metrics_logger=api_metrics_logger
+        url="https://example.com", full_page=True, metrics_logger=api_metrics_logger
     )
 
     assert isinstance(screenshot, bytes)

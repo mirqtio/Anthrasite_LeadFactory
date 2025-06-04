@@ -402,7 +402,7 @@ class ConversionTracker:
 
                 if conversion_rate is not None:
                     conversion_rates[
-                        f"{funnel_steps_order[len(funnel_steps)-2]}_to_{step}"
+                        f"{funnel_steps_order[len(funnel_steps) - 2]}_to_{step}"
                     ] = conversion_rate
 
                 previous_count = step_count

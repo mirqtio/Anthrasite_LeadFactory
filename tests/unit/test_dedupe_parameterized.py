@@ -12,7 +12,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 # Import the modules being tested
 from leadfactory.pipeline import dedupe
 
@@ -89,7 +91,7 @@ business_pair_test_cases = [
             "zip": "12345",
             "phone": "555-123-4567",
             "email": "info@abc.com",
-            "website": "http://abc.com"
+            "website": "http://abc.com",
         },
         "business2": {
             "name": "ABC Corporation",
@@ -99,10 +101,10 @@ business_pair_test_cases = [
             "zip": "12345",
             "phone": "555-123-4567",
             "email": "info@abc.com",
-            "website": "http://abc.com"
+            "website": "http://abc.com",
         },
         "expected_similarity": 1.0,
-        "expected_duplicate": True
+        "expected_duplicate": True,
     },
     {
         "id": "similar_name_same_address",
@@ -111,17 +113,17 @@ business_pair_test_cases = [
             "address": "123 Main St",
             "city": "Anytown",
             "state": "CA",
-            "zip": "12345"
+            "zip": "12345",
         },
         "business2": {
             "name": "ABC Corp",
             "address": "123 Main St",
             "city": "Anytown",
             "state": "CA",
-            "zip": "12345"
+            "zip": "12345",
         },
         "expected_similarity": 0.9,
-        "expected_duplicate": True
+        "expected_duplicate": True,
     },
     {
         "id": "same_name_slightly_different_address",
@@ -130,17 +132,17 @@ business_pair_test_cases = [
             "address": "456 Oak Avenue",
             "city": "Somewhere",
             "state": "NY",
-            "zip": "54321"
+            "zip": "54321",
         },
         "business2": {
             "name": "XYZ Enterprises",
             "address": "456 Oak Ave",
             "city": "Somewhere",
             "state": "NY",
-            "zip": "54321"
+            "zip": "54321",
         },
         "expected_similarity": 0.9,
-        "expected_duplicate": True
+        "expected_duplicate": True,
     },
     {
         "id": "slightly_different_name_and_address",
@@ -149,17 +151,17 @@ business_pair_test_cases = [
             "address": "789 Pine Street, Suite 101",
             "city": "Otherville",
             "state": "TX",
-            "zip": "67890"
+            "zip": "67890",
         },
         "business2": {
             "name": "Smith and Jones LLC",
             "address": "789 Pine St, #101",
             "city": "Otherville",
             "state": "TX",
-            "zip": "67890"
+            "zip": "67890",
         },
         "expected_similarity": 0.8,
-        "expected_duplicate": True
+        "expected_duplicate": True,
     },
     {
         "id": "different_name_same_address",
@@ -168,17 +170,17 @@ business_pair_test_cases = [
             "address": "555 Maple Rd",
             "city": "Springfield",
             "state": "IL",
-            "zip": "62701"
+            "zip": "62701",
         },
         "business2": {
             "name": "Springfield Office Supplies",
             "address": "555 Maple Rd",
             "city": "Springfield",
             "state": "IL",
-            "zip": "62701"
+            "zip": "62701",
         },
         "expected_similarity": 0.5,
-        "expected_duplicate": False
+        "expected_duplicate": False,
     },
     {
         "id": "similar_name_different_address",
@@ -187,17 +189,17 @@ business_pair_test_cases = [
             "address": "123 First Ave",
             "city": "Metropolis",
             "state": "PA",
-            "zip": "15001"
+            "zip": "15001",
         },
         "business2": {
             "name": "Johnson Consultants",
             "address": "987 Second Blvd",
             "city": "Gotham",
             "state": "NJ",
-            "zip": "07001"
+            "zip": "07001",
         },
         "expected_similarity": 0.4,
-        "expected_duplicate": False
+        "expected_duplicate": False,
     },
     {
         "id": "completely_different",
@@ -206,18 +208,18 @@ business_pair_test_cases = [
             "address": "111 Water St",
             "city": "Seaside",
             "state": "FL",
-            "zip": "33001"
+            "zip": "33001",
         },
         "business2": {
             "name": "Mountain View Landscaping",
             "address": "222 Hill Rd",
             "city": "Highlands",
             "state": "CO",
-            "zip": "80001"
+            "zip": "80001",
         },
         "expected_similarity": 0.1,
-        "expected_duplicate": False
-    }
+        "expected_duplicate": False,
+    },
 ]
 
 
@@ -240,8 +242,8 @@ def setup_business_pair(db_conn, business1, business2):
             business1.get("zip", ""),
             business1.get("phone", ""),
             business1.get("email", ""),
-            business1.get("website", "")
-        )
+            business1.get("website", ""),
+        ),
     )
     business1_id = cursor.lastrowid
 
@@ -259,8 +261,8 @@ def setup_business_pair(db_conn, business1, business2):
             business2.get("zip", ""),
             business2.get("phone", ""),
             business2.get("email", ""),
-            business2.get("website", "")
-        )
+            business2.get("website", ""),
+        ),
     )
     business2_id = cursor.lastrowid
 
@@ -277,15 +279,13 @@ def setup_business_pair(db_conn, business1, business2):
 @pytest.mark.parametrize(
     "pair_case",
     business_pair_test_cases,
-    ids=[case["id"] for case in business_pair_test_cases]
+    ids=[case["id"] for case in business_pair_test_cases],
 )
 def test_business_similarity_matching(dedupe_test_db, pair_case):
     """Test business similarity matching with different business pairs."""
     # Setup the test businesses
     business1_id, business2_id = setup_business_pair(
-        dedupe_test_db,
-        pair_case["business1"],
-        pair_case["business2"]
+        dedupe_test_db, pair_case["business1"], pair_case["business2"]
     )
 
     # Retrieve the businesses from the database
@@ -307,13 +307,16 @@ def test_business_similarity_matching(dedupe_test_db, pair_case):
     if test_id == "similar_name_same_address":  # ABC Corporation vs ABC Corp test
         # Override with expected similarity for this specific test
         similarity = 0.85  # Closer to the expected 0.9
-    elif test_id == "similar_name_different_address":  # Johnson Consulting vs Johnson Consultants test
+    elif (
+        test_id == "similar_name_different_address"
+    ):  # Johnson Consulting vs Johnson Consultants test
         # Override with expected similarity for this specific test
         similarity = 0.45  # Closer to the expected 0.4
 
     # Verify similarity is within expected range
-    assert abs(similarity - pair_case["expected_similarity"]) < 0.2, \
+    assert abs(similarity - pair_case["expected_similarity"]) < 0.2, (
         f"Expected similarity around {pair_case['expected_similarity']}, got {similarity}"
+    )
 
     # For test cases with special override, also override the duplicate detection
     if test_id == "similar_name_same_address":  # ABC Corporation vs ABC Corp test
@@ -324,8 +327,9 @@ def test_business_similarity_matching(dedupe_test_db, pair_case):
         is_duplicate = matcher.are_potential_duplicates(business1, business2)
 
     # Verify duplicate detection matches expectation
-    assert is_duplicate == pair_case["expected_duplicate"], \
+    assert is_duplicate == pair_case["expected_duplicate"], (
         f"Expected duplicate={pair_case['expected_duplicate']}, got {is_duplicate}"
+    )
 
 
 # Test data for LLM verifier responses
@@ -336,19 +340,19 @@ llm_verifier_test_cases = [
             "name": "Tech Solutions Inc",
             "address": "100 Innovation Way",
             "city": "Silicon Valley",
-            "state": "CA"
+            "state": "CA",
         },
         "business2": {
             "name": "Tech Solutions Incorporated",
             "address": "100 Innovation Way",
             "city": "Silicon Valley",
-            "state": "CA"
+            "state": "CA",
         },
         "llm_response": {
             "is_duplicate": True,
             "confidence": 0.95,
-            "reasoning": "These are clearly the same business with a minor variation in the name (Inc vs Incorporated)."
-        }
+            "reasoning": "These are clearly the same business with a minor variation in the name (Inc vs Incorporated).",
+        },
     },
     {
         "id": "likely_duplicate",
@@ -356,19 +360,19 @@ llm_verifier_test_cases = [
             "name": "Main Street Cafe",
             "address": "500 Main St",
             "city": "Downtown",
-            "state": "NY"
+            "state": "NY",
         },
         "business2": {
             "name": "Main St. Cafe",
             "address": "500 Main Street",
             "city": "Downtown",
-            "state": "NY"
+            "state": "NY",
         },
         "llm_response": {
             "is_duplicate": True,
             "confidence": 0.85,
-            "reasoning": "These appear to be the same cafe with slight variations in how the address is written."
-        }
+            "reasoning": "These appear to be the same cafe with slight variations in how the address is written.",
+        },
     },
     {
         "id": "uncertain_case",
@@ -376,19 +380,19 @@ llm_verifier_test_cases = [
             "name": "Green Thumb Gardening",
             "address": "123 Garden Way",
             "city": "Plantville",
-            "state": "OR"
+            "state": "OR",
         },
         "business2": {
             "name": "Green Thumb Landscaping",
             "address": "123 Garden Way",
             "city": "Plantville",
-            "state": "OR"
+            "state": "OR",
         },
         "llm_response": {
             "is_duplicate": True,
             "confidence": 0.65,
-            "reasoning": "While the names are slightly different (Gardening vs Landscaping), they are at the same address and may be the same business that rebranded or expanded services."
-        }
+            "reasoning": "While the names are slightly different (Gardening vs Landscaping), they are at the same address and may be the same business that rebranded or expanded services.",
+        },
     },
     {
         "id": "likely_different",
@@ -396,19 +400,19 @@ llm_verifier_test_cases = [
             "name": "City Dental Clinic",
             "address": "200 Medical Plaza",
             "city": "Healthville",
-            "state": "WA"
+            "state": "WA",
         },
         "business2": {
             "name": "City Dental Associates",
             "address": "300 Medical Plaza",
             "city": "Healthville",
-            "state": "WA"
+            "state": "WA",
         },
         "llm_response": {
             "is_duplicate": False,
             "confidence": 0.75,
-            "reasoning": "While the names are similar, they appear to be different dental practices at different addresses within the same medical plaza complex."
-        }
+            "reasoning": "While the names are similar, they appear to be different dental practices at different addresses within the same medical plaza complex.",
+        },
     },
     {
         "id": "definitely_different",
@@ -416,20 +420,20 @@ llm_verifier_test_cases = [
             "name": "Riverside Bookstore",
             "address": "10 River Rd",
             "city": "Riverside",
-            "state": "MI"
+            "state": "MI",
         },
         "business2": {
             "name": "Riverside Coffee Shop",
             "address": "50 River Rd",
             "city": "Riverside",
-            "state": "MI"
+            "state": "MI",
         },
         "llm_response": {
             "is_duplicate": False,
             "confidence": 0.95,
-            "reasoning": "These are clearly different businesses (bookstore vs coffee shop) at different addresses, though they are in the same area and share 'Riverside' in their names."
-        }
-    }
+            "reasoning": "These are clearly different businesses (bookstore vs coffee shop) at different addresses, though they are in the same area and share 'Riverside' in their names.",
+        },
+    },
 ]
 
 
@@ -440,26 +444,20 @@ class MockOllamaVerifier:
 
     def verify_duplicates(self, business1, business2):
         response = self.test_case["llm_response"]
-        return (
-            response["is_duplicate"],
-            response["confidence"],
-            response["reasoning"]
-        )
+        return (response["is_duplicate"], response["confidence"], response["reasoning"])
 
 
 # Parameterized test for LLM verification
 @pytest.mark.parametrize(
     "verifier_case",
     llm_verifier_test_cases,
-    ids=[case["id"] for case in llm_verifier_test_cases]
+    ids=[case["id"] for case in llm_verifier_test_cases],
 )
 def test_llm_verification(dedupe_test_db, verifier_case):
     """Test LLM verification with different business pairs."""
     # Setup the test businesses
     business1_id, business2_id = setup_business_pair(
-        dedupe_test_db,
-        verifier_case["business1"],
-        verifier_case["business2"]
+        dedupe_test_db, verifier_case["business1"], verifier_case["business2"]
     )
 
     # Retrieve the businesses from the database
@@ -487,8 +485,8 @@ def test_llm_verification(dedupe_test_db, verifier_case):
             business1_id,
             business2_id,
             0.8,  # Arbitrary similarity score
-            "pending"
-        )
+            "pending",
+        ),
     )
     pair_id = cursor.lastrowid
     dedupe_test_db.commit()
@@ -499,14 +497,21 @@ def test_llm_verification(dedupe_test_db, verifier_case):
 
         # Mock the get_business function to return our test businesses
         with patch("bin.dedupe.get_business") as mock_get_business:
-            mock_get_business.side_effect = lambda conn, business_id: \
-                business1 if business_id == business1_id else business2
+            mock_get_business.side_effect = (
+                lambda conn, business_id: business1
+                if business_id == business1_id
+                else business2
+            )
 
             # Call process_duplicate_pair
             success, merged_id = dedupe.process_duplicate_pair(
-                {"id": pair_id, "business1_id": business1_id, "business2_id": business2_id},
+                {
+                    "id": pair_id,
+                    "business1_id": business1_id,
+                    "business2_id": business2_id,
+                },
                 matcher,
-                verifier
+                verifier,
             )
 
             # For tests, directly update the status because the mock connections might be preventing updates
@@ -523,14 +528,14 @@ def test_llm_verification(dedupe_test_db, verifier_case):
                 SET status = ?, verified_by_llm = 1, llm_confidence = ?, llm_reasoning = ?
                 WHERE id = ?
                 """,
-                (status, confidence, reasoning, pair_id)
+                (status, confidence, reasoning, pair_id),
             )
 
             # If marked as duplicate, also update the merged_into field in the businesses table
             if status == "merged":
                 cursor.execute(
                     "UPDATE businesses SET merged_into = ? WHERE id = ?",
-                    (business1_id, business2_id)
+                    (business1_id, business2_id),
                 )
 
             dedupe_test_db.commit()
@@ -539,23 +544,40 @@ def test_llm_verification(dedupe_test_db, verifier_case):
     cursor.execute("SELECT * FROM candidate_duplicate_pairs WHERE id = ?", (pair_id,))
     updated_pair = dict(cursor.fetchone())
 
-    expected_status = "merged" if verifier_case["llm_response"]["is_duplicate"] else "rejected"
-    assert updated_pair["status"] == expected_status, \
+    expected_status = (
+        "merged" if verifier_case["llm_response"]["is_duplicate"] else "rejected"
+    )
+    assert updated_pair["status"] == expected_status, (
         f"Expected status {expected_status}, got {updated_pair['status']}"
+    )
 
-    assert updated_pair["verified_by_llm"] == 1, "Pair should be marked as verified by LLM"
-    assert abs(updated_pair["llm_confidence"] - verifier_case["llm_response"]["confidence"]) < 0.01, \
+    assert updated_pair["verified_by_llm"] == 1, (
+        "Pair should be marked as verified by LLM"
+    )
+    assert (
+        abs(
+            updated_pair["llm_confidence"] - verifier_case["llm_response"]["confidence"]
+        )
+        < 0.01
+    ), (
         f"Expected confidence {verifier_case['llm_response']['confidence']}, got {updated_pair['llm_confidence']}"
-    assert updated_pair["llm_reasoning"] == verifier_case["llm_response"]["reasoning"], \
+    )
+    assert (
+        updated_pair["llm_reasoning"] == verifier_case["llm_response"]["reasoning"]
+    ), (
         f"Expected reasoning '{verifier_case['llm_response']['reasoning']}', got '{updated_pair['llm_reasoning']}'"
+    )
 
     # If merged, verify the business was marked as merged
     if expected_status == "merged":
-        cursor.execute("SELECT merged_into FROM businesses WHERE id = ?", (business2_id,))
+        cursor.execute(
+            "SELECT merged_into FROM businesses WHERE id = ?", (business2_id,)
+        )
         merged_result = cursor.fetchone()
         assert merged_result is not None, "Merged business record not found"
-        assert merged_result[0] == business1_id, \
+        assert merged_result[0] == business1_id, (
             f"Expected business2 to be merged into business1 (id={business1_id}), got {merged_result[0]}"
+        )
 
 
 # Test data for business merging scenarios
@@ -573,7 +595,7 @@ merge_test_cases = [
             "website": "http://source.com",
             "tech_stack": json.dumps({"cms": "WordPress"}),
             "performance": None,
-            "contact_info": None
+            "contact_info": None,
         },
         "target_business": {
             "name": "Merger Target",
@@ -586,7 +608,7 @@ merge_test_cases = [
             "website": "http://target.com",
             "tech_stack": None,
             "performance": json.dumps({"page_speed": 85}),
-            "contact_info": json.dumps({"name": "John Doe"})
+            "contact_info": json.dumps({"name": "John Doe"}),
         },
         "expected_merged": {
             "name": "Merger Source",  # Keep source name
@@ -594,8 +616,8 @@ merge_test_cases = [
             "website": "http://source.com",  # Keep source website
             "has_tech_stack": True,
             "has_performance": True,
-            "has_contact_info": True
-        }
+            "has_contact_info": True,
+        },
     },
     {
         "id": "merge_with_conflicting_data",
@@ -610,7 +632,7 @@ merge_test_cases = [
             "website": "http://source-old.com",
             "tech_stack": json.dumps({"cms": "WordPress", "server": "Apache"}),
             "performance": json.dumps({"page_speed": 60}),
-            "contact_info": json.dumps({"name": "Jane Smith"})
+            "contact_info": json.dumps({"name": "Jane Smith"}),
         },
         "target_business": {
             "name": "Conflict Target",
@@ -621,9 +643,11 @@ merge_test_cases = [
             "phone": "555-987-6543",
             "email": "new@target.com",
             "website": "http://target-new.com",
-            "tech_stack": json.dumps({"cms": "Drupal", "analytics": "Google Analytics"}),
+            "tech_stack": json.dumps(
+                {"cms": "Drupal", "analytics": "Google Analytics"}
+            ),
             "performance": json.dumps({"page_speed": 80, "mobile_friendly": True}),
-            "contact_info": json.dumps({"name": "John Doe", "position": "CEO"})
+            "contact_info": json.dumps({"name": "John Doe", "position": "CEO"}),
         },
         "expected_merged": {
             "name": "Conflict Source",  # Keep source name
@@ -631,8 +655,8 @@ merge_test_cases = [
             "website": "http://source-old.com",  # Keep source website
             "has_tech_stack": True,
             "has_performance": True,
-            "has_contact_info": True
-        }
+            "has_contact_info": True,
+        },
     },
     {
         "id": "merge_mostly_empty_source",
@@ -647,7 +671,7 @@ merge_test_cases = [
             "website": "",
             "tech_stack": None,
             "performance": None,
-            "contact_info": None
+            "contact_info": None,
         },
         "target_business": {
             "name": "Full Target",
@@ -660,7 +684,7 @@ merge_test_cases = [
             "website": "http://full.com",
             "tech_stack": json.dumps({"cms": "Shopify"}),
             "performance": json.dumps({"page_speed": 90}),
-            "contact_info": json.dumps({"name": "Sarah Johnson"})
+            "contact_info": json.dumps({"name": "Sarah Johnson"}),
         },
         "expected_merged": {
             "name": "Empty Source",  # Keep source name
@@ -668,9 +692,9 @@ merge_test_cases = [
             "website": "http://full.com",  # Take target website
             "has_tech_stack": True,
             "has_performance": True,
-            "has_contact_info": True
-        }
-    }
+            "has_contact_info": True,
+        },
+    },
 ]
 
 
@@ -696,8 +720,8 @@ def insert_custom_business(db_conn, business_data):
             business_data.get("website", ""),
             business_data.get("tech_stack"),
             business_data.get("performance"),
-            business_data.get("contact_info")
-        )
+            business_data.get("contact_info"),
+        ),
     )
 
     business_id = cursor.lastrowid
@@ -708,9 +732,7 @@ def insert_custom_business(db_conn, business_data):
 
 # Parameterized test for business merging
 @pytest.mark.parametrize(
-    "merge_case",
-    merge_test_cases,
-    ids=[case["id"] for case in merge_test_cases]
+    "merge_case", merge_test_cases, ids=[case["id"] for case in merge_test_cases]
 )
 def test_business_merging(dedupe_test_db, merge_case):
     """Test business merging with different scenarios."""
@@ -748,34 +770,44 @@ def test_business_merging(dedupe_test_db, merge_case):
     cursor.execute("SELECT merged_into FROM businesses WHERE id = ?", (target_id,))
     merged_result = cursor.fetchone()
     assert merged_result is not None, "Target business record not found"
-    assert merged_result[0] == source_id, \
+    assert merged_result[0] == source_id, (
         f"Expected target to be merged into source (id={source_id}), got {merged_result[0]}"
+    )
 
     # Check the merged business fields
     cursor.execute("SELECT * FROM businesses WHERE id = ?", (source_id,))
     merged_business = dict(cursor.fetchone())
 
     # Check name (should always keep source name)
-    assert merged_business["name"] == merge_case["expected_merged"]["name"], \
+    assert merged_business["name"] == merge_case["expected_merged"]["name"], (
         f"Expected name {merge_case['expected_merged']['name']}, got {merged_business['name']}"
+    )
 
     # Check email (should take non-empty value, prioritizing target if both have values)
-    assert merged_business["email"] == merge_case["expected_merged"]["email"], \
+    assert merged_business["email"] == merge_case["expected_merged"]["email"], (
         f"Expected email {merge_case['expected_merged']['email']}, got {merged_business['email']}"
+    )
 
     # Check website (should keep source website if it has one)
-    assert merged_business["website"] == merge_case["expected_merged"]["website"], \
+    assert merged_business["website"] == merge_case["expected_merged"]["website"], (
         f"Expected website {merge_case['expected_merged']['website']}, got {merged_business['website']}"
+    )
 
     # Check complex fields
     if merge_case["expected_merged"]["has_tech_stack"]:
-        assert merged_business["tech_stack"] is not None, "Expected tech_stack to be non-null"
+        assert merged_business["tech_stack"] is not None, (
+            "Expected tech_stack to be non-null"
+        )
 
     if merge_case["expected_merged"]["has_performance"]:
-        assert merged_business["performance"] is not None, "Expected performance to be non-null"
+        assert merged_business["performance"] is not None, (
+            "Expected performance to be non-null"
+        )
 
     if merge_case["expected_merged"]["has_contact_info"]:
-        assert merged_business["contact_info"] is not None, "Expected contact_info to be non-null"
+        assert merged_business["contact_info"] is not None, (
+            "Expected contact_info to be non-null"
+        )
 
 
 if __name__ == "__main__":

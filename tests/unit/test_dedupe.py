@@ -14,7 +14,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 sys.path.insert(0, project_root)
 
 # Force import bin.dedupe first so patching works correctly
@@ -43,6 +45,7 @@ LevenshteinMatcher = dedupe.LevenshteinMatcher
 #########################
 # Test Fixtures
 #########################
+
 
 @pytest.fixture
 def mock_db():
@@ -257,6 +260,7 @@ def temp_db() -> Generator[str, None, None]:
 # Core Unit Tests
 #########################
 
+
 def test_get_potential_duplicates():
     """Test retrieving potential duplicate pairs."""
     # Create expected result
@@ -336,12 +340,12 @@ def test_process_duplicate_pair():
                     is_dry_run=False,
                 )
                 # Verify the function called the expected methods
-                assert (
-                    mock_matcher.are_potential_duplicates.called
-                ), "Expected are_potential_duplicates to be called"
-                assert (
-                    mock_verifier.verify_duplicates.called
-                ), "Expected verify_duplicates to be called"
+                assert mock_matcher.are_potential_duplicates.called, (
+                    "Expected are_potential_duplicates to be called"
+                )
+                assert mock_verifier.verify_duplicates.called, (
+                    "Expected verify_duplicates to be called"
+                )
                 assert mock_merge.called, "Expected merge_businesses to be called"
                 # Verify the function returned the expected result
                 assert success is True, f"Expected success=True, got {success}"
@@ -403,12 +407,12 @@ def test_process_duplicate_pair_dry_run():
                     is_dry_run=True,
                 )
                 # Verify the function called the expected methods
-                assert (
-                    mock_matcher.are_potential_duplicates.called
-                ), "Expected are_potential_duplicates to be called"
-                assert (
-                    mock_verifier.verify_duplicates.called
-                ), "Expected verify_duplicates to be called"
+                assert mock_matcher.are_potential_duplicates.called, (
+                    "Expected are_potential_duplicates to be called"
+                )
+                assert mock_verifier.verify_duplicates.called, (
+                    "Expected verify_duplicates to be called"
+                )
                 # Verify the function returned the expected result
                 assert success is True, f"Expected success=True, got {success}"
                 assert merged_id is None, f"Expected merged_id=None, got {merged_id}"
@@ -435,9 +439,7 @@ def test_main_function():
                 # Mock the database connection
                 with patch("bin.dedupe.DatabaseConnection"):
                     # Run the main function
-                    with patch.object(
-                        dedupe, "main", return_value=0
-                    ) as mock_main:
+                    with patch.object(dedupe, "main", return_value=0) as mock_main:
                         # Call the main function
                         result = dedupe.main()
                         # Verify the main function was called
@@ -485,7 +487,7 @@ def test_skip_processed_businesses():
                         limit=10,
                         matcher=mock_matcher,
                         verifier=mock_verifier,
-                        is_dry_run=False
+                        is_dry_run=False,
                     )
 
                     # Verify that process_duplicate_pair was called only once
@@ -511,14 +513,14 @@ def test_skip_processed_businesses():
 
                     # Verify the result contains a success message
                     assert "Deduplication completed" in result, (
-                        f"Expected a 'Deduplication completed' message, "
-                        f"got: {result}"
+                        f"Expected a 'Deduplication completed' message, got: {result}"
                     )
 
 
 #########################
 # Data Tests with Temp DB
 #########################
+
 
 def test_exact_duplicates(temp_db, mock_llm_verifier):
     """Test identifying exact duplicate businesses."""
@@ -575,25 +577,31 @@ def test_exact_duplicates(temp_db, mock_llm_verifier):
         )
 
         # Use the dedupe process to handle this duplicate pair
-        cursor.execute("SELECT * FROM candidate_duplicate_pairs WHERE business1_id = 1 AND business2_id = 2")
+        cursor.execute(
+            "SELECT * FROM candidate_duplicate_pairs WHERE business1_id = 1 AND business2_id = 2"
+        )
         duplicate_pair = dict(cursor.fetchone())
 
         # Use a patched version of dedupe.process_duplicate_pair to test it
         with patch("bin.dedupe.get_business_by_id") as mock_get_business:
-            mock_get_business.side_effect = lambda conn, id: business1 if id == 1 else business2
+            mock_get_business.side_effect = (
+                lambda conn, id: business1 if id == 1 else business2
+            )
 
             with patch("bin.dedupe.merge_businesses") as mock_merge:
                 # Set up mock_merge to update the database
-                def mock_merge_implementation(conn, source_id, target_id, *args, **kwargs):
+                def mock_merge_implementation(
+                    conn, source_id, target_id, *args, **kwargs
+                ):
                     # Update the businesses table to show one business merged into other
                     cursor.execute(
                         "UPDATE businesses SET merged_into = ? WHERE id = ?",
-                        (target_id, source_id)
+                        (target_id, source_id),
                     )
                     # Update the duplicate pair status
                     cursor.execute(
                         "UPDATE candidate_duplicate_pairs SET status = 'merged' WHERE id = ?",
-                        (duplicate_pair["id"],)
+                        (duplicate_pair["id"],),
                     )
                     conn.commit()
                     return target_id
@@ -606,7 +614,7 @@ def test_exact_duplicates(temp_db, mock_llm_verifier):
                         duplicate_pair=duplicate_pair,
                         matcher=matcher,
                         verifier=mock_llm_verifier,
-                        is_dry_run=False
+                        is_dry_run=False,
                     )
 
                 # Verify the result
@@ -614,9 +622,14 @@ def test_exact_duplicates(temp_db, mock_llm_verifier):
                 assert merged_id is not None, "Expected a valid merged_id"
 
                 # Check that the database was updated correctly
-                cursor.execute("SELECT status FROM candidate_duplicate_pairs WHERE id = ?", (duplicate_pair["id"],))
+                cursor.execute(
+                    "SELECT status FROM candidate_duplicate_pairs WHERE id = ?",
+                    (duplicate_pair["id"],),
+                )
                 pair_status = cursor.fetchone()["status"]
-                assert pair_status == "merged", f"Expected pair status 'merged', got '{pair_status}'"
+                assert pair_status == "merged", (
+                    f"Expected pair status 'merged', got '{pair_status}'"
+                )
 
     finally:
         cursor.close()
@@ -681,29 +694,39 @@ def test_fuzzy_matching(temp_db, mock_llm_verifier):
         conn.commit()
 
         # Now verify with the LLM verifier
-        cursor.execute("SELECT * FROM candidate_duplicate_pairs WHERE business1_id = 1 AND business2_id = 2")
+        cursor.execute(
+            "SELECT * FROM candidate_duplicate_pairs WHERE business1_id = 1 AND business2_id = 2"
+        )
         duplicate_pair = dict(cursor.fetchone())
 
         # Mock the LLM verification
         with patch.object(mock_llm_verifier, "verify_duplicates") as mock_verify:
-            mock_verify.return_value = (True, 0.85, "These appear to be the same business with slight variations")
+            mock_verify.return_value = (
+                True,
+                0.85,
+                "These appear to be the same business with slight variations",
+            )
 
             # Process the duplicate pair
             with patch("bin.dedupe.get_business_by_id") as mock_get_business:
-                mock_get_business.side_effect = lambda conn, id: business1 if id == 1 else business2
+                mock_get_business.side_effect = (
+                    lambda conn, id: business1 if id == 1 else business2
+                )
 
                 with patch("bin.dedupe.merge_businesses") as mock_merge:
                     # Set up mock_merge to update the database
-                    def mock_merge_implementation(conn, source_id, target_id, *args, **kwargs):
+                    def mock_merge_implementation(
+                        conn, source_id, target_id, *args, **kwargs
+                    ):
                         # Update the businesses table
                         cursor.execute(
                             "UPDATE businesses SET merged_into = ? WHERE id = ?",
-                            (target_id, source_id)
+                            (target_id, source_id),
                         )
                         # Update the duplicate pair status
                         cursor.execute(
                             "UPDATE candidate_duplicate_pairs SET status = 'merged', verified_by_llm = 1, llm_confidence = 0.85 WHERE id = ?",
-                            (duplicate_pair["id"],)
+                            (duplicate_pair["id"],),
                         )
                         conn.commit()
                         return target_id
@@ -716,7 +739,7 @@ def test_fuzzy_matching(temp_db, mock_llm_verifier):
                             duplicate_pair=duplicate_pair,
                             matcher=matcher,
                             verifier=mock_llm_verifier,
-                            is_dry_run=False
+                            is_dry_run=False,
                         )
 
                     # Verify the result
@@ -726,7 +749,7 @@ def test_fuzzy_matching(temp_db, mock_llm_verifier):
                     # Check that the database was updated correctly
                     cursor.execute(
                         "SELECT status, verified_by_llm FROM candidate_duplicate_pairs WHERE id = ?",
-                        (duplicate_pair["id"],)
+                        (duplicate_pair["id"],),
                     )
                     pair_data = cursor.fetchone()
                     assert pair_data["status"] == "merged", (

@@ -165,7 +165,7 @@ class OptimizedDeduplicator:
 
             # Log progress
             logger.info(
-                f"Processed batch {i//batch_size + 1}/{(len(pairs) + batch_size - 1)//batch_size}"
+                f"Processed batch {i // batch_size + 1}/{(len(pairs) + batch_size - 1) // batch_size}"
             )
 
         return stats

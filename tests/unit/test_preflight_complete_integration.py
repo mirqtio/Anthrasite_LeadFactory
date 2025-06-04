@@ -32,7 +32,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
             "GOOGLE_API_KEY": "test_google_key",
             "SCREENSHOTONE_API_KEY": "test_screenshot_key",
             "SENDGRID_API_KEY": "test_sendgrid_key",
-            "SENDGRID_FROM_EMAIL": "test@example.com"
+            "SENDGRID_FROM_EMAIL": "test@example.com",
         }
 
         # Create temporary directory and files
@@ -44,6 +44,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
     def tearDown(self):
         """Clean up test environment."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_complete_preflight_sequence_workflow_coordination(self):
@@ -63,14 +64,14 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
             ValidationErrorCode.DATABASE_CONNECTION_FAILED,
             ValidationSeverity.CRITICAL,
             "database",
-            "Connection failed"
+            "Connection failed",
         )
 
         error2 = ValidationError(
             ValidationErrorCode.ENV_VAR_MISSING,
             ValidationSeverity.WARNING,
             "environment",
-            "Optional variable missing"
+            "Optional variable missing",
         )
 
         # Log the errors
@@ -84,7 +85,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         logger.log_validation_summary(
             total_components=len(components),
             failed_components=2,
-            total_errors=logger.error_count
+            total_errors=logger.error_count,
         )
 
     def test_preflight_validation_error_workflow_integration(self):
@@ -96,7 +97,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
             "test_module",
             "Module could not be imported",
             context={"module_name": "test_module", "import_path": "/test/path"},
-            remediation_steps=["Install module", "Check path"]
+            remediation_steps=["Install module", "Check path"],
         )
 
         # Test error string representation
@@ -122,7 +123,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
             ("environment", False),
             ("files", True),
             ("network", False),
-            ("modules", True)
+            ("modules", True),
         ]
 
         # Process each component
@@ -134,7 +135,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
                     ValidationErrorCode.SERVICE_UNAVAILABLE,
                     ValidationSeverity.ERROR,
                     component,
-                    f"{component} validation failed"
+                    f"{component} validation failed",
                 )
                 logger.log_validation_error(error)
             else:
@@ -148,7 +149,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         logger.log_validation_summary(
             total_components=len(test_components),
             failed_components=failed_count,
-            total_errors=logger.error_count
+            total_errors=logger.error_count,
         )
 
     def test_preflight_error_aggregation_and_reporting_workflow(self):
@@ -161,26 +162,26 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
                 ValidationErrorCode.DATABASE_CONNECTION_FAILED,
                 ValidationSeverity.CRITICAL,
                 "database",
-                "PostgreSQL connection failed"
+                "PostgreSQL connection failed",
             ),
             ValidationError(
                 ValidationErrorCode.FILE_NOT_FOUND,
                 ValidationSeverity.ERROR,
                 "files",
-                "Configuration file missing"
+                "Configuration file missing",
             ),
             ValidationError(
                 ValidationErrorCode.ENV_VAR_MISSING,
                 ValidationSeverity.WARNING,
                 "environment",
-                "Optional API key not set"
+                "Optional API key not set",
             ),
             ValidationError(
                 ValidationErrorCode.MODULE_IMPORT_FAILED,
                 ValidationSeverity.CRITICAL,
                 "modules",
-                "Required module not available"
-            )
+                "Required module not available",
+            ),
         ]
 
         # Log all errors
@@ -195,7 +196,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         logger.log_validation_summary(
             total_components=len(errors),
             failed_components=len(errors),
-            total_errors=logger.error_count
+            total_errors=logger.error_count,
         )
 
     def test_preflight_partial_success_workflow_handling(self):
@@ -205,20 +206,28 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         # Simulate mixed success/failure scenario
         validation_results = [
             ("database", True, None),
-            ("environment", False, ValidationError(
-                ValidationErrorCode.ENV_VAR_MISSING,
-                ValidationSeverity.WARNING,
+            (
                 "environment",
-                "Non-critical variable missing"
-            )),
+                False,
+                ValidationError(
+                    ValidationErrorCode.ENV_VAR_MISSING,
+                    ValidationSeverity.WARNING,
+                    "environment",
+                    "Non-critical variable missing",
+                ),
+            ),
             ("files", True, None),
-            ("network", False, ValidationError(
-                ValidationErrorCode.NETWORK_UNREACHABLE,
-                ValidationSeverity.ERROR,
+            (
                 "network",
-                "External service unreachable"
-            )),
-            ("modules", True, None)
+                False,
+                ValidationError(
+                    ValidationErrorCode.NETWORK_UNREACHABLE,
+                    ValidationSeverity.ERROR,
+                    "network",
+                    "External service unreachable",
+                ),
+            ),
+            ("modules", True, None),
         ]
 
         # Process validation results
@@ -237,7 +246,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         logger.log_validation_summary(
             total_components=len(validation_results),
             failed_components=failed_count,
-            total_errors=logger.error_count
+            total_errors=logger.error_count,
         )
 
     def test_preflight_execution_order_verification(self):
@@ -251,7 +260,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
             "database",
             "files",
             "modules",
-            "network"
+            "network",
         ]
 
         # Track actual execution order
@@ -270,7 +279,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         logger.log_validation_summary(
             total_components=len(expected_order),
             failed_components=0,
-            total_errors=logger.error_count
+            total_errors=logger.error_count,
         )
 
     def test_preflight_resilience_and_continuation_workflow(self):
@@ -279,20 +288,28 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
 
         # Simulate a scenario where early validations fail but processing continues
         components_with_results = [
-            ("critical_component", False, ValidationError(
-                ValidationErrorCode.DATABASE_CONNECTION_FAILED,
-                ValidationSeverity.CRITICAL,
+            (
                 "critical_component",
-                "Critical failure occurred"
-            )),
+                False,
+                ValidationError(
+                    ValidationErrorCode.DATABASE_CONNECTION_FAILED,
+                    ValidationSeverity.CRITICAL,
+                    "critical_component",
+                    "Critical failure occurred",
+                ),
+            ),
             ("secondary_component", True, None),
-            ("tertiary_component", False, ValidationError(
-                ValidationErrorCode.FILE_NOT_FOUND,
-                ValidationSeverity.ERROR,
+            (
                 "tertiary_component",
-                "Secondary failure occurred"
-            )),
-            ("final_component", True, None)
+                False,
+                ValidationError(
+                    ValidationErrorCode.FILE_NOT_FOUND,
+                    ValidationSeverity.ERROR,
+                    "tertiary_component",
+                    "Secondary failure occurred",
+                ),
+            ),
+            ("final_component", True, None),
         ]
 
         # Process all components despite failures
@@ -307,11 +324,13 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         self.assertEqual(logger.error_count, 2)
 
         # Verify that processing continued despite early failures
-        failed_count = sum(1 for _, success, _ in components_with_results if not success)
+        failed_count = sum(
+            1 for _, success, _ in components_with_results if not success
+        )
         logger.log_validation_summary(
             total_components=len(components_with_results),
             failed_components=failed_count,
-            total_errors=logger.error_count
+            total_errors=logger.error_count,
         )
 
     def test_preflight_comprehensive_integration_coverage(self):
@@ -326,7 +345,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
             "network_connectivity",
             "module_imports",
             "dependency_resolution",
-            "configuration_validation"
+            "configuration_validation",
         ]
 
         # Process each category
@@ -341,7 +360,7 @@ class TestPreflightCompleteIntegration(unittest.TestCase):
         logger.log_validation_summary(
             total_components=len(validation_categories),
             failed_components=0,
-            total_errors=logger.error_count
+            total_errors=logger.error_count,
         )
 
 

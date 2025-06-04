@@ -76,13 +76,16 @@ except ImportError:
             return ErrorMetrics(
                 total_errors=len(self.error_history),
                 error_rate_per_hour=len(self.error_history) / 24.0,
-                critical_error_count=sum(1 for e in self.error_history
-                                       if e.severity == ErrorSeverity.CRITICAL),
+                critical_error_count=sum(
+                    1
+                    for e in self.error_history
+                    if e.severity == ErrorSeverity.CRITICAL
+                ),
                 affected_businesses=set(),
                 errors_by_severity={"critical": 1, "high": 2, "medium": 3},
                 errors_by_category={"network": 2, "database": 1, "validation": 3},
                 errors_by_stage={"stage1": 3, "stage2": 3},
-                errors_by_operation={"op1": 4, "op2": 2}
+                errors_by_operation={"op1": 4, "op2": 2},
             )
 
         def check_alert_thresholds(self, metrics):
@@ -110,7 +113,7 @@ except ImportError:
                 "alerts": alerts,
                 "recent_errors": self._get_recent_errors(self.config.max_recent_errors),
                 "error_trends": self._calculate_error_trends(),
-                "health_status": self._calculate_health_status(metrics)
+                "health_status": self._calculate_health_status(metrics),
             }
 
         def _get_recent_errors(self, limit):
@@ -124,7 +127,7 @@ except ImportError:
                     "error_message": "Connection timeout",
                     "severity": "high",
                     "business_id": 123,
-                    "recoverable": True
+                    "recoverable": True,
                 },
                 {
                     "id": "error-2",
@@ -135,15 +138,15 @@ except ImportError:
                     "error_message": "Invalid email format",
                     "severity": "medium",
                     "business_id": 456,
-                    "recoverable": False
-                }
+                    "recoverable": False,
+                },
             ][:limit]
 
         def _calculate_error_trends(self):
             return {
                 "hourly_trend": [1, 2, 3, 2, 1],
                 "daily_trend": [10, 15, 12, 8, 20],
-                "trend_direction": "increasing"
+                "trend_direction": "increasing",
             }
 
         def _calculate_health_status(self, metrics):
@@ -170,46 +173,52 @@ except ImportError:
             self.aggregator = aggregator
 
         def generate_executive_summary(self, time_window=None):
-            metrics = self.aggregator.generate_error_metrics(time_window or TimeWindow.LAST_24_HOURS)
+            metrics = self.aggregator.generate_error_metrics(
+                time_window or TimeWindow.LAST_24_HOURS
+            )
             return {
                 "status_summary": self._get_status_summary(metrics),
                 "top_issues": self._get_top_issues(metrics),
-                "recommendations": self._get_executive_recommendations(metrics)
+                "recommendations": self._get_executive_recommendations(metrics),
             }
 
         def _get_status_summary(self, metrics):
             if metrics.critical_error_count > 0:
                 return {
                     "status": "critical",
-                    "message": f"Pipeline experiencing critical issues with {metrics.critical_error_count} critical errors"
+                    "message": f"Pipeline experiencing critical issues with {metrics.critical_error_count} critical errors",
                 }
             elif metrics.total_errors > 100:
                 return {
                     "status": "warning",
-                    "message": f"High error volume detected: {metrics.total_errors} total errors"
+                    "message": f"High error volume detected: {metrics.total_errors} total errors",
                 }
             else:
                 return {
                     "status": "healthy",
-                    "message": "Pipeline operating within normal parameters"
+                    "message": "Pipeline operating within normal parameters",
                 }
 
         def _get_top_issues(self, metrics):
             issues = []
             for pattern in metrics.patterns[:3]:  # Top 3 issues
-                issues.append({
-                    "error_type": pattern.error_type,
-                    "stage": pattern.stage,
-                    "frequency": pattern.frequency,
-                    "affected_businesses": len(pattern.affected_businesses),
-                    "impact": "high" if pattern.frequency > 10 else "medium"
-                })
+                issues.append(
+                    {
+                        "error_type": pattern.error_type,
+                        "stage": pattern.stage,
+                        "frequency": pattern.frequency,
+                        "affected_businesses": len(pattern.affected_businesses),
+                        "impact": "high" if pattern.frequency > 10 else "medium",
+                    }
+                )
             return issues
 
         def _get_executive_recommendations(self, metrics):
             recommendations = []
             if metrics.critical_error_count > 0:
-                recommendations.append("Immediate attention required for critical errors")
+                recommendations.append(
+                    "Immediate attention required for critical errors"
+                )
             if metrics.total_errors > 100:
                 recommendations.append("Consider scaling infrastructure to handle load")
             if not recommendations:
@@ -237,7 +246,7 @@ class TestDashboardConfig(unittest.TestCase):
             refresh_interval_seconds=600,
             max_error_patterns=20,
             dashboard_title="Custom Dashboard",
-            alert_email_recipients=["admin@example.com"]
+            alert_email_recipients=["admin@example.com"],
         )
 
         self.assertEqual(config.refresh_interval_seconds, 600)
@@ -268,7 +277,7 @@ class TestErrorDashboard(unittest.TestCase):
             error = PipelineError(
                 stage=f"stage_{i % 2}",
                 operation=f"operation_{i % 2}",
-                severity=ErrorSeverity.CRITICAL if i == 0 else ErrorSeverity.MEDIUM
+                severity=ErrorSeverity.CRITICAL if i == 0 else ErrorSeverity.MEDIUM,
             )
             self.aggregator.error_history.append(error)
 
@@ -299,7 +308,7 @@ class TestErrorDashboard(unittest.TestCase):
                 severity=ErrorSeverity.HIGH,
                 category=ErrorCategory.NETWORK,
                 business_id=123,
-                recoverable=True
+                recoverable=True,
             ),
             PipelineError(
                 id="error-2",
@@ -311,8 +320,8 @@ class TestErrorDashboard(unittest.TestCase):
                 severity=ErrorSeverity.MEDIUM,
                 category=ErrorCategory.VALIDATION,
                 business_id=456,
-                recoverable=False
-            )
+                recoverable=False,
+            ),
         ]
 
         for error in errors:
@@ -339,8 +348,7 @@ class TestErrorDashboard(unittest.TestCase):
         now = datetime.now()
         for i in range(10):
             error = PipelineError(
-                timestamp=now - timedelta(hours=i),
-                error_message=f"Error {i}"
+                timestamp=now - timedelta(hours=i), error_message=f"Error {i}"
             )
             self.aggregator.error_history.append(error)
 
@@ -356,7 +364,9 @@ class TestErrorDashboard(unittest.TestCase):
     def test_health_status_calculation(self):
         """Test health status calculation."""
         # Test healthy status
-        metrics_1h = ErrorMetrics(total_errors=5, critical_error_count=0, error_rate_per_hour=2.0)
+        metrics_1h = ErrorMetrics(
+            total_errors=5, critical_error_count=0, error_rate_per_hour=2.0
+        )
         ErrorMetrics(total_errors=20, critical_error_count=0, error_rate_per_hour=1.0)
 
         health_status = self.dashboard._calculate_health_status(metrics_1h)
@@ -365,8 +375,12 @@ class TestErrorDashboard(unittest.TestCase):
         self.assertIn("message", health_status)
 
         # Test critical status with critical errors
-        metrics_1h_critical = ErrorMetrics(total_errors=10, critical_error_count=2, error_rate_per_hour=5.0)
-        health_status_critical = self.dashboard._calculate_health_status(metrics_1h_critical)
+        metrics_1h_critical = ErrorMetrics(
+            total_errors=10, critical_error_count=2, error_rate_per_hour=5.0
+        )
+        health_status_critical = self.dashboard._calculate_health_status(
+            metrics_1h_critical
+        )
 
         self.assertEqual(health_status_critical["status"], "critical")
         self.assertIn("Critical errors detected", health_status_critical["message"])
@@ -418,11 +432,13 @@ class TestErrorReportGenerator(unittest.TestCase):
         for i in range(10):
             error = PipelineError(
                 severity=ErrorSeverity.CRITICAL if i < 2 else ErrorSeverity.MEDIUM,
-                business_id=100 + i
+                business_id=100 + i,
             )
             self.aggregator.error_history.append(error)
 
-        summary = self.report_generator.generate_executive_summary(TimeWindow.LAST_24_HOURS)
+        summary = self.report_generator.generate_executive_summary(
+            TimeWindow.LAST_24_HOURS
+        )
 
         # Verify summary structure
         self.assertEqual(summary["status_summary"]["status"], "critical")
@@ -435,9 +451,7 @@ class TestErrorReportGenerator(unittest.TestCase):
     def test_status_summary_healthy(self):
         """Test status summary for healthy pipeline."""
         metrics = ErrorMetrics(
-            total_errors=10,
-            critical_error_count=0,
-            error_rate_per_hour=5.0
+            total_errors=10, critical_error_count=0, error_rate_per_hour=5.0
         )
 
         status = self.report_generator._get_status_summary(metrics)
@@ -446,7 +460,9 @@ class TestErrorReportGenerator(unittest.TestCase):
         self.assertIn("message", status)
 
         # Test critical status with critical errors
-        metrics_critical = ErrorMetrics(total_errors=50, critical_error_count=5, error_rate_per_hour=25.0)
+        metrics_critical = ErrorMetrics(
+            total_errors=50, critical_error_count=5, error_rate_per_hour=25.0
+        )
         status_critical = self.report_generator._get_status_summary(metrics_critical)
 
         self.assertEqual(status_critical["status"], "critical")
@@ -455,9 +471,7 @@ class TestErrorReportGenerator(unittest.TestCase):
     def test_status_summary_warning_high_volume(self):
         """Test status summary for high error volume."""
         metrics = ErrorMetrics(
-            total_errors=150,
-            critical_error_count=0,
-            error_rate_per_hour=15.0
+            total_errors=150, critical_error_count=0, error_rate_per_hour=15.0
         )
 
         status = self.report_generator._get_status_summary(metrics)
@@ -466,7 +480,9 @@ class TestErrorReportGenerator(unittest.TestCase):
         self.assertIn("message", status)
 
         # Test critical status with critical errors
-        metrics_critical = ErrorMetrics(total_errors=50, critical_error_count=5, error_rate_per_hour=25.0)
+        metrics_critical = ErrorMetrics(
+            total_errors=50, critical_error_count=5, error_rate_per_hour=25.0
+        )
         status_critical = self.report_generator._get_status_summary(metrics_critical)
 
         self.assertEqual(status_critical["status"], "critical")
@@ -474,6 +490,7 @@ class TestErrorReportGenerator(unittest.TestCase):
 
     def test_top_issues_identification(self):
         """Test identification of top issues."""
+
         # Create mock pattern
         class MockPattern:
             def __init__(self, error_type, stage, frequency, affected_businesses):
@@ -487,8 +504,8 @@ class TestErrorReportGenerator(unittest.TestCase):
             critical_error_count=3,
             patterns=[
                 MockPattern("ConnectionError", "api_call", 15, [1, 2, 3, 4, 5]),
-                MockPattern("ValidationError", "validation", 8, [6, 7, 8])
-            ]
+                MockPattern("ValidationError", "validation", 8, [6, 7, 8]),
+            ],
         )
 
         issues = self.report_generator._get_top_issues(metrics)
@@ -497,40 +514,55 @@ class TestErrorReportGenerator(unittest.TestCase):
         self.assertGreater(len(issues), 0)
 
         # Check for critical error issue
-        critical_issue = next((issue for issue in issues if issue["impact"] == "high"), None)
+        critical_issue = next(
+            (issue for issue in issues if issue["impact"] == "high"), None
+        )
         self.assertIsNotNone(critical_issue)
         self.assertIn("ConnectionError", critical_issue["error_type"])
 
         # Check for high volume issue
-        high_volume_issue = next((issue for issue in issues if "ValidationError" in issue["error_type"]), None)
+        high_volume_issue = next(
+            (issue for issue in issues if "ValidationError" in issue["error_type"]),
+            None,
+        )
         self.assertIsNotNone(high_volume_issue)
 
     def test_executive_recommendations(self):
         """Test executive recommendations generation."""
         # Test recommendations for critical errors
         metrics_critical = ErrorMetrics(
-            total_errors=50,
-            critical_error_count=5,
-            patterns=[]
+            total_errors=50, critical_error_count=5, patterns=[]
         )
 
-        recommendations = self.report_generator._get_executive_recommendations(metrics_critical)
+        recommendations = self.report_generator._get_executive_recommendations(
+            metrics_critical
+        )
 
         self.assertGreater(len(recommendations), 0)
-        self.assertTrue(any("Immediate attention required for critical errors" in rec for rec in recommendations))
+        self.assertTrue(
+            any(
+                "Immediate attention required for critical errors" in rec
+                for rec in recommendations
+            )
+        )
         self.assertTrue(any("emergency response" not in rec for rec in recommendations))
 
         # Test recommendations for healthy pipeline
         metrics_healthy = ErrorMetrics(
-            total_errors=10,
-            critical_error_count=0,
-            patterns=[]
+            total_errors=10, critical_error_count=0, patterns=[]
         )
 
-        recommendations_healthy = self.report_generator._get_executive_recommendations(metrics_healthy)
+        recommendations_healthy = self.report_generator._get_executive_recommendations(
+            metrics_healthy
+        )
 
         self.assertGreater(len(recommendations_healthy), 0)
-        self.assertTrue(any("Continue monitoring current performance" in rec for rec in recommendations_healthy))
+        self.assertTrue(
+            any(
+                "Continue monitoring current performance" in rec
+                for rec in recommendations_healthy
+            )
+        )
 
 
 if __name__ == "__main__":

@@ -24,12 +24,20 @@ from pathlib import Path
 def main():
     """Run API integration tests with real APIs if specified."""
     parser = argparse.ArgumentParser(description="Run API integration tests")
-    parser.add_argument("--use-real-apis", action="store_true",
-                        help="Run tests with real API calls where credentials are available")
-    parser.add_argument("--api", type=str, default=None,
-                        help="Run tests for a specific API only (e.g., yelp, google, openai)")
-    parser.add_argument("--verbose", "-v", action="store_true",
-                        help="Enable verbose output")
+    parser.add_argument(
+        "--use-real-apis",
+        action="store_true",
+        help="Run tests with real API calls where credentials are available",
+    )
+    parser.add_argument(
+        "--api",
+        type=str,
+        default=None,
+        help="Run tests for a specific API only (e.g., yelp, google, openai)",
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose output"
+    )
 
     args = parser.parse_args()
 
@@ -69,7 +77,6 @@ def main():
         if args.use_real_apis:
             pass
     else:
-
         if args.use_real_apis:
             pass
 

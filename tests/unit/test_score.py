@@ -11,7 +11,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 from leadfactory.pipeline import score
 
 
@@ -88,7 +90,7 @@ def test_calculate_tech_stack_score():
         "cms": "WordPress",
         "analytics": "Google Analytics",
         "server": "Nginx",
-        "javascript": "React"
+        "javascript": "React",
     }
 
     score_result = score.calculate_tech_stack_score(tech_stack)
@@ -99,9 +101,7 @@ def test_calculate_tech_stack_score():
     assert "details" in score_result
 
     # Test with minimal tech stack
-    minimal_stack = {
-        "cms": "WordPress"
-    }
+    minimal_stack = {"cms": "WordPress"}
 
     minimal_score = score.calculate_tech_stack_score(minimal_stack)
 
@@ -116,11 +116,7 @@ def test_calculate_tech_stack_score():
 def test_calculate_performance_score():
     """Test calculation of performance score component."""
     # Test with good performance
-    performance = {
-        "page_speed": 90,
-        "mobile_friendly": True,
-        "accessibility": 85
-    }
+    performance = {"page_speed": 90, "mobile_friendly": True, "accessibility": 85}
 
     score_result = score.calculate_performance_score(performance)
 
@@ -130,11 +126,7 @@ def test_calculate_performance_score():
     assert "details" in score_result
 
     # Test with poor performance
-    poor_performance = {
-        "page_speed": 40,
-        "mobile_friendly": False,
-        "accessibility": 30
-    }
+    poor_performance = {"page_speed": 40, "mobile_friendly": False, "accessibility": 30}
 
     poor_score = score.calculate_performance_score(poor_performance)
 
@@ -154,7 +146,7 @@ def test_calculate_contact_info_score():
         "position": "CEO",
         "email": "john@example.com",
         "phone": "555-123-4567",
-        "linkedin": "https://linkedin.com/in/johndoe"
+        "linkedin": "https://linkedin.com/in/johndoe",
     }
 
     score_result = score.calculate_contact_info_score(contact_info)
@@ -165,9 +157,7 @@ def test_calculate_contact_info_score():
     assert "details" in score_result
 
     # Test with minimal contact info
-    minimal_info = {
-        "name": "John Doe"
-    }
+    minimal_info = {"name": "John Doe"}
 
     minimal_score = score.calculate_contact_info_score(minimal_info)
 
@@ -187,10 +177,11 @@ def test_weighted_scoring():
     contact_score = {"score": 40, "details": {}}
 
     # Call the weighted scoring function
-    with patch("bin.score.calculate_tech_stack_score") as mock_tech, \
-         patch("bin.score.calculate_performance_score") as mock_perf, \
-         patch("bin.score.calculate_contact_info_score") as mock_contact:
-
+    with (
+        patch("bin.score.calculate_tech_stack_score") as mock_tech,
+        patch("bin.score.calculate_performance_score") as mock_perf,
+        patch("bin.score.calculate_contact_info_score") as mock_contact,
+    ):
         mock_tech.return_value = tech_score
         mock_perf.return_value = perf_score
         mock_contact.return_value = contact_score
@@ -198,7 +189,9 @@ def test_weighted_scoring():
         # Test with mock DB
         conn = sqlite3.connect(":memory:")
         cursor = conn.cursor()
-        cursor.execute("CREATE TABLE businesses (id INTEGER PRIMARY KEY, tech_stack TEXT, performance TEXT, contact_info TEXT)")
+        cursor.execute(
+            "CREATE TABLE businesses (id INTEGER PRIMARY KEY, tech_stack TEXT, performance TEXT, contact_info TEXT)"
+        )
         cursor.execute("INSERT INTO businesses VALUES (1, '{}', '{}', '{}')")
         conn.commit()
 
@@ -207,7 +200,9 @@ def test_weighted_scoring():
 
         # Verify weights are applied
         # This assumes some weights are applied, actual formula may vary
-        assert final_score != (tech_score["score"] + perf_score["score"] + contact_score["score"])
+        assert final_score != (
+            tech_score["score"] + perf_score["score"] + contact_score["score"]
+        )
 
         conn.close()
 

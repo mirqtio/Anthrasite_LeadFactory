@@ -5,8 +5,9 @@ Tests the topological sorting, dependency validation, and execution planning
 functionality of the pipeline DAG system.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Try to import the actual modules, fall back to mocks if they fail
 try:
@@ -22,11 +23,12 @@ try:
         get_execution_plan,
         validate_stage_dependencies,
     )
+
     IMPORTS_AVAILABLE = True
 except ImportError:
     # Create mock classes for testing when imports fail
-    from enum import Enum
     from dataclasses import dataclass
+    from enum import Enum
     from typing import Dict, List, Optional, Set
 
     class NodeType(Enum):
@@ -77,24 +79,52 @@ except ImportError:
             # Set up basic dependencies for testing
             self.dependencies = {
                 PipelineStage.ENRICH: [
-                    StageDependency(PipelineStage.SCRAPE, PipelineStage.ENRICH, DependencyType.REQUIRED)
+                    StageDependency(
+                        PipelineStage.SCRAPE,
+                        PipelineStage.ENRICH,
+                        DependencyType.REQUIRED,
+                    )
                 ],
                 PipelineStage.DEDUPE: [
-                    StageDependency(PipelineStage.SCRAPE, PipelineStage.DEDUPE, DependencyType.REQUIRED)
+                    StageDependency(
+                        PipelineStage.SCRAPE,
+                        PipelineStage.DEDUPE,
+                        DependencyType.REQUIRED,
+                    )
                 ],
                 PipelineStage.SCORE: [
-                    StageDependency(PipelineStage.ENRICH, PipelineStage.SCORE, DependencyType.REQUIRED),
-                    StageDependency(PipelineStage.DEDUPE, PipelineStage.SCORE, DependencyType.REQUIRED)
+                    StageDependency(
+                        PipelineStage.ENRICH,
+                        PipelineStage.SCORE,
+                        DependencyType.REQUIRED,
+                    ),
+                    StageDependency(
+                        PipelineStage.DEDUPE,
+                        PipelineStage.SCORE,
+                        DependencyType.REQUIRED,
+                    ),
                 ],
                 PipelineStage.EMAIL_QUEUE: [
-                    StageDependency(PipelineStage.SCORE, PipelineStage.EMAIL_QUEUE, DependencyType.REQUIRED)
+                    StageDependency(
+                        PipelineStage.SCORE,
+                        PipelineStage.EMAIL_QUEUE,
+                        DependencyType.REQUIRED,
+                    )
                 ],
                 PipelineStage.MOCKUP: [
-                    StageDependency(PipelineStage.ENRICH, PipelineStage.MOCKUP, DependencyType.REQUIRED)
+                    StageDependency(
+                        PipelineStage.ENRICH,
+                        PipelineStage.MOCKUP,
+                        DependencyType.REQUIRED,
+                    )
                 ],
                 PipelineStage.SCREENSHOT: [
-                    StageDependency(PipelineStage.ENRICH, PipelineStage.SCREENSHOT, DependencyType.OPTIONAL)
-                ]
+                    StageDependency(
+                        PipelineStage.ENRICH,
+                        PipelineStage.SCREENSHOT,
+                        DependencyType.OPTIONAL,
+                    )
+                ],
             }
 
         def get_dependencies(self, stage):
@@ -108,7 +138,8 @@ except ImportError:
         def remove_dependency(self, from_stage, to_stage):
             if to_stage in self.dependencies:
                 self.dependencies[to_stage] = [
-                    dep for dep in self.dependencies[to_stage]
+                    dep
+                    for dep in self.dependencies[to_stage]
                     if dep.from_stage != from_stage
                 ]
 
@@ -120,7 +151,9 @@ except ImportError:
                         dependents.append(dep)
             return dependents
 
-        def topological_sort(self, available_stages=None, node_type=None, budget_cents=None):
+        def topological_sort(
+            self, available_stages=None, node_type=None, budget_cents=None
+        ):
             if available_stages is None:
                 available_stages = set(PipelineStage)
 
@@ -133,14 +166,22 @@ except ImportError:
                 ready = []
                 for stage in remaining:
                     deps = self.get_dependencies(stage)
-                    required_deps = [dep for dep in deps if dep.dependency_type == DependencyType.REQUIRED]
-                    unmet_deps = [dep for dep in required_deps if dep.from_stage in remaining]
+                    required_deps = [
+                        dep
+                        for dep in deps
+                        if dep.dependency_type == DependencyType.REQUIRED
+                    ]
+                    unmet_deps = [
+                        dep for dep in required_deps if dep.from_stage in remaining
+                    ]
                     if not unmet_deps:
                         ready.append(stage)
 
                 if not ready:
                     # Add remaining stages in enum order to avoid infinite loop
-                    ready = sorted(remaining, key=lambda x: list(PipelineStage).index(x))[:1]
+                    ready = sorted(
+                        remaining, key=lambda x: list(PipelineStage).index(x)
+                    )[:1]
 
                 for stage in ready:
                     result.append(stage)
@@ -150,11 +191,23 @@ except ImportError:
 
         def validate_dependencies(self, completed_stages, target_stage):
             deps = self.get_dependencies(target_stage)
-            required_deps = [dep for dep in deps if dep.dependency_type == DependencyType.REQUIRED]
-            optional_deps = [dep for dep in deps if dep.dependency_type == DependencyType.OPTIONAL]
+            required_deps = [
+                dep for dep in deps if dep.dependency_type == DependencyType.REQUIRED
+            ]
+            optional_deps = [
+                dep for dep in deps if dep.dependency_type == DependencyType.OPTIONAL
+            ]
 
-            missing_required = [dep.from_stage for dep in required_deps if dep.from_stage not in completed_stages]
-            missing_optional = [dep.from_stage for dep in optional_deps if dep.from_stage not in completed_stages]
+            missing_required = [
+                dep.from_stage
+                for dep in required_deps
+                if dep.from_stage not in completed_stages
+            ]
+            missing_optional = [
+                dep.from_stage
+                for dep in optional_deps
+                if dep.from_stage not in completed_stages
+            ]
 
             can_run = len(missing_required) == 0
             return can_run, missing_required, missing_optional
@@ -167,8 +220,12 @@ except ImportError:
         def get_stage_info(self, stage):
             return {
                 "stage": stage.value,
-                "dependencies": [dep.from_stage.value for dep in self.get_dependencies(stage)],
-                "dependents": [dep.to_stage.value for dep in self.get_dependents(stage)]
+                "dependencies": [
+                    dep.from_stage.value for dep in self.get_dependencies(stage)
+                ],
+                "dependents": [
+                    dep.to_stage.value for dep in self.get_dependents(stage)
+                ],
             }
 
     class PipelineExecutor:
@@ -390,10 +447,18 @@ class TestPipelineDAG:
         sorted_stages = dag.topological_sort(subset_stages)
 
         # Check order: scrape -> enrich -> score
-        assert sorted_stages.index(PipelineStage.SCRAPE) < sorted_stages.index(PipelineStage.ENRICH)
-        assert sorted_stages.index(PipelineStage.ENRICH) < sorted_stages.index(PipelineStage.SCORE)
+        assert sorted_stages.index(PipelineStage.SCRAPE) < sorted_stages.index(
+            PipelineStage.ENRICH
+        )
+        assert sorted_stages.index(PipelineStage.ENRICH) < sorted_stages.index(
+            PipelineStage.SCORE
+        )
 
-    @patch('test_dag_traversal.get_enabled_capabilities' if not IMPORTS_AVAILABLE else 'leadfactory.pipeline.dag_traversal.get_enabled_capabilities')
+    @patch(
+        "test_dag_traversal.get_enabled_capabilities"
+        if not IMPORTS_AVAILABLE
+        else "leadfactory.pipeline.dag_traversal.get_enabled_capabilities"
+    )
     def test_topological_sort_with_capabilities(self, mock_get_capabilities):
         """Test topological sorting with capability filtering."""
         dag = PipelineDAG()
@@ -403,9 +468,7 @@ class TestPipelineDAG:
 
         all_stages = set(PipelineStage)
         sorted_stages = dag.topological_sort(
-            all_stages,
-            node_type=NodeType.BASIC,
-            budget_cents=100.0
+            all_stages, node_type=NodeType.BASIC, budget_cents=100.0
         )
 
         # For mock implementation, just verify the function was called correctly
@@ -719,16 +782,17 @@ class TestIntegration:
         executable = executor.get_next_executable_stages(target_stages)
         assert executable == []
 
-    @patch('test_dag_traversal.get_enabled_capabilities' if not IMPORTS_AVAILABLE else 'leadfactory.pipeline.dag_traversal.get_enabled_capabilities')
+    @patch(
+        "test_dag_traversal.get_enabled_capabilities"
+        if not IMPORTS_AVAILABLE
+        else "leadfactory.pipeline.dag_traversal.get_enabled_capabilities"
+    )
     def test_capability_based_execution(self, mock_get_capabilities):
         """Test execution plan based on node capabilities."""
         # Mock limited capabilities
         mock_get_capabilities.return_value = ["web_scraping", "data_processing"]
 
-        plan = get_execution_plan(
-            node_type=NodeType.BASIC,
-            budget_cents=50.0
-        )
+        plan = get_execution_plan(node_type=NodeType.BASIC, budget_cents=50.0)
 
         # For mock implementation, just verify the function works
         if not IMPORTS_AVAILABLE:

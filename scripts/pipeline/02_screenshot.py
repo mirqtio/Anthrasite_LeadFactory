@@ -2,6 +2,7 @@
 """
 Wrapper script for screenshot generation stage of the pipeline.
 """
+
 import logging
 import os
 import sys

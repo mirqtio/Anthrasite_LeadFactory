@@ -289,7 +289,6 @@ def main():
     test_results = []
 
     for test_name, test_func in tests:
-
         try:
             result = test_func()
             test_results.append((test_name, result))

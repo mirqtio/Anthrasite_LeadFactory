@@ -5,17 +5,18 @@ Tests rate limiting functionality, configuration, violation tracking,
 and cooldown mechanisms.
 """
 
-import pytest
+import time
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
-import time
+
+import pytest
 
 from leadfactory.security.rate_limiter import (
     PDFRateLimiter,
     RateLimitConfig,
-    RateLimitType,
     RateLimitResult,
-    get_rate_limiter
+    RateLimitType,
+    get_rate_limiter,
 )
 
 
@@ -39,7 +40,7 @@ class TestRateLimitConfig:
             per_hour=100,
             per_day=1000,
             burst_allowance=5,
-            cooldown_minutes=30
+            cooldown_minutes=30,
         )
 
         assert config.per_minute == 10
@@ -63,7 +64,7 @@ class TestRateLimiter:
             per_hour=50,
             per_day=500,
             burst_allowance=2,
-            cooldown_minutes=10
+            cooldown_minutes=10,
         )
 
         self.rate_limiter.configs[RateLimitType.PDF_ACCESS] = RateLimitConfig(
@@ -71,7 +72,7 @@ class TestRateLimiter:
             per_hour=100,
             per_day=1000,
             burst_allowance=5,
-            cooldown_minutes=5
+            cooldown_minutes=5,
         )
 
     def test_rate_limit_check_success(self):
@@ -162,11 +163,15 @@ class TestRateLimiter:
         # Exhaust PDF generation limit
         config_gen = self.rate_limiter.configs[RateLimitType.PDF_GENERATION]
         for i in range(config_gen.per_minute + config_gen.burst_allowance):
-            result = self.rate_limiter.check_rate_limit(user_id, RateLimitType.PDF_GENERATION)
+            result = self.rate_limiter.check_rate_limit(
+                user_id, RateLimitType.PDF_GENERATION
+            )
             assert result.allowed is True
 
         # PDF generation should be rate limited
-        result = self.rate_limiter.check_rate_limit(user_id, RateLimitType.PDF_GENERATION)
+        result = self.rate_limiter.check_rate_limit(
+            user_id, RateLimitType.PDF_GENERATION
+        )
         assert result.allowed is False
 
         # PDF access should still be allowed
@@ -210,7 +215,7 @@ class TestRateLimiter:
         if user_id in stats and operation.value in stats[user_id]:
             assert stats[user_id][operation.value]["requests_made"] == 0
 
-    @patch('leadfactory.security.audit_logger.get_audit_logger')
+    @patch("leadfactory.security.audit_logger.get_audit_logger")
     def test_violation_logging(self, mock_get_logger):
         """Test that rate limit violations are logged."""
         mock_logger = Mock()
@@ -246,9 +251,9 @@ class TestRateLimiter:
         if user_id in self.rate_limiter.user_requests:
             if operation.value in self.rate_limiter.user_requests[user_id]:
                 old_time = datetime.utcnow() - timedelta(minutes=2)
-                self.rate_limiter.user_requests[user_id][operation.value] = [old_time] * len(
-                    self.rate_limiter.user_requests[user_id][operation.value]
-                )
+                self.rate_limiter.user_requests[user_id][operation.value] = [
+                    old_time
+                ] * len(self.rate_limiter.user_requests[user_id][operation.value])
 
         # Should be allowed again after time window
         result = self.rate_limiter.check_rate_limit(user_id, operation)

@@ -41,7 +41,7 @@ class TestConflictResolver(unittest.TestCase):
             "category": "Restaurant",
             "website": "www.abc.com",
             "updated_at": datetime.now().isoformat(),
-            "source": "google"
+            "source": "google",
         }
 
         self.secondary = {
@@ -56,7 +56,7 @@ class TestConflictResolver(unittest.TestCase):
             "category": "Restaurant & Bar",
             "website": None,
             "updated_at": (datetime.now() - timedelta(days=1)).isoformat(),
-            "source": "yelp"
+            "source": "yelp",
         }
 
     def test_identify_conflicts(self):
@@ -101,30 +101,38 @@ class TestConflictResolver(unittest.TestCase):
 
     def test_resolve_conflicts_keep_primary(self):
         """Test KEEP_PRIMARY resolution strategy."""
-        conflicts = [{
-            "field": "name",
-            "type": ConflictType.BOTH_PRESENT_DIFFERENT,
-            "primary_value": "ABC Company",
-            "secondary_value": "ABC Company Inc",
-            "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY
-        }]
+        conflicts = [
+            {
+                "field": "name",
+                "type": ConflictType.BOTH_PRESENT_DIFFERENT,
+                "primary_value": "ABC Company",
+                "secondary_value": "ABC Company Inc",
+                "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY,
+            }
+        ]
 
-        updates = self.resolver.resolve_conflicts(conflicts, self.primary, self.secondary)
+        updates = self.resolver.resolve_conflicts(
+            conflicts, self.primary, self.secondary
+        )
 
         # Should not update when keeping primary
         self.assertNotIn("name", updates)
 
     def test_resolve_conflicts_missing_in_primary(self):
         """Test resolution when value is missing in primary."""
-        conflicts = [{
-            "field": "email",
-            "type": ConflictType.MISSING_IN_PRIMARY,
-            "primary_value": None,
-            "secondary_value": "info@abc.com",
-            "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY
-        }]
+        conflicts = [
+            {
+                "field": "email",
+                "type": ConflictType.MISSING_IN_PRIMARY,
+                "primary_value": None,
+                "secondary_value": "info@abc.com",
+                "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY,
+            }
+        ]
 
-        updates = self.resolver.resolve_conflicts(conflicts, self.primary, self.secondary)
+        updates = self.resolver.resolve_conflicts(
+            conflicts, self.primary, self.secondary
+        )
 
         # Should update with secondary value when primary is missing
         self.assertEqual(updates["email"], "info@abc.com")
@@ -181,13 +189,17 @@ class TestConflictResolver(unittest.TestCase):
     def test_merge_highest_quality(self):
         """Test highest quality merge strategy."""
         # Google has higher priority than Yelp by default
-        result = self.resolver._merge_highest_quality("category", self.primary, self.secondary)
+        result = self.resolver._merge_highest_quality(
+            "category", self.primary, self.secondary
+        )
         self.assertEqual(result, "Restaurant")
 
         # Test with manual source (highest priority)
         manual_secondary = self.secondary.copy()
         manual_secondary["source"] = "manual"
-        result = self.resolver._merge_highest_quality("category", self.primary, manual_secondary)
+        result = self.resolver._merge_highest_quality(
+            "category", self.primary, manual_secondary
+        )
         self.assertEqual(result, "Restaurant & Bar")
 
     def test_generate_conflict_report(self):
@@ -198,22 +210,22 @@ class TestConflictResolver(unittest.TestCase):
                 "type": ConflictType.BOTH_PRESENT_DIFFERENT,
                 "primary_value": "ABC Company",
                 "secondary_value": "ABC Company Inc",
-                "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY
+                "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY,
             },
             {
                 "field": "email",
                 "type": ConflictType.MISSING_IN_PRIMARY,
                 "primary_value": None,
                 "secondary_value": "info@abc.com",
-                "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY
+                "resolution_strategy": ResolutionStrategy.KEEP_PRIMARY,
             },
             {
                 "field": "critical_field",
                 "type": ConflictType.BOTH_PRESENT_DIFFERENT,
                 "primary_value": "value1",
                 "secondary_value": "value2",
-                "resolution_strategy": ResolutionStrategy.MANUAL_REVIEW
-            }
+                "resolution_strategy": ResolutionStrategy.MANUAL_REVIEW,
+            },
         ]
 
         report = self.resolver.generate_conflict_report(conflicts)
@@ -238,22 +250,20 @@ class TestApplyConflictResolution(unittest.TestCase):
             "id": 1,
             "name": "Test Business",
             "email": None,
-            "phone": "555-1234"
+            "phone": "555-1234",
         }
         self.secondary = {
             "id": 2,
             "name": "Test Business Inc",
             "email": "test@example.com",
-            "phone": "555-1234"
+            "phone": "555-1234",
         }
 
     @patch("leadfactory.pipeline.conflict_resolution.logger")
     def test_apply_conflict_resolution(self, mock_logger):
         """Test the main conflict resolution function."""
         updates, report = apply_conflict_resolution(
-            self.primary,
-            self.secondary,
-            self.config
+            self.primary, self.secondary, self.config
         )
 
         # Should have updates for missing email

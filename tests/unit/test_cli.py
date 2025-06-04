@@ -1,6 +1,7 @@
 """
 Unit tests for the CLI module.
 """
+
 import os
 import sys
 from unittest.mock import MagicMock, patch
@@ -19,6 +20,7 @@ os.environ["PYTHONPATH"] = project_root
 # Try to import CLI modules with fallbacks
 try:
     from leadfactory.cli.main import cli
+
     CLI_AVAILABLE = True
 except ImportError as e:
     print(f"CLI import failed: {e}")
@@ -89,7 +91,9 @@ class TestCLI:
 
         result = self.runner.invoke(cli, ["pipeline", "scrape", "--zip-code", "12345"])
         assert result.exit_code == 0
-        mock_scrape_main.assert_called_once_with(limit=None, zip_code="12345", vertical=None)
+        mock_scrape_main.assert_called_once_with(
+            limit=None, zip_code="12345", vertical=None
+        )
 
     @patch("leadfactory.pipeline.enrich.main")
     def test_pipeline_enrich_command(self, mock_enrich_main):
@@ -150,19 +154,26 @@ class TestCLI:
 
     def test_pipeline_score_dry_run(self):
         """Test that pipeline score command works in dry-run mode."""
-        result = self.runner.invoke(cli, ["--dry-run", "pipeline", "score", "--limit", "10"])
+        result = self.runner.invoke(
+            cli, ["--dry-run", "pipeline", "score", "--limit", "10"]
+        )
         assert result.exit_code == 0
         assert "DRY RUN: Would execute scoring logic" in result.output
 
     @patch("subprocess.run")
-    @patch("leadfactory.pipeline.score.main", side_effect=ImportError("Module not found"))
+    @patch(
+        "leadfactory.pipeline.score.main", side_effect=ImportError("Module not found")
+    )
     def test_pipeline_score_fallback_to_bin(self, mock_score_main, mock_subprocess):
         """Test that score command falls back to bin/score.py when module import fails."""
         mock_subprocess.return_value = None
 
         result = self.runner.invoke(cli, ["pipeline", "score", "--limit", "10"])
         assert result.exit_code == 0
-        assert "Warning: Scoring module not found, using legacy bin/score.py" in result.output
+        assert (
+            "Warning: Scoring module not found, using legacy bin/score.py"
+            in result.output
+        )
         mock_subprocess.assert_called_once()
 
     @patch("leadfactory.pipeline.mockup.generate_business_mockup")
@@ -181,7 +192,9 @@ class TestCLI:
         """Test that pipeline mockup command works with output directory."""
         mock_generate_mockup.return_value = "mockup_result.html"
 
-        result = self.runner.invoke(cli, ["pipeline", "mockup", "--id", "789", "--output", "/tmp/mockups"])
+        result = self.runner.invoke(
+            cli, ["pipeline", "mockup", "--id", "789", "--output", "/tmp/mockups"]
+        )
         assert result.exit_code == 0
         assert "Generating mockup for business ID: 789" in result.output
         assert "Output directory: /tmp/mockups" in result.output
@@ -191,7 +204,9 @@ class TestCLI:
         """Test that pipeline mockup command works with tier override."""
         mock_generate_mockup.return_value = "mockup_result.html"
 
-        result = self.runner.invoke(cli, ["pipeline", "mockup", "--id", "101", "--tier", "2"])
+        result = self.runner.invoke(
+            cli, ["pipeline", "mockup", "--id", "101", "--tier", "2"]
+        )
         assert result.exit_code == 0
         assert "Generating mockup for business ID: 101" in result.output
         assert "Tier override: 2" in result.output
@@ -204,7 +219,9 @@ class TestCLI:
 
     def test_pipeline_mockup_dry_run(self):
         """Test that pipeline mockup command works in dry-run mode."""
-        result = self.runner.invoke(cli, ["--dry-run", "pipeline", "mockup", "--id", "123"])
+        result = self.runner.invoke(
+            cli, ["--dry-run", "pipeline", "mockup", "--id", "123"]
+        )
         assert result.exit_code == 0
         assert "DRY RUN: Would execute mockup generation" in result.output
 
@@ -218,14 +235,24 @@ class TestCLI:
         assert "Failed to generate mockup" in result.output
 
     @patch("subprocess.run")
-    @patch("leadfactory.pipeline.mockup.generate_business_mockup", side_effect=ImportError("Module not found"))
-    def test_pipeline_mockup_fallback_to_bin(self, mock_generate_mockup, mock_subprocess):
+    @patch(
+        "leadfactory.pipeline.mockup.generate_business_mockup",
+        side_effect=ImportError("Module not found"),
+    )
+    def test_pipeline_mockup_fallback_to_bin(
+        self, mock_generate_mockup, mock_subprocess
+    ):
         """Test that mockup command falls back to bin/mockup.py when module import fails."""
         mock_subprocess.return_value = None
 
-        result = self.runner.invoke(cli, ["pipeline", "mockup", "--id", "123", "--output", "/tmp"])
+        result = self.runner.invoke(
+            cli, ["pipeline", "mockup", "--id", "123", "--output", "/tmp"]
+        )
         assert result.exit_code == 0
-        assert "Warning: Mockup module not found, using legacy bin/mockup.py" in result.output
+        assert (
+            "Warning: Mockup module not found, using legacy bin/mockup.py"
+            in result.output
+        )
         mock_subprocess.assert_called_once()
 
     def test_verbose_flag(self):
@@ -261,7 +288,9 @@ class TestCLIBasic:
         assert os.path.exists(commands_dir), "CLI commands directory should exist"
 
         pipeline_commands_path = os.path.join(commands_dir, "pipeline_commands.py")
-        assert os.path.exists(pipeline_commands_path), "Pipeline commands module should exist"
+        assert os.path.exists(pipeline_commands_path), (
+            "Pipeline commands module should exist"
+        )
 
     def test_cli_imports_work(self):
         """Test that CLI can be imported."""
@@ -269,7 +298,9 @@ class TestCLIBasic:
             assert cli is not None
         else:
             # If CLI is not available, just pass the test
-            pytest.skip("CLI modules not available, but this is expected in some environments")
+            pytest.skip(
+                "CLI modules not available, but this is expected in some environments"
+            )
 
 
 if __name__ == "__main__":

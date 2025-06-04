@@ -153,17 +153,18 @@ def demo_cost_management():
     for i in range(3):
         try:
             response = client.chat_completion(
-                messages=[{"role": "user", "content": f"Count to {i+1}"}], max_tokens=20
+                messages=[{"role": "user", "content": f"Count to {i + 1}"}],
+                max_tokens=20,
             )
             print(
-                f"Request {i+1}: ✅ {response['provider']} - {response['usage']['total_tokens']} tokens"
+                f"Request {i + 1}: ✅ {response['provider']} - {response['usage']['total_tokens']} tokens"
             )
 
         except LLMQuotaExceededError as e:
-            print(f"Request {i+1}: ❌ Budget exceeded: {e}")
+            print(f"Request {i + 1}: ❌ Budget exceeded: {e}")
             break
         except Exception as e:
-            print(f"Request {i+1}: ❌ Error: {e}")
+            print(f"Request {i + 1}: ❌ Error: {e}")
 
     print_section("Final Cost Status")
     status = client.get_provider_status()
@@ -186,7 +187,7 @@ def demo_error_handling():
     config.providers = {
         "fake_provider": ProviderConfig(
             name="fake_provider",
-            api_key="invalid_key",
+            api_key="invalid_key",  # pragma: allowlist secret
             default_model="non-existent-model",
         )
     }

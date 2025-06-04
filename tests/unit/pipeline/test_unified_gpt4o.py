@@ -6,18 +6,20 @@ generation into a single GPT-4o endpoint.
 """
 
 import json
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 # Try to import the real module, fall back to mocks if not available
 try:
     from leadfactory.pipeline.unified_gpt4o import (
         UnifiedGPT4ONode,
+        generate_unified_content_for_business,
         get_businesses_needing_unified_processing,
         process_all_businesses_unified,
-        generate_unified_content_for_business,
-        validate_unified_dependencies
+        validate_unified_dependencies,
     )
+
     IMPORTS_AVAILABLE = True
 except ImportError:
     IMPORTS_AVAILABLE = False
@@ -33,8 +35,20 @@ except ImportError:
                 "is_valid": True,
                 "missing_dependencies": [],
                 "warnings": [],
-                "required_fields": ["id", "name", "website", "description", "contact_email"],
-                "optional_fields": ["phone", "address", "industry", "screenshot_url", "enrichment_data"]
+                "required_fields": [
+                    "id",
+                    "name",
+                    "website",
+                    "description",
+                    "contact_email",
+                ],
+                "optional_fields": [
+                    "phone",
+                    "address",
+                    "industry",
+                    "screenshot_url",
+                    "enrichment_data",
+                ],
             }
 
         def construct_unified_prompt(self, business_data):
@@ -46,10 +60,10 @@ except ImportError:
                 "content": {
                     "mockup_concept": {"design_theme": "Mock Theme"},
                     "email_content": {"subject": "Mock Subject"},
-                    "metadata": {"generation_timestamp": "2023-01-01T00:00:00Z"}
+                    "metadata": {"generation_timestamp": "2023-01-01T00:00:00Z"},
                 },
                 "prompt_used": "Mock prompt",
-                "validation_result": {"is_valid": True}
+                "validation_result": {"is_valid": True},
             }
 
         def save_unified_results(self, business_id, content):
@@ -59,7 +73,7 @@ except ImportError:
             return {
                 "success": True,
                 "content": {"mockup_concept": {}, "email_content": {}},
-                "saved_to_db": True
+                "saved_to_db": True,
             }
 
         def _fetch_business_data(self, business_id):
@@ -71,7 +85,7 @@ except ImportError:
                 "contact_email": f"contact@business{business_id}.com",
                 "phone": "555-0123",
                 "address": "123 Mock St",
-                "industry": "Mock Industry"
+                "industry": "Mock Industry",
             }
 
         def _is_valid_email(self, email):
@@ -89,7 +103,7 @@ except ImportError:
     def get_businesses_needing_unified_processing(limit=None):
         businesses = [
             {"id": 1, "name": "Mock Business 1", "website": "https://business1.com"},
-            {"id": 2, "name": "Mock Business 2", "website": "https://business2.com"}
+            {"id": 2, "name": "Mock Business 2", "website": "https://business2.com"},
         ]
         if limit is not None:
             return businesses[:limit]
@@ -101,7 +115,7 @@ except ImportError:
             "processed": len(businesses),
             "successful": len(businesses),
             "failed": 0,
-            "results": []
+            "results": [],
         }
 
     def generate_unified_content_for_business(business_id):
@@ -126,12 +140,12 @@ class TestUnifiedGPT4ONode:
 
     def test_node_initialization_with_api_key(self):
         """Test node initialization with API key."""
-        with patch.dict('os.environ', {'OPENAI_API_KEY': 'test_key'}):
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "test_key"}):
             node = UnifiedGPT4ONode()
             if IMPORTS_AVAILABLE:
-                assert node.api_key == 'test_key'
+                assert node.api_key == "test_key"
             else:
-                assert node.api_key == 'mock_api_key'
+                assert node.api_key == "mock_api_key"
 
     def test_validate_inputs_success(self):
         """Test input validation with valid data."""
@@ -145,7 +159,7 @@ class TestUnifiedGPT4ONode:
             "contact_email": "test@test.com",
             "phone": "555-0123",
             "address": "123 Test St",
-            "industry": "Technology"
+            "industry": "Technology",
         }
 
         result = node.validate_inputs(business_data)
@@ -158,7 +172,7 @@ class TestUnifiedGPT4ONode:
 
         business_data = {
             "id": 1,
-            "name": "Test Business"
+            "name": "Test Business",
             # Missing required fields: website, description, contact_email
         }
 
@@ -181,7 +195,7 @@ class TestUnifiedGPT4ONode:
             "name": "Test Business",
             "website": "https://test.com",
             "description": "Test description",
-            "contact_email": "invalid_email"  # Invalid email format
+            "contact_email": "invalid_email",  # Invalid email format
         }
 
         result = node.validate_inputs(business_data)
@@ -222,7 +236,7 @@ class TestUnifiedGPT4ONode:
             "description": "Test description",
             "contact_email": "test@test.com",
             "industry": "Technology",
-            "enrichment_data": {"employees": "10-50"}
+            "enrichment_data": {"employees": "10-50"},
         }
 
         prompt = node.construct_unified_prompt(business_data)
@@ -246,7 +260,7 @@ class TestUnifiedGPT4ONode:
         enrichment_data = {
             "employees": "10-50",
             "revenue": "$1M-$5M",
-            "technologies": ["React", "Node.js"]
+            "technologies": ["React", "Node.js"],
         }
 
         formatted = node._format_enrichment_data(enrichment_data)
@@ -284,7 +298,7 @@ class TestUnifiedGPT4ONode:
             "name": "Test Business",
             "website": "https://test.com",
             "description": "Test description",
-            "contact_email": "test@test.com"
+            "contact_email": "test@test.com",
         }
 
         result = node.generate_unified_content(business_data)
@@ -302,17 +316,14 @@ class TestUnifiedGPT4ONode:
         node = UnifiedGPT4ONode()
 
         # Missing required fields
-        business_data = {
-            "id": 1,
-            "name": "Test Business"
-        }
+        business_data = {"id": 1, "name": "Test Business"}
 
         # Mock the validation to return failure for this test
         if IMPORTS_AVAILABLE:
-            with patch.object(node, 'validate_inputs') as mock_validate:
+            with patch.object(node, "validate_inputs") as mock_validate:
                 mock_validate.return_value = {
                     "is_valid": False,
-                    "missing_dependencies": ["website", "description"]
+                    "missing_dependencies": ["website", "description"],
                 }
 
                 result = node.generate_unified_content(business_data)
@@ -327,10 +338,7 @@ class TestUnifiedGPT4ONode:
         """Test HTML email generation."""
         node = UnifiedGPT4ONode()
 
-        business_data = {
-            "name": "Test Business",
-            "industry": "Technology"
-        }
+        business_data = {"name": "Test Business", "industry": "Technology"}
 
         html = node._generate_email_html(business_data)
 
@@ -359,7 +367,7 @@ class TestUnifiedGPT4ONode:
             content = {
                 "mockup_concept": {"design_theme": "Modern"},
                 "email_content": {"subject": "Test Subject"},
-                "metadata": {"timestamp": "2023-01-01T00:00:00Z"}
+                "metadata": {"timestamp": "2023-01-01T00:00:00Z"},
             }
 
             result = node.save_unified_results(1, content)
@@ -372,7 +380,7 @@ class TestUnifiedGPT4ONode:
             content = {
                 "mockup_concept": {"design_theme": "Modern"},
                 "email_content": {"subject": "Test Subject"},
-                "metadata": {"timestamp": "2023-01-01T00:00:00Z"}
+                "metadata": {"timestamp": "2023-01-01T00:00:00Z"},
             }
 
             result = node.save_unified_results(1, content)
@@ -389,7 +397,7 @@ class TestUnifiedGPT4ONode:
             content = {
                 "mockup_concept": {"design_theme": "Modern"},
                 "email_content": {"subject": "Test Subject"},
-                "metadata": {"timestamp": "2023-01-01T00:00:00Z"}
+                "metadata": {"timestamp": "2023-01-01T00:00:00Z"},
             }
 
             result = node.save_unified_results(1, content)
@@ -399,7 +407,7 @@ class TestUnifiedGPT4ONode:
             content = {
                 "mockup_concept": {"design_theme": "Modern"},
                 "email_content": {"subject": "Test Subject"},
-                "metadata": {"timestamp": "2023-01-01T00:00:00Z"}
+                "metadata": {"timestamp": "2023-01-01T00:00:00Z"},
             }
 
             result = node.save_unified_results(1, content)
@@ -409,16 +417,16 @@ class TestUnifiedGPT4ONode:
         """Test successful business processing."""
         node = UnifiedGPT4ONode()
 
-        with patch.object(node, '_fetch_business_data') as mock_fetch:
+        with patch.object(node, "_fetch_business_data") as mock_fetch:
             mock_fetch.return_value = {
                 "id": 1,
                 "name": "Test Business",
                 "website": "https://test.com",
                 "description": "Test description",
-                "contact_email": "test@test.com"
+                "contact_email": "test@test.com",
             }
 
-            with patch.object(node, 'save_unified_results') as mock_save:
+            with patch.object(node, "save_unified_results") as mock_save:
                 mock_save.return_value = True
 
                 result = node.process_business(1)
@@ -431,7 +439,7 @@ class TestUnifiedGPT4ONode:
         """Test processing when business is not found."""
         node = UnifiedGPT4ONode()
 
-        with patch.object(node, '_fetch_business_data') as mock_fetch:
+        with patch.object(node, "_fetch_business_data") as mock_fetch:
             mock_fetch.return_value = None
 
             result = node.process_business(999)
@@ -456,9 +464,18 @@ class TestUnifiedGPT4ONode:
 
             # Mock business data
             mock_cursor.fetchone.side_effect = [
-                (1, "Test Business", "https://test.com", "Description", "test@test.com", "555-0123", "123 Test St", "Technology"),
+                (
+                    1,
+                    "Test Business",
+                    "https://test.com",
+                    "Description",
+                    "test@test.com",
+                    "555-0123",
+                    "123 Test St",
+                    "Technology",
+                ),
                 ('{"employees": "10-50"}',),  # Enrichment data
-                ("https://screenshot.com",)   # Screenshot URL
+                ("https://screenshot.com",),  # Screenshot URL
             ]
 
             result = node._fetch_business_data(1)
@@ -489,7 +506,7 @@ class TestConvenienceFunctions:
             # Mock business data
             mock_cursor.fetchall.return_value = [
                 (1, "Business 1", "https://business1.com"),
-                (2, "Business 2", "https://business2.com")
+                (2, "Business 2", "https://business2.com"),
             ]
 
             result = get_businesses_needing_unified_processing()
@@ -532,7 +549,9 @@ class TestConvenienceFunctions:
     def test_process_all_businesses_unified_no_businesses(self):
         """Test processing when no businesses need processing."""
         if IMPORTS_AVAILABLE:
-            with patch('leadfactory.pipeline.unified_gpt4o.get_businesses_needing_unified_processing') as mock_get:
+            with patch(
+                "leadfactory.pipeline.unified_gpt4o.get_businesses_needing_unified_processing"
+            ) as mock_get:
                 mock_get.return_value = []
 
                 result = process_all_businesses_unified()
@@ -543,7 +562,9 @@ class TestConvenienceFunctions:
                 assert len(result["results"]) == 0
         else:
             # Mock implementation returns default businesses, so test with empty override
-            with patch('test_unified_gpt4o.get_businesses_needing_unified_processing') as mock_get:
+            with patch(
+                "test_unified_gpt4o.get_businesses_needing_unified_processing"
+            ) as mock_get:
                 mock_get.return_value = []
 
                 result = process_all_businesses_unified()
@@ -557,14 +578,18 @@ class TestConvenienceFunctions:
         """Test processing multiple businesses."""
         mock_businesses = [
             {"id": 1, "name": "Business 1", "website": "https://business1.com"},
-            {"id": 2, "name": "Business 2", "website": "https://business2.com"}
+            {"id": 2, "name": "Business 2", "website": "https://business2.com"},
         ]
 
         if IMPORTS_AVAILABLE:
-            with patch('leadfactory.pipeline.unified_gpt4o.get_businesses_needing_unified_processing') as mock_get:
+            with patch(
+                "leadfactory.pipeline.unified_gpt4o.get_businesses_needing_unified_processing"
+            ) as mock_get:
                 mock_get.return_value = mock_businesses
 
-                with patch('leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode') as mock_node_class:
+                with patch(
+                    "leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode"
+                ) as mock_node_class:
                     mock_node = Mock()
                     mock_node.process_business.return_value = {"success": True}
                     mock_node_class.return_value = mock_node
@@ -590,7 +615,11 @@ class TestConvenienceFunctions:
 
     def test_generate_unified_content_for_business(self):
         """Test convenience function for generating content for a single business."""
-        with patch('leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode' if IMPORTS_AVAILABLE else 'test_unified_gpt4o.UnifiedGPT4ONode') as mock_node_class:
+        with patch(
+            "leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode"
+            if IMPORTS_AVAILABLE
+            else "test_unified_gpt4o.UnifiedGPT4ONode"
+        ) as mock_node_class:
             mock_node = Mock()
             mock_node.process_business.return_value = {"success": True, "content": {}}
             mock_node_class.return_value = mock_node
@@ -602,7 +631,11 @@ class TestConvenienceFunctions:
 
     def test_validate_unified_dependencies(self):
         """Test convenience function for validating dependencies."""
-        with patch('leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode' if IMPORTS_AVAILABLE else 'test_unified_gpt4o.UnifiedGPT4ONode') as mock_node_class:
+        with patch(
+            "leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode"
+            if IMPORTS_AVAILABLE
+            else "test_unified_gpt4o.UnifiedGPT4ONode"
+        ) as mock_node_class:
             mock_node = Mock()
             mock_node._fetch_business_data.return_value = {"id": 1, "name": "Test"}
             mock_node.validate_inputs.return_value = {"is_valid": True}
@@ -614,7 +647,11 @@ class TestConvenienceFunctions:
 
     def test_validate_unified_dependencies_business_not_found(self):
         """Test dependency validation when business is not found."""
-        with patch('leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode' if IMPORTS_AVAILABLE else 'test_unified_gpt4o.UnifiedGPT4ONode') as mock_node_class:
+        with patch(
+            "leadfactory.pipeline.unified_gpt4o.UnifiedGPT4ONode"
+            if IMPORTS_AVAILABLE
+            else "test_unified_gpt4o.UnifiedGPT4ONode"
+        ) as mock_node_class:
             mock_node = Mock()
             mock_node._fetch_business_data.return_value = None
             mock_node_class.return_value = mock_node
@@ -649,9 +686,9 @@ class TestIntegration:
             "enrichment_data": {
                 "employees": "10-50",
                 "revenue": "$1M-$5M",
-                "technologies": ["React", "Node.js"]
+                "technologies": ["React", "Node.js"],
             },
-            "screenshot_url": "https://screenshot.com/test.png"
+            "screenshot_url": "https://screenshot.com/test.png",
         }
 
         # Test validation

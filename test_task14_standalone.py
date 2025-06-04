@@ -46,7 +46,7 @@ def test_monitoring_dashboard_code():
     file_path = "leadfactory/monitoring/test_monitoring.py"
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Check for required classes and functionality
@@ -98,7 +98,7 @@ def test_alerting_system_code():
     file_path = "leadfactory/monitoring/test_alerting.py"
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Check for required classes and functionality
@@ -144,7 +144,7 @@ def test_governance_framework_code():
     file_path = "leadfactory/monitoring/test_governance.py"
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Check for required classes and functionality
@@ -190,7 +190,7 @@ def test_analytics_system_code():
     file_path = "leadfactory/monitoring/test_analytics.py"
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Check for required classes and functionality
@@ -236,7 +236,7 @@ def test_workflow_integration_code():
     file_path = "leadfactory/monitoring/workflow_integration.py"
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Check for required classes and functionality
@@ -281,7 +281,7 @@ def test_web_dashboard_code():
     file_path = "leadfactory/monitoring/test_dashboard.py"
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Check for Flask app and routes
@@ -325,7 +325,7 @@ def test_module_integration():
     init_file = "leadfactory/monitoring/__init__.py"
 
     try:
-        with open(init_file, "r") as f:
+        with open(init_file) as f:
             content = f.read()
 
         # Check that test monitoring components are included
@@ -409,7 +409,7 @@ def test_task_requirements_coverage():
                 for file_name in os.listdir("leadfactory/monitoring"):
                     if file_name.endswith(".py") and file_name.startswith("test_"):
                         try:
-                            with open(f"leadfactory/monitoring/{file_name}", "r") as f:
+                            with open(f"leadfactory/monitoring/{file_name}") as f:
                                 if component in f.read():
                                     found = True
                                     break
@@ -429,7 +429,7 @@ def test_task_requirements_coverage():
     coverage_percentage = (coverage_score / total_requirements) * 100
 
     if coverage_score == total_requirements:
-        print(f"✅ All Task 14 requirements covered (100%)")
+        print("✅ All Task 14 requirements covered (100%)")
         return True
     else:
         print(
@@ -455,14 +455,14 @@ def test_documentation_and_comments():
 
     for file_path in files_to_check:
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 content = f.read()
 
             # Check for module docstring
             if content.strip().startswith('"""') and "Task 14" in content:
                 documented_files += 1
 
-        except Exception as e:
+        except Exception:
             continue
 
     documentation_percentage = (documented_files / total_files) * 100

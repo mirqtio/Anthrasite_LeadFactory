@@ -5,13 +5,18 @@ These tests focus on testing individual components of the IP rotation system
 in isolation, with mocked dependencies.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from leadfactory.services.ip_rotation import (
-    IPSubuserPool, IPSubuserStatus, RotationConfig,
-    IPRotationService, RotationReason, RotationEvent
+    IPRotationService,
+    IPSubuserPool,
+    IPSubuserStatus,
+    RotationConfig,
+    RotationEvent,
+    RotationReason,
 )
 
 
@@ -25,7 +30,7 @@ class TestIPSubuserPool:
             subuser="user1",
             priority=5,
             tags=["test"],
-            metadata={"region": "us-east"}
+            metadata={"region": "us-east"},
         )
 
         assert pool.ip_address == "192.168.1.1"
@@ -129,7 +134,7 @@ class TestRotationConfig:
             performance_weight=0.5,
             enable_automatic_rotation=False,
             rotation_delay_seconds=60,
-            max_consecutive_failures=5
+            max_consecutive_failures=5,
         )
 
         assert config.default_cooldown_hours == 8
@@ -156,7 +161,7 @@ class TestIPRotationService:
             performance_weight=0.6,
             enable_automatic_rotation=True,
             rotation_delay_seconds=0,  # No delay for tests
-            max_consecutive_failures=2
+            max_consecutive_failures=2,
         )
 
     @pytest.fixture
@@ -247,9 +252,11 @@ class TestIPRotationService:
         rotation_service.add_ip_subuser("192.168.1.2", "user2")
 
         result = rotation_service.execute_rotation(
-            from_ip="192.168.1.1", from_subuser="user1",
-            to_ip="192.168.1.2", to_subuser="user2",
-            reason=RotationReason.MANUAL_ROTATION
+            from_ip="192.168.1.1",
+            from_subuser="user1",
+            to_ip="192.168.1.2",
+            to_subuser="user2",
+            reason=RotationReason.MANUAL_ROTATION,
         )
 
         assert result.success is True
@@ -275,9 +282,11 @@ class TestIPRotationService:
     def test_execute_rotation_nonexistent_ip(self, rotation_service):
         """Test rotating non-existent IP/subuser."""
         result = rotation_service.execute_rotation(
-            from_ip="192.168.1.1", from_subuser="user1",
-            to_ip="192.168.1.2", to_subuser="user2",
-            reason=RotationReason.MANUAL_ROTATION
+            from_ip="192.168.1.1",
+            from_subuser="user1",
+            to_ip="192.168.1.2",
+            to_subuser="user2",
+            reason=RotationReason.MANUAL_ROTATION,
         )
 
         # Should still create rotation event but may not update pool entries
@@ -289,7 +298,7 @@ class TestIPRotationService:
         # Should return True when no recent rotations
         assert rotation_service._check_rotation_rate_limit() is True
 
-    @patch('leadfactory.services.ip_rotation.datetime')
+    @patch("leadfactory.services.ip_rotation.datetime")
     def test_check_rate_limits_exceeded(self, mock_datetime, rotation_service):
         """Test rate limiting when limits are exceeded."""
         fixed_time = datetime(2023, 1, 1, 12, 0, 0)
@@ -302,7 +311,7 @@ class TestIPRotationService:
                 from_subuser=f"user{i}",
                 to_ip="192.168.1.100",
                 to_subuser="target_user",
-                reason=RotationReason.MANUAL_ROTATION
+                reason=RotationReason.MANUAL_ROTATION,
             )
             event.success = True
             event.timestamp = fixed_time
@@ -336,10 +345,10 @@ class TestRotationReasons:
 
     def test_rotation_reasons_exist(self):
         """Test that all expected rotation reasons exist."""
-        assert hasattr(RotationReason, 'THRESHOLD_BREACH')
-        assert hasattr(RotationReason, 'MANUAL_ROTATION')
-        assert hasattr(RotationReason, 'SCHEDULED_ROTATION')
-        assert hasattr(RotationReason, 'PERFORMANCE_DEGRADATION')
+        assert hasattr(RotationReason, "THRESHOLD_BREACH")
+        assert hasattr(RotationReason, "MANUAL_ROTATION")
+        assert hasattr(RotationReason, "SCHEDULED_ROTATION")
+        assert hasattr(RotationReason, "PERFORMANCE_DEGRADATION")
 
         # Test enum values
         assert RotationReason.THRESHOLD_BREACH.value == "threshold_breach"

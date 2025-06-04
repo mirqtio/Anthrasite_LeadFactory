@@ -9,9 +9,10 @@ import asyncio
 import json
 import logging
 import time
+from collections.abc import Awaitable
 from dataclasses import asdict
 from functools import wraps
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from ..cost.budget_alerting import AlertMessage, send_budget_alert
 from ..cost.budget_config import BudgetConfiguration
@@ -396,7 +397,7 @@ def create_fastapi_budget_middleware(config: Optional[MiddlewareConfig] = None):
             response = await call_next(request)
             return response
 
-        except Exception as e:
+        except Exception:
             # FastAPI will handle HTTPException automatically
             raise
 

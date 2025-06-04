@@ -70,8 +70,8 @@ class TestFailureSimulation:
                     "operation": "test_operation",
                     "entity_id": 123,
                     "exception": str(e),
-                    "traceback": "mock_traceback"
-                }
+                    "traceback": "mock_traceback",
+                },
             )
 
         # Verify that the exception was logged with the correct context
@@ -102,8 +102,8 @@ class TestFailureSimulation:
                     "error_type": "network_error",
                     "retry_count": 3,
                     "operation": "api_call",
-                    "endpoint": "test_api"
-                }
+                    "endpoint": "test_api",
+                },
             )
 
         # Verify the error was logged with structured data
@@ -113,8 +113,8 @@ class TestFailureSimulation:
                 "error_type": "network_error",
                 "retry_count": 3,
                 "operation": "api_call",
-                "endpoint": "test_api"
-            }
+                "endpoint": "test_api",
+            },
         )
 
     def test_resource_exhaustion(self, mock_logger):
@@ -132,8 +132,8 @@ class TestFailureSimulation:
                 extra={
                     "operation": "data_processing",
                     "data_size": "large",
-                    "error_type": "memory_error"
-                }
+                    "error_type": "memory_error",
+                },
             )
 
         # Verify appropriate logging occurred
@@ -155,19 +155,13 @@ class TestFailureSimulation:
             # Log the warning with retry information
             logger.warning(
                 "Operation timed out and will be retried",
-                extra={
-                    "retry_attempt": 1,
-                    "operation": "long_running_task"
-                }
+                extra={"retry_attempt": 1, "operation": "long_running_task"},
             )
 
         # Verify timeout was logged correctly
         mock_logger.warning.assert_called_with(
             "Operation timed out and will be retried",
-            extra={
-                "retry_attempt": 1,
-                "operation": "long_running_task"
-            }
+            extra={"retry_attempt": 1, "operation": "long_running_task"},
         )
 
     def test_error_metrics_recording(self, mock_logger):
@@ -186,23 +180,27 @@ class TestFailureSimulation:
                     extra={
                         "operation": "data_processing",
                         "stage": "enrich",
-                        "error_type": "runtime_error"
-                    }
+                        "error_type": "runtime_error",
+                    },
                 )
 
                 # Call the actual record_metric function with our mocked version
-                mock_record_metric(PIPELINE_ERRORS, increment=1, stage="enrich", error_type="runtime_error")
+                mock_record_metric(
+                    PIPELINE_ERRORS,
+                    increment=1,
+                    stage="enrich",
+                    error_type="runtime_error",
+                )
 
             # Verify the record_metric function was called with the correct arguments
             mock_record_metric.assert_called_once_with(
-                PIPELINE_ERRORS,
-                increment=1,
-                stage="enrich",
-                error_type="runtime_error"
+                PIPELINE_ERRORS, increment=1, stage="enrich", error_type="runtime_error"
             )
 
     @patch("leadfactory.utils.metrics.push_to_gateway")
-    def test_error_metrics_pushed_to_gateway(self, mock_push, mock_logger, mock_counter):
+    def test_error_metrics_pushed_to_gateway(
+        self, mock_push, mock_logger, mock_counter
+    ):
         """Test that error metrics are pushed to the Prometheus Pushgateway."""
         logger = mock_logger
 
@@ -228,7 +226,9 @@ class TestFailureSimulation:
             mock_push_metrics.assert_called_once_with("localhost:9091", "test_job")
 
     @patch("leadfactory.utils.metrics.MetricsTimer")
-    def test_metrics_timer_records_failure_duration(self, mock_timer_class, mock_logger):
+    def test_metrics_timer_records_failure_duration(
+        self, mock_timer_class, mock_logger
+    ):
         """Test that MetricsTimer correctly records duration even when exceptions occur."""
         # Create a mock timer instance
         mock_timer = MagicMock()
@@ -277,9 +277,9 @@ class TestFailureSimulation:
                 f"Error in component: {str(e)}",
                 extra={
                     "operation": "cascade_test",  # From the outermost context
-                    "component": "C",            # From the innermost context
-                    "exception": str(e)
-                }
+                    "component": "C",  # From the innermost context
+                    "exception": str(e),
+                },
             )
 
         # Verify the logging captured the context correctly
@@ -305,11 +305,11 @@ class TestFailureSimulation:
                     logger.warning(
                         f"Attempt {attempt}/{max_retries} failed, retrying...",
                         extra={
-                            "backoff_seconds": 2 ** attempt,
+                            "backoff_seconds": 2**attempt,
                             "operation": "retry_operation",
                             "attempt": attempt,
-                            "max_retries": max_retries
-                        }
+                            "max_retries": max_retries,
+                        },
                     )
                 else:
                     # Log final failure
@@ -319,8 +319,8 @@ class TestFailureSimulation:
                             "final_outcome": "failure",
                             "operation": "retry_operation",
                             "attempt": max_retries,
-                            "max_retries": max_retries
-                        }
+                            "max_retries": max_retries,
+                        },
                     )
 
         # Verify warning logs for retries
@@ -333,8 +333,8 @@ class TestFailureSimulation:
                 "final_outcome": "failure",
                 "operation": "retry_operation",
                 "attempt": max_retries,
-                "max_retries": max_retries
-            }
+                "max_retries": max_retries,
+            },
         )
 
     @patch("leadfactory.utils.metrics.PIPELINE_FAILURE_RATE")

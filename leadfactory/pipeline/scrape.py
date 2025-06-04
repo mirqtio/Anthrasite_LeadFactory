@@ -720,7 +720,7 @@ def _update_business_with_conflict_resolution(
 
         update_query = f"""
             UPDATE businesses
-            SET {', '.join(set_clauses)}
+            SET {", ".join(set_clauses)}
             WHERE id = %s
         """  # nosec B608
 
@@ -745,7 +745,7 @@ def _update_business_with_conflict_resolution(
         json_values.append(business_id)
         json_query = f"""
             UPDATE businesses
-            SET {', '.join(json_updates)}, updated_at = CURRENT_TIMESTAMP
+            SET {", ".join(json_updates)}, updated_at = CURRENT_TIMESTAMP
             WHERE id = %s
         """  # nosec B608
         storage.update_business(business_id, json_query, json_values)

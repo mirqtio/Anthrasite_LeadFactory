@@ -6,20 +6,21 @@ Tests the BounceRateMonitor class and its functionality for tracking
 bounce rates per IP/subuser combination.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import the module under test
 from leadfactory.services.bounce_monitor import (
-    BounceRateMonitor,
-    BounceRateConfig,
-    IPSubuserStats,
     BounceEvent,
+    BounceRateConfig,
+    BounceRateMonitor,
+    CalculationMethod,
+    IPSubuserStats,
     SamplingPeriod,
-    CalculationMethod
 )
 
 
@@ -48,7 +49,7 @@ class TestBounceRateConfig:
             minimum_sample_size=20,
             warning_threshold=0.03,
             critical_threshold=0.08,
-            block_threshold=0.12
+            block_threshold=0.12,
         )
 
         assert config.sampling_period == SamplingPeriod.DAILY
@@ -90,10 +91,7 @@ class TestIPSubuserStats:
     def test_calculate_bounce_rate_with_bounces(self):
         """Test bounce rate calculation with bounces."""
         stats = IPSubuserStats(
-            ip_address="192.168.1.1",
-            subuser="test",
-            total_sent=100,
-            total_bounced=5
+            ip_address="192.168.1.1", subuser="test", total_sent=100, total_bounced=5
         )
 
         bounce_rate = stats.calculate_bounce_rate()
@@ -104,10 +102,7 @@ class TestIPSubuserStats:
     def test_calculate_bounce_rate_high_bounces(self):
         """Test bounce rate calculation with high bounce count."""
         stats = IPSubuserStats(
-            ip_address="192.168.1.1",
-            subuser="test",
-            total_sent=50,
-            total_bounced=10
+            ip_address="192.168.1.1", subuser="test", total_sent=50, total_bounced=10
         )
 
         bounce_rate = stats.calculate_bounce_rate()
@@ -129,7 +124,7 @@ class TestBounceEvent:
             bounce_type="hard",
             reason="Invalid email",
             timestamp=timestamp,
-            message_id="msg123"
+            message_id="msg123",
         )
 
         assert event.email == "test@example.com"
@@ -147,7 +142,7 @@ class TestBounceRateMonitor:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        fd, path = tempfile.mkstemp(suffix='.db')
+        fd, path = tempfile.mkstemp(suffix=".db")
         os.close(fd)
         yield path
         os.unlink(path)
@@ -159,7 +154,7 @@ class TestBounceRateMonitor:
             warning_threshold=0.05,
             critical_threshold=0.10,
             block_threshold=0.15,
-            minimum_sample_size=5
+            minimum_sample_size=5,
         )
 
     @pytest.fixture
@@ -174,7 +169,7 @@ class TestBounceRateMonitor:
         assert isinstance(monitor._last_cache_update, datetime)
         assert monitor._cache_ttl_seconds == 300
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_initialize_tables(self, mock_db_conn, config):
         """Test database table initialization."""
         mock_db = Mock()
@@ -186,7 +181,7 @@ class TestBounceRateMonitor:
         assert mock_db.execute.call_count >= 3  # At least 3 SQL statements
         mock_db.commit.assert_called()
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_record_bounce_event(self, mock_db_conn, monitor):
         """Test recording a bounce event."""
         mock_db = Mock()
@@ -198,7 +193,7 @@ class TestBounceRateMonitor:
             subuser="marketing",
             bounce_type="hard",
             reason="Invalid email",
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
 
         monitor.record_bounce_event(bounce_event)
@@ -207,7 +202,7 @@ class TestBounceRateMonitor:
         mock_db.execute.assert_called()
         mock_db.commit.assert_called()
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_record_sent_email(self, mock_db_conn, monitor):
         """Test recording a sent email."""
         mock_db = Mock()
@@ -219,7 +214,7 @@ class TestBounceRateMonitor:
         mock_db.execute.assert_called()
         mock_db.commit.assert_called()
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_get_bounce_rate_no_data(self, mock_db_conn, monitor):
         """Test getting bounce rate when no data exists."""
         mock_db = Mock()
@@ -230,12 +225,21 @@ class TestBounceRateMonitor:
 
         assert bounce_rate == 0.0
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_get_ip_subuser_stats(self, mock_db_conn, monitor):
         """Test getting IP/subuser statistics."""
         mock_db = Mock()
         mock_db.fetchone.return_value = (
-            "192.168.1.1", "marketing", 100, 5, 3, 2, 0, 0.05, "active", "2023-01-01T12:00:00"
+            "192.168.1.1",
+            "marketing",
+            100,
+            5,
+            3,
+            2,
+            0,
+            0.05,
+            "active",
+            "2023-01-01T12:00:00",
         )
         mock_db_conn.return_value.__enter__.return_value = mock_db
 
@@ -252,13 +256,35 @@ class TestBounceRateMonitor:
         assert stats.bounce_rate == 0.05
         assert stats.status == "active"
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_get_all_stats(self, mock_db_conn, monitor):
         """Test getting all statistics."""
         mock_db = Mock()
         mock_db.fetchall.return_value = [
-            ("192.168.1.1", "marketing", 100, 5, 3, 2, 0, 0.05, "active", "2023-01-01T12:00:00"),
-            ("192.168.1.2", "sales", 50, 8, 5, 3, 0, 0.16, "blocked", "2023-01-01T12:00:00")
+            (
+                "192.168.1.1",
+                "marketing",
+                100,
+                5,
+                3,
+                2,
+                0,
+                0.05,
+                "active",
+                "2023-01-01T12:00:00",
+            ),
+            (
+                "192.168.1.2",
+                "sales",
+                50,
+                8,
+                5,
+                3,
+                0,
+                0.16,
+                "blocked",
+                "2023-01-01T12:00:00",
+            ),
         ]
         mock_db_conn.return_value.__enter__.return_value = mock_db
 
@@ -270,12 +296,23 @@ class TestBounceRateMonitor:
         assert all_stats[1].ip_address == "192.168.1.2"
         assert all_stats[1].subuser == "sales"
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_get_threshold_violations(self, mock_db_conn, monitor):
         """Test getting threshold violations."""
         mock_db = Mock()
         mock_db.fetchall.return_value = [
-            ("192.168.1.2", "sales", 50, 8, 5, 3, 0, 0.16, "blocked", "2023-01-01T12:00:00")
+            (
+                "192.168.1.2",
+                "sales",
+                50,
+                8,
+                5,
+                3,
+                0,
+                0.16,
+                "blocked",
+                "2023-01-01T12:00:00",
+            )
         ]
         mock_db_conn.return_value.__enter__.return_value = mock_db
 
@@ -289,26 +326,76 @@ class TestBounceRateMonitor:
         """Test checking thresholds against all stats."""
         # Mock get_all_stats to return test data
         test_stats = [
-            IPSubuserStats("192.168.1.1", "marketing", 100, 3, 2, 1, 0, bounce_rate=0.03, status="active"),
-            IPSubuserStats("192.168.1.2", "sales", 100, 7, 4, 3, 0, bounce_rate=0.07, status="warning"),
-            IPSubuserStats("192.168.1.3", "support", 100, 12, 8, 4, 0, bounce_rate=0.12, status="critical"),
-            IPSubuserStats("192.168.1.4", "test", 100, 18, 12, 6, 0, bounce_rate=0.18, status="blocked"),
-            IPSubuserStats("192.168.1.5", "small", 3, 1, 1, 0, 0, bounce_rate=0.33, status="blocked")  # Below minimum sample size
+            IPSubuserStats(
+                "192.168.1.1",
+                "marketing",
+                100,
+                3,
+                2,
+                1,
+                0,
+                bounce_rate=0.03,
+                status="active",
+            ),
+            IPSubuserStats(
+                "192.168.1.2",
+                "sales",
+                100,
+                7,
+                4,
+                3,
+                0,
+                bounce_rate=0.07,
+                status="warning",
+            ),
+            IPSubuserStats(
+                "192.168.1.3",
+                "support",
+                100,
+                12,
+                8,
+                4,
+                0,
+                bounce_rate=0.12,
+                status="critical",
+            ),
+            IPSubuserStats(
+                "192.168.1.4",
+                "test",
+                100,
+                18,
+                12,
+                6,
+                0,
+                bounce_rate=0.18,
+                status="blocked",
+            ),
+            IPSubuserStats(
+                "192.168.1.5",
+                "small",
+                3,
+                1,
+                1,
+                0,
+                0,
+                bounce_rate=0.33,
+                status="blocked",
+            ),  # Below minimum sample size
         ]
 
-        with patch.object(monitor, 'get_all_stats', return_value=test_stats):
+        with patch.object(monitor, "get_all_stats", return_value=test_stats):
             violations = monitor.check_thresholds()
 
-        assert len(violations['warning']) == 1
-        assert violations['warning'][0].ip_address == "192.168.1.2"
+        assert len(violations["warning"]) == 1
+        assert violations["warning"][0].ip_address == "192.168.1.2"
 
-        assert len(violations['critical']) == 1
-        assert violations['critical'][0].ip_address == "192.168.1.3"
+        assert len(violations["critical"]) == 1
+        assert violations["critical"][0].ip_address == "192.168.1.3"
 
-        assert len(violations['blocked']) == 1
-        assert violations['blocked'][0].ip_address == "192.168.1.4"
+        assert len(violations["blocked"]) == 1
+        assert violations["blocked"][0].ip_address == "192.168.1.4"
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_reset_stats(self, mock_db_conn, monitor):
         """Test resetting statistics for an IP/subuser."""
         mock_db = Mock()
@@ -327,7 +414,7 @@ class TestBounceRateMonitor:
         # Verify cache was cleared
         assert cache_key not in monitor._stats_cache
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_cleanup_old_events(self, mock_db_conn, monitor):
         """Test cleaning up old bounce events."""
         mock_db = Mock()
@@ -340,7 +427,7 @@ class TestBounceRateMonitor:
         mock_db.execute.assert_called()
         mock_db.commit.assert_called()
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_update_ip_subuser_stats_new_entry(self, mock_db_conn, monitor):
         """Test updating stats for a new IP/subuser combination."""
         mock_db = Mock()
@@ -348,7 +435,7 @@ class TestBounceRateMonitor:
         # Second query returns bounce counts
         # Third query is the upsert
         mock_db.fetchone.side_effect = [None]
-        mock_db.fetchall.return_value = [('hard', 2), ('soft', 1)]
+        mock_db.fetchall.return_value = [("hard", 2), ("soft", 1)]
         mock_db_conn.return_value.__enter__.return_value = mock_db
 
         monitor._update_ip_subuser_stats("192.168.1.1", "marketing", sent_count=10)
@@ -357,14 +444,14 @@ class TestBounceRateMonitor:
         assert mock_db.execute.call_count >= 3
         mock_db.commit.assert_called()
 
-    @patch('leadfactory.services.bounce_monitor.DatabaseConnection')
+    @patch("leadfactory.services.bounce_monitor.DatabaseConnection")
     def test_update_ip_subuser_stats_existing_entry(self, mock_db_conn, monitor):
         """Test updating stats for an existing IP/subuser combination."""
         mock_db = Mock()
         # First query returns existing stats
         mock_db.fetchone.return_value = (90, 4, 2, 2, 0)
         # Second query returns new bounce counts
-        mock_db.fetchall.return_value = [('hard', 3), ('soft', 2)]
+        mock_db.fetchall.return_value = [("hard", 3), ("soft", 2)]
         mock_db_conn.return_value.__enter__.return_value = mock_db
 
         monitor._update_ip_subuser_stats("192.168.1.1", "marketing", sent_count=10)
@@ -384,7 +471,9 @@ class TestBounceRateMonitor:
         monitor._last_cache_update = datetime.now()
 
         # Should return cached version
-        with patch('leadfactory.services.bounce_monitor.DatabaseConnection') as mock_db_conn:
+        with patch(
+            "leadfactory.services.bounce_monitor.DatabaseConnection"
+        ) as mock_db_conn:
             result = monitor.get_ip_subuser_stats("192.168.1.1", "marketing")
 
             # Database should not be called
@@ -399,13 +488,26 @@ class TestBounceRateMonitor:
 
         # Add to cache with old timestamp
         monitor._stats_cache[cache_key] = test_stats
-        monitor._last_cache_update = datetime.now() - timedelta(seconds=400)  # Older than TTL
+        monitor._last_cache_update = datetime.now() - timedelta(
+            seconds=400
+        )  # Older than TTL
 
         # Mock database response
-        with patch('leadfactory.services.bounce_monitor.DatabaseConnection') as mock_db_conn:
+        with patch(
+            "leadfactory.services.bounce_monitor.DatabaseConnection"
+        ) as mock_db_conn:
             mock_db = Mock()
             mock_db.fetchone.return_value = (
-                "192.168.1.1", "marketing", 100, 5, 3, 2, 0, 0.05, "active", "2023-01-01T12:00:00"
+                "192.168.1.1",
+                "marketing",
+                100,
+                5,
+                3,
+                2,
+                0,
+                0.05,
+                "active",
+                "2023-01-01T12:00:00",
             )
             mock_db_conn.return_value.__enter__.return_value = mock_db
 
@@ -422,7 +524,7 @@ class TestIntegrationScenarios:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        fd, path = tempfile.mkstemp(suffix='.db')
+        fd, path = tempfile.mkstemp(suffix=".db")
         os.close(fd)
         yield path
         os.unlink(path)
@@ -434,7 +536,7 @@ class TestIntegrationScenarios:
             warning_threshold=0.05,
             critical_threshold=0.10,
             block_threshold=0.15,
-            minimum_sample_size=5
+            minimum_sample_size=5,
         )
         return BounceRateMonitor(config=config, db_path=temp_db)
 
@@ -455,7 +557,7 @@ class TestIntegrationScenarios:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Invalid email address",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -465,15 +567,15 @@ class TestIntegrationScenarios:
 
         # Check threshold violations
         violations = monitor.check_thresholds()
-        assert len(violations['blocked']) == 1
-        assert violations['blocked'][0].ip_address == ip_address
+        assert len(violations["blocked"]) == 1
+        assert violations["blocked"][0].ip_address == ip_address
 
     def test_multiple_ip_subuser_combinations(self, monitor):
         """Test monitoring multiple IP/subuser combinations."""
         combinations = [
             ("192.168.1.100", "marketing"),
             ("192.168.1.101", "sales"),
-            ("192.168.1.102", "support")
+            ("192.168.1.102", "support"),
         ]
 
         # Set up different bounce rates for each combination
@@ -491,7 +593,7 @@ class TestIntegrationScenarios:
                     subuser=subuser,
                     bounce_type="hard",
                     reason="Invalid email address",
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(),
                 )
                 monitor.record_bounce_event(bounce_event)
 
@@ -501,8 +603,8 @@ class TestIntegrationScenarios:
 
         # Verify bounce rates
         assert monitor.get_bounce_rate("192.168.1.100", "marketing") == 0.1  # 1/10
-        assert monitor.get_bounce_rate("192.168.1.101", "sales") == 0.2      # 2/10
-        assert monitor.get_bounce_rate("192.168.1.102", "support") == 0.3    # 3/10
+        assert monitor.get_bounce_rate("192.168.1.101", "sales") == 0.2  # 2/10
+        assert monitor.get_bounce_rate("192.168.1.102", "support") == 0.3  # 3/10
 
     def test_threshold_status_updates(self, monitor):
         """Test that status is updated correctly based on thresholds."""
@@ -521,7 +623,7 @@ class TestIntegrationScenarios:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Invalid email address",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -536,7 +638,7 @@ class TestIntegrationScenarios:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Invalid email address",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -551,7 +653,7 @@ class TestIntegrationScenarios:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Invalid email address",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 
@@ -566,7 +668,7 @@ class TestIntegrationScenarios:
                 subuser=subuser,
                 bounce_type="hard",
                 reason="Invalid email address",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             monitor.record_bounce_event(bounce_event)
 

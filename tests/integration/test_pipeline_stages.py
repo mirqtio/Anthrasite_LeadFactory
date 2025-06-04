@@ -11,10 +11,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 # Import the modules being tested - TEMPORARY FIX for import issues
 try:
     from leadfactory.pipeline import dedupe, email_queue, enrich, mockup, score, scrape
+
     IMPORT_SUCCESS = True
 except ImportError:
     # Create mock modules for testing
@@ -22,6 +25,7 @@ except ImportError:
         def __getattr__(self, name):
             def mock_func(*args, **kwargs):
                 return {"status": "mocked", "data": []}
+
             return mock_func
 
     dedupe = MockModule()
@@ -174,10 +178,11 @@ def temp_db():
 @pytest.fixture
 def mock_apis():
     """Mock all external APIs used in the pipeline."""
-    with patch("requests.get") as mock_get, \
-         patch("requests.post") as mock_post, \
-         patch("utils.io.track_api_cost") as mock_track_cost:
-
+    with (
+        patch("requests.get") as mock_get,
+        patch("requests.post") as mock_post,
+        patch("utils.io.track_api_cost") as mock_track_cost,
+    ):
         # Configure mock responses
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -191,18 +196,14 @@ def mock_apis():
                     "zip": "12345",
                     "phone": "555-123-4567",
                     "website": "http://test.com",
-                    "email": "test@example.com"
+                    "email": "test@example.com",
                 }
             ]
         }
         mock_get.return_value = mock_response
         mock_post.return_value = mock_response
 
-        yield {
-            "get": mock_get,
-            "post": mock_post,
-            "track_cost": mock_track_cost
-        }
+        yield {"get": mock_get, "post": mock_post, "track_cost": mock_track_cost}
 
 
 def test_pipeline_full_integration(temp_db, mock_apis):
@@ -239,17 +240,14 @@ def test_pipeline_full_integration(temp_db, mock_apis):
         assert score_result == 85, "Scoring should return expected score"
 
     # Update business score in DB
-    cursor.execute(
-        "UPDATE businesses SET score = ? WHERE id = ?",
-        (85, business_id)
-    )
+    cursor.execute("UPDATE businesses SET score = ? WHERE id = ?", (85, business_id))
     conn.commit()
 
     # Mockup stage
     with patch("bin.mockup.generate_business_mockup") as mock_generate:
         mock_generate.return_value = {
             "mockup_md": "# Test Mockup",
-            "mockup_png": "base64_encoded_image"
+            "mockup_png": "base64_encoded_image",
         }
         # Run mockup generation
         mockup_result = mock_generate(conn, business_id)
@@ -261,7 +259,7 @@ def test_pipeline_full_integration(temp_db, mock_apis):
         mock_email.return_value = {
             "subject": "Improve Your Website",
             "body_html": "<p>Test email</p>",
-            "body_text": "Test email"
+            "body_text": "Test email",
         }
         # Run email generation
         email_result = mock_email(conn, business_id)
@@ -286,7 +284,7 @@ def test_pipeline_full_integration(temp_db, mock_apis):
     (business1_id, business2_id, similarity_score, status)
     VALUES (?, ?, 1.0, 'pending')
     """,
-        (min(business_id, duplicate_id), max(business_id, duplicate_id))
+        (min(business_id, duplicate_id), max(business_id, duplicate_id)),
     )
     conn.commit()
 
@@ -307,7 +305,7 @@ def test_pipeline_full_integration(temp_db, mock_apis):
             matcher=mock_matcher,
             verifier=mock_verifier,
             db_path=db_path,
-            is_dry_run=False
+            is_dry_run=False,
         )
 
         assert "completed" in dedupe_result, "Deduplication should complete"
@@ -327,7 +325,7 @@ def test_scrape_to_enrich_integration(temp_db, mock_apis):
                 "city": "Anytown",
                 "state": "CA",
                 "zip": "12345",
-                "website": "http://test.com"
+                "website": "http://test.com",
             }
         ]
 
@@ -350,8 +348,8 @@ def test_scrape_to_enrich_integration(temp_db, mock_apis):
                 scraped_businesses[0]["state"],
                 scraped_businesses[0]["zip"],
                 scraped_businesses[0]["website"],
-                "test"
-            )
+                "test",
+            ),
         )
         business_id = cursor.lastrowid
         conn.commit()
@@ -367,7 +365,7 @@ def test_scrape_to_enrich_integration(temp_db, mock_apis):
                 SET email = ?, phone = ?, enriched_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 """,
-                    ("test@example.com", "555-123-4567", business_id)
+                    ("test@example.com", "555-123-4567", business_id),
                 )
                 conn.commit()
                 return True
@@ -381,8 +379,12 @@ def test_scrape_to_enrich_integration(temp_db, mock_apis):
             # Verify business was enriched
             cursor.execute("SELECT * FROM businesses WHERE id = ?", (business_id,))
             business = cursor.fetchone()
-            assert business["email"] == "test@example.com", "Business should have email from enrichment"
-            assert business["phone"] == "555-123-4567", "Business should have phone from enrichment"
+            assert business["email"] == "test@example.com", (
+                "Business should have email from enrichment"
+            )
+            assert business["phone"] == "555-123-4567", (
+                "Business should have phone from enrichment"
+            )
 
 
 def test_score_to_mockup_integration(temp_db, mock_apis):
@@ -406,11 +408,7 @@ def test_score_to_mockup_integration(temp_db, mock_apis):
         # Set up mock to update the business score
         def mock_score_implementation(conn, business_id):
             score = 85
-            score_details = {
-                "website": 30,
-                "location": 25,
-                "online_presence": 30
-            }
+            score_details = {"website": 30, "location": 25, "online_presence": 30}
 
             cursor = conn.cursor()
             cursor.execute(
@@ -419,7 +417,7 @@ def test_score_to_mockup_integration(temp_db, mock_apis):
             SET score = ?, score_details = ?
             WHERE id = ?
             """,
-                (score, str(score_details), business_id)
+                (score, str(score_details), business_id),
             )
             conn.commit()
             return score
@@ -442,7 +440,7 @@ def test_score_to_mockup_integration(temp_db, mock_apis):
                 mockup_data = {
                     "mockup_md": "# Test Mockup\n\nImprove your website performance!",
                     "mockup_png": "base64_encoded_image",
-                    "model_used": "gpt-4"
+                    "model_used": "gpt-4",
                 }
 
                 cursor = conn.cursor()
@@ -456,8 +454,8 @@ def test_score_to_mockup_integration(temp_db, mock_apis):
                         business_id,
                         mockup_data["mockup_md"],
                         mockup_data["mockup_png"],
-                        mockup_data["model_used"]
-                    )
+                        mockup_data["model_used"],
+                    ),
                 )
                 conn.commit()
                 return mockup_data
@@ -469,10 +467,14 @@ def test_score_to_mockup_integration(temp_db, mock_apis):
             assert mockup_result is not None, "Mockup generation should succeed"
 
             # Verify mockup was created
-            cursor.execute("SELECT * FROM mockups WHERE business_id = ?", (business_id,))
+            cursor.execute(
+                "SELECT * FROM mockups WHERE business_id = ?", (business_id,)
+            )
             mockup = cursor.fetchone()
             assert mockup is not None, "Mockup should be inserted in database"
-            assert "Test Mockup" in mockup["mockup_md"], "Mockup content should match expected"
+            assert "Test Mockup" in mockup["mockup_md"], (
+                "Mockup content should match expected"
+            )
 
 
 if __name__ == "__main__":

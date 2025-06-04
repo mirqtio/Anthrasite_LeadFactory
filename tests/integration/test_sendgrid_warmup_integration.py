@@ -149,9 +149,14 @@ class TestSendGridWarmupIntegrationReal(unittest.TestCase):
         mock_entry2.ip_address = ip2
         mock_entry2.status = "active"
 
-        with patch('leadfactory.email.sendgrid_warmup_integration.IPSubuserStatus') as mock_status:
+        with patch(
+            "leadfactory.email.sendgrid_warmup_integration.IPSubuserStatus"
+        ) as mock_status:
             mock_status.ACTIVE = "active"
-            self.rotation_service.get_pool_status.return_value = [mock_entry1, mock_entry2]
+            self.rotation_service.get_pool_status.return_value = [
+                mock_entry1,
+                mock_entry2,
+            ]
 
             # Get rotation candidates requiring completed warmup
             candidates = self.integration.get_rotation_candidates(
@@ -248,7 +253,9 @@ class TestIntegrationSetup(unittest.TestCase):
     def test_setup_integrated_email_system_warmup_only(self):
         """Test setting up email system with warmup only."""
         # Mock rotation components as unavailable
-        with patch('leadfactory.email.sendgrid_warmup_integration.ROTATION_AVAILABLE', False):
+        with patch(
+            "leadfactory.email.sendgrid_warmup_integration.ROTATION_AVAILABLE", False
+        ):
             integration = setup_integrated_email_system(
                 warmup_db_path=str(self.warmup_db),
                 bounce_db_path=str(self.bounce_db),
@@ -259,11 +266,11 @@ class TestIntegrationSetup(unittest.TestCase):
             self.assertIsNone(integration.bounce_monitor)
             self.assertIsNone(integration.rotation_service)
 
-    @patch('leadfactory.email.sendgrid_warmup_integration.ROTATION_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_integration.BounceRateMonitor')
-    @patch('leadfactory.email.sendgrid_warmup_integration.IPRotationService')
-    @patch('leadfactory.email.sendgrid_warmup_integration.BounceRateConfig')
-    @patch('leadfactory.email.sendgrid_warmup_integration.RotationConfig')
+    @patch("leadfactory.email.sendgrid_warmup_integration.ROTATION_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_integration.BounceRateMonitor")
+    @patch("leadfactory.email.sendgrid_warmup_integration.IPRotationService")
+    @patch("leadfactory.email.sendgrid_warmup_integration.BounceRateConfig")
+    @patch("leadfactory.email.sendgrid_warmup_integration.RotationConfig")
     def test_setup_integrated_email_system_full(
         self,
         mock_rotation_config,
@@ -299,7 +306,9 @@ class TestIntegrationSetup(unittest.TestCase):
         ip_address = "192.168.1.106"
 
         # Start warmup (should log event)
-        integration.start_ip_warmup_with_monitoring(ip_address, enable_bounce_monitoring=False)
+        integration.start_ip_warmup_with_monitoring(
+            ip_address, enable_bounce_monitoring=False
+        )
 
         # Check event was logged
         self.assertEqual(len(integration.integration_events), 1)

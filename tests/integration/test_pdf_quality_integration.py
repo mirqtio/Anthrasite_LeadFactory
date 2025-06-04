@@ -2,17 +2,18 @@
 Integration tests for PDF Quality Validation with PDF Generation Pipeline
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from unittest.mock import Mock, patch
+
+import pytest
 
 from leadfactory.services.pdf_generator import PDFGenerator, create_simple_pdf
 from leadfactory.services.pdf_quality_validator import (
     PDFQualityValidator,
-    ValidationSeverity,
     ValidationCategory,
-    validate_pdf_bytes
+    ValidationSeverity,
+    validate_pdf_bytes,
 )
 
 
@@ -28,9 +29,12 @@ class TestPDFQualityIntegration:
         """Test that generated PDFs pass quality validation."""
         # Generate a simple PDF using the available method
         content = [
-            {'type': 'title', 'text': 'Test Report'},
-            {'type': 'paragraph', 'text': 'This is a test PDF content for quality validation.'},
-            {'type': 'paragraph', 'text': 'Additional content for testing purposes.'}
+            {"type": "title", "text": "Test Report"},
+            {
+                "type": "paragraph",
+                "text": "This is a test PDF content for quality validation.",
+            },
+            {"type": "paragraph", "text": "Additional content for testing purposes."},
         ]
 
         pdf_bytes = self.pdf_generator.generate_document(content, return_bytes=True)
@@ -52,13 +56,16 @@ class TestPDFQualityIntegration:
     def test_pdf_generation_with_quality_checks(self):
         """Test PDF generation pipeline with integrated quality checks."""
         content = [
-            {'type': 'title', 'text': 'Quality Assured Report'},
-            {'type': 'heading', 'text': 'Introduction', 'level': 2},
-            {'type': 'paragraph', 'text': 'This is the introduction section.'},
-            {'type': 'heading', 'text': 'Main Content', 'level': 2},
-            {'type': 'paragraph', 'text': 'This is the main content section with detailed information.'},
-            {'type': 'heading', 'text': 'Conclusion', 'level': 2},
-            {'type': 'paragraph', 'text': 'This is the conclusion section.'}
+            {"type": "title", "text": "Quality Assured Report"},
+            {"type": "heading", "text": "Introduction", "level": 2},
+            {"type": "paragraph", "text": "This is the introduction section."},
+            {"type": "heading", "text": "Main Content", "level": 2},
+            {
+                "type": "paragraph",
+                "text": "This is the main content section with detailed information.",
+            },
+            {"type": "heading", "text": "Conclusion", "level": 2},
+            {"type": "paragraph", "text": "This is the conclusion section."},
         ]
 
         # Generate PDF with quality validation
@@ -82,14 +89,20 @@ class TestPDFQualityIntegration:
         """Test audit report generation and quality validation."""
         # Create audit report content directly to avoid complex data structure issues
         content = [
-            {'type': 'title', 'text': 'Business Audit Report'},
-            {'type': 'subtitle', 'text': 'Test Company'},
-            {'type': 'paragraph', 'text': 'Report Generated: June 3, 2025'},
-            {'type': 'section_header', 'text': 'Executive Summary'},
-            {'type': 'paragraph', 'text': 'Overall audit results are satisfactory with minor recommendations.'},
-            {'type': 'section_header', 'text': 'Audit Findings'},
-            {'type': 'paragraph', 'text': 'Security: All security checks passed'},
-            {'type': 'paragraph', 'text': 'Performance: Minor performance issues detected'}
+            {"type": "title", "text": "Business Audit Report"},
+            {"type": "subtitle", "text": "Test Company"},
+            {"type": "paragraph", "text": "Report Generated: June 3, 2025"},
+            {"type": "section_header", "text": "Executive Summary"},
+            {
+                "type": "paragraph",
+                "text": "Overall audit results are satisfactory with minor recommendations.",
+            },
+            {"type": "section_header", "text": "Audit Findings"},
+            {"type": "paragraph", "text": "Security: All security checks passed"},
+            {
+                "type": "paragraph",
+                "text": "Performance: Minor performance issues detected",
+            },
         ]
 
         pdf_bytes = self.pdf_generator.generate_document(content, return_bytes=True)
@@ -102,7 +115,9 @@ class TestPDFQualityIntegration:
         assert report.is_valid
 
         # Check for optimization suggestions
-        optimization_issues = report.get_issues_by_category(ValidationCategory.OPTIMIZATION)
+        optimization_issues = report.get_issues_by_category(
+            ValidationCategory.OPTIMIZATION
+        )
         # May have optimization suggestions but shouldn't be critical
         for issue in optimization_issues:
             assert issue.severity != ValidationSeverity.CRITICAL
@@ -111,18 +126,21 @@ class TestPDFQualityIntegration:
         """Test simple PDF creation and validation."""
         # Use the convenience function with correct content format
         content = [
-            {'type': 'title', 'text': 'Test Document'},
-            {'type': 'paragraph', 'text': 'This is test content for PDF quality validation.'}
+            {"type": "title", "text": "Test Document"},
+            {
+                "type": "paragraph",
+                "text": "This is test content for PDF quality validation.",
+            },
         ]
 
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_file:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
             tmp_path = tmp_file.name
 
         try:
             create_simple_pdf(content, tmp_path)
 
             # Read the generated PDF
-            with open(tmp_path, 'rb') as f:
+            with open(tmp_path, "rb") as f:
                 pdf_bytes = f.read()
 
             # Validate security aspects
@@ -140,13 +158,13 @@ class TestPDFQualityIntegration:
     def test_pdf_comparison_workflow(self):
         """Test PDF comparison in a typical workflow."""
         content1 = [
-            {'type': 'title', 'text': 'Original Report'},
-            {'type': 'paragraph', 'text': 'Original content for comparison.'}
+            {"type": "title", "text": "Original Report"},
+            {"type": "paragraph", "text": "Original content for comparison."},
         ]
 
         content2 = [
-            {'type': 'title', 'text': 'Modified Report'},
-            {'type': 'paragraph', 'text': 'Modified content for comparison.'}
+            {"type": "title", "text": "Modified Report"},
+            {"type": "paragraph", "text": "Modified content for comparison."},
         ]
 
         # Generate two different PDFs
@@ -156,18 +174,21 @@ class TestPDFQualityIntegration:
         # Compare PDFs
         comparison = self.quality_validator.compare_pdfs(pdf1, pdf2)
 
-        assert not comparison['identical']
-        assert not comparison['checksum_match']
-        assert 'size_difference' in comparison
+        assert not comparison["identical"]
+        assert not comparison["checksum_match"]
+        assert "size_difference" in comparison
         # Check for structure differences instead of similarity
-        assert 'structure_differences' in comparison or 'structure_similarity' in comparison
+        assert (
+            "structure_differences" in comparison
+            or "structure_similarity" in comparison
+        )
 
     def test_batch_pdf_validation(self):
         """Test batch validation of multiple PDFs."""
         contents = [
             [
-                {'type': 'title', 'text': f'Report {i}'},
-                {'type': 'paragraph', 'text': f'Content for report {i}'}
+                {"type": "title", "text": f"Report {i}"},
+                {"type": "paragraph", "text": f"Content for report {i}"},
             ]
             for i in range(1, 4)
         ]
@@ -192,7 +213,7 @@ class TestPDFQualityIntegration:
     def test_error_handling_integration(self):
         """Test error handling in integrated PDF quality validation."""
         # Test with invalid PDF data
-        invalid_pdf = b'This is not a PDF'
+        invalid_pdf = b"This is not a PDF"
 
         report = self.quality_validator.validate_pdf(invalid_pdf)
 
@@ -209,17 +230,17 @@ class TestPDFQualityIntegration:
         """Test quality threshold enforcement in pipeline."""
         # Configure strict quality requirements
         strict_config = {
-            'min_quality_score': 90,
-            'max_file_size_mb': 5,
-            'require_encryption': False,
-            'check_accessibility': True
+            "min_quality_score": 90,
+            "max_file_size_mb": 5,
+            "require_encryption": False,
+            "check_accessibility": True,
         }
 
         strict_validator = PDFQualityValidator(strict_config)
 
         content = [
-            {'type': 'title', 'text': 'Strict Quality Test'},
-            {'type': 'paragraph', 'text': 'Testing strict quality requirements.'}
+            {"type": "title", "text": "Strict Quality Test"},
+            {"type": "paragraph", "text": "Testing strict quality requirements."},
         ]
 
         pdf_bytes = self.pdf_generator.generate_document(content, return_bytes=True)
@@ -243,13 +264,22 @@ class TestPDFQualityWorkflow:
 
         # Simulate a business report generation workflow
         report_content = [
-            {'type': 'title', 'text': 'Business Intelligence Report'},
-            {'type': 'heading', 'text': 'Executive Summary', 'level': 2},
-            {'type': 'paragraph', 'text': 'This report provides insights into business performance.'},
-            {'type': 'heading', 'text': 'Key Metrics', 'level': 2},
-            {'type': 'paragraph', 'text': 'Revenue: $1M, Growth: 15%, Customer Satisfaction: 92%'},
-            {'type': 'heading', 'text': 'Recommendations', 'level': 2},
-            {'type': 'paragraph', 'text': 'Continue current strategy with focus on customer retention.'}
+            {"type": "title", "text": "Business Intelligence Report"},
+            {"type": "heading", "text": "Executive Summary", "level": 2},
+            {
+                "type": "paragraph",
+                "text": "This report provides insights into business performance.",
+            },
+            {"type": "heading", "text": "Key Metrics", "level": 2},
+            {
+                "type": "paragraph",
+                "text": "Revenue: $1M, Growth: 15%, Customer Satisfaction: 92%",
+            },
+            {"type": "heading", "text": "Recommendations", "level": 2},
+            {
+                "type": "paragraph",
+                "text": "Continue current strategy with focus on customer retention.",
+            },
         ]
 
         # Step 1: Generate PDF
@@ -269,7 +299,9 @@ class TestPDFQualityWorkflow:
         assert quality_report.overall_score > 60  # Reasonable quality threshold
 
         # Step 5: Check for critical issues
-        critical_issues = quality_report.get_issues_by_severity(ValidationSeverity.CRITICAL)
+        critical_issues = quality_report.get_issues_by_severity(
+            ValidationSeverity.CRITICAL
+        )
         assert len(critical_issues) == 0
 
         # Step 6: Verify metadata
@@ -282,16 +314,19 @@ class TestPDFQualityWorkflow:
 
         # Test with minimal validator config (no PyPDF2 features)
         basic_config = {
-            'check_security': False,
-            'check_optimization': False,
-            'max_file_size_mb': 100
+            "check_security": False,
+            "check_optimization": False,
+            "max_file_size_mb": 100,
         }
 
         validator = PDFQualityValidator(basic_config)
 
         content = [
-            {'type': 'title', 'text': 'Fallback Test'},
-            {'type': 'paragraph', 'text': 'Testing basic validation without advanced features.'}
+            {"type": "title", "text": "Fallback Test"},
+            {
+                "type": "paragraph",
+                "text": "Testing basic validation without advanced features.",
+            },
         ]
 
         pdf_bytes = generator.generate_document(content, return_bytes=True)
@@ -306,5 +341,5 @@ class TestPDFQualityWorkflow:
         assert validator.validate_pdf_integrity(pdf_bytes)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])

@@ -413,7 +413,7 @@ class PipelineExecutor:
         while attempt < max_attempts and not stage_success:
             attempt += 1
             if attempt > 1:
-                retry_message = f"Retry {attempt-1}/{self.max_retries} for stage {stage_config['name']}"
+                retry_message = f"Retry {attempt - 1}/{self.max_retries} for stage {stage_config['name']}"
                 logger.info(retry_message)
 
                 # Log the retry attempt

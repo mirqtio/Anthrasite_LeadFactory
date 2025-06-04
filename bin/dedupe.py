@@ -72,7 +72,9 @@ class DatabaseConnection(_TestingDatabaseConnection):
     """Database connection class that the tests expect to patch.
     This is a simple wrapper around _TestingDatabaseConnection.
     """
+
     pass
+
 
 # Instead of defining local functions with the same names, we use adapter functions
 # This avoids name conflicts while providing the same functionality
@@ -313,23 +315,23 @@ class OllamaVerifier:
         return f"""You are a business data analyst tasked with identifying duplicate business records.
 Given the following two business records, determine if they represent the same business.
 Business 1:
-- Name: {business1.get('name', 'N/A')}
-- Address: {business1.get('address', 'N/A')}
-- City: {business1.get('city', 'N/A')}
-- State: {business1.get('state', 'N/A')}
-- ZIP: {business1.get('zip', 'N/A')}
-- Phone: {business1.get('phone', 'N/A')}
-- Website: {business1.get('website', 'N/A')}
-- Category: {business1.get('category', 'N/A')}
+- Name: {business1.get("name", "N/A")}
+- Address: {business1.get("address", "N/A")}
+- City: {business1.get("city", "N/A")}
+- State: {business1.get("state", "N/A")}
+- ZIP: {business1.get("zip", "N/A")}
+- Phone: {business1.get("phone", "N/A")}
+- Website: {business1.get("website", "N/A")}
+- Category: {business1.get("category", "N/A")}
 Business 2:
-- Name: {business2.get('name', 'N/A')}
-- Address: {business2.get('address', 'N/A')}
-- City: {business2.get('city', 'N/A')}
-- State: {business2.get('state', 'N/A')}
-- ZIP: {business2.get('zip', 'N/A')}
-- Phone: {business2.get('phone', 'N/A')}
-- Website: {business2.get('website', 'N/A')}
-- Category: {business2.get('category', 'N/A')}
+- Name: {business2.get("name", "N/A")}
+- Address: {business2.get("address", "N/A")}
+- City: {business2.get("city", "N/A")}
+- State: {business2.get("state", "N/A")}
+- ZIP: {business2.get("zip", "N/A")}
+- Phone: {business2.get("phone", "N/A")}
+- Website: {business2.get("website", "N/A")}
+- Category: {business2.get("category", "N/A")}
 Analyze the records and respond in the following format:
 DUPLICATE: [YES/NO]
 CONFIDENCE: [0-100]

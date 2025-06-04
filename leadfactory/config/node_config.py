@@ -497,8 +497,8 @@ def get_environment_info() -> Dict[str, Union[str, bool, List[str]]]:
     environment = get_deployment_environment()
 
     # Check API availability
-    available_apis = [api for api in API_CONFIGS.keys() if is_api_available(api)]
-    unavailable_apis = [api for api in API_CONFIGS.keys() if not is_api_available(api)]
+    available_apis = [api for api in API_CONFIGS if is_api_available(api)]
+    unavailable_apis = [api for api in API_CONFIGS if not is_api_available(api)]
 
     # Check fallback availability
     fallback_apis = [

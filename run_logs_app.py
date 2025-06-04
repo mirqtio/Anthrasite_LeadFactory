@@ -32,7 +32,7 @@ def main():
             """Serve the logs browser interface."""
             logs_html_path = project_root / "leadfactory" / "static" / "logs.html"
             if logs_html_path.exists():
-                with open(logs_html_path, "r", encoding="utf-8") as f:
+                with open(logs_html_path, encoding="utf-8") as f:
                     return f.read()
             else:
                 return "Logs browser interface not found", 404
@@ -45,7 +45,7 @@ def main():
                 project_root / "leadfactory" / "static" / "dashboard.html"
             )
             if dashboard_html_path.exists():
-                with open(dashboard_html_path, "r", encoding="utf-8") as f:
+                with open(dashboard_html_path, encoding="utf-8") as f:
                     return f.read()
             else:
                 return "Dashboard interface not found", 404
@@ -55,7 +55,7 @@ def main():
         port = int(os.getenv("LOGS_PORT", "5000"))
         debug = os.getenv("LOGS_DEBUG", "False").lower() == "true"
 
-        logger.info(f"Starting Logs Browser Application")
+        logger.info("Starting Logs Browser Application")
         logger.info(f"API endpoints available at: http://{host}:{port}/api/")
         logger.info(f"Web interface available at: http://{host}:{port}/logs")
         logger.info(f"Health check available at: http://{host}:{port}/api/health")

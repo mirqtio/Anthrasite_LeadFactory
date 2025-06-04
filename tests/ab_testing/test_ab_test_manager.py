@@ -2,18 +2,19 @@
 Tests for A/B Test Manager core functionality.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from datetime import datetime, timedelta
 
-from leadfactory.ab_testing.ab_test_manager import ABTestManager, TestType, TestStatus
+import pytest
+
+from leadfactory.ab_testing.ab_test_manager import ABTestManager, TestStatus, TestType
 
 
 @pytest.fixture
 def temp_db():
     """Create temporary database for testing."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
     yield db_path
     try:
@@ -32,7 +33,7 @@ def test_create_email_test(test_manager):
     """Test creating an email A/B test."""
     variants = [
         {"subject": "Your report is ready!", "weight": 0.5},
-        {"subject": "Don't miss your insights!", "weight": 0.5}
+        {"subject": "Don't miss your insights!", "weight": 0.5},
     ]
 
     test_id = test_manager.create_test(
@@ -40,7 +41,7 @@ def test_create_email_test(test_manager):
         description="Test different subject lines",
         test_type=TestType.EMAIL_SUBJECT,
         variants=variants,
-        target_sample_size=1000
+        target_sample_size=1000,
     )
 
     assert test_id is not None
@@ -57,17 +58,14 @@ def test_create_email_test(test_manager):
 
 def test_create_pricing_test(test_manager):
     """Test creating a pricing A/B test."""
-    variants = [
-        {"price": 9900, "weight": 0.5},
-        {"price": 12900, "weight": 0.5}
-    ]
+    variants = [{"price": 9900, "weight": 0.5}, {"price": 12900, "weight": 0.5}]
 
     test_id = test_manager.create_test(
         name="Pricing Test",
         description="Test different price points",
         test_type=TestType.PRICING,
         variants=variants,
-        target_sample_size=500
+        target_sample_size=500,
     )
 
     assert test_id is not None
@@ -82,14 +80,14 @@ def test_start_stop_test(test_manager):
     """Test starting and stopping tests."""
     variants = [
         {"subject": "Test A", "weight": 0.5},
-        {"subject": "Test B", "weight": 0.5}
+        {"subject": "Test B", "weight": 0.5},
     ]
 
     test_id = test_manager.create_test(
         name="Start/Stop Test",
         description="Test lifecycle",
         test_type=TestType.EMAIL_SUBJECT,
-        variants=variants
+        variants=variants,
     )
 
     # Start test
@@ -111,14 +109,14 @@ def test_user_assignment(test_manager):
     """Test user assignment to variants."""
     variants = [
         {"subject": "Variant A", "weight": 0.6},
-        {"subject": "Variant B", "weight": 0.4}
+        {"subject": "Variant B", "weight": 0.4},
     ]
 
     test_id = test_manager.create_test(
         name="Assignment Test",
         description="Test user assignment",
         test_type=TestType.EMAIL_SUBJECT,
-        variants=variants
+        variants=variants,
     )
 
     test_manager.start_test(test_id)
@@ -148,14 +146,14 @@ def test_record_conversions(test_manager):
     """Test recording conversion events."""
     variants = [
         {"subject": "Variant A", "weight": 0.5},
-        {"subject": "Variant B", "weight": 0.5}
+        {"subject": "Variant B", "weight": 0.5},
     ]
 
     test_id = test_manager.create_test(
         name="Conversion Test",
         description="Test conversions",
         test_type=TestType.EMAIL_SUBJECT,
-        variants=variants
+        variants=variants,
     )
 
     test_manager.start_test(test_id)
@@ -169,7 +167,7 @@ def test_record_conversions(test_manager):
         user_id=user_id,
         conversion_type="email_opened",
         conversion_value=0.0,
-        metadata={"email_id": "test_email"}
+        metadata={"email_id": "test_email"},
     )
 
     assert conversion_id is not None
@@ -180,14 +178,14 @@ def test_get_test_results(test_manager):
     """Test getting test results."""
     variants = [
         {"subject": "Variant A", "weight": 0.5},
-        {"subject": "Variant B", "weight": 0.5}
+        {"subject": "Variant B", "weight": 0.5},
     ]
 
     test_id = test_manager.create_test(
         name="Results Test",
         description="Test results",
         test_type=TestType.EMAIL_SUBJECT,
-        variants=variants
+        variants=variants,
     )
 
     test_manager.start_test(test_id)
@@ -200,17 +198,15 @@ def test_get_test_results(test_manager):
         # Record some conversions
         if i % 5 == 0:  # 20% conversion rate
             test_manager.record_conversion(
-                test_id=test_id,
-                user_id=user_id,
-                conversion_type="email_opened"
+                test_id=test_id, user_id=user_id, conversion_type="email_opened"
             )
 
     results = test_manager.get_test_results(test_id)
 
-    assert results['test_id'] == test_id
-    assert results['total_assignments'] == 20
-    assert 'variant_results' in results
-    assert len(results['variant_results']) == 2
+    assert results["test_id"] == test_id
+    assert results["total_assignments"] == 20
+    assert "variant_results" in results
+    assert len(results["variant_results"]) == 2
 
 
 def test_invalid_variants(test_manager):
@@ -221,7 +217,7 @@ def test_invalid_variants(test_manager):
             name="Invalid Test",
             description="Test",
             test_type=TestType.EMAIL_SUBJECT,
-            variants=[{"subject": "Only one"}]
+            variants=[{"subject": "Only one"}],
         )
 
     # Test invalid weights
@@ -232,8 +228,8 @@ def test_invalid_variants(test_manager):
             test_type=TestType.EMAIL_SUBJECT,
             variants=[
                 {"subject": "A", "weight": 0.8},
-                {"subject": "B", "weight": 0.8}  # Total = 1.6
-            ]
+                {"subject": "B", "weight": 0.8},  # Total = 1.6
+            ],
         )
 
 
@@ -242,26 +238,23 @@ def test_get_active_tests(test_manager):
     # Create multiple tests
     email_variants = [
         {"subject": "Email A", "weight": 0.5},
-        {"subject": "Email B", "weight": 0.5}
+        {"subject": "Email B", "weight": 0.5},
     ]
 
-    pricing_variants = [
-        {"price": 9900, "weight": 0.5},
-        {"price": 12900, "weight": 0.5}
-    ]
+    pricing_variants = [{"price": 9900, "weight": 0.5}, {"price": 12900, "weight": 0.5}]
 
     email_test_id = test_manager.create_test(
         name="Email Test",
         description="Email test",
         test_type=TestType.EMAIL_SUBJECT,
-        variants=email_variants
+        variants=email_variants,
     )
 
     pricing_test_id = test_manager.create_test(
         name="Pricing Test",
         description="Pricing test",
         test_type=TestType.PRICING,
-        variants=pricing_variants
+        variants=pricing_variants,
     )
 
     # Start email test only

@@ -58,7 +58,7 @@ class IPRotationDashboard:
                     <header class="dashboard-header">
                         <h1>IP Rotation System Dashboard</h1>
                         <div class="last-updated">
-                            Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+                            Last Updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                         </div>
                     </header>
 
@@ -389,21 +389,21 @@ class IPRotationDashboard:
 
             rows += f"""
             <tr>
-                <td>{ip_info['ip_address']}</td>
-                <td>{ip_info['subuser']}</td>
-                <td><span class="status-badge {status_class}">{ip_info['status']}</span></td>
-                <td>{ip_info['priority']}</td>
+                <td>{ip_info["ip_address"]}</td>
+                <td>{ip_info["subuser"]}</td>
+                <td><span class="status-badge {status_class}">{ip_info["status"]}</span></td>
+                <td>{ip_info["priority"]}</td>
                 <td>
                     <div class="performance-bar">
                         <div class="performance-fill" style="width: {performance_width}%"></div>
                     </div>
-                    {ip_info['performance_score']:.3f}
+                    {ip_info["performance_score"]:.3f}
                 </td>
-                <td>{ip_info['total_sent']:,}</td>
-                <td>{ip_info['total_bounced']:,}</td>
-                <td>{ip_info['bounce_rate']:.2%}</td>
-                <td>{ip_info['cooldown_until'] or 'N/A'}</td>
-                <td>{ip_info['last_used'] or 'Never'}</td>
+                <td>{ip_info["total_sent"]:,}</td>
+                <td>{ip_info["total_bounced"]:,}</td>
+                <td>{ip_info["bounce_rate"]:.2%}</td>
+                <td>{ip_info["cooldown_until"] or "N/A"}</td>
+                <td>{ip_info["last_used"] or "Never"}</td>
             </tr>
             """
 
@@ -454,7 +454,7 @@ class IPRotationDashboard:
                 alerts_content += f"""
                 <div class="alert-item {alert_class}">
                     <div class="alert-time">{timestamp}</div>
-                    <div class="alert-message">{alert['message']}</div>
+                    <div class="alert-message">{alert["message"]}</div>
                 </div>
                 """
             alerts_content += "</div>"
@@ -462,7 +462,7 @@ class IPRotationDashboard:
         return f"""
         <div class="section">
             <div class="section-header">
-                <h2>Recent Alerts (Last 24 Hours: {alert_summary['total_alerts']})</h2>
+                <h2>Recent Alerts (Last 24 Hours: {alert_summary["total_alerts"]})</h2>
             </div>
             <div class="section-content">
                 {alerts_content}
@@ -472,7 +472,7 @@ class IPRotationDashboard:
 
     def _generate_charts_section(self, dashboard_data: Dict) -> str:
         """Generate charts section."""
-        return f"""
+        return """
         <div class="section">
             <div class="section-header">
                 <h2>System Metrics</h2>
@@ -509,12 +509,12 @@ class IPRotationDashboard:
             <div class="section-content">
                 <div class="circuit-breaker">
                     <div class="circuit-status {status_class}">
-                        {cb_status['state']}
+                        {cb_status["state"]}
                     </div>
                     <div>
-                        <p><strong>Failure Count:</strong> {cb_status['failure_count']}</p>
-                        <p><strong>Can Execute:</strong> {cb_status['can_execute']}</p>
-                        <p><strong>Last Failure:</strong> {cb_status['last_failure_time'] or 'None'}</p>
+                        <p><strong>Failure Count:</strong> {cb_status["failure_count"]}</p>
+                        <p><strong>Can Execute:</strong> {cb_status["can_execute"]}</p>
+                        <p><strong>Last Failure:</strong> {cb_status["last_failure_time"] or "None"}</p>
                     </div>
                 </div>
             </div>

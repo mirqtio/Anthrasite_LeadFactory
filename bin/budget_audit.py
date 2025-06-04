@@ -4,6 +4,7 @@ Budget Audit Tool for Anthrasite Lead-Factory
 This script provides a command-line interface for monitoring and managing the budget
 and scaling gate status of the Anthrasite Lead-Factory system.
 """
+
 import argparse
 import logging
 import os

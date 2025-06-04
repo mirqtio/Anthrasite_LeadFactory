@@ -319,9 +319,9 @@ class StripePaymentService:
 
                         logger.info(
                             f"Recorded financial data for payment {payment_intent_id}: "
-                            f"gross=${gross_amount_cents/100:.2f}, "
-                            f"fee=${stripe_fee_cents/100:.2f}, "
-                            f"net=${net_amount_cents/100:.2f}"
+                            f"gross=${gross_amount_cents / 100:.2f}, "
+                            f"fee=${stripe_fee_cents / 100:.2f}, "
+                            f"net=${net_amount_cents / 100:.2f}"
                         )
 
                 except Exception as e:
@@ -487,8 +487,8 @@ class StripePaymentService:
 
                     logger.info(
                         f"Recorded refund financial data for payment {payment_intent_id}: "
-                        f"refund=${refund_amount_cents/100:.2f}, "
-                        f"fee_refund=${stripe_fee_refund_cents/100:.2f}"
+                        f"refund=${refund_amount_cents / 100:.2f}, "
+                        f"fee_refund=${stripe_fee_refund_cents / 100:.2f}"
                     )
 
                 except Exception as e:
@@ -591,7 +591,6 @@ class StripePaymentService:
             Path to the generated PDF file
         """
         import os
-        import tempfile
 
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas

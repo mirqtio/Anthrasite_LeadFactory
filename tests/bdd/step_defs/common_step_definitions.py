@@ -1,6 +1,7 @@
 """
 Common BDD step definitions shared across all test files.
 """
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -14,7 +15,9 @@ def initialize_database(db_conn):
     # The db_conn fixture in conftest.py already creates all necessary tables
     # Just confirm that the database is ready by checking for the existence of key tables
     try:
-        cursor = db_conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='businesses'")
+        cursor = db_conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='businesses'"
+        )
         if not cursor.fetchone():
             raise Exception("Database tables not properly initialized")
     except Exception:
@@ -219,7 +222,11 @@ def score_business_leads():
     pass
 
 
-@then(parsers.parse("the business should have a score between {min_score:d} and {max_score:d}"))
+@then(
+    parsers.parse(
+        "the business should have a score between {min_score:d} and {max_score:d}"
+    )
+)
 def business_has_score_range(min_score, max_score):
     """Verify business score is in expected range."""
     pass

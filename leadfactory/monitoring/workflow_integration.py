@@ -113,7 +113,7 @@ class GitHubIntegration:
         if test_metrics.reliability_grade in ["D", "F"]:
             body += "- 📊 Test has poor reliability - consider refactoring\\n"
 
-        body += f"""
+        body += """
 ### Owner Information
 """
 
@@ -128,7 +128,7 @@ class GitHubIntegration:
 
         body += f"""
 ### Test File
-- **Location**: {ownership_info.file_path if ownership_info else 'Unknown'}
+- **Location**: {ownership_info.file_path if ownership_info else "Unknown"}
 
 ---
 *This issue was automatically created by the CI Pipeline Test Monitoring system.*

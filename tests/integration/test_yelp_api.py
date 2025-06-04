@@ -17,10 +17,7 @@ from tests.integration.api_test_config import APITestConfig
 def test_yelp_business_search_locations(yelp_api, api_metrics_logger, location):
     """Test that Yelp business search works with different locations."""
     result = yelp_api.business_search(
-        term="plumber",
-        location=location,
-        limit=3,
-        metrics_logger=api_metrics_logger
+        term="plumber", location=location, limit=3, metrics_logger=api_metrics_logger
     )
 
     assert "businesses" in result
@@ -31,18 +28,19 @@ def test_yelp_business_search_locations(yelp_api, api_metrics_logger, location):
         business = result["businesses"][0]
         assert "id" in business
         assert "name" in business
-        assert "location" in business, f"Business {business['name']} has no location data"
-        assert "categories" in business, f"Business {business['name']} has no categories"
+        assert "location" in business, (
+            f"Business {business['name']} has no location data"
+        )
+        assert "categories" in business, (
+            f"Business {business['name']} has no categories"
+        )
 
 
 @pytest.mark.parametrize("term", ["plumber", "hvac", "veterinarian"])
 def test_yelp_business_search_categories(yelp_api, api_metrics_logger, term):
     """Test that Yelp business search works with different categories."""
     result = yelp_api.business_search(
-        term=term,
-        location="New York, NY",
-        limit=3,
-        metrics_logger=api_metrics_logger
+        term=term, location="New York, NY", limit=3, metrics_logger=api_metrics_logger
     )
 
     assert "businesses" in result
@@ -60,7 +58,9 @@ def test_yelp_business_search_categories(yelp_api, api_metrics_logger, term):
             if categories_found:
                 break
 
-        assert categories_found, f"No businesses found with category related to '{term}'"
+        assert categories_found, (
+            f"No businesses found with category related to '{term}'"
+        )
 
 
 def test_yelp_business_details(yelp_api, api_metrics_logger):
@@ -72,7 +72,7 @@ def test_yelp_business_details(yelp_api, api_metrics_logger):
             term="plumber",
             location="New York, NY",
             limit=1,
-            metrics_logger=api_metrics_logger
+            metrics_logger=api_metrics_logger,
         )
 
         assert "businesses" in search_result
@@ -84,8 +84,7 @@ def test_yelp_business_details(yelp_api, api_metrics_logger):
 
     # Now get business details
     result = yelp_api.business_details(
-        business_id=business_id,
-        metrics_logger=api_metrics_logger
+        business_id=business_id, metrics_logger=api_metrics_logger
     )
 
     assert "id" in result
@@ -113,13 +112,17 @@ def test_yelp_api_error_handling(yelp_api):
     with patch.dict(os.environ, {"YELP_API_KEY": "invalid_key"}):
         # Create a new client with invalid key
         from tests.integration.api_fixtures import yelp_api as yelp_api_fixture
+
         invalid_yelp_api = yelp_api_fixture(None)
 
         # Test error handling
         with pytest.raises(Exception) as excinfo:
             invalid_yelp_api.business_search(term="test", location="test")
 
-        assert any(code in str(excinfo.value) for code in ["401", "403", "Unauthorized", "Forbidden"])
+        assert any(
+            code in str(excinfo.value)
+            for code in ["401", "403", "Unauthorized", "Forbidden"]
+        )
 
 
 def test_yelp_api_limit_parameter(yelp_api, api_metrics_logger):
@@ -129,11 +132,13 @@ def test_yelp_api_limit_parameter(yelp_api, api_metrics_logger):
             term="plumber",
             location="New York, NY",
             limit=limit,
-            metrics_logger=api_metrics_logger
+            metrics_logger=api_metrics_logger,
         )
 
         assert "businesses" in result
-        assert len(result["businesses"]) <= limit, f"Expected at most {limit} results, got {len(result['businesses'])}"
+        assert len(result["businesses"]) <= limit, (
+            f"Expected at most {limit} results, got {len(result['businesses'])}"
+        )
 
 
 @pytest.mark.real_api
@@ -149,7 +154,7 @@ def test_yelp_api_rate_limit_handling(yelp_api, api_metrics_logger):
             term="plumber",
             location="New York, NY",
             limit=1,
-            metrics_logger=api_metrics_logger
+            metrics_logger=api_metrics_logger,
         )
 
         assert "businesses" in result

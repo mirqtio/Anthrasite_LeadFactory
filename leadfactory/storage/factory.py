@@ -52,9 +52,7 @@ def get_storage_instance(
     storage_type = storage_type.lower()
 
     # Create storage instance based on type
-    if storage_type == "postgres":
-        instance = PostgresStorage(config)
-    elif storage_type == "postgresql":
+    if storage_type == "postgres" or storage_type == "postgresql":
         instance = PostgresStorage(config)
     elif storage_type == "supabase":
         # For now, Supabase uses the same PostgreSQL implementation

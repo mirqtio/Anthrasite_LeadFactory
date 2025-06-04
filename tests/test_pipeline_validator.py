@@ -161,8 +161,12 @@ class TestPipelineValidator:
         validator = PipelineValidator()
 
         expected_stages = [
-            "scrape", "screenshot", "mockup",
-            "personalize", "render", "email_queue"
+            "scrape",
+            "screenshot",
+            "mockup",
+            "personalize",
+            "render",
+            "email_queue",
         ]
 
         assert expected_stages == validator.PIPELINE_STAGES
@@ -172,8 +176,12 @@ class TestPipelineValidator:
         validator = PipelineValidator()
 
         expected_modules = [
-            "dedupe_unified", "enrich", "score",
-            "conflict_resolution", "data_preservation", "manual_review"
+            "dedupe_unified",
+            "enrich",
+            "score",
+            "conflict_resolution",
+            "data_preservation",
+            "manual_review",
         ]
 
         assert expected_modules == validator.SUPPORTING_MODULES
@@ -252,7 +260,7 @@ class TestPipelineValidationResult:
             success=True,
             components_verified=["component1", "component2"],
             components_failed=[],
-            issues=[]
+            issues=[],
         )
 
         assert result.success
@@ -270,7 +278,7 @@ class TestPipelineValidationResult:
             success=False,
             components_verified=["component1"],
             components_failed=["component2"],
-            issues=[test_error]
+            issues=[test_error],
         )
 
         assert not result.success
@@ -283,15 +291,18 @@ class TestPipelineValidationResult:
 class TestIntegration:
     """Integration tests for the complete validation system."""
 
-    @patch.dict(os.environ, {
-        "E2E_MODE": "true",
-        "DATABASE_URL": "postgresql://test:test@localhost/test",
-        "YELP_API_KEY": "test_yelp_key",
-        "GOOGLE_API_KEY": "test_google_key",
-        "SCREENSHOTONE_API_KEY": "test_screenshot_key",
-        "SENDGRID_API_KEY": "test_sendgrid_key",
-        "SENDGRID_FROM_EMAIL": "test@anthrasite.io"
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "E2E_MODE": "true",
+            "DATABASE_URL": "postgresql://test:test@localhost/test",
+            "YELP_API_KEY": "test_yelp_key",
+            "GOOGLE_API_KEY": "test_google_key",
+            "SCREENSHOTONE_API_KEY": "test_screenshot_key",
+            "SENDGRID_API_KEY": "test_sendgrid_key",
+            "SENDGRID_FROM_EMAIL": "test@anthrasite.io",
+        },
+    )
     @patch("psycopg2.connect")
     @patch("os.path.exists")
     def test_full_validation_with_database(self, mock_exists, mock_connect):
@@ -353,14 +364,18 @@ class TestDependencyChecking:
         """Teardown method to restore original state after each test."""
         # Restore original dependencies
         from scripts.preflight.pipeline_validator import PipelineValidator
+
         PipelineValidator.STAGE_DEPENDENCIES = self.original_dependencies.copy()
 
-    @patch.dict(os.environ, {
-        "DATABASE_URL": "postgresql://test:test@localhost/test",
-        "YELP_API_KEY": "test_yelp_key",
-        "GOOGLE_API_KEY": "test_google_key",
-        "SCREENSHOTONE_API_KEY": "test_screenshot_key"
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "DATABASE_URL": "postgresql://test:test@localhost/test",
+            "YELP_API_KEY": "test_yelp_key",
+            "GOOGLE_API_KEY": "test_google_key",
+            "SCREENSHOTONE_API_KEY": "test_screenshot_key",
+        },
+    )
     @patch("psycopg2.connect")
     @patch("os.path.exists")
     def test_validate_dependencies_success(self, mock_exists, mock_connect):
@@ -401,7 +416,9 @@ class TestDependencyChecking:
 
             assert isinstance(issues, list)
             assert len(issues) > 0
-            assert any("Circular dependency detected" in issue.message for issue in issues)
+            assert any(
+                "Circular dependency detected" in issue.message for issue in issues
+            )
 
         finally:
             validator.STAGE_DEPENDENCIES = original_deps
@@ -417,7 +434,9 @@ class TestDependencyChecking:
 
         assert isinstance(issues, list)
         assert len(issues) > 0
-        assert any("not found in dependency definitions" in issue.message for issue in issues)
+        assert any(
+            "not found in dependency definitions" in issue.message for issue in issues
+        )
 
     def test_validate_dependencies_undefined_dependency(self):
         """Test validation with undefined dependency."""
@@ -434,7 +453,9 @@ class TestDependencyChecking:
 
             assert isinstance(issues, list)
             assert len(issues) > 0
-            assert any("depends on undefined stage" in issue.message for issue in issues)
+            assert any(
+                "depends on undefined stage" in issue.message for issue in issues
+            )
 
         finally:
             validator.STAGE_DEPENDENCIES = original_deps
@@ -449,7 +470,9 @@ class TestDependencyChecking:
         stages = ["scrape", "screenshot", "mockup", "render", "personalize"]
         order = validator._get_dependency_order(stages)
 
-        assert order is not None, f"Expected valid order but got None. Dependencies: {validator.STAGE_DEPENDENCIES}"
+        assert order is not None, (
+            f"Expected valid order but got None. Dependencies: {validator.STAGE_DEPENDENCIES}"
+        )
         assert len(order) == len(stages)
 
         # Verify that dependencies come before dependents

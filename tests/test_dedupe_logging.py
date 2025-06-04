@@ -34,10 +34,7 @@ class TestDedupeLogger(unittest.TestCase):
         """Test logging merge operations."""
         with patch.object(self.logger.logger, "info") as mock_info:
             self.logger.log_merge(
-                primary_id=1,
-                secondary_id=2,
-                confidence=0.95,
-                strategy="name_match"
+                primary_id=1, secondary_id=2, confidence=0.95, strategy="name_match"
             )
 
             mock_info.assert_called_once()
@@ -58,7 +55,7 @@ class TestDedupeLogger(unittest.TestCase):
                 primary_value="test1@example.com",
                 secondary_value="test2@example.com",
                 resolved_value="test1@example.com",
-                resolution_strategy="keep_primary"
+                resolution_strategy="keep_primary",
             )
 
             mock_warning.assert_called_once()
@@ -74,7 +71,7 @@ class TestDedupeLogger(unittest.TestCase):
                 business2_id=2,
                 similarity_score=0.87,
                 match_type="fuzzy_match",
-                reason="High name similarity"
+                reason="High name similarity",
             )
 
             mock_info.assert_called_once()
@@ -108,7 +105,7 @@ class TestDedupeLogger(unittest.TestCase):
                 total=100,
                 errors=2,
                 merged=30,
-                flagged=5
+                flagged=5,
             )
 
             mock_info.assert_called_once()
@@ -123,7 +120,7 @@ class TestDedupeLogger(unittest.TestCase):
                 operation_type="full_dedupe",
                 duration_seconds=120.5,
                 records_processed=1000,
-                memory_usage_mb=256.7
+                memory_usage_mb=256.7,
             )
 
             mock_info.assert_called_once()
@@ -164,9 +161,7 @@ class TestDedupeOperation(unittest.TestCase):
                     pass
 
                 mock_end.assert_called_once_with(
-                    "op_123",
-                    status="error",
-                    error="Test error"
+                    "op_123", status="error", error="Test error"
                 )
 
 
@@ -207,7 +202,7 @@ class TestDedupeLogAnalyzer(unittest.TestCase):
                 "primary_id": 1,
                 "secondary_id": 2,
                 "confidence": 0.95,
-                "status": "success"
+                "status": "success",
             },
             {
                 "timestamp": "2024-01-01T10:01:00Z",
@@ -215,7 +210,7 @@ class TestDedupeLogAnalyzer(unittest.TestCase):
                 "primary_id": 3,
                 "secondary_id": 4,
                 "confidence": 0.87,
-                "status": "success"
+                "status": "success",
             },
             {
                 "timestamp": "2024-01-01T10:02:00Z",
@@ -223,8 +218,8 @@ class TestDedupeLogAnalyzer(unittest.TestCase):
                 "primary_id": 5,
                 "secondary_id": 6,
                 "confidence": 0.92,
-                "status": "failure"
-            }
+                "status": "failure",
+            },
         ]
 
         self.analyzer.logs = self.sample_logs
@@ -242,22 +237,24 @@ class TestDedupeLogAnalyzer(unittest.TestCase):
     def test_get_operation_summary(self):
         """Test operation summary generation."""
         # Add operation logs
-        self.analyzer.logs.extend([
-            {
-                "timestamp": "2024-01-01T10:00:00Z",
-                "operation_id": "op1",
-                "operation_type": "find_duplicates",
-                "duration_seconds": 5.2,
-                "status": "success"
-            },
-            {
-                "timestamp": "2024-01-01T10:01:00Z",
-                "operation_id": "op2",
-                "operation_type": "merge_businesses",
-                "duration_seconds": 2.1,
-                "status": "success"
-            }
-        ])
+        self.analyzer.logs.extend(
+            [
+                {
+                    "timestamp": "2024-01-01T10:00:00Z",
+                    "operation_id": "op1",
+                    "operation_type": "find_duplicates",
+                    "duration_seconds": 5.2,
+                    "status": "success",
+                },
+                {
+                    "timestamp": "2024-01-01T10:01:00Z",
+                    "operation_id": "op2",
+                    "operation_type": "merge_businesses",
+                    "duration_seconds": 2.1,
+                    "status": "success",
+                },
+            ]
+        )
 
         result = self.analyzer.get_operation_summary()
 
@@ -293,7 +290,9 @@ class TestLogAnalysisIntegration(unittest.TestCase):
             # Log some operations
             logger.log_merge(1, 2, 0.95, "exact_match")
             logger.log_merge(3, 4, 0.87, "fuzzy_match")
-            logger.log_conflict("email", "a@test.com", "b@test.com", "a@test.com", "keep_primary")
+            logger.log_conflict(
+                "email", "a@test.com", "b@test.com", "a@test.com", "keep_primary"
+            )
 
             op_id = logger.start_operation("test_op")
             logger.end_operation(op_id, status="success")

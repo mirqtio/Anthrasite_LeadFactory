@@ -257,7 +257,7 @@ class BudgetConfiguration:
     def _load_from_file(self):
         """Load configuration from JSON file."""
         try:
-            with open(self.config_file, "r") as f:
+            with open(self.config_file) as f:
                 config_data = json.load(f)
 
             # Load global settings
@@ -544,7 +544,7 @@ class BudgetConfiguration:
             except Exception as e:
                 logger.error(f"Failed to persist alert threshold: {e}")
 
-        logger.info(f"Set alert threshold: {level.value} = {percentage*100}%")
+        logger.info(f"Set alert threshold: {level.value} = {percentage * 100}%")
 
     def get_alert_threshold(self, level: AlertLevel) -> Optional[AlertThreshold]:
         """Get alert threshold for specific level."""

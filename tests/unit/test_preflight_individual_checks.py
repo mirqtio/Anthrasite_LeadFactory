@@ -54,7 +54,9 @@ class TestDatabaseConnectionRule:
 
         rule = DatabaseConnectionRule()
 
-        with patch.dict(os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}):
+        with patch.dict(
+            os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}
+        ):
             issues = rule.validate({})
 
         assert len(issues) == 0
@@ -68,7 +70,9 @@ class TestDatabaseConnectionRule:
 
         rule = DatabaseConnectionRule()
 
-        with patch.dict(os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}):
+        with patch.dict(
+            os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}
+        ):
             issues = rule.validate({})
 
         assert len(issues) == 1
@@ -81,8 +85,13 @@ class TestDatabaseConnectionRule:
         """Test when psycopg2 is not installed."""
         rule = DatabaseConnectionRule()
 
-        with patch.dict(os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}):
-            with patch("builtins.__import__", side_effect=ImportError("No module named 'psycopg2'")):
+        with patch.dict(
+            os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}
+        ):
+            with patch(
+                "builtins.__import__",
+                side_effect=ImportError("No module named 'psycopg2'"),
+            ):
                 issues = rule.validate({})
 
         assert len(issues) == 1
@@ -355,6 +364,7 @@ class TestNetworkConnectivityRule:
     def test_network_connectivity_rule_timeout(self, mock_get):
         """Test network connectivity with timeout."""
         import requests
+
         mock_get.side_effect = requests.Timeout("Request timed out")
 
         rule = NetworkConnectivityRule("http://slow.example.com", timeout=1)
@@ -437,7 +447,9 @@ class TestValidationErrorBuilder:
 
     def test_database_connection_failed_error(self):
         """Test creating database connection failed error."""
-        error = ValidationErrorBuilder.database_connection_failed("database", "Connection refused")
+        error = ValidationErrorBuilder.database_connection_failed(
+            "database", "Connection refused"
+        )
 
         assert error.error_code == ValidationErrorCode.DATABASE_CONNECTION_FAILED
         assert error.severity == ValidationSeverity.CRITICAL
@@ -458,7 +470,9 @@ class TestValidationErrorBuilder:
 
     def test_module_import_failed_error(self):
         """Test creating module import failed error."""
-        error = ValidationErrorBuilder.module_import_failed("component", "missing_module", "No module named 'missing_module'")
+        error = ValidationErrorBuilder.module_import_failed(
+            "component", "missing_module", "No module named 'missing_module'"
+        )
 
         assert error.error_code == ValidationErrorCode.MODULE_IMPORT_FAILED
         assert error.severity == ValidationSeverity.ERROR
@@ -505,7 +519,9 @@ class TestValidationErrorBuilder:
 
     def test_service_unavailable_error(self):
         """Test creating service unavailable error."""
-        error = ValidationErrorBuilder.service_unavailable("component", "API Service", "http://api.example.com")
+        error = ValidationErrorBuilder.service_unavailable(
+            "component", "API Service", "http://api.example.com"
+        )
 
         assert error.error_code == ValidationErrorCode.SERVICE_UNAVAILABLE
         assert error.severity == ValidationSeverity.ERROR
@@ -527,7 +543,7 @@ class TestValidationErrorStructure:
             component="test_component",
             message="Test error message",
             context={"key": "value"},
-            remediation_steps=["Step 1", "Step 2"]
+            remediation_steps=["Step 1", "Step 2"],
         )
 
         error_str = str(error)
@@ -544,7 +560,7 @@ class TestValidationErrorStructure:
             component="database",
             message="Connection failed",
             context={"error": "timeout"},
-            remediation_steps=["Check connection"]
+            remediation_steps=["Check connection"],
         )
 
         error_dict = error.to_dict()
@@ -561,28 +577,28 @@ class TestValidationErrorStructure:
             error_code=ValidationErrorCode.DATABASE_CONNECTION_FAILED,
             severity=ValidationSeverity.CRITICAL,
             component="test",
-            message="Critical error"
+            message="Critical error",
         )
 
         error_error = ValidationError(
             error_code=ValidationErrorCode.ENV_VAR_MISSING,
             severity=ValidationSeverity.ERROR,
             component="test",
-            message="Error message"
+            message="Error message",
         )
 
         warning_error = ValidationError(
             error_code=ValidationErrorCode.ENV_VAR_MISSING,
             severity=ValidationSeverity.WARNING,
             component="test",
-            message="Warning message"
+            message="Warning message",
         )
 
         info_error = ValidationError(
             error_code=ValidationErrorCode.ENV_VAR_MISSING,
             severity=ValidationSeverity.INFO,
             component="test",
-            message="Info message"
+            message="Info message",
         )
 
         assert "🔴" in str(critical_error)

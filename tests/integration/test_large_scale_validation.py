@@ -20,7 +20,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 # Import our API test configuration and metrics
 from tests.integration.api_metrics_fixture import APIMetricsLogger, api_metric_decorator
@@ -35,17 +37,23 @@ try:
         initialize_metrics,
         record_metric,
     )
+
     IMPORT_SUCCESS = True
 except ImportError:
     # Create mock functions for testing
     def initialize_metrics():
         pass
+
     def record_metric(*args, **kwargs):
         pass
+
     PIPELINE_FAILURE_RATE = None
+
     def setup_logger(name, level=None):
         import logging
+
         return logging.getLogger(name)
+
     IMPORT_SUCCESS = False
 
 # Configure logging
@@ -127,10 +135,18 @@ def large_scale_db():
         """)
 
         # Create necessary indexes for performance
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_business_status ON businesses(status)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_business_category ON businesses(category)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_business_score ON businesses(score)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_emails_business_id ON emails(business_id)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_business_status ON businesses(status)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_business_category ON businesses(category)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_business_score ON businesses(score)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_emails_business_id ON emails(business_id)"
+        )
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_emails_status ON emails(status)")
 
         conn.commit()
@@ -144,7 +160,9 @@ def large_scale_db():
             os.unlink(path)
 
 
-def generate_test_businesses(count: int, categories: list[str], locations: list[str]) -> list[dict[str, Any]]:
+def generate_test_businesses(
+    count: int, categories: list[str], locations: list[str]
+) -> list[dict[str, Any]]:
     """Generate a large batch of test businesses."""
     businesses = []
 
@@ -154,15 +172,17 @@ def generate_test_businesses(count: int, categories: list[str], locations: list[
         city, state, zip_code = location.split(", ")
 
         business = generate_test_business(complete=True)
-        business.update({
-            "name": f"Test Business {i+1}",
-            "category": category,
-            "city": city,
-            "state": state,
-            "zip": zip_code,
-            "source": "test_large_scale",
-            "source_id": f"large_scale_{i+1}"
-        })
+        business.update(
+            {
+                "name": f"Test Business {i + 1}",
+                "category": category,
+                "city": city,
+                "state": state,
+                "zip": zip_code,
+                "source": "test_large_scale",
+                "source_id": f"large_scale_{i + 1}",
+            }
+        )
         businesses.append(business)
 
     return businesses
@@ -174,18 +194,8 @@ class TestMetrics:
     def __init__(self):
         self.start_time = None
         self.end_time = None
-        self.stage_times = {
-            "enrich": [],
-            "score": [],
-            "validate": [],
-            "email": []
-        }
-        self.failure_counts = {
-            "enrich": 0,
-            "score": 0,
-            "validate": 0,
-            "email": 0
-        }
+        self.stage_times = {"enrich": [], "score": [], "validate": [], "email": []}
+        self.failure_counts = {"enrich": 0, "score": 0, "validate": 0, "email": 0}
         self.total_processed = 0
         self.total_succeeded = 0
 
@@ -254,10 +264,10 @@ class TestMetrics:
                 stage: {
                     "avg_time_seconds": self.get_average_stage_time(stage),
                     "failure_rate": self.get_stage_failure_rate(stage),
-                    "failure_count": self.failure_counts.get(stage, 0)
+                    "failure_count": self.failure_counts.get(stage, 0),
                 }
                 for stage in self.stage_times
-            }
+            },
         }
 
 
@@ -278,14 +288,12 @@ class MockPipeline:
 
             # Add enrichment data
             enriched = business.copy()
-            enriched.update({
-                "tech_stack": json.dumps(["WordPress", "PHP", "MySQL", "jQuery"]),
-                "core_web_vitals": json.dumps({
-                    "lcp": 2.5,
-                    "fid": 100,
-                    "cls": 0.1
-                })
-            })
+            enriched.update(
+                {
+                    "tech_stack": json.dumps(["WordPress", "PHP", "MySQL", "jQuery"]),
+                    "core_web_vitals": json.dumps({"lcp": 2.5, "fid": 100, "cls": 0.1}),
+                }
+            )
 
             # Update the test metrics
             duration = time.time() - start_time
@@ -311,14 +319,18 @@ class MockPipeline:
             # Add scoring data
             scored = business.copy()
             score = hash(business["name"]) % 100  # Deterministic but varied score
-            scored.update({
-                "score": score,
-                "score_details": json.dumps({
-                    "website_score": score * 0.4,
-                    "size_score": score * 0.3,
-                    "tech_score": score * 0.3
-                })
-            })
+            scored.update(
+                {
+                    "score": score,
+                    "score_details": json.dumps(
+                        {
+                            "website_score": score * 0.4,
+                            "size_score": score * 0.3,
+                            "tech_score": score * 0.3,
+                        }
+                    ),
+                }
+            )
 
             # Update the test metrics
             duration = time.time() - start_time
@@ -368,7 +380,7 @@ class MockPipeline:
         # Check if the business already exists
         cursor.execute(
             "SELECT id FROM businesses WHERE source_id = ?",
-            (business.get("source_id"),)
+            (business.get("source_id"),),
         )
         existing = cursor.fetchone()
 
@@ -410,8 +422,8 @@ class MockPipeline:
                     business.get("score_details"),
                     business.get("tech_stack"),
                     business.get("core_web_vitals"),
-                    business_id
-                )
+                    business_id,
+                ),
             )
         else:
             # Insert new business
@@ -439,8 +451,8 @@ class MockPipeline:
                     business.get("score"),
                     business.get("score_details"),
                     business.get("tech_stack"),
-                    business.get("core_web_vitals")
-                )
+                    business.get("core_web_vitals"),
+                ),
             )
             business_id = cursor.lastrowid
 
@@ -470,8 +482,8 @@ class MockPipeline:
                     business.get("id"),
                     "pending",
                     f"Improve your website - {business.get('name')}",
-                    f"Here's how we can help improve your website at {business.get('website')}"
-                )
+                    f"Here's how we can help improve your website at {business.get('website')}",
+                ),
             )
             self.db.commit()
 
@@ -494,7 +506,7 @@ def process_leads(
     businesses: list[dict[str, Any]],
     test_metrics: TestMetrics,
     batch_size: int = 100,
-    max_failures: int = None
+    max_failures: int = None,
 ) -> tuple[int, int]:
     """Process a large batch of leads through the pipeline."""
     test_metrics.start_timer()
@@ -505,11 +517,13 @@ def process_leads(
 
     # Process in batches
     for i in range(0, len(businesses), batch_size):
-        batch = businesses[i:i+batch_size]
+        batch = businesses[i : i + batch_size]
         batch_start = time.time()
         batch_count = i // batch_size + 1
 
-        logger.info(f"Processing batch {batch_count}/{(len(businesses) + batch_size - 1) // batch_size} ({len(batch)} leads)...")
+        logger.info(
+            f"Processing batch {batch_count}/{(len(businesses) + batch_size - 1) // batch_size} ({len(batch)} leads)..."
+        )
 
         # Process each lead in the batch
         for lead in batch:
@@ -529,19 +543,27 @@ def process_leads(
 
             except Exception as e:
                 total_failed += 1
-                logger.error(f"Failed to process lead {lead.get('source_id')}: {str(e)}")
+                logger.error(
+                    f"Failed to process lead {lead.get('source_id')}: {str(e)}"
+                )
 
                 # Check if we've hit the maximum allowed failures
                 if max_failures is not None and total_failed >= max_failures:
-                    logger.error(f"Reached maximum allowed failures ({max_failures}). Stopping processing.")
+                    logger.error(
+                        f"Reached maximum allowed failures ({max_failures}). Stopping processing."
+                    )
                     break
 
         # Log batch progress
         batch_time = time.time() - batch_start
         throughput = len(batch) / batch_time if batch_time > 0 else 0
 
-        logger.info(f"Batch {batch_count} processed in {batch_time:.2f}s ({throughput:.2f} leads/sec)")
-        logger.info(f"Current totals: {total_succeeded} succeeded, {total_failed} failed")
+        logger.info(
+            f"Batch {batch_count} processed in {batch_time:.2f}s ({throughput:.2f} leads/sec)"
+        )
+        logger.info(
+            f"Current totals: {total_succeeded} succeeded, {total_failed} failed"
+        )
 
         # Stop if we've hit the maximum allowed failures
         if max_failures is not None and total_failed >= max_failures:
@@ -553,7 +575,9 @@ def process_leads(
     overall_throughput = total_processed / total_time if total_time > 0 else 0
 
     logger.info(f"Processing completed in {total_time:.2f}s")
-    logger.info(f"Total processed: {total_processed}, succeeded: {total_succeeded}, failed: {total_failed}")
+    logger.info(
+        f"Total processed: {total_processed}, succeeded: {total_succeeded}, failed: {total_failed}"
+    )
     logger.info(f"Overall throughput: {overall_throughput:.2f} leads/sec")
 
     return total_succeeded, total_failed
@@ -583,8 +607,12 @@ def test_large_scale_100_leads(large_scale_db):
 
     # Verify metrics
     assert metrics_summary["total_processed"] == 100
-    assert metrics_summary["success_rate"] >= 0.95, f"Success rate too low: {metrics_summary['success_rate']}"
-    assert metrics_summary["throughput_per_minute"] >= 600, f"Throughput too low: {metrics_summary['throughput_per_minute']} leads/min"
+    assert metrics_summary["success_rate"] >= 0.95, (
+        f"Success rate too low: {metrics_summary['success_rate']}"
+    )
+    assert metrics_summary["throughput_per_minute"] >= 600, (
+        f"Throughput too low: {metrics_summary['throughput_per_minute']} leads/min"
+    )
 
     # Log detailed metrics
     logger.info(f"Test metrics: {json.dumps(metrics_summary, indent=2)}")
@@ -618,15 +646,21 @@ def test_large_scale_1000_leads(large_scale_db):
     mock_pipeline = MockPipeline(large_scale_db, test_metrics)
 
     # Process the leads
-    succeeded, failed = process_leads(mock_pipeline, businesses, test_metrics, batch_size=100)
+    succeeded, failed = process_leads(
+        mock_pipeline, businesses, test_metrics, batch_size=100
+    )
 
     # Get metrics summary
     metrics_summary = test_metrics.get_summary()
 
     # Verify metrics
     assert metrics_summary["total_processed"] == 1000
-    assert metrics_summary["success_rate"] >= 0.95, f"Success rate too low: {metrics_summary['success_rate']}"
-    assert metrics_summary["throughput_per_minute"] >= 600, f"Throughput too low: {metrics_summary['throughput_per_minute']} leads/min"
+    assert metrics_summary["success_rate"] >= 0.95, (
+        f"Success rate too low: {metrics_summary['success_rate']}"
+    )
+    assert metrics_summary["throughput_per_minute"] >= 600, (
+        f"Throughput too low: {metrics_summary['throughput_per_minute']} leads/min"
+    )
 
     # Check database
     cursor = large_scale_db.cursor()
@@ -658,19 +692,27 @@ def test_large_scale_10000_leads(large_scale_db):
     mock_pipeline = MockPipeline(large_scale_db, test_metrics)
 
     # Process the leads
-    succeeded, failed = process_leads(mock_pipeline, businesses, test_metrics, batch_size=200)
+    succeeded, failed = process_leads(
+        mock_pipeline, businesses, test_metrics, batch_size=200
+    )
 
     # Get metrics summary
     metrics_summary = test_metrics.get_summary()
 
     # Verify metrics
     assert metrics_summary["total_processed"] == 10000
-    assert metrics_summary["success_rate"] >= 0.95, f"Success rate too low: {metrics_summary['success_rate']}"
-    assert metrics_summary["throughput_per_minute"] >= 600, f"Throughput too low: {metrics_summary['throughput_per_minute']} leads/min"
+    assert metrics_summary["success_rate"] >= 0.95, (
+        f"Success rate too low: {metrics_summary['success_rate']}"
+    )
+    assert metrics_summary["throughput_per_minute"] >= 600, (
+        f"Throughput too low: {metrics_summary['throughput_per_minute']} leads/min"
+    )
 
     # Check that each stage has reasonable performance
     for stage, metrics in metrics_summary["stage_metrics"].items():
-        assert metrics["failure_rate"] <= 0.01, f"Too many failures in {stage} stage: {metrics['failure_rate']}"
+        assert metrics["failure_rate"] <= 0.01, (
+            f"Too many failures in {stage} stage: {metrics['failure_rate']}"
+        )
 
     # Check database
     cursor = large_scale_db.cursor()
@@ -680,7 +722,9 @@ def test_large_scale_10000_leads(large_scale_db):
     cursor.execute("SELECT COUNT(*) FROM emails")
     email_count = cursor.fetchone()[0]
 
-    assert processed_count >= 9500, f"Not enough businesses processed: {processed_count}"
+    assert processed_count >= 9500, (
+        f"Not enough businesses processed: {processed_count}"
+    )
     assert email_count >= 9500, f"Not enough emails created: {email_count}"
 
 
@@ -721,7 +765,9 @@ def test_large_scale_failure_scenarios(large_scale_db):
     mock_pipeline.score = score_with_failures
 
     # Process the leads
-    succeeded, failed = process_leads(mock_pipeline, businesses, test_metrics, batch_size=50)
+    succeeded, failed = process_leads(
+        mock_pipeline, businesses, test_metrics, batch_size=50
+    )
 
     # Get metrics summary
     metrics_summary = test_metrics.get_summary()
@@ -730,14 +776,18 @@ def test_large_scale_failure_scenarios(large_scale_db):
     assert metrics_summary["total_processed"] == 500
 
     # We expect a success rate lower than normal due to injected failures
-    assert 0.80 <= metrics_summary["success_rate"] <= 0.95, f"Unexpected success rate: {metrics_summary['success_rate']}"
+    assert 0.80 <= metrics_summary["success_rate"] <= 0.95, (
+        f"Unexpected success rate: {metrics_summary['success_rate']}"
+    )
 
     # Check failure rates for individual stages
-    assert 0.03 <= metrics_summary["stage_metrics"]["enrich"]["failure_rate"] <= 0.07, \
+    assert 0.03 <= metrics_summary["stage_metrics"]["enrich"]["failure_rate"] <= 0.07, (
         f"Unexpected enrich failure rate: {metrics_summary['stage_metrics']['enrich']['failure_rate']}"
+    )
 
-    assert 0.01 <= metrics_summary["stage_metrics"]["score"]["failure_rate"] <= 0.05, \
+    assert 0.01 <= metrics_summary["stage_metrics"]["score"]["failure_rate"] <= 0.05, (
         f"Unexpected score failure rate: {metrics_summary['stage_metrics']['score']['failure_rate']}"
+    )
 
     # Log detailed metrics
     logger.info(f"Failure test metrics: {json.dumps(metrics_summary, indent=2)}")
@@ -772,7 +822,9 @@ def test_large_scale_performance_bottlenecks(large_scale_db):
     mock_pipeline.enrich = slow_enrich
 
     # Process the leads
-    succeeded, failed = process_leads(mock_pipeline, businesses, test_metrics, batch_size=50)
+    succeeded, failed = process_leads(
+        mock_pipeline, businesses, test_metrics, batch_size=50
+    )
 
     # Get metrics summary
     metrics_summary = test_metrics.get_summary()
@@ -788,13 +840,19 @@ def test_large_scale_performance_bottlenecks(large_scale_db):
 
     # Enrich should be the slowest stage due to our injection
     slowest_stage = max(stage_times.items(), key=lambda x: x[1])
-    assert slowest_stage[0] == "enrich", f"Expected 'enrich' to be the slowest stage, but got '{slowest_stage[0]}'"
+    assert slowest_stage[0] == "enrich", (
+        f"Expected 'enrich' to be the slowest stage, but got '{slowest_stage[0]}'"
+    )
 
     # Verify the performance impact
-    assert stage_times["enrich"] > 0.02, f"Enrich stage not showing expected slowdown: {stage_times['enrich']}s"
+    assert stage_times["enrich"] > 0.02, (
+        f"Enrich stage not showing expected slowdown: {stage_times['enrich']}s"
+    )
 
     # Log detailed metrics
-    logger.info(f"Performance bottleneck test metrics: {json.dumps(metrics_summary, indent=2)}")
+    logger.info(
+        f"Performance bottleneck test metrics: {json.dumps(metrics_summary, indent=2)}"
+    )
 
 
 if __name__ == "__main__":

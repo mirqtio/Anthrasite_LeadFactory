@@ -13,8 +13,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tests.integration.api_test_config import APITestConfig, api_call_metrics
 from leadfactory.cost.gpt_usage_tracker import gpt_usage_tracker
+from tests.integration.api_test_config import APITestConfig, api_call_metrics
 
 # Mock response data directory
 MOCK_DATA_DIR = Path(__file__).parent / "mock_data"
@@ -42,7 +42,9 @@ def yelp_api(api_metrics_logger):
                     }
 
                 @api_call_metrics("yelp", "business_search")
-                def business_search(self, term: str, location: str, **kwargs) -> dict[str, Any]:
+                def business_search(
+                    self, term: str, location: str, **kwargs
+                ) -> dict[str, Any]:
                     """Search for businesses on Yelp."""
                     url = f"{self.base_url}/businesses/search"
                     params = {"term": term, "location": location, **kwargs}
@@ -79,7 +81,12 @@ def yelp_api(api_metrics_logger):
                     "url": "https://yelp.com/biz/mock-business-1",
                     "review_count": 42,
                     "rating": 4.5,
-                    "location": {"address1": "123 Main St", "city": "Mockville", "state": "NY", "zip_code": "10002"},
+                    "location": {
+                        "address1": "123 Main St",
+                        "city": "Mockville",
+                        "state": "NY",
+                        "zip_code": "10002",
+                    },
                     "phone": "+15551234567",
                     "categories": [{"alias": "plumbers", "title": "Plumbers"}],
                 }
@@ -99,7 +106,12 @@ def yelp_api(api_metrics_logger):
             "url": f"https://yelp.com/biz/{business_id}",
             "review_count": 42,
             "rating": 4.5,
-            "location": {"address1": "123 Main St", "city": "Mockville", "state": "NY", "zip_code": "10002"},
+            "location": {
+                "address1": "123 Main St",
+                "city": "Mockville",
+                "state": "NY",
+                "zip_code": "10002",
+            },
             "phone": "+15551234567",
             "categories": [{"alias": "plumbers", "title": "Plumbers"}],
             "hours": [{"open": [{"day": 0, "start": "0900", "end": "1700"}]}],
@@ -141,7 +153,11 @@ def google_places_api(api_metrics_logger):
                 def place_details(self, place_id: str) -> dict[str, Any]:
                     """Get details for a specific place using Google Places API."""
                     url = f"{self.base_url}/details/json"
-                    params = {"place_id": place_id, "key": self.api_key, "fields": "name,formatted_address,formatted_phone_number,website,url,rating,user_ratings_total,opening_hours"}
+                    params = {
+                        "place_id": place_id,
+                        "key": self.api_key,
+                        "fields": "name,formatted_address,formatted_phone_number,website,url,rating,user_ratings_total,opening_hours",
+                    }
                     response = requests.get(url, params=params)
                     response.raise_for_status()
                     return response.json()
@@ -196,7 +212,7 @@ def google_places_api(api_metrics_logger):
                         "Thursday: 9:00 AM – 5:00 PM",
                         "Friday: 9:00 AM – 5:00 PM",
                         "Saturday: Closed",
-                        "Sunday: Closed"
+                        "Sunday: Closed",
                     ]
                 },
             },
@@ -226,12 +242,15 @@ def openai_api(api_metrics_logger):
 
                 @api_call_metrics("openai", "chat_completion")
                 @gpt_usage_tracker(model="gpt-4o", operation="chat_completion")
-                def chat_completion(self, messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs) -> dict[str, Any]:
+                def chat_completion(
+                    self,
+                    messages: list[dict[str, str]],
+                    model: str = "gpt-4o",
+                    **kwargs,
+                ) -> dict[str, Any]:
                     """Generate a chat completion using OpenAI API."""
                     response = self.client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        **kwargs
+                        model=model, messages=messages, **kwargs
                     )
                     # Convert to dict for consistent return type
                     return response.model_dump()
@@ -244,7 +263,9 @@ def openai_api(api_metrics_logger):
     mock_openai = MagicMock()
 
     # Set up mock chat_completion method
-    def mock_chat_completion(messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs) -> dict[str, Any]:
+    def mock_chat_completion(
+        messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs
+    ) -> dict[str, Any]:
         mock_file = MOCK_DATA_DIR / "openai_chat_completion.json"
         if mock_file.exists():
             with open(mock_file) as f:
@@ -262,16 +283,21 @@ def openai_api(api_metrics_logger):
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": f"This is a mock response to: {last_message[:50]}..."
+                        "content": f"This is a mock response to: {last_message[:50]}...",
                     },
-                    "finish_reason": "stop"
+                    "finish_reason": "stop",
                 }
             ],
             "usage": {
-                "prompt_tokens": len(" ".join([m.get("content", "") for m in messages]).split()),
+                "prompt_tokens": len(
+                    " ".join([m.get("content", "") for m in messages]).split()
+                ),
                 "completion_tokens": 20,
-                "total_tokens": len(" ".join([m.get("content", "") for m in messages]).split()) + 20
-            }
+                "total_tokens": len(
+                    " ".join([m.get("content", "") for m in messages]).split()
+                )
+                + 20,
+            },
         }
         return mock_response
 
@@ -294,16 +320,25 @@ def sendgrid_api(api_metrics_logger):
 
             class RealSendGridAPI:
                 def __init__(self):
-                    self.client = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
+                    self.client = sendgrid.SendGridAPIClient(
+                        api_key=os.environ.get("SENDGRID_API_KEY")
+                    )
 
                 @api_call_metrics("sendgrid", "send_email")
-                def send_email(self, from_email: str, to_email: str, subject: str, content: str, **kwargs) -> dict[str, Any]:
+                def send_email(
+                    self,
+                    from_email: str,
+                    to_email: str,
+                    subject: str,
+                    content: str,
+                    **kwargs,
+                ) -> dict[str, Any]:
                     """Send an email using SendGrid API."""
                     message = Mail(
                         from_email=Email(from_email),
                         to_emails=To(to_email),
                         subject=subject,
-                        html_content=Content("text/html", content)
+                        html_content=Content("text/html", content),
                     )
 
                     response = self.client.send(message)
@@ -321,7 +356,9 @@ def sendgrid_api(api_metrics_logger):
     mock_sendgrid = MagicMock()
 
     # Set up mock send_email method
-    def mock_send_email(from_email: str, to_email: str, subject: str, content: str, **kwargs) -> dict[str, Any]:
+    def mock_send_email(
+        from_email: str, to_email: str, subject: str, content: str, **kwargs
+    ) -> dict[str, Any]:
         return {
             "status_code": 202,  # Standard successful response from SendGrid
             "body": "",
@@ -402,36 +439,49 @@ def setup_mock_data_dir():
     if not (MOCK_DATA_DIR / "example_created.txt").exists():
         # Create example mock data for Yelp
         with open(MOCK_DATA_DIR / "yelp_business_search.json", "w") as f:
-            json.dump({
-                "businesses": [
-                    {
-                        "id": "example-business-1",
-                        "name": "Example Business 1",
-                        "url": "https://yelp.com/biz/example-business-1",
-                        "review_count": 42,
-                        "rating": 4.5,
-                        "location": {"address1": "123 Main St", "city": "Exampleville", "state": "NY", "zip_code": "10002"},
-                        "phone": "+15551234567",
-                        "categories": [{"alias": "plumbers", "title": "Plumbers"}],
-                    }
-                ],
-                "total": 1,
-            }, f, indent=2)
+            json.dump(
+                {
+                    "businesses": [
+                        {
+                            "id": "example-business-1",
+                            "name": "Example Business 1",
+                            "url": "https://yelp.com/biz/example-business-1",
+                            "review_count": 42,
+                            "rating": 4.5,
+                            "location": {
+                                "address1": "123 Main St",
+                                "city": "Exampleville",
+                                "state": "NY",
+                                "zip_code": "10002",
+                            },
+                            "phone": "+15551234567",
+                            "categories": [{"alias": "plumbers", "title": "Plumbers"}],
+                        }
+                    ],
+                    "total": 1,
+                },
+                f,
+                indent=2,
+            )
 
         # Create example mock data for Google Places
         with open(MOCK_DATA_DIR / "google_place_search.json", "w") as f:
-            json.dump({
-                "results": [
-                    {
-                        "place_id": "example-place-1",
-                        "name": "Example Place 1",
-                        "formatted_address": "123 Main St, Exampleville, NY 10002",
-                        "rating": 4.5,
-                        "user_ratings_total": 42,
-                    }
-                ],
-                "status": "OK",
-            }, f, indent=2)
+            json.dump(
+                {
+                    "results": [
+                        {
+                            "place_id": "example-place-1",
+                            "name": "Example Place 1",
+                            "formatted_address": "123 Main St, Exampleville, NY 10002",
+                            "rating": 4.5,
+                            "user_ratings_total": 42,
+                        }
+                    ],
+                    "status": "OK",
+                },
+                f,
+                indent=2,
+            )
 
         # Create marker file
         with open(MOCK_DATA_DIR / "example_created.txt", "w") as f:

@@ -5,24 +5,24 @@ Unit tests for the throttling decorators module.
 import asyncio
 import time
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 from leadfactory.cost.throttling_decorators import (
-    ThrottlingError,
-    throttled,
-    async_throttled,
-    openai_throttled,
-    async_openai_throttled,
-    semrush_throttled,
-    screenshot_throttled,
-    gpu_throttled,
-    ThrottlingContext,
     AsyncThrottlingContext,
+    ThrottlingContext,
+    ThrottlingError,
+    async_openai_throttled,
+    async_throttled,
+    gpu_throttled,
+    openai_throttled,
+    screenshot_throttled,
+    semrush_throttled,
+    throttled,
 )
 from leadfactory.cost.throttling_service import (
-    ThrottlingStrategy,
     ThrottlingAction,
     ThrottlingDecision,
+    ThrottlingStrategy,
 )
 
 
@@ -31,7 +31,9 @@ class TestThrottlingError(unittest.TestCase):
 
     def test_throttling_error_creation(self):
         """Test creating ThrottlingError."""
-        decision = ThrottlingDecision(action=ThrottlingAction.REJECT, reason="Budget exceeded")
+        decision = ThrottlingDecision(
+            action=ThrottlingAction.REJECT, reason="Budget exceeded"
+        )
         error = ThrottlingError("Request throttled", decision)
 
         self.assertEqual(str(error), "Request throttled")
@@ -44,11 +46,15 @@ class TestThrottledDecorator(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_service = Mock()
-        self.mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+        self.mock_service.should_throttle.return_value = ThrottlingDecision(
+            action=ThrottlingAction.ALLOW
+        )
         self.mock_service.record_request_start = Mock()
         self.mock_service.record_request_end = Mock()
 
-        self.patcher = patch('leadfactory.cost.throttling_decorators.get_throttling_service')
+        self.patcher = patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        )
         self.mock_get_service = self.patcher.start()
         self.mock_get_service.return_value = self.mock_service
 
@@ -58,6 +64,7 @@ class TestThrottledDecorator(unittest.TestCase):
 
     def test_throttled_decorator_allow(self):
         """Test throttled decorator when request is allowed."""
+
         @throttled("openai", "gpt-4o", "chat")
         def test_function(x, y):
             return x + y
@@ -68,11 +75,16 @@ class TestThrottledDecorator(unittest.TestCase):
         self.mock_service.should_throttle.assert_called_once_with(
             "openai", "gpt-4o", "chat", 0.0, ThrottlingStrategy.ADAPTIVE
         )
-        self.mock_service.record_request_start.assert_called_once_with("openai", "gpt-4o", "chat")
-        self.mock_service.record_request_end.assert_called_once_with("openai", "gpt-4o", "chat")
+        self.mock_service.record_request_start.assert_called_once_with(
+            "openai", "gpt-4o", "chat"
+        )
+        self.mock_service.record_request_end.assert_called_once_with(
+            "openai", "gpt-4o", "chat"
+        )
 
     def test_throttled_decorator_with_cost_estimator(self):
         """Test throttled decorator with cost estimator."""
+
         def cost_estimator(x, y):
             return x * y * 0.01
 
@@ -97,7 +109,10 @@ class TestThrottledDecorator(unittest.TestCase):
         def test_function(x, y):
             return x + y
 
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=False):
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=False,
+        ):
             result = test_function(1, 2)
 
         self.assertEqual(result, "fallback")
@@ -117,7 +132,10 @@ class TestThrottledDecorator(unittest.TestCase):
         def test_function(x, y):
             return x + y
 
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=False):
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=False,
+        ):
             result = test_function(1, 2)
 
         self.assertEqual(result, "fallback: 3")
@@ -132,7 +150,10 @@ class TestThrottledDecorator(unittest.TestCase):
         def test_function(x, y):
             return x + y
 
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=False):
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=False,
+        ):
             with self.assertRaises(ThrottlingError) as cm:
                 test_function(1, 2)
 
@@ -143,22 +164,30 @@ class TestThrottledDecorator(unittest.TestCase):
         self.mock_service.should_throttle.return_value = ThrottlingDecision(
             action=ThrottlingAction.DOWNGRADE,
             alternative_model="gpt-4o-mini",
-            reason="Budget optimization"
+            reason="Budget optimization",
         )
 
         @throttled("openai", "gpt-4o", "chat", auto_downgrade=True)
         def test_function(model=None):
             return f"Using model: {model}"
 
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=True):
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=True,
+        ):
             result = test_function(model="gpt-4o")
 
         self.assertEqual(result, "Using model: gpt-4o-mini")
-        self.mock_service.record_request_start.assert_called_once_with("openai", "gpt-4o-mini", "chat")
-        self.mock_service.record_request_end.assert_called_once_with("openai", "gpt-4o-mini", "chat")
+        self.mock_service.record_request_start.assert_called_once_with(
+            "openai", "gpt-4o-mini", "chat"
+        )
+        self.mock_service.record_request_end.assert_called_once_with(
+            "openai", "gpt-4o-mini", "chat"
+        )
 
     def test_throttled_decorator_cost_estimator_error(self):
         """Test throttled decorator when cost estimator raises exception."""
+
         def failing_cost_estimator(x, y):
             raise ValueError("Cost estimation failed")
 
@@ -176,6 +205,7 @@ class TestThrottledDecorator(unittest.TestCase):
 
     def test_throttled_decorator_function_exception(self):
         """Test throttled decorator when decorated function raises exception."""
+
         @throttled("openai", "gpt-4o", "chat")
         def test_function(x, y):
             raise ValueError("Function error")
@@ -194,11 +224,15 @@ class TestAsyncThrottledDecorator(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_service = Mock()
-        self.mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+        self.mock_service.should_throttle.return_value = ThrottlingDecision(
+            action=ThrottlingAction.ALLOW
+        )
         self.mock_service.record_request_start = Mock()
         self.mock_service.record_request_end = Mock()
 
-        self.patcher = patch('leadfactory.cost.throttling_decorators.get_throttling_service')
+        self.patcher = patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        )
         self.mock_get_service = self.patcher.start()
         self.mock_get_service.return_value = self.mock_service
 
@@ -208,12 +242,16 @@ class TestAsyncThrottledDecorator(unittest.TestCase):
 
     def test_async_throttled_decorator_allow(self):
         """Test async throttled decorator when request is allowed."""
+
         @async_throttled("openai", "gpt-4o", "chat")
         async def test_function(x, y):
             return x + y
 
         async def run_test():
-            with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision_async', return_value=True):
+            with patch(
+                "leadfactory.cost.throttling_decorators.apply_throttling_decision_async",
+                return_value=True,
+            ):
                 result = await test_function(1, 2)
             return result
 
@@ -233,12 +271,17 @@ class TestAsyncThrottledDecorator(unittest.TestCase):
         async def async_fallback_function(x, y):
             return f"async fallback: {x + y}"
 
-        @async_throttled("openai", "gpt-4o", "chat", fallback_function=async_fallback_function)
+        @async_throttled(
+            "openai", "gpt-4o", "chat", fallback_function=async_fallback_function
+        )
         async def test_function(x, y):
             return x + y
 
         async def run_test():
-            with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision_async', return_value=False):
+            with patch(
+                "leadfactory.cost.throttling_decorators.apply_throttling_decision_async",
+                return_value=False,
+            ):
                 result = await test_function(1, 2)
             return result
 
@@ -255,12 +298,17 @@ class TestAsyncThrottledDecorator(unittest.TestCase):
         def sync_fallback_function(x, y):
             return f"sync fallback: {x + y}"
 
-        @async_throttled("openai", "gpt-4o", "chat", fallback_function=sync_fallback_function)
+        @async_throttled(
+            "openai", "gpt-4o", "chat", fallback_function=sync_fallback_function
+        )
         async def test_function(x, y):
             return x + y
 
         async def run_test():
-            with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision_async', return_value=False):
+            with patch(
+                "leadfactory.cost.throttling_decorators.apply_throttling_decision_async",
+                return_value=False,
+            ):
                 result = await test_function(1, 2)
             return result
 
@@ -275,11 +323,15 @@ class TestSpecializedDecorators(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_service = Mock()
-        self.mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+        self.mock_service.should_throttle.return_value = ThrottlingDecision(
+            action=ThrottlingAction.ALLOW
+        )
         self.mock_service.record_request_start = Mock()
         self.mock_service.record_request_end = Mock()
 
-        self.patcher = patch('leadfactory.cost.throttling_decorators.get_throttling_service')
+        self.patcher = patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        )
         self.mock_get_service = self.patcher.start()
         self.mock_get_service.return_value = self.mock_service
 
@@ -289,6 +341,7 @@ class TestSpecializedDecorators(unittest.TestCase):
 
     def test_openai_throttled_decorator(self):
         """Test OpenAI specialized decorator."""
+
         @openai_throttled(model="gpt-4o", endpoint="chat")
         def test_openai_function(prompt="Hello", max_tokens=100):
             return f"Response to: {prompt}"
@@ -303,6 +356,7 @@ class TestSpecializedDecorators(unittest.TestCase):
 
     def test_openai_throttled_with_messages(self):
         """Test OpenAI decorator with messages format."""
+
         @openai_throttled(model="gpt-4o", endpoint="chat")
         def test_openai_function(messages=None):
             return "Response"
@@ -321,12 +375,16 @@ class TestSpecializedDecorators(unittest.TestCase):
 
     def test_async_openai_throttled_decorator(self):
         """Test async OpenAI specialized decorator."""
+
         @async_openai_throttled(model="gpt-4o", endpoint="chat")
         async def test_async_openai_function(prompt="Hello"):
             return f"Async response to: {prompt}"
 
         async def run_test():
-            with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision_async', return_value=True):
+            with patch(
+                "leadfactory.cost.throttling_decorators.apply_throttling_decision_async",
+                return_value=True,
+            ):
                 result = await test_async_openai_function(prompt="Test")
             return result
 
@@ -336,6 +394,7 @@ class TestSpecializedDecorators(unittest.TestCase):
 
     def test_semrush_throttled_decorator(self):
         """Test SEMrush specialized decorator."""
+
         @semrush_throttled(operation="domain-overview")
         def test_semrush_function(domain="example.com"):
             return f"SEMrush data for: {domain}"
@@ -349,6 +408,7 @@ class TestSpecializedDecorators(unittest.TestCase):
 
     def test_screenshot_throttled_decorator(self):
         """Test screenshot specialized decorator."""
+
         @screenshot_throttled()
         def test_screenshot_function(width=1920, height=1080):
             return f"Screenshot {width}x{height}"
@@ -363,6 +423,7 @@ class TestSpecializedDecorators(unittest.TestCase):
 
     def test_gpu_throttled_decorator(self):
         """Test GPU specialized decorator."""
+
         @gpu_throttled(gpu_type="A100")
         def test_gpu_function(duration_hours=2.0):
             return f"GPU computation for {duration_hours} hours"
@@ -382,11 +443,15 @@ class TestThrottlingContext(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_service = Mock()
-        self.mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+        self.mock_service.should_throttle.return_value = ThrottlingDecision(
+            action=ThrottlingAction.ALLOW
+        )
         self.mock_service.record_request_start = Mock()
         self.mock_service.record_request_end = Mock()
 
-        self.patcher = patch('leadfactory.cost.throttling_decorators.get_throttling_service')
+        self.patcher = patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        )
         self.mock_get_service = self.patcher.start()
         self.mock_get_service.return_value = self.mock_service
 
@@ -396,7 +461,10 @@ class TestThrottlingContext(unittest.TestCase):
 
     def test_throttling_context_allow(self):
         """Test throttling context when request is allowed."""
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=True):
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=True,
+        ):
             with ThrottlingContext("openai", "gpt-4o", "chat", 5.0) as decision:
                 self.assertEqual(decision.action, ThrottlingAction.ALLOW)
 
@@ -412,7 +480,10 @@ class TestThrottlingContext(unittest.TestCase):
             action=ThrottlingAction.REJECT, reason="Budget exceeded"
         )
 
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=False):
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=False,
+        ):
             with self.assertRaises(ThrottlingError):
                 with ThrottlingContext("openai", "gpt-4o", "chat", 5.0):
                     pass
@@ -426,15 +497,23 @@ class TestThrottlingContext(unittest.TestCase):
             action=ThrottlingAction.REJECT, reason="Budget exceeded"
         )
 
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=False):
-            with ThrottlingContext("openai", "gpt-4o", "chat", 5.0, raise_on_throttle=False) as decision:
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=False,
+        ):
+            with ThrottlingContext(
+                "openai", "gpt-4o", "chat", 5.0, raise_on_throttle=False
+            ) as decision:
                 self.assertEqual(decision.action, ThrottlingAction.REJECT)
 
         self.mock_service.record_request_end.assert_not_called()
 
     def test_throttling_context_exception_in_block(self):
         """Test throttling context when exception occurs in block."""
-        with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision', return_value=True):
+        with patch(
+            "leadfactory.cost.throttling_decorators.apply_throttling_decision",
+            return_value=True,
+        ):
             with self.assertRaises(ValueError):
                 with ThrottlingContext("openai", "gpt-4o", "chat", 5.0):
                     raise ValueError("Test error")
@@ -450,11 +529,15 @@ class TestAsyncThrottlingContext(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_service = Mock()
-        self.mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+        self.mock_service.should_throttle.return_value = ThrottlingDecision(
+            action=ThrottlingAction.ALLOW
+        )
         self.mock_service.record_request_start = Mock()
         self.mock_service.record_request_end = Mock()
 
-        self.patcher = patch('leadfactory.cost.throttling_decorators.get_throttling_service')
+        self.patcher = patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        )
         self.mock_get_service = self.patcher.start()
         self.mock_get_service.return_value = self.mock_service
 
@@ -464,9 +547,15 @@ class TestAsyncThrottlingContext(unittest.TestCase):
 
     def test_async_throttling_context_allow(self):
         """Test async throttling context when request is allowed."""
+
         async def run_test():
-            with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision_async', return_value=True):
-                async with AsyncThrottlingContext("openai", "gpt-4o", "chat", 5.0) as decision:
+            with patch(
+                "leadfactory.cost.throttling_decorators.apply_throttling_decision_async",
+                return_value=True,
+            ):
+                async with AsyncThrottlingContext(
+                    "openai", "gpt-4o", "chat", 5.0
+                ) as decision:
                     self.assertEqual(decision.action, ThrottlingAction.ALLOW)
 
         asyncio.run(run_test())
@@ -484,7 +573,10 @@ class TestAsyncThrottlingContext(unittest.TestCase):
         )
 
         async def run_test():
-            with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision_async', return_value=False):
+            with patch(
+                "leadfactory.cost.throttling_decorators.apply_throttling_decision_async",
+                return_value=False,
+            ):
                 with self.assertRaises(ThrottlingError):
                     async with AsyncThrottlingContext("openai", "gpt-4o", "chat", 5.0):
                         pass
@@ -496,8 +588,12 @@ class TestAsyncThrottlingContext(unittest.TestCase):
 
     def test_async_throttling_context_exception_in_block(self):
         """Test async throttling context when exception occurs in block."""
+
         async def run_test():
-            with patch('leadfactory.cost.throttling_decorators.apply_throttling_decision_async', return_value=True):
+            with patch(
+                "leadfactory.cost.throttling_decorators.apply_throttling_decision_async",
+                return_value=True,
+            ):
                 with self.assertRaises(ValueError):
                     async with AsyncThrottlingContext("openai", "gpt-4o", "chat", 5.0):
                         raise ValueError("Test error")
@@ -527,9 +623,13 @@ class TestCostEstimators(unittest.TestCase):
 
         # The cost estimator is embedded in the decorator, so we test indirectly
         # by checking that different inputs produce different estimated costs
-        with patch('leadfactory.cost.throttling_decorators.get_throttling_service') as mock_get_service:
+        with patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        ) as mock_get_service:
             mock_service = Mock()
-            mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+            mock_service.should_throttle.return_value = ThrottlingDecision(
+                action=ThrottlingAction.ALLOW
+            )
             mock_service.record_request_start = Mock()
             mock_service.record_request_end = Mock()
             mock_get_service.return_value = mock_service
@@ -548,9 +648,13 @@ class TestCostEstimators(unittest.TestCase):
         """Test SEMrush cost estimator for different operations."""
         from leadfactory.cost.throttling_decorators import semrush_throttled
 
-        with patch('leadfactory.cost.throttling_decorators.get_throttling_service') as mock_get_service:
+        with patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        ) as mock_get_service:
             mock_service = Mock()
-            mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+            mock_service.should_throttle.return_value = ThrottlingDecision(
+                action=ThrottlingAction.ALLOW
+            )
             mock_service.record_request_start = Mock()
             mock_service.record_request_end = Mock()
             mock_get_service.return_value = mock_service
@@ -579,9 +683,13 @@ class TestCostEstimators(unittest.TestCase):
         """Test GPU cost estimator for different GPU types and durations."""
         from leadfactory.cost.throttling_decorators import gpu_throttled
 
-        with patch('leadfactory.cost.throttling_decorators.get_throttling_service') as mock_get_service:
+        with patch(
+            "leadfactory.cost.throttling_decorators.get_throttling_service"
+        ) as mock_get_service:
             mock_service = Mock()
-            mock_service.should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+            mock_service.should_throttle.return_value = ThrottlingDecision(
+                action=ThrottlingAction.ALLOW
+            )
             mock_service.record_request_start = Mock()
             mock_service.record_request_end = Mock()
             mock_get_service.return_value = mock_service

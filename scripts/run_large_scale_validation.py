@@ -88,13 +88,13 @@ def generate_test_leads(count):
 
     for i in range(count):
         lead = {
-            "id": f"test-lead-{i+1}",
-            "name": f"Test Business {i+1}",
+            "id": f"test-lead-{i + 1}",
+            "name": f"Test Business {i + 1}",
             "industry": industries[i % len(industries)],
             "city": cities[i % len(cities)],
             "size": "small" if i % 3 == 0 else "medium" if i % 3 == 1 else "large",
-            "contact_email": f"test{i+1}@example.com",
-            "website": f"https://example-{i+1}.com",
+            "contact_email": f"test{i + 1}@example.com",
+            "website": f"https://example-{i + 1}.com",
         }
         test_leads.append(lead)
 

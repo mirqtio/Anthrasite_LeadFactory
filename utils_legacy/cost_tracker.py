@@ -425,41 +425,39 @@ def get_cost_metrics() -> list[str]:
     # Add budget threshold metrics
     budget_status = check_budget_thresholds()
     metrics.append(
-        f'api_cost_daily_budget_dollars{{}} {budget_status["daily"]["budget"]}'
+        f"api_cost_daily_budget_dollars{{}} {budget_status['daily']['budget']}"
     )
     metrics.append(
-        f"api_cost_daily_threshold_dollars{{}} "
-        f'{budget_status["daily"]["threshold"]}'
+        f"api_cost_daily_threshold_dollars{{}} {budget_status['daily']['threshold']}"
     )
     metrics.append(
-        f'api_cost_monthly_budget_dollars{{}} {budget_status["monthly"]["budget"]}'
+        f"api_cost_monthly_budget_dollars{{}} {budget_status['monthly']['budget']}"
     )
     metrics.append(
         f"api_cost_monthly_threshold_dollars{{}} "
-        f'{budget_status["monthly"]["threshold"]}'
+        f"{budget_status['monthly']['threshold']}"
     )
     metrics.append(
         f"api_cost_daily_threshold_exceeded{{}} "
-        f'{int(budget_status["daily"]["threshold_exceeded"])}'
+        f"{int(budget_status['daily']['threshold_exceeded'])}"
     )
     metrics.append(
         f"api_cost_monthly_threshold_exceeded{{}} "
-        f'{int(budget_status["monthly"]["threshold_exceeded"])}'
+        f"{int(budget_status['monthly']['threshold_exceeded'])}"
     )
     metrics.append(
         f"api_cost_daily_budget_exceeded{{}} "
-        f'{int(budget_status["daily"]["budget_exceeded"])}'
+        f"{int(budget_status['daily']['budget_exceeded'])}"
     )
     metrics.append(
         f"api_cost_monthly_budget_exceeded{{}} "
-        f'{int(budget_status["monthly"]["budget_exceeded"])}'
+        f"{int(budget_status['monthly']['budget_exceeded'])}"
     )
     metrics.append(
-        f"api_cost_daily_percent_used{{}} " f'{budget_status["daily"]["percent_used"]}'
+        f"api_cost_daily_percent_used{{}} {budget_status['daily']['percent_used']}"
     )
     metrics.append(
-        f"api_cost_monthly_percent_used{{}} "
-        f'{budget_status["monthly"]["percent_used"]}'
+        f"api_cost_monthly_percent_used{{}} {budget_status['monthly']['percent_used']}"
     )
 
     # Add scaling gate metrics

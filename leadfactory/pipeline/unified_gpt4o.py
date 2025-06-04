@@ -12,9 +12,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from leadfactory.llm import LLMClient, LLMError
+from leadfactory.services.gpu_manager import gpu_manager
 from leadfactory.storage.factory import get_storage
 from leadfactory.utils.logging import get_logger
-from leadfactory.services.gpu_manager import gpu_manager
 
 logger = get_logger(__name__)
 
@@ -45,13 +45,13 @@ class UnifiedGPT4ONode:
         except Exception as e:
             logger.error(f"Failed to initialize LLM client: {e}")
             self.llm_client = None
-            
+
         # GPU processing configuration
         self.gpu_task_types = [
             "website_mockup_generation",
-            "ai_content_personalization", 
+            "ai_content_personalization",
             "image_optimization",
-            "video_rendering"
+            "video_rendering",
         ]
 
     def validate_inputs(self, business_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -218,7 +218,7 @@ Please structure your response as a JSON object with the following format:
     }},
     "metadata": {{
         "generation_timestamp": "{self._get_timestamp()}",
-        "business_id": {business_data.get('id', 'null')},
+        "business_id": {business_data.get("id", "null")},
         "confidence_score": 0.0,
         "processing_notes": ["note1", "note2"]
     }}
@@ -394,7 +394,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
             },
             "email_content": {
                 "subject": f"Quick website improvement ideas for {business_data.get('name', 'your business')}",
-                "greeting": f"Hi there,",
+                "greeting": "Hi there,",
                 "opening": f"I came across {business_data.get('name', 'your website')} and was impressed by your work in the {business_data.get('industry', 'industry')}.",
                 "value_proposition": "I noticed a few opportunities that could help you attract more customers online.",
                 "specific_insights": [
@@ -468,14 +468,14 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 </html>
 """
         return html_template.strip()
-    
+
     def _requires_gpu_processing(self, business_data: Dict[str, Any]) -> bool:
         """
         Determine if this business requires GPU processing.
-        
+
         Args:
             business_data: Dictionary containing business information
-            
+
         Returns:
             True if GPU processing is required, False otherwise
         """
@@ -483,107 +483,121 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
         has_website = bool(business_data.get("website"))
         has_screenshot = bool(business_data.get("screenshot_url"))
         has_complex_industry = business_data.get("industry", "").lower() in [
-            "technology", "design", "media", "entertainment", "e-commerce", "marketing"
+            "technology",
+            "design",
+            "media",
+            "entertainment",
+            "e-commerce",
+            "marketing",
         ]
-        
+
         # GPU is beneficial for businesses with visual content needs
         return has_website and (has_screenshot or has_complex_industry)
-    
-    def _add_to_personalization_queue(self, business_id: int, task_type: str, 
-                                    task_data: Dict[str, Any], gpu_required: bool = False) -> Optional[int]:
+
+    def _add_to_personalization_queue(
+        self,
+        business_id: int,
+        task_type: str,
+        task_data: Dict[str, Any],
+        gpu_required: bool = False,
+    ) -> Optional[int]:
         """
         Add a task to the personalization queue.
-        
+
         Args:
             business_id: ID of the business
             task_type: Type of personalization task
             task_data: Task-specific data and parameters
             gpu_required: Whether this task requires GPU processing
-            
+
         Returns:
             Queue task ID if successful, None otherwise
         """
         try:
             storage = get_storage()
-            
+
             query = """
-                INSERT INTO personalization_queue 
+                INSERT INTO personalization_queue
                 (business_id, task_type, gpu_required, task_data, status, created_at)
                 VALUES (%s, %s, %s, %s, 'pending', NOW())
                 RETURNING id
             """
-            
+
             result = storage.execute_query(
-                query, 
-                (business_id, task_type, gpu_required, json.dumps(task_data))
+                query, (business_id, task_type, gpu_required, json.dumps(task_data))
             )
-            
+
             if result:
-                task_id = result[0]['id']
-                logger.info(f"Added task {task_id} to personalization queue for business {business_id}")
+                task_id = result[0]["id"]
+                logger.info(
+                    f"Added task {task_id} to personalization queue for business {business_id}"
+                )
                 return task_id
             else:
-                logger.error(f"Failed to add task to personalization queue for business {business_id}")
+                logger.error(
+                    f"Failed to add task to personalization queue for business {business_id}"
+                )
                 return None
-                
+
         except Exception as e:
             logger.error(f"Error adding task to personalization queue: {e}")
             return None
-    
-    def _update_queue_task_status(self, task_id: int, status: str, 
-                                error_message: str = None) -> bool:
+
+    def _update_queue_task_status(
+        self, task_id: int, status: str, error_message: str = None
+    ) -> bool:
         """
         Update the status of a task in the personalization queue.
-        
+
         Args:
             task_id: ID of the queue task
             status: New status ('processing', 'completed', 'failed')
             error_message: Optional error message if status is 'failed'
-            
+
         Returns:
             True if successful, False otherwise
         """
         try:
             storage = get_storage()
-            
-            if status == 'processing':
+
+            if status == "processing":
                 query = """
-                    UPDATE personalization_queue 
+                    UPDATE personalization_queue
                     SET status = %s, started_at = NOW(), updated_at = NOW()
                     WHERE id = %s
                 """
                 params = (status, task_id)
-            elif status == 'completed':
+            elif status == "completed":
                 query = """
-                    UPDATE personalization_queue 
+                    UPDATE personalization_queue
                     SET status = %s, completed_at = NOW(), updated_at = NOW()
                     WHERE id = %s
                 """
                 params = (status, task_id)
-            elif status == 'failed':
+            elif status == "failed":
                 query = """
-                    UPDATE personalization_queue 
+                    UPDATE personalization_queue
                     SET status = %s, error_message = %s, updated_at = NOW()
                     WHERE id = %s
                 """
                 params = (status, error_message, task_id)
             else:
                 query = """
-                    UPDATE personalization_queue 
+                    UPDATE personalization_queue
                     SET status = %s, updated_at = NOW()
                     WHERE id = %s
                 """
                 params = (status, task_id)
-            
+
             success = storage.execute_query(query, params)
-            
+
             if success:
                 logger.info(f"Updated task {task_id} status to {status}")
                 return True
             else:
                 logger.error(f"Failed to update task {task_id} status")
                 return False
-                
+
         except Exception as e:
             logger.error(f"Error updating queue task status: {e}")
             return False
@@ -680,29 +694,26 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 
             # Check if GPU processing is required
             gpu_required = self._requires_gpu_processing(business_data)
-            
+
             # Add to personalization queue for tracking
             task_data = {
                 "business_id": business_id,
                 "task_type": "ai_content_personalization",
                 "gpu_optimized": gpu_required,
-                "created_at": self._get_timestamp()
+                "created_at": self._get_timestamp(),
             }
-            
+
             queue_task_id = self._add_to_personalization_queue(
-                business_id, 
-                "ai_content_personalization", 
-                task_data, 
-                gpu_required
+                business_id, "ai_content_personalization", task_data, gpu_required
             )
-            
+
             if queue_task_id:
                 # Update task status to processing
                 self._update_queue_task_status(queue_task_id, "processing")
 
             # Generate unified content
             result = self.generate_unified_content(business_data)
-            
+
             # Add GPU processing info to result
             result["gpu_required"] = gpu_required
             result["queue_task_id"] = queue_task_id
@@ -711,25 +722,27 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
                 # Save results to database
                 save_success = self.save_unified_results(business_id, result["content"])
                 result["saved_to_db"] = save_success
-                
+
                 # Update queue task to completed
                 if queue_task_id:
                     self._update_queue_task_status(queue_task_id, "completed")
             else:
                 # Update queue task to failed
                 if queue_task_id:
-                    error_msg = result.get("error", "Unknown error during content generation")
+                    error_msg = result.get(
+                        "error", "Unknown error during content generation"
+                    )
                     self._update_queue_task_status(queue_task_id, "failed", error_msg)
 
             return result
 
         except Exception as e:
             logger.error(f"Error processing business {business_id}: {e}")
-            
+
             # Update queue task to failed if it exists
             if queue_task_id:
                 self._update_queue_task_status(queue_task_id, "failed", str(e))
-            
+
             return {"success": False, "error": str(e)}
 
     def _fetch_business_data(self, business_id: int) -> Optional[Dict[str, Any]]:

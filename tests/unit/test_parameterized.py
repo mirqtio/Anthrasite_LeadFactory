@@ -11,7 +11,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 # Instead of trying to import modules that might not exist in this structure,
 # we'll use mock objects for our examples
 import pytest
@@ -20,12 +22,7 @@ import pytest
 # Example 1: Simple parameterized test with multiple inputs
 @pytest.mark.parametrize(
     "input_string,expected_length",
-    [
-        ("test", 4),
-        ("hello world", 11),
-        ("", 0),
-        ("leadfactory", 11)
-    ]
+    [("test", 4), ("hello world", 11), ("", 0), ("leadfactory", 11)],
 )
 def test_string_length(input_string, expected_length):
     """Demonstrate basic parameterized testing with multiple inputs."""
@@ -36,13 +33,22 @@ def test_string_length(input_string, expected_length):
 @pytest.mark.parametrize(
     "tech_stack,expected_score_range",
     [
-        ({"cms": "WordPress", "analytics": "Google Analytics", "server": "Nginx", "javascript": "React"}, (70, 100)),
+        (
+            {
+                "cms": "WordPress",
+                "analytics": "Google Analytics",
+                "server": "Nginx",
+                "javascript": "React",
+            },
+            (70, 100),
+        ),
         ({"cms": "WordPress"}, (30, 60)),
-        ({}, (0, 20))
-    ]
+        ({}, (0, 20)),
+    ],
 )
 def test_tech_stack_scoring(tech_stack, expected_score_range):
     """Test that different tech stacks produce scores in expected ranges."""
+
     # Mock function to calculate tech stack score
     def calculate_tech_stack_score(tech_data):
         # Simple mock implementation that returns a score based on number of technologies
@@ -53,9 +59,18 @@ def test_tech_stack_scoring(tech_stack, expected_score_range):
         cms_bonus = 20 if tech_data.get("cms") == "WordPress" else 0
         analytics_bonus = 15 if tech_data.get("analytics") == "Google Analytics" else 0
         server_bonus = 10 if tech_data.get("server") in ["Nginx", "Apache"] else 0
-        js_bonus = 15 if tech_data.get("javascript") in ["React", "Angular", "Vue"] else 0
+        js_bonus = (
+            15 if tech_data.get("javascript") in ["React", "Angular", "Vue"] else 0
+        )
 
-        score = base_score + (tech_count * 5) + cms_bonus + analytics_bonus + server_bonus + js_bonus
+        score = (
+            base_score
+            + (tech_count * 5)
+            + cms_bonus
+            + analytics_bonus
+            + server_bonus
+            + js_bonus
+        )
         return {"score": score, "details": {"technologies": list(tech_data.keys())}}
 
     # Calculate the tech stack score using our mock function
@@ -63,8 +78,9 @@ def test_tech_stack_scoring(tech_stack, expected_score_range):
 
     # Check that the score is within expected range
     min_score, max_score = expected_score_range
-    assert min_score <= score_result["score"] <= max_score, \
+    assert min_score <= score_result["score"] <= max_score, (
         f"Tech stack score {score_result['score']} not in expected range {expected_score_range}"
+    )
 
 
 # Example 3: Parameterized test for performance scoring
@@ -74,11 +90,12 @@ def test_tech_stack_scoring(tech_stack, expected_score_range):
         ({"page_speed": 90, "mobile_friendly": True, "accessibility": 85}, (70, 100)),
         ({"page_speed": 60, "mobile_friendly": True}, (40, 70)),
         ({"page_speed": 30, "mobile_friendly": False}, (10, 40)),
-        ({}, (0, 10))
-    ]
+        ({}, (0, 10)),
+    ],
 )
 def test_performance_scoring(performance_data, expected_score_range):
     """Test that different performance data produces scores in expected ranges."""
+
     # Mock function to calculate performance score
     def calculate_performance_score(perf_data):
         # Simple mock implementation
@@ -110,8 +127,9 @@ def test_performance_scoring(performance_data, expected_score_range):
 
     # Check that the score is within expected range
     min_score, max_score = expected_score_range
-    assert min_score <= score_result["score"] <= max_score, \
+    assert min_score <= score_result["score"] <= max_score, (
         f"Performance score {score_result['score']} not in expected range {expected_score_range}"
+    )
 
 
 # Example 4: Parameterized test with multiple arguments
@@ -123,11 +141,12 @@ def test_performance_scoring(performance_data, expected_score_range):
         ("ABC Corp", "ABC Inc", True),
         ("ABC Corp", "XYZ Corp", False),
         ("Smith & Jones", "Smith and Jones", True),
-        ("Smith & Jones", "Jones & Smith", False)
-    ]
+        ("Smith & Jones", "Jones & Smith", False),
+    ],
 )
 def test_business_name_matching(name1, name2, expected_match):
     """Test business name matching with different variations."""
+
     # Create a mock LevenshteinMatcher class
     class LevenshteinMatcher:
         def __init__(self):
@@ -160,8 +179,12 @@ def test_business_name_matching(name1, name2, expected_match):
 
             # Different company types (Corp, Inc, LLC)
             company_types = ["corp", "corporation", "inc", "incorporated", "llc", "ltd"]
-            name1_base = " ".join([p for p in name1_parts if p.lower() not in company_types])
-            name2_base = " ".join([p for p in name2_parts if p.lower() not in company_types])
+            name1_base = " ".join(
+                [p for p in name1_parts if p.lower() not in company_types]
+            )
+            name2_base = " ".join(
+                [p for p in name2_parts if p.lower() not in company_types]
+            )
 
             # Compare base names without company types
             if name1_base and name2_base and name1_base == name2_base:
@@ -172,11 +195,13 @@ def test_business_name_matching(name1, name2, expected_match):
             special_cases = [
                 ("smith & jones", "smith and jones"),
                 ("abc corp", "abc inc"),
-                ("abc corp", "abc corporation")
+                ("abc corp", "abc corporation"),
             ]
 
             for case1, case2 in special_cases:
-                if (name1 == case1 and name2 == case2) or (name1 == case2 and name2 == case1):
+                if (name1 == case1 and name2 == case2) or (
+                    name1 == case2 and name2 == case1
+                ):
                     return True
 
             return False
@@ -192,8 +217,9 @@ def test_business_name_matching(name1, name2, expected_match):
     matcher.name_threshold = 0.7
 
     result = matcher.are_similar_names(business1, business2)
-    assert result == expected_match, \
+    assert result == expected_match, (
         f"Name matching for '{name1}' and '{name2}' returned {result}, expected {expected_match}"
+    )
 
 
 # Example 5: Parameterized test with ids for better test naming
@@ -202,20 +228,29 @@ def test_business_name_matching(name1, name2, expected_match):
     [
         ("123 Main St, Anytown, CA 12345", "123 Main St, Anytown, CA 12345", True),
         ("123 Main St, Anytown, CA 12345", "123 Main Street, Anytown, CA 12345", True),
-        ("123 Main St, Anytown, CA 12345", "123 Main St, Anytown, California 12345", True),
+        (
+            "123 Main St, Anytown, CA 12345",
+            "123 Main St, Anytown, California 12345",
+            True,
+        ),
         ("123 Main St, Anytown, CA 12345", "456 Oak St, Othertown, NY 67890", False),
-        ("123 Main St, Suite 100, Anytown, CA 12345", "123 Main St, Anytown, CA 12345", True)
+        (
+            "123 Main St, Suite 100, Anytown, CA 12345",
+            "123 Main St, Anytown, CA 12345",
+            True,
+        ),
     ],
     ids=[
         "exact_match",
         "street_variation",
         "state_abbreviation",
         "different_address",
-        "suite_number"
-    ]
+        "suite_number",
+    ],
 )
 def test_address_matching(address1, address2, expected_match):
     """Test address matching with different variations."""
+
     # Create a mock LevenshteinMatcher class with address matching capability
     class LevenshteinMatcher:
         def __init__(self):
@@ -253,13 +288,24 @@ def test_address_matching(address1, address2, expected_match):
             # For simplicity in this mock, we're hardcoding specific test cases
             # In a real implementation, this would use Levenshtein distance
             special_cases = [
-                ("123 main st, anytown, ca 12345", "123 main street, anytown, ca 12345"),
-                ("123 main st, anytown, ca 12345", "123 main st, anytown, california 12345"),
-                ("123 main st, suite 100, anytown, ca 12345", "123 main st, anytown, ca 12345")
+                (
+                    "123 main st, anytown, ca 12345",
+                    "123 main street, anytown, ca 12345",
+                ),
+                (
+                    "123 main st, anytown, ca 12345",
+                    "123 main st, anytown, california 12345",
+                ),
+                (
+                    "123 main st, suite 100, anytown, ca 12345",
+                    "123 main st, anytown, ca 12345",
+                ),
             ]
 
             for case1, case2 in special_cases:
-                if (addr1 == case1 and addr2 == case2) or (addr1 == case2 and addr2 == case1):
+                if (addr1 == case1 and addr2 == case2) or (
+                    addr1 == case2 and addr2 == case1
+                ):
                     return True
 
             return False
@@ -279,14 +325,20 @@ def test_address_matching(address1, address2, expected_match):
                 parts = normalized.split(",")
                 if len(parts) > 1:
                     # Keep the street number and name, remove suite/apt info
-                    street_parts = parts[0].split("suite")[0].split("apt")[0].split("#")[0].strip()
+                    street_parts = (
+                        parts[0].split("suite")[0].split("apt")[0].split("#")[0].strip()
+                    )
                     normalized = street_parts + ", " + ", ".join(parts[1:])
 
             return normalized
 
         def _normalize_street(self, street):
             # Normalize street name
-            return street.replace("street", "st").replace("avenue", "ave").replace("boulevard", "blvd")
+            return (
+                street.replace("street", "st")
+                .replace("avenue", "ave")
+                .replace("boulevard", "blvd")
+            )
 
     # Create a matcher instance using our mock class
     matcher = LevenshteinMatcher()
@@ -299,8 +351,9 @@ def test_address_matching(address1, address2, expected_match):
     matcher.address_threshold = 0.7
 
     result = matcher.are_similar_addresses(business1, business2)
-    assert result == expected_match, \
+    assert result == expected_match, (
         f"Address matching for '{address1}' and '{address2}' returned {result}, expected {expected_match}"
+    )
 
 
 # Example 6: Parameterized test with indirect fixture usage
@@ -315,29 +368,25 @@ def business_with_score(pipeline_db, request):
         INSERT INTO businesses (name, score)
         VALUES (?, ?)
         """,
-        (f"Business with score {score_value}", score_value)
+        (f"Business with score {score_value}", score_value),
     )
     pipeline_db.commit()
 
     return {
         "db_conn": pipeline_db,
         "business_id": cursor.lastrowid,
-        "score": score_value
+        "score": score_value,
     }
 
 
 @pytest.mark.parametrize(
     "business_with_score,expected_tier",
-    [
-        (90, "premium"),
-        (75, "standard"),
-        (50, "basic"),
-        (25, "minimal")
-    ],
-    indirect=["business_with_score"]
+    [(90, "premium"), (75, "standard"), (50, "basic"), (25, "minimal")],
+    indirect=["business_with_score"],
 )
 def test_business_tier_classification(business_with_score, expected_tier):
     """Test business tier classification based on score."""
+
     # Mock tier classification function
     def get_business_tier(score):
         if score >= 80:
@@ -356,8 +405,9 @@ def test_business_tier_classification(business_with_score, expected_tier):
     tier = get_business_tier(score_value)
 
     # Check that the tier matches expected
-    assert tier == expected_tier, \
+    assert tier == expected_tier, (
         f"Business with score {score_value} classified as '{tier}', expected '{expected_tier}'"
+    )
 
 
 # Example 7: Complex parameterized test with multiple variations
@@ -372,10 +422,10 @@ test_businesses = [
             "zip": "12345",
             "phone": "555-123-4567",
             "email": "info@complete.com",
-            "website": "http://complete.com"
+            "website": "http://complete.com",
         },
         "enrichment_needed": False,
-        "fields_to_enrich": []
+        "fields_to_enrich": [],
     },
     {
         "id": "missing_contact",
@@ -385,46 +435,49 @@ test_businesses = [
             "city": "Somewhere",
             "state": "NY",
             "zip": "67890",
-            "website": "http://missing-contact.com"
+            "website": "http://missing-contact.com",
         },
         "enrichment_needed": True,
-        "fields_to_enrich": ["phone", "email"]
+        "fields_to_enrich": ["phone", "email"],
     },
     {
         "id": "minimal_data",
-        "data": {
-            "name": "Minimal Data Business",
-            "address": "789 Pine St"
-        },
+        "data": {"name": "Minimal Data Business", "address": "789 Pine St"},
         "enrichment_needed": True,
-        "fields_to_enrich": ["city", "state", "zip", "phone", "email", "website"]
-    }
+        "fields_to_enrich": ["city", "state", "zip", "phone", "email", "website"],
+    },
 ]
 
+
 @pytest.mark.parametrize(
-    "business",
-    test_businesses,
-    ids=[b["id"] for b in test_businesses]
+    "business", test_businesses, ids=[b["id"] for b in test_businesses]
 )
 def test_enrichment_requirements(business):
     """Test that businesses are correctly identified for enrichment."""
+
     # Mock enrichment requirement function
     def needs_enrichment(business_data):
         required_fields = ["phone", "email", "website", "city", "state", "zip"]
-        missing_fields = [field for field in required_fields if field not in business_data or not business_data[field]]
+        missing_fields = [
+            field
+            for field in required_fields
+            if field not in business_data or not business_data[field]
+        ]
         return bool(missing_fields), missing_fields
 
     # Check enrichment requirements
     needs_enrich, missing_fields = needs_enrichment(business["data"])
 
     # Verify needs_enrichment matches expected
-    assert needs_enrich == business["enrichment_needed"], \
+    assert needs_enrich == business["enrichment_needed"], (
         f"Enrichment needed: expected {business['enrichment_needed']}, got {needs_enrich}"
+    )
 
     # Verify fields_to_enrich matches expected
     if business["enrichment_needed"]:
-        assert set(missing_fields) == set(business["fields_to_enrich"]), \
+        assert set(missing_fields) == set(business["fields_to_enrich"]), (
             f"Fields to enrich: expected {business['fields_to_enrich']}, got {missing_fields}"
+        )
 
 
 if __name__ == "__main__":

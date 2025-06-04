@@ -2,17 +2,18 @@
 Integration tests for Report Template Engine with PDF Generator.
 """
 
-import pytest
-import tempfile
 import shutil
-from pathlib import Path
+import tempfile
 from datetime import datetime
+from pathlib import Path
+
+import pytest
 
 from leadfactory.services.pdf_generator import PDFGenerator
 from leadfactory.services.report_template_engine import (
-    ReportTemplateEngine,
     ReportData,
-    ReportSection
+    ReportSection,
+    ReportTemplateEngine,
 )
 
 
@@ -49,7 +50,7 @@ class TestReportTemplateIntegration:
         assert pdf_bytes is not None
         assert isinstance(pdf_bytes, bytes)
         assert len(pdf_bytes) > 1000  # Should be a substantial PDF
-        assert pdf_bytes.startswith(b'%PDF')  # PDF header
+        assert pdf_bytes.startswith(b"%PDF")  # PDF header
 
     def test_generate_sample_audit_report_to_file(self):
         """Test generating a sample audit report to file."""
@@ -64,9 +65,9 @@ class TestReportTemplateIntegration:
         assert output_path.stat().st_size > 1000  # Should be a substantial file
 
         # Verify it's a valid PDF
-        with open(output_path, 'rb') as f:
+        with open(output_path, "rb") as f:
             header = f.read(4)
-            assert header == b'%PDF'
+            assert header == b"%PDF"
 
     def test_generate_custom_report_from_template(self):
         """Test generating a custom report using template system."""
@@ -75,85 +76,91 @@ class TestReportTemplateIntegration:
             title="Custom Integration Test Report",
             subtitle="Testing Template Integration",
             company_name="Test Company Ltd.",
-            metadata={"confidential": True}
+            metadata={"confidential": True},
         )
 
         # Add various section types
-        report.add_section(ReportSection(
-            title="Executive Summary",
-            content=[
-                "This is a test report generated during integration testing.",
-                "It demonstrates the integration between the template engine and PDF generator."
-            ],
-            section_type="text",
-            order=1
-        ))
-
-        report.add_section(ReportSection(
-            title="Key Metrics",
-            content={
-                "headers": ["Metric", "Value", "Status"],
-                "rows": [
-                    ["Test Coverage", "95%", "Excellent"],
-                    ["Performance", "Fast", "Good"],
-                    ["Integration", "Working", "Success"]
-                ]
-            },
-            section_type="table",
-            order=2
-        ))
-
-        report.add_section(ReportSection(
-            title="Action Items",
-            content=[
-                "Complete integration testing",
-                "Verify PDF generation quality",
-                "Document template usage"
-            ],
-            section_type="list",
-            order=3
-        ))
-
-        report.add_section(ReportSection(
-            title="Performance Chart",
-            content={
-                "chart_type": "bar",
-                "data": [
-                    {"label": "Template Rendering", "value": 95},
-                    {"label": "PDF Generation", "value": 88},
-                    {"label": "Integration Tests", "value": 92}
+        report.add_section(
+            ReportSection(
+                title="Executive Summary",
+                content=[
+                    "This is a test report generated during integration testing.",
+                    "It demonstrates the integration between the template engine and PDF generator.",
                 ],
-                "max_value": 100
-            },
-            section_type="chart",
-            order=4
-        ))
+                section_type="text",
+                order=1,
+            )
+        )
+
+        report.add_section(
+            ReportSection(
+                title="Key Metrics",
+                content={
+                    "headers": ["Metric", "Value", "Status"],
+                    "rows": [
+                        ["Test Coverage", "95%", "Excellent"],
+                        ["Performance", "Fast", "Good"],
+                        ["Integration", "Working", "Success"],
+                    ],
+                },
+                section_type="table",
+                order=2,
+            )
+        )
+
+        report.add_section(
+            ReportSection(
+                title="Action Items",
+                content=[
+                    "Complete integration testing",
+                    "Verify PDF generation quality",
+                    "Document template usage",
+                ],
+                section_type="list",
+                order=3,
+            )
+        )
+
+        report.add_section(
+            ReportSection(
+                title="Performance Chart",
+                content={
+                    "chart_type": "bar",
+                    "data": [
+                        {"label": "Template Rendering", "value": 95},
+                        {"label": "PDF Generation", "value": 88},
+                        {"label": "Integration Tests", "value": 92},
+                    ],
+                    "max_value": 100,
+                },
+                section_type="chart",
+                order=4,
+            )
+        )
 
         # Generate PDF
         pdf_bytes = self.pdf_generator.generate_report_from_template(
-            report_data=report,
-            return_bytes=True
+            report_data=report, return_bytes=True
         )
 
         assert pdf_bytes is not None
         assert isinstance(pdf_bytes, bytes)
         assert len(pdf_bytes) > 2000  # Should be substantial with all content
-        assert pdf_bytes.startswith(b'%PDF')
+        assert pdf_bytes.startswith(b"%PDF")
 
     def test_template_html_rendering(self):
         """Test that template engine renders HTML correctly."""
         # Create test report
-        report = ReportData(
-            title="HTML Rendering Test",
-            company_name="Test Corp"
-        )
+        report = ReportData(title="HTML Rendering Test", company_name="Test Corp")
 
-        report.add_section(ReportSection(
-            title="Test Section",
-            content="This is test content for HTML rendering.",
-            section_type="text",
-            order=1
-        ))
+        report.add_section(
+            ReportSection(
+                title="Test Section",
+                content="This is test content for HTML rendering.",
+                section_type="text",
+                order=1,
+            )
+        )
 
         # Render HTML
         html_content = self.pdf_generator.template_engine.render_report(report)
@@ -169,29 +176,34 @@ class TestReportTemplateIntegration:
         """Test conversion from HTML to PDF content structure."""
         # Create test report
         report = ReportData(
-            title="Conversion Test",
-            subtitle="Testing HTML to PDF conversion"
+            title="Conversion Test", subtitle="Testing HTML to PDF conversion"
         )
 
-        report.add_section(ReportSection(
-            title="Text Section",
-            content="Sample text content",
-            section_type="text",
-            order=1
-        ))
+        report.add_section(
+            ReportSection(
+                title="Text Section",
+                content="Sample text content",
+                section_type="text",
+                order=1,
+            )
+        )
 
-        report.add_section(ReportSection(
-            title="List Section",
-            content=["Item 1", "Item 2", "Item 3"],
-            section_type="list",
-            order=2
-        ))
+        report.add_section(
+            ReportSection(
+                title="List Section",
+                content=["Item 1", "Item 2", "Item 3"],
+                section_type="list",
+                order=2,
+            )
+        )
 
         # Render HTML first
         html_content = self.pdf_generator.template_engine.render_report(report)
 
         # Convert to PDF content structure
-        pdf_content = self.pdf_generator._convert_html_to_pdf_content(html_content, report)
+        pdf_content = self.pdf_generator._convert_html_to_pdf_content(
+            html_content, report
+        )
 
         assert isinstance(pdf_content, list)
         assert len(pdf_content) > 0
@@ -202,46 +214,56 @@ class TestReportTemplateIntegration:
         assert title_elements[0]["text"] == "Conversion Test"
 
         # Check for headings
-        subtitle_elements = [item for item in pdf_content if item.get("type") == "subtitle"]
-        section_header_elements = [item for item in pdf_content if item.get("type") == "section_header"]
+        subtitle_elements = [
+            item for item in pdf_content if item.get("type") == "subtitle"
+        ]
+        section_header_elements = [
+            item for item in pdf_content if item.get("type") == "section_header"
+        ]
         assert len(subtitle_elements) == 1  # subtitle
         assert len(section_header_elements) >= 2  # section titles
 
         # Check for bullet list
-        list_elements = [item for item in pdf_content if item.get("type") == "bullet_list"]
+        list_elements = [
+            item for item in pdf_content if item.get("type") == "bullet_list"
+        ]
         assert len(list_elements) == 1
         assert "Item 1" in list_elements[0]["items"]
 
     def test_confidential_report_generation(self):
         """Test generating a confidential report with proper markings."""
         report = ReportData(
-            title="Confidential Test Report",
-            metadata={"confidential": True}
+            title="Confidential Test Report", metadata={"confidential": True}
         )
 
-        report.add_section(ReportSection(
-            title="Sensitive Information",
-            content="This report contains confidential information.",
-            section_type="text",
-            order=1
-        ))
+        report.add_section(
+            ReportSection(
+                title="Sensitive Information",
+                content="This report contains confidential information.",
+                section_type="text",
+                order=1,
+            )
+        )
 
         # Generate PDF
         pdf_bytes = self.pdf_generator.generate_report_from_template(
-            report_data=report,
-            return_bytes=True
+            report_data=report, return_bytes=True
         )
 
         assert pdf_bytes is not None
 
         # Convert to PDF content to check for confidential notice
         html_content = self.pdf_generator.template_engine.render_report(report)
-        pdf_content = self.pdf_generator._convert_html_to_pdf_content(html_content, report)
+        pdf_content = self.pdf_generator._convert_html_to_pdf_content(
+            html_content, report
+        )
 
         # Check for confidential notice
         confidential_elements = [
-            item for item in pdf_content
-            if item.get("type") == "paragraph" and "CONFIDENTIAL" in item.get("text", "")
+            item
+            for item in pdf_content
+            if item.get("type") == "paragraph"
+            and "CONFIDENTIAL" in item.get("text", "")
         ]
         assert len(confidential_elements) == 1
 
@@ -250,33 +272,33 @@ class TestReportTemplateIntegration:
         report = ReportData(title="Table Test Report")
 
         # Test structured table
-        report.add_section(ReportSection(
-            title="Structured Table",
-            content={
-                "headers": ["Name", "Value", "Status"],
-                "rows": [
-                    ["Metric A", "100", "Good"],
-                    ["Metric B", "85", "Fair"]
-                ]
-            },
-            section_type="table",
-            order=1
-        ))
+        report.add_section(
+            ReportSection(
+                title="Structured Table",
+                content={
+                    "headers": ["Name", "Value", "Status"],
+                    "rows": [["Metric A", "100", "Good"], ["Metric B", "85", "Fair"]],
+                },
+                section_type="table",
+                order=1,
+            )
+        )
 
         # Test key-value table
-        report.add_section(ReportSection(
-            title="Key-Value Table",
-            content={
-                "Setting A": "Value A",
-                "Setting B": "Value B"
-            },
-            section_type="table",
-            order=2
-        ))
+        report.add_section(
+            ReportSection(
+                title="Key-Value Table",
+                content={"Setting A": "Value A", "Setting B": "Value B"},
+                section_type="table",
+                order=2,
+            )
+        )
 
         # Convert to PDF content
         html_content = self.pdf_generator.template_engine.render_report(report)
-        pdf_content = self.pdf_generator._convert_html_to_pdf_content(html_content, report)
+        pdf_content = self.pdf_generator._convert_html_to_pdf_content(
+            html_content, report
+        )
 
         # Check for table elements
         table_elements = [item for item in pdf_content if item.get("type") == "table"]
@@ -296,24 +318,28 @@ class TestReportTemplateIntegration:
         """Test conversion of chart sections to PDF format."""
         report = ReportData(title="Chart Test Report")
 
-        report.add_section(ReportSection(
-            title="Performance Chart",
-            content={
-                "chart_type": "bar",
-                "data": [
-                    {"label": "Q1", "value": 75},
-                    {"label": "Q2", "value": 85},
-                    {"label": "Q3", "value": 90}
-                ],
-                "max_value": 100
-            },
-            section_type="chart",
-            order=1
-        ))
+        report.add_section(
+            ReportSection(
+                title="Performance Chart",
+                content={
+                    "chart_type": "bar",
+                    "data": [
+                        {"label": "Q1", "value": 75},
+                        {"label": "Q2", "value": 85},
+                        {"label": "Q3", "value": 90},
+                    ],
+                    "max_value": 100,
+                },
+                section_type="chart",
+                order=1,
+            )
+        )
 
         # Convert to PDF content
         html_content = self.pdf_generator.template_engine.render_report(report)
-        pdf_content = self.pdf_generator._convert_html_to_pdf_content(html_content, report)
+        pdf_content = self.pdf_generator._convert_html_to_pdf_content(
+            html_content, report
+        )
 
         # Charts should be converted to tables
         table_elements = [item for item in pdf_content if item.get("type") == "table"]
@@ -331,9 +357,7 @@ class TestReportTemplateIntegration:
         report = ReportData(title="Default Template Test")
 
         pdf_bytes = self.pdf_generator.generate_report_from_template(
-            report_data=report,
-            template_name="audit_report.html",
-            return_bytes=True
+            report_data=report, template_name="audit_report.html", return_bytes=True
         )
 
         assert pdf_bytes is not None
@@ -347,25 +371,25 @@ class TestReportTemplateIntegration:
             self.pdf_generator.generate_report_from_template(
                 report_data=report,
                 template_name="non_existent_template.html",
-                return_bytes=True
+                return_bytes=True,
             )
 
     def test_date_formatting_in_reports(self):
         """Test that dates are properly formatted in reports."""
         test_date = datetime(2023, 12, 25, 15, 30, 0)
 
-        report = ReportData(
-            title="Date Test Report",
-            report_date=test_date
-        )
+        report = ReportData(title="Date Test Report", report_date=test_date)
 
         # Convert to PDF content
         html_content = self.pdf_generator.template_engine.render_report(report)
-        pdf_content = self.pdf_generator._convert_html_to_pdf_content(html_content, report)
+        pdf_content = self.pdf_generator._convert_html_to_pdf_content(
+            html_content, report
+        )
 
         # Check for formatted date
         date_elements = [
-            item for item in pdf_content
+            item
+            for item in pdf_content
             if item.get("type") == "paragraph" and "Generated:" in item.get("text", "")
         ]
         assert len(date_elements) == 1

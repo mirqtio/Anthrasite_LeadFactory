@@ -5,21 +5,21 @@ Unit tests for the throttling service module.
 import asyncio
 import time
 import unittest
-from unittest.mock import Mock, patch, MagicMock
 from threading import Thread
+from unittest.mock import MagicMock, Mock, patch
 
 from leadfactory.cost.throttling_service import (
-    ThrottlingService,
-    ThrottlingStrategy,
-    ThrottlingAction,
-    ThrottlingDecision,
     RateLimitConfig,
     RequestTracker,
+    ThrottlingAction,
+    ThrottlingDecision,
+    ThrottlingService,
+    ThrottlingStrategy,
+    apply_throttling_decision,
+    apply_throttling_decision_async,
     get_throttling_service,
     reset_throttling_service,
     should_throttle_request,
-    apply_throttling_decision,
-    apply_throttling_decision_async,
 )
 
 
@@ -75,7 +75,7 @@ class TestRequestTracker(unittest.TestCase):
     def test_timestamp_cleanup(self):
         """Test that old timestamps are cleaned up."""
         # Mock time to simulate old timestamps
-        with patch('time.time') as mock_time:
+        with patch("time.time") as mock_time:
             # Add request 2 hours ago
             mock_time.return_value = 1000.0
             self.tracker.add_request()
@@ -86,7 +86,7 @@ class TestRequestTracker(unittest.TestCase):
 
             minute_count, hour_count = self.tracker.get_request_counts()
             self.assertEqual(minute_count, 1)  # Only recent request
-            self.assertEqual(hour_count, 1)    # Only recent request
+            self.assertEqual(hour_count, 1)  # Only recent request
             self.assertEqual(len(self.tracker.timestamps), 1)  # Old timestamp cleaned
 
 
@@ -104,7 +104,7 @@ class TestThrottlingDecision(unittest.TestCase):
         decision = ThrottlingDecision(
             action=ThrottlingAction.DELAY,
             delay_seconds=5.0,
-            reason="Rate limit exceeded"
+            reason="Rate limit exceeded",
         )
         self.assertEqual(decision.action, ThrottlingAction.DELAY)
         self.assertEqual(decision.delay_seconds, 5.0)
@@ -124,9 +124,14 @@ class TestThrottlingService(unittest.TestCase):
         self.mock_usage_tracker = Mock()
 
         # Create service with mocked dependencies
-        with patch('leadfactory.cost.throttling_service.get_budget_config') as mock_get_config, \
-             patch('leadfactory.cost.throttling_service.get_gpt_usage_tracker') as mock_get_tracker:
-
+        with (
+            patch(
+                "leadfactory.cost.throttling_service.get_budget_config"
+            ) as mock_get_config,
+            patch(
+                "leadfactory.cost.throttling_service.get_gpt_usage_tracker"
+            ) as mock_get_tracker,
+        ):
             mock_get_config.return_value = self.mock_budget_config
             mock_get_tracker.return_value = self.mock_usage_tracker
 
@@ -147,7 +152,7 @@ class TestThrottlingService(unittest.TestCase):
         self.assertIn("gpt-4o", self.service.model_cost_multipliers)
         self.assertLess(
             self.service.model_cost_multipliers["gpt-4o-mini"],
-            self.service.model_cost_multipliers["gpt-4o"]
+            self.service.model_cost_multipliers["gpt-4o"],
         )
 
     def test_get_budget_status_success(self):
@@ -155,15 +160,15 @@ class TestThrottlingService(unittest.TestCase):
         # Mock usage tracker responses
         self.mock_usage_tracker.get_usage_stats.side_effect = [
             {"summary": {"total_cost": 50.0}},  # daily
-            {"summary": {"total_cost": 200.0}}, # weekly
-            {"summary": {"total_cost": 500.0}}, # monthly
+            {"summary": {"total_cost": 200.0}},  # weekly
+            {"summary": {"total_cost": 500.0}},  # monthly
         ]
 
         # Mock budget config responses
         self.mock_budget_config.get_budget_limit.side_effect = [
             100.0,  # daily limit
             500.0,  # weekly limit
-            2000.0, # monthly limit
+            2000.0,  # monthly limit
         ]
 
         status = self.service._get_budget_status("openai", "gpt-4o", "chat")
@@ -178,7 +183,9 @@ class TestThrottlingService(unittest.TestCase):
     def test_get_budget_status_error_handling(self):
         """Test budget status error handling."""
         # Mock usage tracker to raise exception
-        self.mock_usage_tracker.get_usage_stats.side_effect = Exception("Database error")
+        self.mock_usage_tracker.get_usage_stats.side_effect = Exception(
+            "Database error"
+        )
 
         status = self.service._get_budget_status("openai", "gpt-4o", "chat")
 
@@ -186,7 +193,7 @@ class TestThrottlingService(unittest.TestCase):
         self.assertEqual(status["daily_utilization"], 0)
         self.assertEqual(status["weekly_utilization"], 0)
         self.assertEqual(status["monthly_utilization"], 0)
-        self.assertEqual(status["daily_remaining"], float('inf'))
+        self.assertEqual(status["daily_remaining"], float("inf"))
 
     def test_check_rate_limits_within_limits(self):
         """Test rate limit checking when within limits."""
@@ -198,7 +205,9 @@ class TestThrottlingService(unittest.TestCase):
         # Simulate max concurrent requests
         key = "openai:gpt-4o:chat"
         tracker = RequestTracker()
-        tracker.concurrent_count = self.service.rate_limit_config.max_concurrent_requests
+        tracker.concurrent_count = (
+            self.service.rate_limit_config.max_concurrent_requests
+        )
         self.service.request_trackers[key] = tracker
 
         decision = self.service._check_rate_limits("openai", "gpt-4o", "chat")
@@ -226,17 +235,29 @@ class TestThrottlingService(unittest.TestCase):
     def test_choose_adaptive_strategy(self):
         """Test adaptive strategy selection."""
         # Low utilization -> SOFT
-        status = {"daily_utilization": 0.5, "weekly_utilization": 0.4, "monthly_utilization": 0.3}
+        status = {
+            "daily_utilization": 0.5,
+            "weekly_utilization": 0.4,
+            "monthly_utilization": 0.3,
+        }
         strategy = self.service._choose_adaptive_strategy(status)
         self.assertEqual(strategy, ThrottlingStrategy.SOFT)
 
         # Medium utilization -> GRACEFUL
-        status = {"daily_utilization": 0.8, "weekly_utilization": 0.7, "monthly_utilization": 0.6}
+        status = {
+            "daily_utilization": 0.8,
+            "weekly_utilization": 0.7,
+            "monthly_utilization": 0.6,
+        }
         strategy = self.service._choose_adaptive_strategy(status)
         self.assertEqual(strategy, ThrottlingStrategy.GRACEFUL)
 
         # High utilization -> HARD
-        status = {"daily_utilization": 0.95, "weekly_utilization": 0.9, "monthly_utilization": 0.8}
+        status = {
+            "daily_utilization": 0.95,
+            "weekly_utilization": 0.9,
+            "monthly_utilization": 0.8,
+        }
         strategy = self.service._choose_adaptive_strategy(status)
         self.assertEqual(strategy, ThrottlingStrategy.HARD)
 
@@ -276,13 +297,13 @@ class TestThrottlingService(unittest.TestCase):
         self.mock_usage_tracker.get_usage_stats.side_effect = [
             {"summary": {"total_cost": 10.0}},  # daily
             {"summary": {"total_cost": 50.0}},  # weekly
-            {"summary": {"total_cost": 100.0}}, # monthly
+            {"summary": {"total_cost": 100.0}},  # monthly
         ]
 
         self.mock_budget_config.get_budget_limit.side_effect = [
             100.0,  # daily limit
             500.0,  # weekly limit
-            2000.0, # monthly limit
+            2000.0,  # monthly limit
         ]
 
         self.mock_budget_config.get_alert_thresholds.return_value = [
@@ -299,14 +320,14 @@ class TestThrottlingService(unittest.TestCase):
         # Mock budget status - high utilization
         self.mock_usage_tracker.get_usage_stats.side_effect = [
             {"summary": {"total_cost": 95.0}},  # daily
-            {"summary": {"total_cost": 400.0}}, # weekly
-            {"summary": {"total_cost": 1800.0}}, # monthly
+            {"summary": {"total_cost": 400.0}},  # weekly
+            {"summary": {"total_cost": 1800.0}},  # monthly
         ]
 
         self.mock_budget_config.get_budget_limit.side_effect = [
             100.0,  # daily limit
             500.0,  # weekly limit
-            2000.0, # monthly limit
+            2000.0,  # monthly limit
         ]
 
         self.mock_budget_config.get_alert_thresholds.return_value = [
@@ -315,7 +336,9 @@ class TestThrottlingService(unittest.TestCase):
         ]
 
         # Request that would exceed daily budget
-        decision = self.service.should_throttle("openai", "gpt-4o", "chat", 10.0, ThrottlingStrategy.HARD)
+        decision = self.service.should_throttle(
+            "openai", "gpt-4o", "chat", 10.0, ThrottlingStrategy.HARD
+        )
         self.assertEqual(decision.action, ThrottlingAction.REJECT)
         self.assertIn("exceeds remaining budget", decision.reason)
 
@@ -324,14 +347,14 @@ class TestThrottlingService(unittest.TestCase):
         # Mock budget status - high utilization
         self.mock_usage_tracker.get_usage_stats.side_effect = [
             {"summary": {"total_cost": 95.0}},  # daily
-            {"summary": {"total_cost": 400.0}}, # weekly
-            {"summary": {"total_cost": 1800.0}}, # monthly
+            {"summary": {"total_cost": 400.0}},  # weekly
+            {"summary": {"total_cost": 1800.0}},  # monthly
         ]
 
         self.mock_budget_config.get_budget_limit.side_effect = [
             100.0,  # daily limit
             500.0,  # weekly limit
-            2000.0, # monthly limit
+            2000.0,  # monthly limit
         ]
 
         self.mock_budget_config.get_alert_thresholds.return_value = [
@@ -340,7 +363,9 @@ class TestThrottlingService(unittest.TestCase):
         ]
 
         # Request that would exceed budget but has cheaper alternative
-        decision = self.service.should_throttle("openai", "gpt-4o", "chat", 10.0, ThrottlingStrategy.GRACEFUL)
+        decision = self.service.should_throttle(
+            "openai", "gpt-4o", "chat", 10.0, ThrottlingStrategy.GRACEFUL
+        )
         self.assertEqual(decision.action, ThrottlingAction.DOWNGRADE)
         self.assertIsNotNone(decision.alternative_model)
         self.assertIn("gpt-4o-mini", decision.alternative_model)
@@ -350,14 +375,14 @@ class TestThrottlingService(unittest.TestCase):
         # Mock budget status - warning level utilization
         self.mock_usage_tracker.get_usage_stats.side_effect = [
             {"summary": {"total_cost": 85.0}},  # daily
-            {"summary": {"total_cost": 350.0}}, # weekly
-            {"summary": {"total_cost": 1500.0}}, # monthly
+            {"summary": {"total_cost": 350.0}},  # weekly
+            {"summary": {"total_cost": 1500.0}},  # monthly
         ]
 
         self.mock_budget_config.get_budget_limit.side_effect = [
             100.0,  # daily limit
             500.0,  # weekly limit
-            2000.0, # monthly limit
+            2000.0,  # monthly limit
         ]
 
         self.mock_budget_config.get_alert_thresholds.return_value = [
@@ -365,7 +390,9 @@ class TestThrottlingService(unittest.TestCase):
             Mock(percentage=0.95),
         ]
 
-        decision = self.service.should_throttle("openai", "gpt-4o", "chat", 5.0, ThrottlingStrategy.SOFT)
+        decision = self.service.should_throttle(
+            "openai", "gpt-4o", "chat", 5.0, ThrottlingStrategy.SOFT
+        )
         self.assertEqual(decision.action, ThrottlingAction.DELAY)
         self.assertGreater(decision.delay_seconds, 0)
 
@@ -396,7 +423,9 @@ class TestThrottlingService(unittest.TestCase):
         self.assertIn("rate_limit_config", stats)
         self.assertIn("active_trackers", stats)
         self.assertIn("openai:gpt-4o:chat", stats["active_trackers"])
-        self.assertEqual(stats["active_trackers"]["openai:gpt-4o:chat"]["concurrent_requests"], 1)
+        self.assertEqual(
+            stats["active_trackers"]["openai:gpt-4o:chat"]["concurrent_requests"], 1
+        )
 
     def test_update_rate_limits(self):
         """Test updating rate limit configuration."""
@@ -405,7 +434,10 @@ class TestThrottlingService(unittest.TestCase):
         self.service.update_rate_limits(max_requests_per_minute=120)
 
         self.assertEqual(self.service.rate_limit_config.max_requests_per_minute, 120)
-        self.assertNotEqual(self.service.rate_limit_config.max_requests_per_minute, original_minute_limit)
+        self.assertNotEqual(
+            self.service.rate_limit_config.max_requests_per_minute,
+            original_minute_limit,
+        )
 
 
 class TestGlobalFunctions(unittest.TestCase):
@@ -421,9 +453,10 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_get_throttling_service_singleton(self):
         """Test that get_throttling_service returns a singleton."""
-        with patch('leadfactory.cost.throttling_service.get_budget_config'), \
-             patch('leadfactory.cost.throttling_service.get_gpt_usage_tracker'):
-
+        with (
+            patch("leadfactory.cost.throttling_service.get_budget_config"),
+            patch("leadfactory.cost.throttling_service.get_gpt_usage_tracker"),
+        ):
             service1 = get_throttling_service()
             service2 = get_throttling_service()
 
@@ -431,9 +464,10 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_reset_throttling_service(self):
         """Test resetting the global throttling service."""
-        with patch('leadfactory.cost.throttling_service.get_budget_config'), \
-             patch('leadfactory.cost.throttling_service.get_gpt_usage_tracker'):
-
+        with (
+            patch("leadfactory.cost.throttling_service.get_budget_config"),
+            patch("leadfactory.cost.throttling_service.get_gpt_usage_tracker"),
+        ):
             service1 = get_throttling_service()
             reset_throttling_service()
             service2 = get_throttling_service()
@@ -442,16 +476,23 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_should_throttle_request_convenience(self):
         """Test the convenience function for throttling requests."""
-        with patch('leadfactory.cost.throttling_service.get_budget_config'), \
-             patch('leadfactory.cost.throttling_service.get_gpt_usage_tracker'):
-
-            with patch.object(ThrottlingService, 'should_throttle') as mock_should_throttle:
-                mock_should_throttle.return_value = ThrottlingDecision(action=ThrottlingAction.ALLOW)
+        with (
+            patch("leadfactory.cost.throttling_service.get_budget_config"),
+            patch("leadfactory.cost.throttling_service.get_gpt_usage_tracker"),
+        ):
+            with patch.object(
+                ThrottlingService, "should_throttle"
+            ) as mock_should_throttle:
+                mock_should_throttle.return_value = ThrottlingDecision(
+                    action=ThrottlingAction.ALLOW
+                )
 
                 decision = should_throttle_request("openai", "gpt-4o", "chat", 5.0)
 
                 self.assertEqual(decision.action, ThrottlingAction.ALLOW)
-                mock_should_throttle.assert_called_once_with("openai", "gpt-4o", "chat", 5.0, ThrottlingStrategy.ADAPTIVE)
+                mock_should_throttle.assert_called_once_with(
+                    "openai", "gpt-4o", "chat", 5.0, ThrottlingStrategy.ADAPTIVE
+                )
 
     def test_apply_throttling_decision_allow(self):
         """Test applying ALLOW throttling decision."""
@@ -472,7 +513,9 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_apply_throttling_decision_reject(self):
         """Test applying REJECT throttling decision."""
-        decision = ThrottlingDecision(action=ThrottlingAction.REJECT, reason="Budget exceeded")
+        decision = ThrottlingDecision(
+            action=ThrottlingAction.REJECT, reason="Budget exceeded"
+        )
         result = apply_throttling_decision(decision)
         self.assertFalse(result)
 
@@ -481,7 +524,7 @@ class TestGlobalFunctions(unittest.TestCase):
         decision = ThrottlingDecision(
             action=ThrottlingAction.DOWNGRADE,
             alternative_model="gpt-4o-mini",
-            reason="Budget optimization"
+            reason="Budget optimization",
         )
         result = apply_throttling_decision(decision)
         self.assertTrue(result)  # Should return True to let caller handle downgrade
@@ -492,6 +535,7 @@ class TestAsyncFunctions(unittest.TestCase):
 
     def test_apply_throttling_decision_async_allow(self):
         """Test async ALLOW throttling decision."""
+
         async def test_async():
             decision = ThrottlingDecision(action=ThrottlingAction.ALLOW)
             result = await apply_throttling_decision_async(decision)
@@ -501,8 +545,11 @@ class TestAsyncFunctions(unittest.TestCase):
 
     def test_apply_throttling_decision_async_delay(self):
         """Test async DELAY throttling decision."""
+
         async def test_async():
-            decision = ThrottlingDecision(action=ThrottlingAction.DELAY, delay_seconds=0.01)
+            decision = ThrottlingDecision(
+                action=ThrottlingAction.DELAY, delay_seconds=0.01
+            )
 
             start_time = time.time()
             result = await apply_throttling_decision_async(decision)
@@ -515,8 +562,11 @@ class TestAsyncFunctions(unittest.TestCase):
 
     def test_apply_throttling_decision_async_reject(self):
         """Test async REJECT throttling decision."""
+
         async def test_async():
-            decision = ThrottlingDecision(action=ThrottlingAction.REJECT, reason="Budget exceeded")
+            decision = ThrottlingDecision(
+                action=ThrottlingAction.REJECT, reason="Budget exceeded"
+            )
             result = await apply_throttling_decision_async(decision)
             self.assertFalse(result)
 
@@ -530,12 +580,15 @@ class TestConcurrency(unittest.TestCase):
         """Set up test fixtures."""
         reset_throttling_service()
 
-        with patch('leadfactory.cost.throttling_service.get_budget_config'), \
-             patch('leadfactory.cost.throttling_service.get_gpt_usage_tracker'):
+        with (
+            patch("leadfactory.cost.throttling_service.get_budget_config"),
+            patch("leadfactory.cost.throttling_service.get_gpt_usage_tracker"),
+        ):
             self.service = ThrottlingService()
 
     def test_concurrent_request_tracking(self):
         """Test concurrent request tracking."""
+
         def add_requests():
             for _ in range(10):
                 self.service.record_request_start("openai", "gpt-4o", "chat")
@@ -558,7 +611,9 @@ class TestConcurrency(unittest.TestCase):
     def test_concurrent_throttling_decisions(self):
         """Test concurrent throttling decisions."""
         # Mock dependencies
-        self.service.usage_tracker.get_usage_stats.return_value = {"summary": {"total_cost": 50.0}}
+        self.service.usage_tracker.get_usage_stats.return_value = {
+            "summary": {"total_cost": 50.0}
+        }
         self.service.budget_config.get_budget_limit.return_value = 100.0
         self.service.budget_config.get_alert_thresholds.return_value = [
             Mock(percentage=0.8),

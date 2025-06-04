@@ -12,8 +12,8 @@ from unittest.mock import MagicMock, Mock, patch
 from leadfactory.email.sendgrid_warmup import (
     SendGridWarmupScheduler,
     WarmupProgress,
-    WarmupStatus,
     WarmupStage,
+    WarmupStatus,
 )
 from leadfactory.email.sendgrid_warmup_integration import (
     IntegrationMode,
@@ -322,9 +322,14 @@ class TestSendGridWarmupIntegration(unittest.TestCase):
         mock_entry2.status = "active"
 
         # Mock the enum comparison
-        with patch('leadfactory.email.sendgrid_warmup_integration.IPSubuserStatus') as mock_status:
+        with patch(
+            "leadfactory.email.sendgrid_warmup_integration.IPSubuserStatus"
+        ) as mock_status:
             mock_status.ACTIVE = "active"
-            self.rotation_service.get_pool_status.return_value = [mock_entry1, mock_entry2]
+            self.rotation_service.get_pool_status.return_value = [
+                mock_entry1,
+                mock_entry2,
+            ]
 
             # Mock warmup progress - first IP completed, second in progress
             def mock_get_progress(ip):
@@ -459,12 +464,12 @@ class TestConvenienceFunctions(unittest.TestCase):
         self.assertEqual(integration.rotation_service, rotation_service)
         self.assertEqual(integration.config, config)
 
-    @patch('leadfactory.email.sendgrid_warmup_integration.ROTATION_AVAILABLE', True)
-    @patch('leadfactory.email.sendgrid_warmup_integration.SendGridWarmupScheduler')
-    @patch('leadfactory.email.sendgrid_warmup_integration.BounceRateMonitor')
-    @patch('leadfactory.email.sendgrid_warmup_integration.IPRotationService')
-    @patch('leadfactory.email.sendgrid_warmup_integration.BounceRateConfig')
-    @patch('leadfactory.email.sendgrid_warmup_integration.RotationConfig')
+    @patch("leadfactory.email.sendgrid_warmup_integration.ROTATION_AVAILABLE", True)
+    @patch("leadfactory.email.sendgrid_warmup_integration.SendGridWarmupScheduler")
+    @patch("leadfactory.email.sendgrid_warmup_integration.BounceRateMonitor")
+    @patch("leadfactory.email.sendgrid_warmup_integration.IPRotationService")
+    @patch("leadfactory.email.sendgrid_warmup_integration.BounceRateConfig")
+    @patch("leadfactory.email.sendgrid_warmup_integration.RotationConfig")
     def test_setup_integrated_email_system(
         self,
         mock_rotation_config,

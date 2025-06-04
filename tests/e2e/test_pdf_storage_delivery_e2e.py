@@ -21,14 +21,18 @@ from leadfactory.services.report_delivery import ReportDeliveryService
 from leadfactory.storage.supabase_storage import SupabaseStorage
 
 
-@pytest.mark.skip(reason="Temporarily disabled due to CI hanging issues - threading problems need investigation")
+@pytest.mark.skip(
+    reason="Temporarily disabled due to CI hanging issues - threading problems need investigation"
+)
 class TestPDFStorageDeliveryE2E:
     """End-to-end tests for complete PDF storage and delivery workflow."""
 
     def setup_method(self):
         """Set up test fixtures."""
         # Create test PDF content
-        self.test_pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
+        self.test_pdf_content = (
+            b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
+        )
         self.large_pdf_content = b"%PDF-1.4\n" + b"x" * (10 * 1024 * 1024)  # 10MB PDF
         self.invalid_pdf_content = b"This is not a PDF file"
 
@@ -54,13 +58,16 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_complete_pdf_upload_and_delivery_workflow(self):
         """Test complete workflow from upload to secure delivery."""
-        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
-             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
-
+        with (
+            patch(
+                "leadfactory.storage.supabase_storage.create_client"
+            ) as mock_create_client,
+            patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env,
+        ):
             # Mock environment variables
             mock_get_env.side_effect = lambda key: {
                 "SUPABASE_URL": "https://test.supabase.co",
-                "SUPABASE_KEY": "test-key"
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             # Mock Supabase client
@@ -94,7 +101,8 @@ class TestPDFStorageDeliveryE2E:
             mock_rate_limiter.check_rate_limit.return_value.allowed = True
             mock_link_generator.generate_secure_report_url.return_value = {
                 "url": "https://secure-link.example.com/report123",
-                "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat() + "Z"
+                "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat()
+                + "Z",
             }
 
             # Create delivery service
@@ -105,7 +113,7 @@ class TestPDFStorageDeliveryE2E:
                 secure_validator=mock_secure_validator,
                 access_control=mock_access_control,
                 rate_limiter=mock_rate_limiter,
-                audit_logger=mock_audit_logger
+                audit_logger=mock_audit_logger,
             )
 
             # Execute complete workflow
@@ -114,7 +122,7 @@ class TestPDFStorageDeliveryE2E:
                 report_id="report456",
                 user_id="user123",
                 user_email="test@example.com",
-                purchase_id="purchase789"
+                purchase_id="purchase789",
             )
 
             # Verify workflow completion
@@ -141,22 +149,22 @@ class TestPDFStorageDeliveryE2E:
                     "id": "cs_test_123",
                     "payment_status": "paid",
                     "customer_email": "customer@example.com",
-                    "metadata": {
-                        "report_id": "report789",
-                        "user_id": "user456"
-                    }
+                    "metadata": {"report_id": "report789", "user_id": "user456"},
                 }
-            }
+            },
         }
 
-        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
-             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env, \
-             patch("leadfactory.services.payment_service.stripe") as mock_stripe:
-
+        with (
+            patch(
+                "leadfactory.storage.supabase_storage.create_client"
+            ) as mock_create_client,
+            patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env,
+            patch("leadfactory.services.payment_service.stripe") as mock_stripe,
+        ):
             # Mock environment and Supabase
             mock_get_env.side_effect = lambda key: {
                 "SUPABASE_URL": "https://test.supabase.co",
-                "SUPABASE_KEY": "test-key"
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             mock_client = Mock()
@@ -182,7 +190,8 @@ class TestPDFStorageDeliveryE2E:
             mock_rate_limiter.check_rate_limit.return_value.allowed = True
             mock_link_generator.generate_secure_report_url.return_value = {
                 "url": "https://secure-webhook-link.example.com/report789",
-                "expires_at": (datetime.utcnow() + timedelta(hours=48)).isoformat() + "Z"
+                "expires_at": (datetime.utcnow() + timedelta(hours=48)).isoformat()
+                + "Z",
             }
 
             # Create services
@@ -194,7 +203,7 @@ class TestPDFStorageDeliveryE2E:
                 secure_validator=mock_secure_validator,
                 access_control=mock_access_control,
                 rate_limiter=mock_rate_limiter,
-                audit_logger=mock_audit_logger
+                audit_logger=mock_audit_logger,
             )
 
             # Simulate webhook processing
@@ -215,13 +224,16 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_url_expiration_validation(self):
         """Test URL expiration validation in end-to-end workflow."""
-        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
-             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
-
+        with (
+            patch(
+                "leadfactory.storage.supabase_storage.create_client"
+            ) as mock_create_client,
+            patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env,
+        ):
             # Mock environment
             mock_get_env.side_effect = lambda key: {
                 "SUPABASE_URL": "https://test.supabase.co",
-                "SUPABASE_KEY": "test-key"
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             mock_client = Mock()
@@ -236,16 +248,19 @@ class TestPDFStorageDeliveryE2E:
             storage = SupabaseStorage(bucket_name="expiry-test")
 
             # Generate URL with past expiration
-            with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
+            with patch(
+                "leadfactory.storage.supabase_storage.datetime"
+            ) as mock_datetime:
                 mock_datetime.utcnow.return_value = expired_time
 
                 url_result = storage.generate_secure_report_url(
-                    "test-report.pdf",
-                    expires_in_hours=1
+                    "test-report.pdf", expires_in_hours=1
                 )
 
                 # Verify expiration timestamp is in the past
-                expires_at = datetime.fromisoformat(url_result["expires_at"].replace("Z", ""))
+                expires_at = datetime.fromisoformat(
+                    url_result["expires_at"].replace("Z", "")
+                )
                 assert expires_at < datetime.utcnow()
 
             # Test URL validation with expired timestamp
@@ -267,14 +282,12 @@ class TestPDFStorageDeliveryE2E:
                 secure_validator=mock_secure_validator,
                 access_control=mock_access_control,
                 rate_limiter=mock_rate_limiter,
-                audit_logger=mock_audit_logger
+                audit_logger=mock_audit_logger,
             )
 
             # Attempt to access expired URL
             access_result = delivery_service.validate_and_get_report_access(
-                report_id="expired-report",
-                user_id="user123",
-                access_token="expired123"
+                report_id="expired-report", user_id="user123", access_token="expired123"
             )
 
             # Verify access denied for expired URL
@@ -284,13 +297,16 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_large_file_handling_workflow(self):
         """Test complete workflow with large PDF files."""
-        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
-             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
-
+        with (
+            patch(
+                "leadfactory.storage.supabase_storage.create_client"
+            ) as mock_create_client,
+            patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env,
+        ):
             # Mock environment
             mock_get_env.side_effect = lambda key: {
                 "SUPABASE_URL": "https://test.supabase.co",
-                "SUPABASE_KEY": "test-key"
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             mock_client = Mock()
@@ -308,11 +324,14 @@ class TestPDFStorageDeliveryE2E:
                 pdf_path=self.large_temp_pdf.name,
                 report_id="large_report",
                 user_id="user_large",
-                purchase_id="purchase_large"
+                purchase_id="purchase_large",
             )
 
             # Verify large file was handled
-            assert result["storage_path"] == "reports/large/large_report_20240101_120000.pdf"
+            assert (
+                result["storage_path"]
+                == "reports/large/large_report_20240101_120000.pdf"
+            )
             assert result["size_bytes"] == len(self.large_pdf_content)
             assert result["content_type"] == "application/pdf"
 
@@ -323,13 +342,16 @@ class TestPDFStorageDeliveryE2E:
     @pytest.mark.e2e
     def test_invalid_pdf_handling_workflow(self):
         """Test workflow behavior with invalid PDF files."""
-        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
-             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
-
+        with (
+            patch(
+                "leadfactory.storage.supabase_storage.create_client"
+            ) as mock_create_client,
+            patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env,
+        ):
             # Mock environment
             mock_get_env.side_effect = lambda key: {
                 "SUPABASE_URL": "https://test.supabase.co",
-                "SUPABASE_KEY": "test-key"
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             mock_client = Mock()
@@ -347,7 +369,9 @@ class TestPDFStorageDeliveryE2E:
 
             # Configure validation to reject invalid PDF
             mock_secure_validator.validate_access.return_value.is_valid = False
-            mock_secure_validator.validate_access.return_value.reason = "Invalid PDF format"
+            mock_secure_validator.validate_access.return_value.reason = (
+                "Invalid PDF format"
+            )
 
             delivery_service = ReportDeliveryService(
                 storage=storage,
@@ -356,7 +380,7 @@ class TestPDFStorageDeliveryE2E:
                 secure_validator=mock_secure_validator,
                 access_control=mock_access_control,
                 rate_limiter=mock_rate_limiter,
-                audit_logger=mock_audit_logger
+                audit_logger=mock_audit_logger,
             )
 
             # Attempt to upload invalid PDF
@@ -366,26 +390,31 @@ class TestPDFStorageDeliveryE2E:
                     report_id="invalid_report",
                     user_id="user_invalid",
                     user_email="invalid@example.com",
-                    purchase_id="purchase_invalid"
+                    purchase_id="purchase_invalid",
                 )
 
             # Verify audit logging for invalid file
             mock_audit_logger.log_security_violation.assert_called_once()
 
     @pytest.mark.e2e
-    @pytest.mark.skip(reason="Temporarily disabled due to CI hanging - needs threading fix")
+    @pytest.mark.skip(
+        reason="Temporarily disabled due to CI hanging - needs threading fix"
+    )
     def test_concurrent_access_handling(self):
         """Test system behavior under concurrent access scenarios."""
         import queue
         import threading
 
-        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
-             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
-
+        with (
+            patch(
+                "leadfactory.storage.supabase_storage.create_client"
+            ) as mock_create_client,
+            patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env,
+        ):
             # Mock environment
             mock_get_env.side_effect = lambda key: {
                 "SUPABASE_URL": "https://test.supabase.co",
-                "SUPABASE_KEY": "test-key"
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             mock_client = Mock()
@@ -406,6 +435,7 @@ class TestPDFStorageDeliveryE2E:
 
             # Configure rate limiting for concurrent access
             call_count = 0
+
             def rate_limit_side_effect(*args, **kwargs):
                 nonlocal call_count
                 call_count += 1
@@ -419,7 +449,8 @@ class TestPDFStorageDeliveryE2E:
             mock_access_control.check_permission.return_value = True
             mock_link_generator.generate_secure_report_url.return_value = {
                 "url": "https://concurrent-link.example.com/report",
-                "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z"
+                "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat()
+                + "Z",
             }
 
             delivery_service = ReportDeliveryService(
@@ -429,7 +460,7 @@ class TestPDFStorageDeliveryE2E:
                 secure_validator=mock_secure_validator,
                 access_control=mock_access_control,
                 rate_limiter=mock_rate_limiter,
-                audit_logger=mock_audit_logger
+                audit_logger=mock_audit_logger,
             )
 
             # Create concurrent access requests
@@ -440,7 +471,7 @@ class TestPDFStorageDeliveryE2E:
                     result = delivery_service.validate_and_get_report_access(
                         report_id=f"concurrent_report_{thread_id}",
                         user_id=f"user_{thread_id}",
-                        access_token=f"token_{thread_id}"
+                        access_token=f"token_{thread_id}",
                     )
                     results_queue.put((thread_id, result))
                 except Exception as e:
@@ -472,21 +503,28 @@ class TestPDFStorageDeliveryE2E:
 
             # Verify rate limiting behavior
             successful_requests = [r for r in results if r[1].get("success", False)]
-            rate_limited_requests = [r for r in results if not r[1].get("success", False)]
+            rate_limited_requests = [
+                r for r in results if not r[1].get("success", False)
+            ]
 
             assert len(successful_requests) <= 3  # Rate limit should kick in
-            assert len(rate_limited_requests) >= 2  # Some requests should be rate limited
+            assert (
+                len(rate_limited_requests) >= 2
+            )  # Some requests should be rate limited
 
     @pytest.mark.e2e
     def test_error_recovery_and_resilience(self):
         """Test system resilience and error recovery mechanisms."""
-        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create_client, \
-             patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
-
+        with (
+            patch(
+                "leadfactory.storage.supabase_storage.create_client"
+            ) as mock_create_client,
+            patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env,
+        ):
             # Mock environment
             mock_get_env.side_effect = lambda key: {
                 "SUPABASE_URL": "https://test.supabase.co",
-                "SUPABASE_KEY": "test-key"
+                "SUPABASE_KEY": "test-key",
             }.get(key)
 
             mock_client = Mock()
@@ -494,6 +532,7 @@ class TestPDFStorageDeliveryE2E:
 
             # Simulate storage failure then recovery
             call_count = 0
+
             def upload_side_effect(*args, **kwargs):
                 nonlocal call_count
                 call_count += 1
@@ -501,7 +540,9 @@ class TestPDFStorageDeliveryE2E:
                     raise Exception("Storage temporarily unavailable")
                 return {"path": "reports/recovered/report_recovered.pdf"}
 
-            mock_client.storage.from_.return_value.upload.side_effect = upload_side_effect
+            mock_client.storage.from_.return_value.upload.side_effect = (
+                upload_side_effect
+            )
 
             storage = SupabaseStorage(bucket_name="resilience-test")
 
@@ -519,7 +560,8 @@ class TestPDFStorageDeliveryE2E:
             mock_rate_limiter.check_rate_limit.return_value.allowed = True
             mock_link_generator.generate_secure_report_url.return_value = {
                 "url": "https://recovered-link.example.com/report",
-                "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat() + "Z"
+                "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat()
+                + "Z",
             }
 
             delivery_service = ReportDeliveryService(
@@ -529,7 +571,7 @@ class TestPDFStorageDeliveryE2E:
                 secure_validator=mock_secure_validator,
                 access_control=mock_access_control,
                 rate_limiter=mock_rate_limiter,
-                audit_logger=mock_audit_logger
+                audit_logger=mock_audit_logger,
             )
 
             # First attempt should fail
@@ -539,7 +581,7 @@ class TestPDFStorageDeliveryE2E:
                     report_id="resilience_report",
                     user_id="user_resilience",
                     user_email="resilience@example.com",
-                    purchase_id="purchase_resilience"
+                    purchase_id="purchase_resilience",
                 )
 
             # Second attempt should succeed (simulating retry logic)
@@ -548,7 +590,7 @@ class TestPDFStorageDeliveryE2E:
                 report_id="resilience_report",
                 user_id="user_resilience",
                 user_email="resilience@example.com",
-                purchase_id="purchase_resilience"
+                purchase_id="purchase_resilience",
             )
 
             # Verify recovery

@@ -6,25 +6,27 @@ definition and concrete implementations.
 """
 
 import json
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from contextlib import contextmanager
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Try to import the storage modules
 try:
-    from leadfactory.storage.interface import StorageInterface
-    from leadfactory.storage.postgres_storage import PostgresStorage
     from leadfactory.storage.factory import (
-        get_storage_instance,
-        reset_storage_instance,
-        configure_storage,
-        get_default_storage,
-        get_postgres_storage,
         POSTGRES,
         POSTGRESQL,
         SUPABASE,
         SUPPORTED_STORAGE_TYPES,
+        configure_storage,
+        get_default_storage,
+        get_postgres_storage,
+        get_storage_instance,
+        reset_storage_instance,
     )
+    from leadfactory.storage.interface import StorageInterface
+    from leadfactory.storage.postgres_storage import PostgresStorage
+
     IMPORTS_AVAILABLE = True
 except ImportError as e:
     print(f"Storage imports not available: {e}")
@@ -32,42 +34,106 @@ except ImportError as e:
 
     # Mock classes for when imports are not available
     class MockStorageInterface:
-        def connection(self): pass
-        def cursor(self): pass
-        def execute_query(self, query, params=None, fetch=True): return []
-        def execute_transaction(self, queries): return True
-        def get_business_by_id(self, business_id): return None
-        def get_businesses_by_criteria(self, criteria, limit=None): return []
-        def update_business(self, business_id, updates): return True
-        def insert_business(self, business_data): return 1
-        def get_processing_status(self, business_id, stage): return None
-        def update_processing_status(self, business_id, stage, status, metadata=None): return True
-        def save_stage_results(self, business_id, stage, results): return True
-        def get_stage_results(self, business_id, stage): return None
-        def check_connection(self): return True
-        def validate_schema(self): return True
-        def add_to_review_queue(self, business1_id, business2_id, reason, details): return None
-        def get_review_queue_items(self, status=None, limit=None): return []
-        def update_review_status(self, review_id, status, details): return True
-        def get_review_statistics(self): return {}
-        def get_businesses_needing_screenshots(self, limit=None): return []
-        def create_asset(self, business_id, asset_type, file_path, url): return True
-        def get_businesses_needing_mockups(self, limit=None): return []
-        def get_business_asset(self, business_id, asset_type): return None
-        def get_email_stats(self): return {
-            'total_sent': 0,
-            'sent_today': 0,
-            'businesses_emailed': 0,
-            'total_businesses_with_email': 0,
-            'email_coverage': 0.0
-        }
-        def is_email_unsubscribed(self, email): return False
-        def add_unsubscribe(self, email, reason, ip_address): return True
-        def log_email_sent(self, business_id, recipient_email, recipient_name, subject, message_id, status): return True
-        def save_email_record(self, business_id, to_email, to_name, subject, message_id, status): return True
+        def connection(self):
+            pass
+
+        def cursor(self):
+            pass
+
+        def execute_query(self, query, params=None, fetch=True):
+            return []
+
+        def execute_transaction(self, queries):
+            return True
+
+        def get_business_by_id(self, business_id):
+            return None
+
+        def get_businesses_by_criteria(self, criteria, limit=None):
+            return []
+
+        def update_business(self, business_id, updates):
+            return True
+
+        def insert_business(self, business_data):
+            return 1
+
+        def get_processing_status(self, business_id, stage):
+            return None
+
+        def update_processing_status(self, business_id, stage, status, metadata=None):
+            return True
+
+        def save_stage_results(self, business_id, stage, results):
+            return True
+
+        def get_stage_results(self, business_id, stage):
+            return None
+
+        def check_connection(self):
+            return True
+
+        def validate_schema(self):
+            return True
+
+        def add_to_review_queue(self, business1_id, business2_id, reason, details):
+            return None
+
+        def get_review_queue_items(self, status=None, limit=None):
+            return []
+
+        def update_review_status(self, review_id, status, details):
+            return True
+
+        def get_review_statistics(self):
+            return {}
+
+        def get_businesses_needing_screenshots(self, limit=None):
+            return []
+
+        def create_asset(self, business_id, asset_type, file_path, url):
+            return True
+
+        def get_businesses_needing_mockups(self, limit=None):
+            return []
+
+        def get_business_asset(self, business_id, asset_type):
+            return None
+
+        def get_email_stats(self):
+            return {
+                "total_sent": 0,
+                "sent_today": 0,
+                "businesses_emailed": 0,
+                "total_businesses_with_email": 0,
+                "email_coverage": 0.0,
+            }
+
+        def is_email_unsubscribed(self, email):
+            return False
+
+        def add_unsubscribe(self, email, reason, ip_address):
+            return True
+
+        def log_email_sent(
+            self,
+            business_id,
+            recipient_email,
+            recipient_name,
+            subject,
+            message_id,
+            status,
+        ):
+            return True
+
+        def save_email_record(
+            self, business_id, to_email, to_name, subject, message_id, status
+        ):
+            return True
+
         def read_text(self, file_path):
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, encoding="utf-8") as f:
                     return f.read()
             except:
                 return ""
@@ -82,14 +148,21 @@ except ImportError as e:
     def get_storage_instance(*args, **kwargs):
         return MockPostgresStorage()
 
-    def reset_storage_instance(): pass
-    def configure_storage(*args, **kwargs): return MockPostgresStorage()
-    def get_default_storage(): return MockPostgresStorage()
-    def get_postgres_storage(config=None): return MockPostgresStorage(config)
+    def reset_storage_instance():
+        pass
 
-    POSTGRES = 'postgres'
-    POSTGRESQL = 'postgresql'
-    SUPABASE = 'supabase'
+    def configure_storage(*args, **kwargs):
+        return MockPostgresStorage()
+
+    def get_default_storage():
+        return MockPostgresStorage()
+
+    def get_postgres_storage(config=None):
+        return MockPostgresStorage(config)
+
+    POSTGRES = "postgres"
+    POSTGRESQL = "postgresql"
+    SUPABASE = "supabase"
     SUPPORTED_STORAGE_TYPES = [POSTGRES, POSTGRESQL, SUPABASE]
 
 
@@ -107,19 +180,40 @@ class TestStorageInterface:
 
         # Check that all required methods are defined
         required_methods = [
-            'connection', 'cursor', 'execute_query', 'execute_transaction',
-            'get_business_by_id', 'get_businesses_by_criteria', 'update_business',
-            'insert_business', 'get_processing_status', 'update_processing_status',
-            'save_stage_results', 'get_stage_results', 'check_connection', 'validate_schema',
-            'add_to_review_queue', 'get_review_queue_items', 'update_review_status',
-            'get_review_statistics', 'get_businesses_needing_screenshots', 'create_asset',
-            'get_businesses_needing_mockups', 'get_business_asset', 'get_email_stats',
-            'is_email_unsubscribed', 'add_unsubscribe', 'log_email_sent', 'save_email_record',
-            'read_text'
+            "connection",
+            "cursor",
+            "execute_query",
+            "execute_transaction",
+            "get_business_by_id",
+            "get_businesses_by_criteria",
+            "update_business",
+            "insert_business",
+            "get_processing_status",
+            "update_processing_status",
+            "save_stage_results",
+            "get_stage_results",
+            "check_connection",
+            "validate_schema",
+            "add_to_review_queue",
+            "get_review_queue_items",
+            "update_review_status",
+            "get_review_statistics",
+            "get_businesses_needing_screenshots",
+            "create_asset",
+            "get_businesses_needing_mockups",
+            "get_business_asset",
+            "get_email_stats",
+            "is_email_unsubscribed",
+            "add_unsubscribe",
+            "log_email_sent",
+            "save_email_record",
+            "read_text",
         ]
 
         for method_name in required_methods:
-            assert hasattr(StorageInterface, method_name), f"Missing method: {method_name}"
+            assert hasattr(StorageInterface, method_name), (
+                f"Missing method: {method_name}"
+            )
 
 
 class TestPostgresStorage:
@@ -129,15 +223,15 @@ class TestPostgresStorage:
         """Test PostgreSQL storage initialization."""
         storage = PostgresStorage()
         assert storage is not None
-        assert hasattr(storage, 'config')
+        assert hasattr(storage, "config")
 
     def test_postgres_storage_with_config(self):
         """Test PostgreSQL storage initialization with config."""
-        config = {'test_key': 'test_value'}
+        config = {"test_key": "test_value"}
         storage = PostgresStorage(config)
         assert storage.config == config
 
-    @patch('leadfactory.storage.postgres_storage.db_connection')
+    @patch("leadfactory.storage.postgres_storage.db_connection")
     def test_connection_context_manager(self, mock_db_connection):
         """Test the connection context manager."""
         if not IMPORTS_AVAILABLE:
@@ -151,7 +245,7 @@ class TestPostgresStorage:
         with storage.connection() as conn:
             assert conn == mock_conn
 
-    @patch('leadfactory.storage.postgres_storage.db_cursor')
+    @patch("leadfactory.storage.postgres_storage.db_cursor")
     def test_cursor_context_manager(self, mock_db_cursor):
         """Test the cursor context manager."""
         if not IMPORTS_AVAILABLE:
@@ -165,21 +259,23 @@ class TestPostgresStorage:
         with storage.cursor() as cursor:
             assert cursor == mock_cursor
 
-    @patch('leadfactory.storage.postgres_storage.execute_query')
+    @patch("leadfactory.storage.postgres_storage.execute_query")
     def test_execute_query(self, mock_execute_query):
         """Test query execution."""
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        mock_execute_query.return_value = [{'id': 1, 'name': 'test'}]
+        mock_execute_query.return_value = [{"id": 1, "name": "test"}]
 
         storage = PostgresStorage()
-        result = storage.execute_query("SELECT * FROM test", ('param',))
+        result = storage.execute_query("SELECT * FROM test", ("param",))
 
-        assert result == [{'id': 1, 'name': 'test'}]
-        mock_execute_query.assert_called_once_with("SELECT * FROM test", ('param',), True)
+        assert result == [{"id": 1, "name": "test"}]
+        mock_execute_query.assert_called_once_with(
+            "SELECT * FROM test", ("param",), True
+        )
 
-    @patch('leadfactory.storage.postgres_storage.execute_transaction')
+    @patch("leadfactory.storage.postgres_storage.execute_transaction")
     def test_execute_transaction(self, mock_execute_transaction):
         """Test transaction execution."""
         if not IMPORTS_AVAILABLE:
@@ -188,7 +284,7 @@ class TestPostgresStorage:
         mock_execute_transaction.return_value = True
 
         storage = PostgresStorage()
-        queries = [("INSERT INTO test VALUES (%s)", ('value',))]
+        queries = [("INSERT INTO test VALUES (%s)", ("value",))]
         result = storage.execute_transaction(queries)
 
         assert result is True
@@ -198,16 +294,20 @@ class TestPostgresStorage:
         """Test getting business by ID."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
-            mock_cursor.fetchone.return_value = (1, 'Test Business', 'test@example.com')
-            mock_cursor.description = [('id',), ('name',), ('email',)]
+            mock_cursor.fetchone.return_value = (1, "Test Business", "test@example.com")
+            mock_cursor.description = [("id",), ("name",), ("email",)]
 
             result = storage.get_business_by_id(1)
 
             if IMPORTS_AVAILABLE:
-                assert result == {'id': 1, 'name': 'Test Business', 'email': 'test@example.com'}
+                assert result == {
+                    "id": 1,
+                    "name": "Test Business",
+                    "email": "test@example.com",
+                }
             else:
                 assert result is None  # Mock implementation returns None
 
@@ -215,13 +315,13 @@ class TestPostgresStorage:
         """Test getting businesses by criteria."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
-            mock_cursor.fetchall.return_value = [(1, 'Test Business')]
-            mock_cursor.description = [('id',), ('name',)]
+            mock_cursor.fetchall.return_value = [(1, "Test Business")]
+            mock_cursor.description = [("id",), ("name",)]
 
-            criteria = {'status': 'active'}
+            criteria = {"status": "active"}
             result = storage.get_businesses_by_criteria(criteria, limit=10)
 
             if IMPORTS_AVAILABLE:
@@ -233,12 +333,12 @@ class TestPostgresStorage:
         """Test updating business record."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
             mock_cursor.rowcount = 1
 
-            updates = {'name': 'Updated Business'}
+            updates = {"name": "Updated Business"}
             result = storage.update_business(1, updates)
 
             if IMPORTS_AVAILABLE:
@@ -250,12 +350,12 @@ class TestPostgresStorage:
         """Test inserting business record."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
             mock_cursor.fetchone.return_value = (123,)
 
-            business_data = {'name': 'New Business', 'email': 'new@example.com'}
+            business_data = {"name": "New Business", "email": "new@example.com"}
             result = storage.insert_business(business_data)
 
             if IMPORTS_AVAILABLE:
@@ -267,36 +367,44 @@ class TestPostgresStorage:
         """Test processing status get/update operations."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
 
             # Test get_processing_status
-            mock_cursor.fetchone.return_value = ('completed', '{"key": "value"}', '2023-01-01')
-            status = storage.get_processing_status(1, 'scrape')
+            mock_cursor.fetchone.return_value = (
+                "completed",
+                '{"key": "value"}',
+                "2023-01-01",
+            )
+            status = storage.get_processing_status(1, "scrape")
 
             if IMPORTS_AVAILABLE:
-                assert status['status'] == 'completed'
-                assert status['metadata'] == {"key": "value"}
+                assert status["status"] == "completed"
+                assert status["metadata"] == {"key": "value"}
             else:
                 assert status is None  # Mock implementation returns None
 
             # Test update_processing_status
             mock_cursor.rowcount = 1
-            result = storage.update_processing_status(1, 'scrape', 'completed', {'key': 'value'})
+            result = storage.update_processing_status(
+                1, "scrape", "completed", {"key": "value"}
+            )
             assert result is True
 
     def test_review_queue_operations(self):
         """Test review queue operations."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
 
             # Test add_to_review_queue
             mock_cursor.fetchone.return_value = (123,)
-            review_id = storage.add_to_review_queue(1, 2, "Test reason", '{"test": "data"}')
+            review_id = storage.add_to_review_queue(
+                1, 2, "Test reason", '{"test": "data"}'
+            )
 
             if IMPORTS_AVAILABLE:
                 assert review_id == 123
@@ -304,23 +412,40 @@ class TestPostgresStorage:
 
             # Test get_review_queue_items
             mock_cursor.fetchall.return_value = [
-                (1, 1, 2, 'pending', 'Test reason', '{"test": "data"}', '2023-01-01', None)
+                (
+                    1,
+                    1,
+                    2,
+                    "pending",
+                    "Test reason",
+                    '{"test": "data"}',
+                    "2023-01-01",
+                    None,
+                )
             ]
             mock_cursor.description = [
-                ('id',), ('business1_id',), ('business2_id',), ('status',),
-                ('reason',), ('details',), ('created_at',), ('updated_at',)
+                ("id",),
+                ("business1_id",),
+                ("business2_id",),
+                ("status",),
+                ("reason",),
+                ("details",),
+                ("created_at",),
+                ("updated_at",),
             ]
 
-            reviews = storage.get_review_queue_items(status='pending', limit=10)
+            reviews = storage.get_review_queue_items(status="pending", limit=10)
 
             if IMPORTS_AVAILABLE:
                 assert len(reviews) == 1
-                assert reviews[0]['status'] == 'pending'
-                assert reviews[0]['reason'] == 'Test reason'
+                assert reviews[0]["status"] == "pending"
+                assert reviews[0]["reason"] == "Test reason"
 
             # Test update_review_status
             mock_cursor.rowcount = 1
-            success = storage.update_review_status(123, 'resolved', '{"resolution": "merged"}')
+            success = storage.update_review_status(
+                123, "resolved", '{"resolution": "merged"}'
+            )
 
             if IMPORTS_AVAILABLE:
                 assert success is True
@@ -329,27 +454,29 @@ class TestPostgresStorage:
         """Test asset management operations."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
 
             # Test get_businesses_needing_screenshots
             mock_cursor.fetchall.return_value = [
-                (1, 'Test Business', 'https://example.com'),
-                (2, 'Another Business', 'https://another.com')
+                (1, "Test Business", "https://example.com"),
+                (2, "Another Business", "https://another.com"),
             ]
 
             businesses = storage.get_businesses_needing_screenshots(limit=10)
 
             if IMPORTS_AVAILABLE:
                 assert len(businesses) == 2
-                assert businesses[0]['id'] == 1
-                assert businesses[0]['name'] == 'Test Business'
-                assert businesses[0]['website'] == 'https://example.com'
+                assert businesses[0]["id"] == 1
+                assert businesses[0]["name"] == "Test Business"
+                assert businesses[0]["website"] == "https://example.com"
 
             # Test create_asset
             mock_cursor.rowcount = 1
-            success = storage.create_asset(1, 'screenshot', '/path/to/file.png', 'https://example.com/file.png')
+            success = storage.create_asset(
+                1, "screenshot", "/path/to/file.png", "https://example.com/file.png"
+            )
 
             if IMPORTS_AVAILABLE:
                 assert success is True
@@ -357,59 +484,72 @@ class TestPostgresStorage:
 
             # Test get_business_asset
             mock_cursor.fetchone.return_value = (
-                1, 1, 'screenshot', '/path/to/file.png', 'https://example.com/file.png', '2023-01-01'
+                1,
+                1,
+                "screenshot",
+                "/path/to/file.png",
+                "https://example.com/file.png",
+                "2023-01-01",
             )
             mock_cursor.description = [
-                ('id',), ('business_id',), ('asset_type',), ('file_path',), ('url',), ('created_at',)
+                ("id",),
+                ("business_id",),
+                ("asset_type",),
+                ("file_path",),
+                ("url",),
+                ("created_at",),
             ]
 
-            asset = storage.get_business_asset(1, 'screenshot')
+            asset = storage.get_business_asset(1, "screenshot")
 
             if IMPORTS_AVAILABLE:
                 assert asset is not None
-                assert asset['asset_type'] == 'screenshot'
-                assert asset['file_path'] == '/path/to/file.png'
+                assert asset["asset_type"] == "screenshot"
+                assert asset["file_path"] == "/path/to/file.png"
 
             # Test get_businesses_needing_mockups
             mock_cursor.fetchall.return_value = [
-                (1, 'Test Business', 'https://example.com')
+                (1, "Test Business", "https://example.com")
             ]
 
             mockup_businesses = storage.get_businesses_needing_mockups(limit=5)
 
             if IMPORTS_AVAILABLE:
                 assert len(mockup_businesses) == 1
-                assert mockup_businesses[0]['id'] == 1
+                assert mockup_businesses[0]["id"] == 1
 
     def test_review_statistics(self):
         """Test review statistics functionality."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
 
             # Mock multiple query results for statistics
             mock_cursor.fetchall.side_effect = [
-                [('pending', 5), ('resolved', 10), ('deferred', 2)],  # status counts
-                [('Manual review required', 8), ('Conflict detected', 4)]  # top reasons
+                [("pending", 5), ("resolved", 10), ("deferred", 2)],  # status counts
+                [
+                    ("Manual review required", 8),
+                    ("Conflict detected", 4),
+                ],  # top reasons
             ]
             mock_cursor.fetchone.return_value = (3600.0,)  # avg resolution time
 
             stats = storage.get_review_statistics()
 
             if IMPORTS_AVAILABLE:
-                assert 'status_counts' in stats
-                assert 'avg_resolution_time_seconds' in stats
-                assert 'top_reasons' in stats
-                assert stats['status_counts']['pending'] == 5
-                assert stats['avg_resolution_time_seconds'] == 3600.0
+                assert "status_counts" in stats
+                assert "avg_resolution_time_seconds" in stats
+                assert "top_reasons" in stats
+                assert stats["status_counts"]["pending"] == 5
+                assert stats["avg_resolution_time_seconds"] == 3600.0
 
     def test_error_handling(self):
         """Test error handling in storage operations."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
             mock_cursor.execute.side_effect = Exception("Database error")
@@ -421,7 +561,7 @@ class TestPostgresStorage:
             result = storage.add_to_review_queue(1, 2, "test", "details")
             assert result is None
 
-            result = storage.create_asset(1, 'screenshot', '/path', 'url')
+            result = storage.create_asset(1, "screenshot", "/path", "url")
             if IMPORTS_AVAILABLE:
                 assert result is False
             else:
@@ -435,22 +575,22 @@ class TestPostgresStorage:
         """Test stage results save/get operations."""
         storage = PostgresStorage()
 
-        with patch.object(storage, 'cursor') as mock_cursor_cm:
+        with patch.object(storage, "cursor") as mock_cursor_cm:
             mock_cursor = Mock()
             mock_cursor_cm.return_value.__enter__.return_value = mock_cursor
 
             # Test save_stage_results
             mock_cursor.rowcount = 1
-            results = {'data': 'test_data'}
-            save_result = storage.save_stage_results(1, 'scrape', results)
+            results = {"data": "test_data"}
+            save_result = storage.save_stage_results(1, "scrape", results)
             assert save_result is True
 
             # Test get_stage_results
             mock_cursor.fetchone.return_value = ('{"data": "test_data"}',)
-            get_result = storage.get_stage_results(1, 'scrape')
+            get_result = storage.get_stage_results(1, "scrape")
 
             if IMPORTS_AVAILABLE:
-                assert get_result == {'data': 'test_data'}
+                assert get_result == {"data": "test_data"}
             else:
                 assert get_result is None  # Mock implementation returns None
 
@@ -459,7 +599,9 @@ class TestPostgresStorage:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.storage.postgres_storage.check_connection') as mock_check_connection:
+        with patch(
+            "leadfactory.storage.postgres_storage.check_connection"
+        ) as mock_check_connection:
             mock_check_connection.return_value = True
 
             storage = PostgresStorage()
@@ -473,7 +615,9 @@ class TestPostgresStorage:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.storage.postgres_storage.validate_schema') as mock_validate_schema:
+        with patch(
+            "leadfactory.storage.postgres_storage.validate_schema"
+        ) as mock_validate_schema:
             mock_validate_schema.return_value = True
 
             storage = PostgresStorage()
@@ -488,7 +632,13 @@ class TestPostgresStorage:
         stats = storage.get_email_stats()
 
         assert isinstance(stats, dict)
-        expected_keys = ['total_sent', 'sent_today', 'businesses_emailed', 'total_businesses_with_email', 'email_coverage']
+        expected_keys = [
+            "total_sent",
+            "sent_today",
+            "businesses_emailed",
+            "total_businesses_with_email",
+            "email_coverage",
+        ]
         for key in expected_keys:
             assert key in stats
             assert isinstance(stats[key], (int, float))
@@ -502,7 +652,9 @@ class TestPostgresStorage:
         assert not storage.is_email_unsubscribed(test_email)
 
         # Add to unsubscribe list
-        result = storage.add_unsubscribe(test_email, reason="user request", ip_address="127.0.0.1")
+        result = storage.add_unsubscribe(
+            test_email, reason="user request", ip_address="127.0.0.1"
+        )
         if IMPORTS_AVAILABLE:
             assert result is True
         else:
@@ -527,7 +679,7 @@ class TestPostgresStorage:
             recipient_name="Test User",
             subject="Test Subject",
             message_id="msg123",
-            status="sent"
+            status="sent",
         )
         if IMPORTS_AVAILABLE:
             assert result is True
@@ -541,7 +693,7 @@ class TestPostgresStorage:
             to_name="Test User",
             subject="Test Subject",
             message_id="msg123",
-            status="sent"
+            status="sent",
         )
         if IMPORTS_AVAILABLE:
             assert result is True
@@ -553,10 +705,10 @@ class TestPostgresStorage:
         storage = PostgresStorage()
 
         # Create a temporary file for testing
-        import tempfile
         import os
+        import tempfile
 
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
             test_content = "This is test content"
             f.write(test_content)
             temp_path = f.name
@@ -583,19 +735,19 @@ class TestStorageFactory:
 
     def test_get_storage_instance_postgres(self):
         """Test getting PostgreSQL storage instance."""
-        storage = get_storage_instance('postgres')
+        storage = get_storage_instance("postgres")
         assert storage is not None
         assert isinstance(storage, (PostgresStorage, type(storage)))
 
     def test_get_storage_instance_postgresql(self):
         """Test getting PostgreSQL storage instance with full name."""
-        storage = get_storage_instance('postgresql')
+        storage = get_storage_instance("postgresql")
         assert storage is not None
         assert isinstance(storage, (PostgresStorage, type(storage)))
 
     def test_get_storage_instance_supabase(self):
         """Test getting Supabase storage instance."""
-        storage = get_storage_instance('supabase')
+        storage = get_storage_instance("supabase")
         assert storage is not None
         # Supabase currently uses PostgreSQL implementation
         assert isinstance(storage, (PostgresStorage, type(storage)))
@@ -606,7 +758,7 @@ class TestStorageFactory:
             pytest.skip("Skipping detailed test with mock implementation")
 
         with pytest.raises(ValueError, match="Unsupported storage type"):
-            get_storage_instance('unsupported_type')
+            get_storage_instance("unsupported_type")
 
     def test_get_storage_instance_singleton(self):
         """Test singleton behavior of storage instance."""
@@ -629,15 +781,15 @@ class TestStorageFactory:
 
     def test_configure_storage(self):
         """Test storage configuration."""
-        config = {'test_setting': 'test_value'}
-        storage = configure_storage('postgres', config)
+        config = {"test_setting": "test_value"}
+        storage = configure_storage("postgres", config)
 
         assert storage is not None
         if IMPORTS_AVAILABLE:
             assert storage.config == config
         else:
             # Mock implementation may not store config the same way
-            assert hasattr(storage, 'config')
+            assert hasattr(storage, "config")
 
     def test_get_default_storage(self):
         """Test getting default storage."""
@@ -646,7 +798,7 @@ class TestStorageFactory:
 
     def test_get_postgres_storage(self):
         """Test getting PostgreSQL storage directly."""
-        config = {'test_key': 'test_value'}
+        config = {"test_key": "test_value"}
         storage = get_postgres_storage(config)
 
         assert storage is not None
@@ -659,7 +811,7 @@ class TestStorageFactory:
         assert POSTGRESQL in SUPPORTED_STORAGE_TYPES
         assert SUPABASE in SUPPORTED_STORAGE_TYPES
 
-    @patch.dict('os.environ', {'STORAGE_TYPE': 'postgres'})
+    @patch.dict("os.environ", {"STORAGE_TYPE": "postgres"})
     def test_storage_type_from_environment(self):
         """Test getting storage type from environment variable."""
         storage = get_storage_instance()
@@ -686,36 +838,36 @@ class TestStorageFactory:
         storage = get_storage_instance()
 
         # Verify all new methods exist
-        assert hasattr(storage, 'add_to_review_queue')
-        assert hasattr(storage, 'get_review_queue_items')
-        assert hasattr(storage, 'update_review_status')
-        assert hasattr(storage, 'get_review_statistics')
-        assert hasattr(storage, 'get_businesses_needing_screenshots')
-        assert hasattr(storage, 'create_asset')
-        assert hasattr(storage, 'get_businesses_needing_mockups')
-        assert hasattr(storage, 'get_business_asset')
-        assert hasattr(storage, 'get_email_stats')
-        assert hasattr(storage, 'is_email_unsubscribed')
-        assert hasattr(storage, 'add_unsubscribe')
-        assert hasattr(storage, 'log_email_sent')
-        assert hasattr(storage, 'save_email_record')
-        assert hasattr(storage, 'read_text')
+        assert hasattr(storage, "add_to_review_queue")
+        assert hasattr(storage, "get_review_queue_items")
+        assert hasattr(storage, "update_review_status")
+        assert hasattr(storage, "get_review_statistics")
+        assert hasattr(storage, "get_businesses_needing_screenshots")
+        assert hasattr(storage, "create_asset")
+        assert hasattr(storage, "get_businesses_needing_mockups")
+        assert hasattr(storage, "get_business_asset")
+        assert hasattr(storage, "get_email_stats")
+        assert hasattr(storage, "is_email_unsubscribed")
+        assert hasattr(storage, "add_unsubscribe")
+        assert hasattr(storage, "log_email_sent")
+        assert hasattr(storage, "save_email_record")
+        assert hasattr(storage, "read_text")
 
         # Verify methods are callable
-        assert callable(getattr(storage, 'add_to_review_queue'))
-        assert callable(getattr(storage, 'get_review_queue_items'))
-        assert callable(getattr(storage, 'update_review_status'))
-        assert callable(getattr(storage, 'get_review_statistics'))
-        assert callable(getattr(storage, 'get_businesses_needing_screenshots'))
-        assert callable(getattr(storage, 'create_asset'))
-        assert callable(getattr(storage, 'get_businesses_needing_mockups'))
-        assert callable(getattr(storage, 'get_business_asset'))
-        assert callable(getattr(storage, 'get_email_stats'))
-        assert callable(getattr(storage, 'is_email_unsubscribed'))
-        assert callable(getattr(storage, 'add_unsubscribe'))
-        assert callable(getattr(storage, 'log_email_sent'))
-        assert callable(getattr(storage, 'save_email_record'))
-        assert callable(getattr(storage, 'read_text'))
+        assert callable(storage.add_to_review_queue)
+        assert callable(storage.get_review_queue_items)
+        assert callable(storage.update_review_status)
+        assert callable(storage.get_review_statistics)
+        assert callable(storage.get_businesses_needing_screenshots)
+        assert callable(storage.create_asset)
+        assert callable(storage.get_businesses_needing_mockups)
+        assert callable(storage.get_business_asset)
+        assert callable(storage.get_email_stats)
+        assert callable(storage.is_email_unsubscribed)
+        assert callable(storage.add_unsubscribe)
+        assert callable(storage.log_email_sent)
+        assert callable(storage.save_email_record)
+        assert callable(storage.read_text)
 
 
 if __name__ == "__main__":

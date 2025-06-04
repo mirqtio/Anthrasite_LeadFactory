@@ -5,17 +5,18 @@ Tests role-based access control, permissions, session management,
 and token revocation functionality.
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
+import pytest
+
 from leadfactory.security.access_control import (
     AccessControlService,
-    UserRole,
+    AccessPermission,
     PDFOperation,
     UserContext,
-    AccessPermission,
-    get_access_control_service
+    UserRole,
+    get_access_control_service,
 )
 
 
@@ -32,7 +33,7 @@ class TestAccessControlService:
             role=UserRole.ADMIN,
             permissions=[],
             session_id="session_admin",
-            ip_address="192.168.1.100"
+            ip_address="192.168.1.100",
         )
 
         self.customer_user = UserContext(
@@ -40,7 +41,7 @@ class TestAccessControlService:
             role=UserRole.CUSTOMER,
             permissions=[],
             session_id="session_customer",
-            ip_address="192.168.1.101"
+            ip_address="192.168.1.101",
         )
 
         self.support_user = UserContext(
@@ -48,7 +49,7 @@ class TestAccessControlService:
             role=UserRole.SUPPORT,
             permissions=[],
             session_id="session_support",
-            ip_address="192.168.1.102"
+            ip_address="192.168.1.102",
         )
 
     def test_admin_has_all_permissions(self):
@@ -57,7 +58,7 @@ class TestAccessControlService:
             assert self.access_control.check_permission(
                 user_context=self.admin_user,
                 operation=operation,
-                resource_id="test_resource"
+                resource_id="test_resource",
             )
 
     def test_customer_has_basic_permissions(self):
@@ -67,14 +68,14 @@ class TestAccessControlService:
             user_context=self.customer_user,
             operation=PDFOperation.VIEW,
             resource_id="test_resource",
-            resource_owner_id="customer_456"  # Own resource
+            resource_owner_id="customer_456",  # Own resource
         )
 
         assert self.access_control.check_permission(
             user_context=self.customer_user,
             operation=PDFOperation.DOWNLOAD,
             resource_id="test_resource",
-            resource_owner_id="customer_456"  # Own resource
+            resource_owner_id="customer_456",  # Own resource
         )
 
     def test_customer_cannot_access_others_resources(self):
@@ -83,7 +84,7 @@ class TestAccessControlService:
             user_context=self.customer_user,
             operation=PDFOperation.VIEW,
             resource_id="test_resource",
-            resource_owner_id="other_user"  # Not their resource
+            resource_owner_id="other_user",  # Not their resource
         )
 
     def test_customer_cannot_delete_or_revoke(self):
@@ -92,14 +93,14 @@ class TestAccessControlService:
             user_context=self.customer_user,
             operation=PDFOperation.DELETE,
             resource_id="test_resource",
-            resource_owner_id="customer_456"
+            resource_owner_id="customer_456",
         )
 
         assert not self.access_control.check_permission(
             user_context=self.customer_user,
             operation=PDFOperation.REVOKE_ACCESS,
             resource_id="test_resource",
-            resource_owner_id="customer_456"
+            resource_owner_id="customer_456",
         )
 
     def test_support_has_view_permissions(self):
@@ -108,7 +109,7 @@ class TestAccessControlService:
             user_context=self.support_user,
             operation=PDFOperation.VIEW,
             resource_id="test_resource",
-            resource_owner_id="any_user"
+            resource_owner_id="any_user",
         )
 
     def test_support_cannot_delete(self):
@@ -116,7 +117,7 @@ class TestAccessControlService:
         assert not self.access_control.check_permission(
             user_context=self.support_user,
             operation=PDFOperation.DELETE,
-            resource_id="test_resource"
+            resource_id="test_resource",
         )
 
     def test_viewer_has_limited_permissions(self):
@@ -126,35 +127,27 @@ class TestAccessControlService:
             role=UserRole.VIEWER,
             permissions=[],
             session_id="session_viewer",
-            ip_address="192.168.1.103"
+            ip_address="192.168.1.103",
         )
 
         # Viewers can only view
         assert self.access_control.check_permission(
-            viewer_user,
-            PDFOperation.VIEW,
-            "test_resource"
+            viewer_user, PDFOperation.VIEW, "test_resource"
         )
 
         # Viewers cannot download, generate, etc.
         assert not self.access_control.check_permission(
-            viewer_user,
-            PDFOperation.DOWNLOAD,
-            "test_resource"
+            viewer_user, PDFOperation.DOWNLOAD, "test_resource"
         )
 
         assert not self.access_control.check_permission(
-            viewer_user,
-            PDFOperation.GENERATE,
-            "test_resource"
+            viewer_user, PDFOperation.GENERATE, "test_resource"
         )
 
     def test_session_management(self):
         """Test session creation and validation."""
         session_id = self.access_control.create_session(
-            user_id="test_user",
-            role=UserRole.CUSTOMER,
-            ip_address="192.168.1.200"
+            user_id="test_user", role=UserRole.CUSTOMER, ip_address="192.168.1.200"
         )
 
         assert session_id is not None
@@ -164,9 +157,7 @@ class TestAccessControlService:
         """Test that sessions expire after the configured time."""
         # Create a session
         session_id = self.access_control.create_session(
-            user_id="test_user",
-            role=UserRole.CUSTOMER,
-            ip_address="192.168.1.200"
+            user_id="test_user", role=UserRole.CUSTOMER, ip_address="192.168.1.200"
         )
 
         # Manually expire the session
@@ -180,9 +171,7 @@ class TestAccessControlService:
     def test_session_revocation(self):
         """Test session revocation."""
         session_id = self.access_control.create_session(
-            user_id="test_user",
-            role=UserRole.CUSTOMER,
-            ip_address="192.168.1.200"
+            user_id="test_user", role=UserRole.CUSTOMER, ip_address="192.168.1.200"
         )
 
         assert self.access_control.validate_session(session_id)
@@ -225,7 +214,7 @@ class TestAccessControlService:
             role=UserRole.CUSTOMER,
             permissions=[],
             session_id="session_revoked",
-            ip_address="192.168.1.104"
+            ip_address="192.168.1.104",
         )
 
         # Revoke the user
@@ -236,14 +225,18 @@ class TestAccessControlService:
             revoked_user,
             PDFOperation.VIEW,
             "test_resource",
-            resource_owner_id="revoked_user"
+            resource_owner_id="revoked_user",
         )
 
     def test_cleanup_expired_sessions(self):
         """Test cleanup of expired sessions."""
         # Create multiple sessions
-        session1 = self.access_control.create_session("user1", UserRole.CUSTOMER, "192.168.1.1")
-        session2 = self.access_control.create_session("user2", UserRole.CUSTOMER, "192.168.1.2")
+        session1 = self.access_control.create_session(
+            "user1", UserRole.CUSTOMER, "192.168.1.1"
+        )
+        session2 = self.access_control.create_session(
+            "user2", UserRole.CUSTOMER, "192.168.1.2"
+        )
 
         # Manually expire one session
         if session1 in self.access_control._active_sessions:
@@ -274,14 +267,14 @@ class TestAccessControlService:
             self.customer_user,
             PDFOperation.VIEW,
             "resource_123",
-            resource_owner_id="customer_456"  # Same as user_id
+            resource_owner_id="customer_456",  # Same as user_id
         )
 
         assert not self.access_control.check_permission(
             self.customer_user,
             PDFOperation.VIEW,
             "resource_123",
-            resource_owner_id="different_user"  # Different from user_id
+            resource_owner_id="different_user",  # Different from user_id
         )
 
 
@@ -308,7 +301,7 @@ class TestUserContext:
             permissions=[],
             session_id="test_session",
             ip_address="192.168.1.1",
-            user_agent="Test Agent"
+            user_agent="Test Agent",
         )
 
         assert context.user_id == "test_user"
@@ -324,8 +317,7 @@ class TestAccessPermission:
     def test_access_permission_creation(self):
         """Test creating an AccessPermission instance."""
         permission = AccessPermission(
-            operation=PDFOperation.VIEW,
-            conditions={"owner_only": True}
+            operation=PDFOperation.VIEW, conditions={"owner_only": True}
         )
 
         assert permission.operation == PDFOperation.VIEW

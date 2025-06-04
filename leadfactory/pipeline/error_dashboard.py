@@ -370,9 +370,9 @@ class ErrorDashboard:
                 )
                 alerts_section += f"""
                 <div class="{alert_class}">
-                    <strong>{alert['threshold']['name']}</strong><br>
-                    {alert['threshold']['description']}<br>
-                    Current: {alert['current_value']}, Threshold: {alert['threshold']['threshold_value']}
+                    <strong>{alert["threshold"]["name"]}</strong><br>
+                    {alert["threshold"]["description"]}<br>
+                    Current: {alert["current_value"]}, Threshold: {alert["threshold"]["threshold_value"]}
                 </div>
                 """
             alerts_section += "</div>"
@@ -388,9 +388,9 @@ class ErrorDashboard:
                 )
                 recent_errors_section += f"""
                 <div class="{error_class}">
-                    <strong>{error['error_type']}</strong> in {error['stage']}<br>
-                    {error['message']}<br>
-                    <span class="timestamp">{error['timestamp']} | Severity: {error['severity']}</span>
+                    <strong>{error["error_type"]}</strong> in {error["stage"]}<br>
+                    {error["message"]}<br>
+                    <span class="timestamp">{error["timestamp"]} | Severity: {error["severity"]}</span>
                 </div>
                 """
         else:

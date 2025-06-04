@@ -21,15 +21,18 @@ mock_budget_gate = MagicMock()
 # Create mock classes and functions for leadfactory.utils
 mock_utils = MagicMock()
 
+
 # Create the module structure
 class MockModule(MagicMock):
     """A mock module that can have attributes added to it."""
+
     @classmethod
     def mock_module(cls, name):
         """Create a mock module with the given name."""
         mock = cls()
         sys.modules[name] = mock
         return mock
+
 
 # Create the main leadfactory module
 leadfactory = MockModule.mock_module("leadfactory")

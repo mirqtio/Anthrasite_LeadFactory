@@ -20,9 +20,12 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 # Initialize the environment flags
 _USE_REAL_APIS = os.environ.get("LEADFACTORY_USE_REAL_APIS", "0") == "1"
-_LOG_METRICS = os.environ.get("LEADFACTORY_LOG_API_METRICS", "0") in ("1", "true", "yes")
-_API_FLAGS = {
-}
+_LOG_METRICS = os.environ.get("LEADFACTORY_LOG_API_METRICS", "0") in (
+    "1",
+    "true",
+    "yes",
+)
+_API_FLAGS = {}
 
 # Define supported APIs and their description
 SUPPORTED_APIS = {
@@ -34,7 +37,7 @@ SUPPORTED_APIS = {
     "anthropic": "Anthropic API for Claude models",
     "mapbox": "Mapbox API for mapping services",
     "stripe": "Stripe API for payment processing",
-    "twilio": "Twilio API for SMS and voice"
+    "twilio": "Twilio API for SMS and voice",
 }
 
 # Define endpoints for each API for better metrics grouping
@@ -47,8 +50,9 @@ API_ENDPOINTS = {
     "anthropic": ["message_create", "message_stream"],
     "mapbox": ["geocoding", "directions"],
     "stripe": ["create_charge", "create_customer"],
-    "twilio": ["send_sms", "verify_phone"]
+    "twilio": ["send_sms", "verify_phone"],
 }
+
 
 class APITestConfig:
     """Configuration for API integration tests.
@@ -74,8 +78,8 @@ class APITestConfig:
                 "enabled": cls.metrics_enabled(),
                 "log_to_file": cls.should_log_to_file(),
                 "log_to_prometheus": cls.should_log_to_prometheus(),
-                "directory": cls.metrics_directory()
-            }
+                "directory": cls.metrics_directory(),
+            },
         }
 
         # Add API-specific configurations
@@ -84,7 +88,7 @@ class APITestConfig:
             config["api_configs"][api] = {
                 "enabled": cls.should_test_api(api),
                 "throttling": cls.get_api_throttling(api),
-                "endpoints": cls.get_api_endpoints(api)
+                "endpoints": cls.get_api_endpoints(api),
             }
 
         cls._config_cache = config
@@ -93,7 +97,11 @@ class APITestConfig:
     @staticmethod
     def use_real_apis() -> bool:
         """Check if the tests should use real APIs based on environment settings."""
-        return os.environ.get("LEADFACTORY_USE_REAL_APIS", "0").lower() in ("1", "true", "yes")
+        return os.environ.get("LEADFACTORY_USE_REAL_APIS", "0").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
 
     @staticmethod
     def apis_to_test() -> list[str]:
@@ -116,7 +124,9 @@ class APITestConfig:
 
         # Check if this API is in the list of APIs to test
         apis_to_test = cls.apis_to_test()
-        if apis_to_test == [] or (apis_to_test != list(SUPPORTED_APIS.keys()) and api_name not in apis_to_test):
+        if apis_to_test == [] or (
+            apis_to_test != list(SUPPORTED_APIS.keys()) and api_name not in apis_to_test
+        ):
             return False
 
         # Check if this specific API is enabled via environment variable
@@ -133,17 +143,27 @@ class APITestConfig:
     @staticmethod
     def metrics_enabled() -> bool:
         """Check if metrics collection is enabled."""
-        return os.environ.get("LEADFACTORY_LOG_API_METRICS", "true").lower() in ("1", "true", "yes")
+        return os.environ.get("LEADFACTORY_LOG_API_METRICS", "true").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
 
     @staticmethod
     def should_log_to_file() -> bool:
         """Check if metrics should be logged to files."""
-        return os.environ.get("LEADFACTORY_LOG_METRICS_TO_FILE", "true").lower() in ("1", "true", "yes")
+        return os.environ.get("LEADFACTORY_LOG_METRICS_TO_FILE", "true").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
 
     @staticmethod
     def should_log_to_prometheus() -> bool:
         """Check if metrics should be logged to Prometheus."""
-        return os.environ.get("LEADFACTORY_LOG_METRICS_TO_PROMETHEUS", "true").lower() in ("1", "true", "yes")
+        return os.environ.get(
+            "LEADFACTORY_LOG_METRICS_TO_PROMETHEUS", "true"
+        ).lower() in ("1", "true", "yes")
 
     @staticmethod
     def metrics_directory() -> str:
@@ -156,7 +176,7 @@ class APITestConfig:
         throttling = {
             "enabled": False,
             "requests_per_minute": 60,
-            "requests_per_day": 1000
+            "requests_per_day": 1000,
         }
 
         # Check if throttling is enabled for this API
@@ -242,9 +262,9 @@ class APITestConfig:
             bool: True if real API calls should be used
         """
         return (
-            use_real_apis() and
-            should_test_api(api_name) and
-            APITestConfig.check_api_key(api_name)
+            use_real_apis()
+            and should_test_api(api_name)
+            and APITestConfig.check_api_key(api_name)
         )
 
 
@@ -280,6 +300,7 @@ def api_call_metrics(api_name: str, endpoint: str = "default") -> Callable[[F], 
     Returns:
         Callable: Decorated function that logs metrics
     """
+
     def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -318,9 +339,11 @@ def api_call_metrics(api_name: str, endpoint: str = "default") -> Callable[[F], 
                     endpoint=endpoint,
                     latency=latency,
                     cost=cost,
-                    tokens=tokens
+                    tokens=tokens,
                 )
 
             return result
+
         return cast(F, wrapper)
+
     return decorator

@@ -547,12 +547,10 @@ def main():
     # Print results
 
     if result.success:
-
         if result.tables_verified:
             for table in result.tables_verified:
                 result.rows_verified.get(table, "N/A")
     else:
-
         if result.issues:
             for _issue in result.issues:
                 pass

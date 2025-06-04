@@ -122,7 +122,7 @@ class TestGovernanceManager:
         """Load governance configuration."""
         try:
             if os.path.exists(self.config_file):
-                with open(self.config_file, "r") as f:
+                with open(self.config_file) as f:
                     config = yaml.safe_load(f)
 
                 # Load SLA configurations
@@ -286,7 +286,7 @@ class TestGovernanceManager:
         test_functions = []
 
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 content = f.read()
 
             # Find test functions using regex
@@ -437,7 +437,7 @@ class TestGovernanceManager:
     def _add_skip_decorator(self, file_path: str, test_name: str, reason: str):
         """Add pytest.skip decorator to a test function."""
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 content = f.read()
 
             # Find the test function and add skip decorator
@@ -541,7 +541,7 @@ class TestGovernanceManager:
     ) -> Dict[str, Any]:
         """Check if test has appropriate timeout configuration."""
         try:
-            with open(ownership_info.file_path, "r") as f:
+            with open(ownership_info.file_path) as f:
                 content = f.read()
 
             # Look for timeout decorators or timeout parameters
@@ -583,7 +583,7 @@ class TestGovernanceManager:
     def _check_mock_usage(self, ownership_info: TestOwnershipInfo) -> Dict[str, Any]:
         """Check for proper mock usage in unit tests."""
         try:
-            with open(ownership_info.file_path, "r") as f:
+            with open(ownership_info.file_path) as f:
                 content = f.read()
 
             # Check if it's a unit test file
@@ -633,7 +633,7 @@ class TestGovernanceManager:
     ) -> Dict[str, Any]:
         """Check if test has adequate documentation."""
         try:
-            with open(ownership_info.file_path, "r") as f:
+            with open(ownership_info.file_path) as f:
                 content = f.read()
 
             # Find the specific test function

@@ -3,6 +3,7 @@
 Wrapper script for email rendering stage of the pipeline.
 This is a placeholder for rendering functionality.
 """
+
 import logging
 import sys
 

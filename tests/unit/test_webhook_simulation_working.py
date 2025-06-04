@@ -26,6 +26,7 @@ try:
         SendGridWebhookHandler,
         create_webhook_tables,
     )
+
     REAL_WEBHOOK_HANDLER = True
 except ImportError:
     # Create mock classes for testing if import fails
@@ -70,7 +71,7 @@ except ImportError:
                 status=data.get("status"),
                 message_id=data.get("message_id"),
                 sg_event_id=data.get("sg_event_id"),
-                sg_message_id=data.get("sg_message_id")
+                sg_message_id=data.get("sg_message_id"),
             )
 
     class SendGridWebhookHandler:
@@ -88,7 +89,9 @@ except ImportError:
             ).decode()
             return expected == signature
 
-        def process_webhook_events(self, events: list[dict[str, Any]]) -> dict[str, int]:
+        def process_webhook_events(
+            self, events: list[dict[str, Any]]
+        ) -> dict[str, int]:
             result = {"total": 0}
             for event in events:
                 if not event or not isinstance(event, dict):
@@ -122,8 +125,7 @@ class TestWebhookSimulationWorking:
 
         # Initialize webhook handler with test database
         self.webhook_handler = SendGridWebhookHandler(
-            webhook_secret="test_secret",
-            db_path=self.db_path
+            webhook_secret="test_secret", db_path=self.db_path
         )
 
         # Create webhook tables (only if using real implementation)
@@ -164,7 +166,7 @@ class TestWebhookSimulationWorking:
             "status": "5.1.1",
             "timestamp": 1234567890,
             "sg_event_id": "bounce_123",
-            "sg_message_id": "msg_456"
+            "sg_message_id": "msg_456",
         }
 
         # Act
@@ -181,7 +183,9 @@ class TestWebhookSimulationWorking:
             assert bounce_event.sg_event_id == "bounce_123"
             assert bounce_event.sg_message_id == "msg_456"
 
-    @pytest.mark.skipif(not REAL_WEBHOOK_HANDLER, reason="Requires real webhook handler")
+    @pytest.mark.skipif(
+        not REAL_WEBHOOK_HANDLER, reason="Requires real webhook handler"
+    )
     @patch("leadfactory.webhooks.sendgrid_webhook.DatabaseConnection")
     def test_hard_bounce_event_processing(self, mock_db_connection):
         """Test processing of hard bounce events."""
@@ -189,14 +193,16 @@ class TestWebhookSimulationWorking:
         mock_cursor = MagicMock()
         mock_db_connection.return_value.__enter__.return_value = mock_cursor
 
-        events = [{
-            "email": "test@example.com",
-            "event": "bounce",
-            "type": "hard",
-            "reason": "550 5.1.1 User unknown",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "bounce_123"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "bounce",
+                "type": "hard",
+                "reason": "550 5.1.1 User unknown",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "bounce_123",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -210,14 +216,16 @@ class TestWebhookSimulationWorking:
     def test_hard_bounce_event_processing_mock(self):
         """Test processing of hard bounce events with mock handler."""
         # Arrange
-        events = [{
-            "email": "test@example.com",
-            "event": "bounce",
-            "type": "hard",
-            "reason": "550 5.1.1 User unknown",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "bounce_123"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "bounce",
+                "type": "hard",
+                "reason": "550 5.1.1 User unknown",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "bounce_123",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -233,14 +241,16 @@ class TestWebhookSimulationWorking:
         mock_cursor = MagicMock()
         mock_db_connection.return_value.__enter__.return_value = mock_cursor
 
-        events = [{
-            "email": "test@example.com",
-            "event": "bounce",
-            "type": "soft",
-            "reason": "450 4.2.2 Mailbox full",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "bounce_456"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "bounce",
+                "type": "soft",
+                "reason": "450 4.2.2 Mailbox full",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "bounce_456",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -252,14 +262,16 @@ class TestWebhookSimulationWorking:
     def test_soft_bounce_event_processing_mock(self):
         """Test processing of soft bounce events with mock handler."""
         # Arrange
-        events = [{
-            "email": "test@example.com",
-            "event": "bounce",
-            "type": "soft",
-            "reason": "450 4.2.2 Mailbox full",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "bounce_456"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "bounce",
+                "type": "soft",
+                "reason": "450 4.2.2 Mailbox full",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "bounce_456",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -275,12 +287,14 @@ class TestWebhookSimulationWorking:
         mock_cursor = MagicMock()
         mock_db_connection.return_value.__enter__.return_value = mock_cursor
 
-        events = [{
-            "email": "test@example.com",
-            "event": "spamreport",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "spam_123"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "spamreport",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "spam_123",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -292,12 +306,14 @@ class TestWebhookSimulationWorking:
     def test_spam_complaint_event_processing_mock(self):
         """Test processing of spam complaint events with mock handler."""
         # Arrange
-        events = [{
-            "email": "test@example.com",
-            "event": "spamreport",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "spam_123"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "spamreport",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "spam_123",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -313,13 +329,15 @@ class TestWebhookSimulationWorking:
         mock_cursor = MagicMock()
         mock_db_connection.return_value.__enter__.return_value = mock_cursor
 
-        events = [{
-            "email": "test@example.com",
-            "event": "delivered",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "delivered_123",
-            "sg_message_id": "msg_789"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "delivered",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "delivered_123",
+                "sg_message_id": "msg_789",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -331,13 +349,15 @@ class TestWebhookSimulationWorking:
     def test_delivered_event_processing_mock(self):
         """Test processing of delivered events with mock handler."""
         # Arrange
-        events = [{
-            "email": "test@example.com",
-            "event": "delivered",
-            "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": "delivered_123",
-            "sg_message_id": "msg_789"
-        }]
+        events = [
+            {
+                "email": "test@example.com",
+                "event": "delivered",
+                "timestamp": int(datetime.now().timestamp()),
+                "sg_event_id": "delivered_123",
+                "sg_message_id": "msg_789",
+            }
+        ]
 
         # Act
         result = self.webhook_handler.process_webhook_events(events)
@@ -359,20 +379,20 @@ class TestWebhookSimulationWorking:
                 "event": "bounce",
                 "type": "hard",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "bounce_1"
+                "sg_event_id": "bounce_1",
             },
             {
                 "email": "user2@example.com",
                 "event": "delivered",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "delivered_1"
+                "sg_event_id": "delivered_1",
             },
             {
                 "email": "user3@example.com",
                 "event": "spamreport",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "spam_1"
-            }
+                "sg_event_id": "spam_1",
+            },
         ]
 
         # Act
@@ -393,20 +413,20 @@ class TestWebhookSimulationWorking:
                 "event": "bounce",
                 "type": "hard",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "bounce_1"
+                "sg_event_id": "bounce_1",
             },
             {
                 "email": "user2@example.com",
                 "event": "delivered",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "delivered_1"
+                "sg_event_id": "delivered_1",
             },
             {
                 "email": "user3@example.com",
                 "event": "spamreport",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "spam_1"
-            }
+                "sg_event_id": "spam_1",
+            },
         ]
 
         # Act
@@ -425,7 +445,7 @@ class TestWebhookSimulationWorking:
             {"email": "test@example.com"},  # Missing event type
             {"event": "bounce"},  # Missing email
             {},  # Empty event
-            None  # None event
+            None,  # None event
         ]
 
         # Act & Assert - Should not raise exceptions
@@ -439,7 +459,9 @@ class TestWebhookSimulationWorking:
                 # Should not raise exceptions for malformed data
                 pytest.fail(f"Should handle malformed event gracefully: {e}")
 
-    @pytest.mark.skipif(not REAL_WEBHOOK_HANDLER, reason="Requires real webhook handler")
+    @pytest.mark.skipif(
+        not REAL_WEBHOOK_HANDLER, reason="Requires real webhook handler"
+    )
     @patch("leadfactory.webhooks.sendgrid_webhook.DatabaseConnection")
     def test_bounce_rate_threshold_simulation(self, mock_db_connection):
         """Test bounce rate threshold detection through simulation."""
@@ -450,7 +472,7 @@ class TestWebhookSimulationWorking:
         # Mock database queries to return high bounce rate
         mock_cursor.fetchone.side_effect = [
             (100,),  # total_sent
-            (15,),   # total_bounces (15% bounce rate)
+            (15,),  # total_bounces (15% bounce rate)
         ]
 
         # Act
@@ -473,7 +495,9 @@ class TestWebhookSimulationWorking:
         assert bounce_rate == 0.15  # 15% bounce rate from mock
         assert bounce_rate > self.webhook_handler.bounce_thresholds["critical"]
 
-    @pytest.mark.skipif(not REAL_WEBHOOK_HANDLER, reason="Requires real webhook handler")
+    @pytest.mark.skipif(
+        not REAL_WEBHOOK_HANDLER, reason="Requires real webhook handler"
+    )
     @patch("leadfactory.webhooks.sendgrid_webhook.DatabaseConnection")
     def test_spam_rate_threshold_simulation(self, mock_db_connection):
         """Test spam rate threshold detection through simulation."""
@@ -484,7 +508,7 @@ class TestWebhookSimulationWorking:
         # Mock database queries to return high spam rate
         mock_cursor.fetchone.side_effect = [
             (1000,),  # total_sent
-            (6,),     # total_spam (0.6% spam rate)
+            (6,),  # total_spam (0.6% spam rate)
         ]
 
         # Act
@@ -540,21 +564,21 @@ class TestWebhookSimulationWorking:
                 "status": "5.1.1",
                 "timestamp": int(datetime.now().timestamp()),
                 "sg_event_id": "bounce_e2e_1",
-                "sg_message_id": "msg_e2e_1"
+                "sg_message_id": "msg_e2e_1",
             },
             {
                 "email": "user2@example.com",
                 "event": "delivered",
                 "timestamp": int(datetime.now().timestamp()),
                 "sg_event_id": "delivered_e2e_1",
-                "sg_message_id": "msg_e2e_2"
+                "sg_message_id": "msg_e2e_2",
             },
             {
                 "email": "user3@example.com",
                 "event": "spamreport",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "spam_e2e_1"
-            }
+                "sg_event_id": "spam_e2e_1",
+            },
         ]
 
         # Act

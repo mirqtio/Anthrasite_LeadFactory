@@ -793,11 +793,11 @@ class LogsAPI:
             if export_format == "csv":
                 generator = generate_csv_stream()
                 mimetype = "text/csv"
-                filename = f'logs_export_stream_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.csv'
+                filename = f"logs_export_stream_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
             else:
                 generator = generate_json_stream()
                 mimetype = "application/json"
-                filename = f'logs_export_stream_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.json'
+                filename = f"logs_export_stream_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
 
             return Response(
                 generator,

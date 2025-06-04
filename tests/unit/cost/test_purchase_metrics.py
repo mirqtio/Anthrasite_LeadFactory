@@ -24,14 +24,19 @@ class TestPurchaseMetricsTracker:
         # Mock financial tracker
         self.mock_financial_tracker = Mock()
         self.mock_financial_tracker.record_stripe_payment.return_value = "txn_test_123"
-        self.mock_financial_tracker.record_stripe_refund.return_value = "refund_test_123"
+        self.mock_financial_tracker.record_stripe_refund.return_value = (
+            "refund_test_123"
+        )
 
         # Create tracker instance with mocked dependencies
-        self.tracker = PurchaseMetricsTracker(financial_tracker=self.mock_financial_tracker)
+        self.tracker = PurchaseMetricsTracker(
+            financial_tracker=self.mock_financial_tracker
+        )
 
     def teardown_method(self):
         """Clean up test fixtures."""
         import os
+
         try:
             os.unlink(self.temp_db.name)
         except FileNotFoundError:
@@ -46,15 +51,17 @@ class TestPurchaseMetricsTracker:
             "customer_email": "test@example.com",
             "customer_name": "Test Customer",
             "gross_amount_cents": 2999,  # $29.99
-            "net_amount_cents": 2850,    # After fees
-            "stripe_fee_cents": 149,     # ~5% fee
+            "net_amount_cents": 2850,  # After fees
+            "stripe_fee_cents": 149,  # ~5% fee
             "audit_type": "basic",
             "currency": "usd",
             "metadata": {"source": "test"},
         }
 
         # Mock metrics recording
-        with patch("leadfactory.cost.purchase_metrics.record_metric") as mock_record_metric:
+        with patch(
+            "leadfactory.cost.purchase_metrics.record_metric"
+        ) as mock_record_metric:
             transaction_id = self.tracker.record_purchase(**purchase_data)
 
             # Verify financial tracker was called
@@ -89,7 +96,9 @@ class TestPurchaseMetricsTracker:
         }
 
         # Mock metrics recording
-        with patch("leadfactory.cost.purchase_metrics.record_metric") as mock_record_metric:
+        with patch(
+            "leadfactory.cost.purchase_metrics.record_metric"
+        ) as mock_record_metric:
             transaction_id = self.tracker.record_refund(**refund_data)
 
             # Verify financial tracker was called
@@ -117,9 +126,13 @@ class TestPurchaseMetricsTracker:
             "total_refund_amount_cents": 5998,  # $59.98
         }
 
-        self.mock_financial_tracker.get_monthly_summary.return_value = mock_monthly_summary
+        self.mock_financial_tracker.get_monthly_summary.return_value = (
+            mock_monthly_summary
+        )
 
-        with patch("leadfactory.cost.purchase_metrics.record_metric") as mock_record_metric:
+        with patch(
+            "leadfactory.cost.purchase_metrics.record_metric"
+        ) as mock_record_metric:
             conversion_data = self.tracker.get_conversion_metrics("basic")
 
             # Verify structure
@@ -149,10 +162,16 @@ class TestPurchaseMetricsTracker:
             "total_transactions": 50,
         }
 
-        self.mock_financial_tracker.get_profit_margin_data.return_value = mock_profit_data
-        self.mock_financial_tracker.get_monthly_summary.return_value = mock_monthly_summary
+        self.mock_financial_tracker.get_profit_margin_data.return_value = (
+            mock_profit_data
+        )
+        self.mock_financial_tracker.get_monthly_summary.return_value = (
+            mock_monthly_summary
+        )
 
-        with patch("leadfactory.cost.purchase_metrics.record_metric") as mock_record_metric:
+        with patch(
+            "leadfactory.cost.purchase_metrics.record_metric"
+        ) as mock_record_metric:
             clv = self.tracker.get_customer_lifetime_value(365)
 
             # Verify CLV calculation
@@ -203,13 +222,22 @@ class TestPurchaseMetricsTracker:
         }
 
         self.mock_financial_tracker.get_daily_summary.return_value = mock_daily_summary
-        self.mock_financial_tracker.get_monthly_summary.return_value = mock_monthly_summary
-        self.mock_financial_tracker.get_profit_margin_data.return_value = mock_profit_data
+        self.mock_financial_tracker.get_monthly_summary.return_value = (
+            mock_monthly_summary
+        )
+        self.mock_financial_tracker.get_profit_margin_data.return_value = (
+            mock_profit_data
+        )
 
         # Mock CLV calculation
-        with patch.object(self.tracker, 'get_customer_lifetime_value', return_value=120.50) as mock_clv, \
-             patch.object(self.tracker, 'get_conversion_metrics', return_value={"test": "data"}) as mock_conversion:
-
+        with (
+            patch.object(
+                self.tracker, "get_customer_lifetime_value", return_value=120.50
+            ) as mock_clv,
+            patch.object(
+                self.tracker, "get_conversion_metrics", return_value={"test": "data"}
+            ) as mock_conversion,
+        ):
             summary = self.tracker.get_purchase_analytics_summary()
 
             # Verify structure
@@ -243,9 +271,13 @@ class TestPurchaseMetricsTracker:
         }
 
         self.mock_financial_tracker.get_daily_summary.return_value = mock_daily_summary
-        self.mock_financial_tracker.get_monthly_summary.return_value = mock_monthly_summary
+        self.mock_financial_tracker.get_monthly_summary.return_value = (
+            mock_monthly_summary
+        )
 
-        with patch("leadfactory.cost.purchase_metrics.record_metric") as mock_record_metric:
+        with patch(
+            "leadfactory.cost.purchase_metrics.record_metric"
+        ) as mock_record_metric:
             # Call internal method directly
             self.tracker._update_aggregated_metrics()
 
@@ -255,7 +287,9 @@ class TestPurchaseMetricsTracker:
     def test_error_handling(self):
         """Test error handling in various scenarios."""
         # Test with financial tracker that raises an exception
-        self.mock_financial_tracker.record_stripe_payment.side_effect = Exception("Database error")
+        self.mock_financial_tracker.record_stripe_payment.side_effect = Exception(
+            "Database error"
+        )
 
         with pytest.raises(Exception, match="Database error"):
             self.tracker.record_purchase(
@@ -271,7 +305,9 @@ class TestPurchaseMetricsTracker:
 
         # Test analytics summary with missing data
         self.mock_financial_tracker.get_daily_summary.return_value = None
-        self.mock_financial_tracker.get_monthly_summary.side_effect = Exception("Data error")
+        self.mock_financial_tracker.get_monthly_summary.side_effect = Exception(
+            "Data error"
+        )
 
         summary = self.tracker.get_purchase_analytics_summary()
 
@@ -293,7 +329,9 @@ class TestPurchaseMetricsTracker:
             "currency": "usd",
         }
 
-        with patch("leadfactory.cost.purchase_metrics.record_metric") as mock_record_metric:
+        with patch(
+            "leadfactory.cost.purchase_metrics.record_metric"
+        ) as mock_record_metric:
             self.tracker.record_purchase(**purchase_data)
 
             # Verify metrics were called with proper labels
@@ -305,7 +343,8 @@ class TestPurchaseMetricsTracker:
 
             # Verify at least one call included the expected audit_type label
             audit_type_calls = [
-                call for call in calls
+                call
+                for call in calls
                 if len(call) > 1 and call[1] and "audit_type" in call[1]
             ]
             assert any("premium" in str(call) for call in audit_type_calls)

@@ -237,7 +237,7 @@ def generate_processing_time_histogram(metrics, output_dir):
         x=sum(processing_times) / len(processing_times),
         color="r",
         linestyle="--",
-        label=f"Mean: {sum(processing_times)/len(processing_times):.2f}s",
+        label=f"Mean: {sum(processing_times) / len(processing_times):.2f}s",
     )
 
     plt.title("Distribution of Batch Processing Times")
@@ -350,7 +350,7 @@ def generate_dashboard(metrics, output_dir):
 
     # Add overall title and adjust layout
     plt.suptitle(
-        f'LeadFactory Performance Dashboard\nTotal Leads: {metrics.get("lead_count", "N/A")}',
+        f"LeadFactory Performance Dashboard\nTotal Leads: {metrics.get('lead_count', 'N/A')}",
         fontsize=16,
         y=0.98,
     )

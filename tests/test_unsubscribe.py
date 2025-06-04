@@ -220,9 +220,9 @@ def check_email_sent(request):
 @then(parsers.parse("the response status code should be {status_code:d}"))
 def check_response_status_code(status_code, request):
     """Check if the response status code matches the expected value."""
-    response = request.node.funcargs.get("visit_unsubscribe_page", None) or request.node.funcargs.get(
-        "submit_unsubscribe_form", None
-    )
+    response = request.node.funcargs.get(
+        "visit_unsubscribe_page", None
+    ) or request.node.funcargs.get("submit_unsubscribe_form", None)
     assert response is not None
     assert response.status_code == status_code
 
@@ -230,9 +230,9 @@ def check_response_status_code(status_code, request):
 @then(parsers.parse("the response should contain '{text}'"))
 def check_response_contains_text(text, request):
     """Check if the response contains the expected text."""
-    response = request.node.funcargs.get("visit_unsubscribe_page", None) or request.node.funcargs.get(
-        "submit_unsubscribe_form", None
-    )
+    response = request.node.funcargs.get(
+        "visit_unsubscribe_page", None
+    ) or request.node.funcargs.get("submit_unsubscribe_form", None)
     assert response is not None
     assert text in response.text
 

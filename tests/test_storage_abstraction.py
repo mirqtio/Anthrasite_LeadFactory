@@ -5,8 +5,10 @@ This test verifies that the storage abstraction layer is working correctly
 and that all pipeline modules can use the storage interface.
 """
 
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+
 from leadfactory.storage.factory import get_storage
 from leadfactory.storage.interface import StorageInterface
 from leadfactory.storage.postgres_storage import PostgresStorage
@@ -26,47 +28,49 @@ class TestStorageAbstraction:
         storage = get_storage()
 
         # Test core methods
-        assert hasattr(storage, 'execute_query')
-        assert hasattr(storage, 'execute_transaction')
-        assert hasattr(storage, 'get_business_by_id')
-        assert hasattr(storage, 'get_business_details')
-        assert hasattr(storage, 'get_businesses')
-        assert hasattr(storage, 'merge_businesses')
+        assert hasattr(storage, "execute_query")
+        assert hasattr(storage, "execute_transaction")
+        assert hasattr(storage, "get_business_by_id")
+        assert hasattr(storage, "get_business_details")
+        assert hasattr(storage, "get_businesses")
+        assert hasattr(storage, "merge_businesses")
 
         # Test review queue methods
-        assert hasattr(storage, 'add_to_review_queue')
-        assert hasattr(storage, 'get_review_queue_items')
-        assert hasattr(storage, 'update_review_status')
+        assert hasattr(storage, "add_to_review_queue")
+        assert hasattr(storage, "get_review_queue_items")
+        assert hasattr(storage, "update_review_status")
 
         # Test asset management methods
-        assert hasattr(storage, 'create_asset')
-        assert hasattr(storage, 'get_business_asset')
-        assert hasattr(storage, 'get_businesses_needing_screenshots')
-        assert hasattr(storage, 'get_businesses_needing_mockups')
+        assert hasattr(storage, "create_asset")
+        assert hasattr(storage, "get_business_asset")
+        assert hasattr(storage, "get_businesses_needing_screenshots")
+        assert hasattr(storage, "get_businesses_needing_mockups")
 
-    @patch('leadfactory.storage.postgres_storage.PostgresStorage.execute_query')
+    @patch("leadfactory.storage.postgres_storage.PostgresStorage.execute_query")
     def test_storage_execute_query_called(self, mock_execute):
         """Test that storage execute_query method is called correctly."""
-        mock_execute.return_value = [{'id': 1, 'name': 'Test Business'}]
+        mock_execute.return_value = [{"id": 1, "name": "Test Business"}]
 
         storage = get_storage()
         result = storage.execute_query("SELECT * FROM businesses WHERE id = %s", (1,))
 
-        mock_execute.assert_called_once_with("SELECT * FROM businesses WHERE id = %s", (1,))
-        assert result == [{'id': 1, 'name': 'Test Business'}]
+        mock_execute.assert_called_once_with(
+            "SELECT * FROM businesses WHERE id = %s", (1,)
+        )
+        assert result == [{"id": 1, "name": "Test Business"}]
 
-    @patch('leadfactory.storage.postgres_storage.PostgresStorage.get_business_by_id')
+    @patch("leadfactory.storage.postgres_storage.PostgresStorage.get_business_by_id")
     def test_get_business_by_id(self, mock_get_business):
         """Test get_business_by_id method."""
-        mock_get_business.return_value = {'id': 1, 'name': 'Test Business'}
+        mock_get_business.return_value = {"id": 1, "name": "Test Business"}
 
         storage = get_storage()
         result = storage.get_business_by_id(1)
 
         mock_get_business.assert_called_once_with(1)
-        assert result == {'id': 1, 'name': 'Test Business'}
+        assert result == {"id": 1, "name": "Test Business"}
 
-    @patch('leadfactory.storage.postgres_storage.PostgresStorage.add_to_review_queue')
+    @patch("leadfactory.storage.postgres_storage.PostgresStorage.add_to_review_queue")
     def test_add_to_review_queue(self, mock_add_review):
         """Test add_to_review_queue method."""
         mock_add_review.return_value = 123
@@ -81,7 +85,7 @@ class TestStorageAbstraction:
 class TestPipelineStorageIntegration:
     """Test that pipeline modules can use storage abstraction."""
 
-    @patch('leadfactory.storage.postgres_storage.PostgresStorage.execute_query')
+    @patch("leadfactory.storage.postgres_storage.PostgresStorage.execute_query")
     def test_data_preservation_uses_storage(self, mock_execute):
         """Test that data preservation module uses storage abstraction."""
         from leadfactory.pipeline.data_preservation import DataPreservationManager
@@ -92,14 +96,15 @@ class TestPipelineStorageIntegration:
         # Verify that the manager was initialized with storage
         assert manager.storage == storage
 
-    @patch('leadfactory.storage.postgres_storage.PostgresStorage.get_business_asset')
+    @patch("leadfactory.storage.postgres_storage.PostgresStorage.get_business_asset")
     def test_email_queue_uses_storage(self, mock_get_asset):
         """Test that email queue module can use storage abstraction."""
-        mock_get_asset.return_value = {'file_path': '/path/to/mockup.png'}
+        mock_get_asset.return_value = {"file_path": "/path/to/mockup.png"}
 
         # Import the module to verify it can use storage
         try:
             from leadfactory.pipeline.email_queue import get_businesses_for_email
+
             # If import succeeds, storage abstraction is working
             assert True
         except ImportError as e:
@@ -109,6 +114,7 @@ class TestPipelineStorageIntegration:
         """Test that dedupe unified module can use storage abstraction."""
         try:
             from leadfactory.pipeline.dedupe_unified import get_business_by_id
+
             # If import succeeds, storage abstraction is working
             assert True
         except ImportError as e:
@@ -118,6 +124,7 @@ class TestPipelineStorageIntegration:
         """Test that unified GPT-4o module can use storage abstraction."""
         try:
             from leadfactory.pipeline.unified_gpt4o import UnifiedGPT4ONode
+
             # If import succeeds, storage abstraction is working
             assert True
         except ImportError as e:
@@ -133,9 +140,12 @@ class TestStorageAbstractionBenefits:
 
         # Test data_preservation module
         from leadfactory.pipeline import data_preservation
+
         source = inspect.getsource(data_preservation)
-        assert 'from leadfactory.utils.e2e_db_connector import db_connection' not in source
-        assert 'from leadfactory.storage.factory import get_storage' in source
+        assert (
+            "from leadfactory.utils.e2e_db_connector import db_connection" not in source
+        )
+        assert "from leadfactory.storage.factory import get_storage" in source
 
     def test_storage_interface_provides_consistent_api(self):
         """Test that storage interface provides consistent API across modules."""
@@ -143,11 +153,11 @@ class TestStorageAbstractionBenefits:
 
         # All these methods should exist and be callable
         methods_to_test = [
-            'execute_query',
-            'get_business_by_id',
-            'add_to_review_queue',
-            'create_asset',
-            'get_business_asset'
+            "execute_query",
+            "get_business_by_id",
+            "add_to_review_queue",
+            "create_asset",
+            "get_business_asset",
         ]
 
         for method_name in methods_to_test:
@@ -161,20 +171,20 @@ class TestStorageAbstractionBenefits:
         # Create a mock storage implementation
         class MockStorage(StorageInterface):
             def execute_query(self, query, params=None, fetch=True):
-                return [{'mock': 'data'}]
+                return [{"mock": "data"}]
 
             def execute_transaction(self, queries):
                 return True
 
             def get_business_by_id(self, business_id):
-                return {'id': business_id, 'name': 'Mock Business'}
+                return {"id": business_id, "name": "Mock Business"}
 
             # Implement other required abstract methods with minimal implementations
             def get_business_details(self, business_id):
-                return {'id': business_id}
+                return {"id": business_id}
 
             def get_businesses(self, business_ids):
-                return [{'id': bid} for bid in business_ids]
+                return [{"id": bid} for bid in business_ids]
 
             def merge_businesses(self, primary_id, secondary_id):
                 return True
@@ -182,13 +192,17 @@ class TestStorageAbstractionBenefits:
             def get_processing_status(self, business_id, stage):
                 return None
 
-            def update_processing_status(self, business_id, stage, status, details=None):
+            def update_processing_status(
+                self, business_id, stage, status, details=None
+            ):
                 return True
 
             def create_business(self, business_data):
                 return 1
 
-            def add_to_review_queue(self, business1_id, business2_id, reason, details=None):
+            def add_to_review_queue(
+                self, business1_id, business2_id, reason, details=None
+            ):
                 return 1
 
             def get_review_queue_items(self, status=None, limit=None):
@@ -203,7 +217,14 @@ class TestStorageAbstractionBenefits:
             def get_businesses_needing_screenshots(self, limit=None):
                 return []
 
-            def create_asset(self, business_id, asset_type, asset_data, file_path=None, asset_url=None):
+            def create_asset(
+                self,
+                business_id,
+                asset_type,
+                asset_data,
+                file_path=None,
+                asset_url=None,
+            ):
                 return 1
 
             def get_businesses_needing_mockups(self, limit=None):
@@ -230,7 +251,14 @@ class TestStorageAbstractionBenefits:
             def update_backup_restored(self, backup_id):
                 return True
 
-            def log_dedupe_operation(self, operation_type, business1_id, business2_id=None, operation_data=None, error_message=None):
+            def log_dedupe_operation(
+                self,
+                operation_type,
+                business1_id,
+                business2_id=None,
+                operation_data=None,
+                error_message=None,
+            ):
                 return 1
 
             def get_audit_trail(self, business_id, operation_type=None, limit=None):
@@ -251,8 +279,8 @@ class TestStorageAbstractionBenefits:
         # Verify mock storage works
         mock_storage = MockStorage()
         assert isinstance(mock_storage, StorageInterface)
-        assert mock_storage.get_business_by_id(1) == {'id': 1, 'name': 'Mock Business'}
+        assert mock_storage.get_business_by_id(1) == {"id": 1, "name": "Mock Business"}
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

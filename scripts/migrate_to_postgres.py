@@ -347,7 +347,7 @@ def insert_postgres_data(pg_conn, table_name: str, data: list[dict[str, Any]]):
         cursor.executemany(sql, batch_values)
         pg_conn.commit()
         logger.info(
-            f"Inserted {min(i+batch_size, total_rows)}/{total_rows} rows into {table_name}"
+            f"Inserted {min(i + batch_size, total_rows)}/{total_rows} rows into {table_name}"
         )
 
 

@@ -304,7 +304,6 @@ def show_schema():
         tables = [row[0] for row in cursor.fetchall()]
 
         for table in tables:
-
             # Get columns
             cursor.execute(
                 f"""

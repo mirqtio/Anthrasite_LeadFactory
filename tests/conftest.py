@@ -41,7 +41,9 @@ class MockWebPage:
 
 
 # Patch the Wappalyzer module
-sys.modules["wappalyzer"] = type("wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage})
+sys.modules["wappalyzer"] = type(
+    "wappalyzer", (), {"Wappalyzer": MockWappalyzer, "WebPage": MockWebPage}
+)
 
 # Create mock modules for utils.io to avoid import issues
 # This handles the legacy utils.io module structure
@@ -49,7 +51,9 @@ sys.modules["utils"] = type("utils", (), {})()
 sys.modules["utils.io"] = type("io", (), {"track_api_cost": mock_track_api_cost})()
 
 # Also create the leadfactory.utils.io mock for consistency
-sys.modules["leadfactory.utils.io"] = type("io", (), {"track_api_cost": mock_track_api_cost})()
+sys.modules["leadfactory.utils.io"] = type(
+    "io", (), {"track_api_cost": mock_track_api_cost}
+)()
 
 # Apply the mock to any existing modules
 sys.modules["utils"].io = sys.modules["utils.io"]
@@ -58,8 +62,9 @@ sys.modules["utils.io"].track_api_cost = mock_track_api_cost
 # Try importing using relative imports for the CI environment
 try:
     from leadfactory import utils  # noqa: E402
+
     # Create an io attribute if it doesn't exist
-    if not hasattr(utils, 'io'):
+    if not hasattr(utils, "io"):
         utils.io = type("io", (), {"track_api_cost": mock_track_api_cost})()
     else:
         # Apply the mock to the imported module
@@ -147,7 +152,9 @@ def run_mockup_generation(
                 business["id"],
                 business.get("name", "Test Business"),
                 business.get("website", "https://example.com"),
-                business.get("location_data", '{"state": "CA", "city": "San Francisco"}'),
+                business.get(
+                    "location_data", '{"state": "CA", "city": "San Francisco"}'
+                ),
             ),
         )
         conn.commit()

@@ -48,11 +48,7 @@ class TestDedupeConfig:
         assert config.llm_timeout == 30
 
         # Test source priorities
-        assert config.source_priorities == {
-            "manual": 3,
-            "google": 2,
-            "yelp": 1
-        }
+        assert config.source_priorities == {"manual": 3, "google": 2, "yelp": 1}
 
         # Test fields
         assert "name" in config.matching_fields
@@ -72,7 +68,7 @@ class TestDedupeConfig:
             batch_size=50,
             use_llm_verification=True,
             llm_model="llama3",
-            dry_run=True
+            dry_run=True,
         )
 
         assert config.name_similarity_threshold == 0.95
@@ -87,7 +83,7 @@ class TestDedupeConfig:
             "name_similarity_threshold": 0.90,
             "batch_size": 200,
             "use_llm_verification": True,
-            "source_priorities": {"custom": 4, "manual": 3}
+            "source_priorities": {"custom": 4, "manual": 3},
         }
 
         config = DedupeConfig.from_dict(config_dict)
@@ -99,10 +95,7 @@ class TestDedupeConfig:
 
     def test_to_dict(self):
         """Test converting config to dictionary."""
-        config = DedupeConfig(
-            name_similarity_threshold=0.88,
-            batch_size=75
-        )
+        config = DedupeConfig(name_similarity_threshold=0.88, batch_size=75)
 
         config_dict = config.to_dict()
 
@@ -119,8 +112,7 @@ class TestDedupeConfig:
         custom_merge = ["email", "website"]
 
         config = DedupeConfig(
-            matching_fields=custom_matching,
-            merge_fields=custom_merge
+            matching_fields=custom_matching, merge_fields=custom_merge
         )
 
         assert config.matching_fields == custom_matching
@@ -143,7 +135,7 @@ class TestLoadDedupeConfig:
             "name_similarity_threshold": 0.92,
             "batch_size": 150,
             "use_llm_verification": True,
-            "llm_model": "custom-model"
+            "llm_model": "custom-model",
         }
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
@@ -174,12 +166,15 @@ class TestLoadDedupeConfig:
         finally:
             os.unlink(temp_path)
 
-    @patch.dict(os.environ, {
-        "DEDUPE_NAME_THRESHOLD": "0.75",
-        "DEDUPE_USE_LLM": "true",
-        "DEDUPE_LLM_MODEL": "env-model",
-        "DEDUPE_BATCH_SIZE": "250"
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "DEDUPE_NAME_THRESHOLD": "0.75",
+            "DEDUPE_USE_LLM": "true",
+            "DEDUPE_LLM_MODEL": "env-model",
+            "DEDUPE_BATCH_SIZE": "250",
+        },
+    )
     def test_load_from_environment(self):
         """Test loading config from environment variables."""
         config = load_dedupe_config()
@@ -230,14 +225,17 @@ class TestConfigIntegration:
             name_similarity_threshold=0.87,
             batch_size=123,
             source_priorities={"test": 5},
-            matching_fields=["name", "custom_field"]
+            matching_fields=["name", "custom_field"],
         )
 
         # Convert to dict and back
         config_dict = original_config.to_dict()
         restored_config = DedupeConfig.from_dict(config_dict)
 
-        assert restored_config.name_similarity_threshold == original_config.name_similarity_threshold
+        assert (
+            restored_config.name_similarity_threshold
+            == original_config.name_similarity_threshold
+        )
         assert restored_config.batch_size == original_config.batch_size
         assert restored_config.source_priorities == original_config.source_priorities
         assert restored_config.matching_fields == original_config.matching_fields

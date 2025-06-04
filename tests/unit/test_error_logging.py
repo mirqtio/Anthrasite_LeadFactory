@@ -68,7 +68,7 @@ except ImportError:
                 "severity": self.severity,
                 "category": self.category,
                 "context": self.context,
-                "batch_id": self.batch_id
+                "batch_id": self.batch_id,
             }
 
     class BatchResult:
@@ -90,8 +90,10 @@ except ImportError:
                 "total_items": self.total_items,
                 "successful_items": self.successful_items,
                 "failed_items": self.failed_items,
-                "errors": [e.to_dict() if hasattr(e, "to_dict") else e for e in self.errors],
-                "context": self.context
+                "errors": [
+                    e.to_dict() if hasattr(e, "to_dict") else e for e in self.errors
+                ],
+                "context": self.context,
             }
 
     class ErrorPropagationManager:
@@ -119,17 +121,35 @@ except ImportError:
                 "message": record.getMessage(),
                 "module": record.module,
                 "function": record.funcName,
-                "line": record.lineno
+                "line": record.lineno,
             }
 
             # Add extra fields from the record
             if hasattr(record, "__dict__"):
                 for key, value in record.__dict__.items():
-                    if key not in ["name", "msg", "args", "levelname", "levelno", "pathname",
-                                 "filename", "module", "lineno", "funcName", "created",
-                                 "msecs", "relativeCreated", "thread", "threadName",
-                                 "processName", "process", "getMessage", "exc_info",
-                                 "exc_text", "stack_info"]:
+                    if key not in [
+                        "name",
+                        "msg",
+                        "args",
+                        "levelname",
+                        "levelno",
+                        "pathname",
+                        "filename",
+                        "module",
+                        "lineno",
+                        "funcName",
+                        "created",
+                        "msecs",
+                        "relativeCreated",
+                        "thread",
+                        "threadName",
+                        "processName",
+                        "process",
+                        "getMessage",
+                        "exc_info",
+                        "exc_text",
+                        "stack_info",
+                    ]:
                         log_data[key] = value
 
             return json.dumps(log_data)
@@ -157,6 +177,7 @@ except ImportError:
     def log_execution_time(func):
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+
         return wrapper
 
 
@@ -199,14 +220,11 @@ class TestStructuredLogging(TestErrorLoggingSystem):
             error_message="Test error message",
             severity=ErrorSeverity.HIGH,
             category=ErrorCategory.VALIDATION,
-            context={"business_id": 123, "item_index": 5}
+            context={"business_id": 123, "item_index": 5},
         )
 
         # Log the error with extra context
-        self.logger.error(
-            "Pipeline error occurred",
-            extra=error.to_dict()
-        )
+        self.logger.error("Pipeline error occurred", extra=error.to_dict())
 
         # Get the logged output
         log_output = self.log_stream.getvalue().strip()
@@ -244,22 +262,22 @@ class TestStructuredLogging(TestErrorLoggingSystem):
                 "operation": "fetch_data",
                 "error_message": "Network timeout",
                 "severity": ErrorSeverity.MEDIUM,
-                "category": ErrorCategory.NETWORK
+                "category": ErrorCategory.NETWORK,
             },
             {
                 "stage": "enrich",
                 "operation": "validate_data",
                 "error_message": "Invalid email format",
                 "severity": ErrorSeverity.LOW,
-                "category": ErrorCategory.VALIDATION
+                "category": ErrorCategory.VALIDATION,
             },
             {
                 "stage": "score",
                 "operation": "calculate_score",
                 "error_message": "Database connection failed",
                 "severity": ErrorSeverity.CRITICAL,
-                "category": ErrorCategory.DATABASE
-            }
+                "category": ErrorCategory.DATABASE,
+            },
         ]
 
         for scenario in error_scenarios:
@@ -273,8 +291,16 @@ class TestStructuredLogging(TestErrorLoggingSystem):
             log_data = json.loads(log_output)
 
             # Verify all required fields are present
-            required_fields = ["timestamp", "level", "message", "stage", "operation",
-                             "error_message", "severity", "category"]
+            required_fields = [
+                "timestamp",
+                "level",
+                "message",
+                "stage",
+                "operation",
+                "error_message",
+                "severity",
+                "category",
+            ]
             for field in required_fields:
                 self.assertIn(field, log_data, f"Missing required field: {field}")
 
@@ -297,14 +323,14 @@ class TestContextAwareLogging(TestErrorLoggingSystem):
             "api_endpoint": "https://api.example.com/data",
             "request_payload": {"query": "test"},
             "response_status": 500,
-            "execution_time_ms": 1500
+            "execution_time_ms": 1500,
         }
 
         error = PipelineError(
             stage="api_call",
             operation="fetch_business_data",
             error_message="API request failed",
-            context=context
+            context=context,
         )
 
         self.logger.error("API call failed", extra=error.to_dict())
@@ -333,7 +359,7 @@ class TestContextAwareLogging(TestErrorLoggingSystem):
             "processing_start_time": "2024-01-01T10:00:00",
             "worker_id": "worker-001",
             "memory_usage_mb": 256,
-            "cpu_usage_percent": 75
+            "cpu_usage_percent": 75,
         }
 
         batch_result = BatchResult(
@@ -343,7 +369,7 @@ class TestContextAwareLogging(TestErrorLoggingSystem):
             total_items=100,
             successful_items=85,
             failed_items=15,
-            context=batch_context
+            context=batch_context,
         )
 
         self.logger.info("Batch processing completed", extra=batch_result.to_dict())
@@ -404,7 +430,7 @@ class TestLogCorrelationIds(TestErrorLoggingSystem):
             ("start", "Batch processing started"),
             ("process", "Processing item 1"),
             ("error", "Error processing item 5"),
-            ("complete", "Batch processing completed")
+            ("complete", "Batch processing completed"),
         ]
 
         logged_entries = []
@@ -415,7 +441,7 @@ class TestLogCorrelationIds(TestErrorLoggingSystem):
             extra_data = {
                 "batch_id": batch_id,
                 "operation_type": op_type,
-                "stage": "test_stage"
+                "stage": "test_stage",
             }
 
             if op_type == "error":
@@ -452,7 +478,7 @@ class TestActionableLogging(TestErrorLoggingSystem):
             "max_retries_exceeded": False,
             "last_successful_request": "2024-01-01T09:55:00",
             "api_status_page": "https://status.example.com",
-            "support_ticket_template": "API timeout in stage {stage} operation {operation}"
+            "support_ticket_template": "API timeout in stage {stage} operation {operation}",
         }
 
         error = PipelineError(
@@ -461,7 +487,7 @@ class TestActionableLogging(TestErrorLoggingSystem):
             error_message="Request timeout after 30 seconds",
             severity=ErrorSeverity.MEDIUM,
             category=ErrorCategory.NETWORK,
-            context=troubleshooting_context
+            context=troubleshooting_context,
         )
 
         self.logger.error("API timeout occurred", extra=error.to_dict())
@@ -498,13 +524,13 @@ class TestActionableLogging(TestErrorLoggingSystem):
             "database_query_count": 150,
             "slow_queries": [
                 "SELECT * FROM businesses WHERE category = 'restaurant'",
-                "UPDATE leads SET score = ? WHERE id = ?"
+                "UPDATE leads SET score = ? WHERE id = ?",
             ],
             "optimization_suggestions": [
                 "Add index on businesses.category",
                 "Use batch updates for lead scoring",
-                "Consider query result caching"
-            ]
+                "Consider query result caching",
+            ],
         }
 
         error = PipelineError(
@@ -513,7 +539,7 @@ class TestActionableLogging(TestErrorLoggingSystem):
             error_message="Performance threshold exceeded",
             severity=ErrorSeverity.HIGH,
             category=ErrorCategory.RESOURCE,
-            context=performance_context
+            context=performance_context,
         )
 
         self.logger.warning("Performance issue detected", extra=error.to_dict())
@@ -544,7 +570,7 @@ class TestLogIntegration(TestErrorLoggingSystem):
             stage="test_stage",
             operation="test_operation",
             error_message="Test error for logging",
-            severity=ErrorSeverity.HIGH
+            severity=ErrorSeverity.HIGH,
         )
 
         error_manager.record_error(error)
@@ -566,7 +592,7 @@ class TestLogIntegration(TestErrorLoggingSystem):
             operation="test_logging",
             total_items=10,
             successful_items=7,
-            failed_items=3
+            failed_items=3,
         )
 
         # Add some errors to the batch
@@ -574,8 +600,8 @@ class TestLogIntegration(TestErrorLoggingSystem):
             error = PipelineError(
                 stage="integration_test",
                 operation="test_logging",
-                error_message=f"Test error {i+1}",
-                context={"item_index": i}
+                error_message=f"Test error {i + 1}",
+                context={"item_index": i},
             )
             batch_result.errors.append(error)
 

@@ -1,6 +1,7 @@
 """
 Pytest configuration and fixtures for BDD tests.
 """
+
 import json
 import os
 import sqlite3
@@ -14,11 +15,13 @@ import pytest
 os.environ["TEST_MODE"] = "True"
 os.environ["MOCK_EXTERNAL_APIS"] = "True"
 
+
 # Global context dictionary for sharing state between steps
 @pytest.fixture(scope="function")
 def context():
     """Shared context between test steps."""
     return {}
+
 
 # Database connection fixture
 @pytest.fixture(scope="function")
@@ -117,8 +120,10 @@ def db_conn():
     yield conn
     conn.close()
 
+
 # Create a shared context object available to all tests
 global_context = {}
+
 
 @pytest.fixture(scope="function")
 def context():

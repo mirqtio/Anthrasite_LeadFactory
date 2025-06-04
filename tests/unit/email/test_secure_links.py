@@ -2,17 +2,17 @@
 Tests for secure link generation and validation.
 """
 
-import pytest
 import time
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import jwt
+import pytest
 
 from leadfactory.email.secure_links import (
-    SecureLinkGenerator,
     SecureLinkConfig,
-    SecureLinkData
+    SecureLinkData,
+    SecureLinkGenerator,
 )
 
 
@@ -22,9 +22,7 @@ class TestSecureLinkGenerator:
     def setup_method(self):
         """Set up test fixtures."""
         self.config = SecureLinkConfig(
-            secret_key="test-secret-key-123",
-            default_expiry_days=7,
-            max_expiry_days=30
+            secret_key="test-secret-key-123", default_expiry_days=7, max_expiry_days=30
         )
         self.generator = SecureLinkGenerator(self.config)
 
@@ -34,7 +32,7 @@ class TestSecureLinkGenerator:
             report_id="report_123",
             user_id="user_456",
             purchase_id="purchase_789",
-            base_url="https://example.com/reports"
+            base_url="https://example.com/reports",
         )
 
         assert "https://example.com/reports?" in link
@@ -56,7 +54,7 @@ class TestSecureLinkGenerator:
             user_id="user_456",
             purchase_id="purchase_789",
             base_url="https://example.com/reports",
-            expiry_days=3
+            expiry_days=3,
         )
 
         token = link.split("token=")[1]
@@ -74,7 +72,7 @@ class TestSecureLinkGenerator:
                 user_id="user_456",
                 purchase_id="purchase_789",
                 base_url="https://example.com/reports",
-                expiry_days=50  # Exceeds max of 30
+                expiry_days=50,  # Exceeds max of 30
             )
 
     def test_generate_download_link(self):
@@ -84,7 +82,7 @@ class TestSecureLinkGenerator:
             user_id="user_456",
             purchase_id="purchase_789",
             base_url="https://example.com/download",
-            expiry_hours=12
+            expiry_hours=12,
         )
 
         token = link.split("token=")[1]
@@ -102,13 +100,13 @@ class TestSecureLinkGenerator:
             report_id="report_123",
             user_id="user_456",
             purchase_id="purchase_789",
-            expires_at=past_time
+            expires_at=past_time,
         )
 
         token = jwt.encode(
-            {**link_data.model_dump(), 'exp': past_time},
+            {**link_data.model_dump(), "exp": past_time},
             self.config.secret_key,
-            algorithm=self.config.algorithm
+            algorithm=self.config.algorithm,
         )
 
         with pytest.raises(jwt.ExpiredSignatureError):
@@ -130,7 +128,7 @@ class TestSecureLinkGenerator:
             report_id="report_123",
             user_id="user_456",
             purchase_id="purchase_789",
-            base_url="https://example.com/reports"
+            base_url="https://example.com/reports",
         )
 
         token = link.split("token=")[1]
@@ -144,7 +142,7 @@ class TestSecureLinkGenerator:
             original_url="https://example.com/agency",
             user_id="user_456",
             campaign_id="campaign_123",
-            link_type="cta"
+            link_type="cta",
         )
 
         assert "utm_source=email" in link
@@ -159,7 +157,7 @@ class TestSecureLinkGenerator:
         link = self.generator.create_tracking_link(
             original_url="https://example.com/agency?existing=param",
             user_id="user_456",
-            campaign_id="campaign_123"
+            campaign_id="campaign_123",
         )
 
         assert "existing=param" in link
@@ -167,7 +165,7 @@ class TestSecureLinkGenerator:
         # Should use & separator since ? already exists
         assert "&utm_source=" in link
 
-    @patch('leadfactory.email.secure_links.get_env')
+    @patch("leadfactory.email.secure_links.get_env")
     def test_default_config_from_settings(self, mock_get_env):
         """Test default configuration from settings."""
         mock_get_env.return_value = "settings-secret"
@@ -185,7 +183,7 @@ class TestSecureLinkGenerator:
             report_id="report_123",
             user_id="user_456",
             purchase_id="purchase_789",
-            expires_at=int(time.time()) + 3600
+            expires_at=int(time.time()) + 3600,
         )
         assert data.access_type == "view"  # Default value
         assert data.metadata == {}  # Default value
@@ -197,7 +195,7 @@ class TestSecureLinkGenerator:
             purchase_id="purchase_789",
             expires_at=int(time.time()) + 3600,
             access_type="download",
-            metadata={"custom": "value"}
+            metadata={"custom": "value"},
         )
         assert data.access_type == "download"
         assert data.metadata["custom"] == "value"
@@ -215,7 +213,7 @@ class TestSecureLinkGenerator:
             secret_key="test-key",
             default_expiry_days=14,
             max_expiry_days=60,
-            algorithm="HS512"
+            algorithm="HS512",
         )
         assert config.default_expiry_days == 14
         assert config.max_expiry_days == 60
@@ -225,7 +223,7 @@ class TestSecureLinkGenerator:
         """Test the factory function."""
         from leadfactory.email.secure_links import get_secure_link_generator
 
-        with patch('leadfactory.email.secure_links.get_env') as mock_get_env:
+        with patch("leadfactory.email.secure_links.get_env") as mock_get_env:
             mock_get_env.return_value = "factory-secret"
 
             generator = get_secure_link_generator()

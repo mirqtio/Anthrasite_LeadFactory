@@ -40,7 +40,7 @@ def test_ip_pool_implementation():
     ip_pool_file = "leadfactory/services/ip_pool_manager.py"
 
     try:
-        with open(ip_pool_file, "r") as f:
+        with open(ip_pool_file) as f:
             content = f.read()
 
         # Check for required classes and methods
@@ -95,7 +95,7 @@ def test_bounce_threshold_configuration():
     print("Testing bounce threshold configuration...")
 
     try:
-        with open("leadfactory/services/ip_pool_manager.py", "r") as f:
+        with open("leadfactory/services/ip_pool_manager.py") as f:
             content = f.read()
 
         # Check for 2% bounce rate warning threshold (Task 21 requirement)
@@ -126,7 +126,7 @@ def test_switching_logic():
     print("Testing pool switching logic...")
 
     try:
-        with open("leadfactory/services/ip_pool_manager.py", "r") as f:
+        with open("leadfactory/services/ip_pool_manager.py") as f:
             content = f.read()
 
         # Check for switching conditions
@@ -161,7 +161,7 @@ def test_monitoring_capabilities():
     print("Testing monitoring and alerting capabilities...")
 
     try:
-        with open("leadfactory/services/ip_pool_manager.py", "r") as f:
+        with open("leadfactory/services/ip_pool_manager.py") as f:
             content = f.read()
 
         # Check for monitoring methods
@@ -196,7 +196,7 @@ def test_sendgrid_integration():
     print("Testing SendGrid integration...")
 
     try:
-        with open("leadfactory/services/ip_pool_manager.py", "r") as f:
+        with open("leadfactory/services/ip_pool_manager.py") as f:
             content = f.read()
 
         # Check for SendGrid integration
@@ -230,7 +230,7 @@ def test_data_structures():
     print("Testing data structures...")
 
     try:
-        with open("leadfactory/services/ip_pool_manager.py", "r") as f:
+        with open("leadfactory/services/ip_pool_manager.py") as f:
             content = f.read()
 
         # Check for required data structures

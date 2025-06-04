@@ -11,7 +11,7 @@ import requests
 def read_key_from_env_file(file_path=".env"):
     """Read the OpenAI API key directly from the .env file"""
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             for line in f:
                 if line.strip().startswith("OPENAI_API_KEY="):
                     # Extract everything after the equals sign
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # For diagnostic purposes, show what's in the environment variable
     env_key = os.environ.get("OPENAI_API_KEY")
     if env_key:
-        print(f"\nℹ️ Note: Your system environment also has an OPENAI_API_KEY set.")
+        print("\nℹ️ Note: Your system environment also has an OPENAI_API_KEY set.")
         print(
             f"System env key: {env_key[:5]}...{env_key[-4:] if len(env_key) > 8 else env_key}"
         )

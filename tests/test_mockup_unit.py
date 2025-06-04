@@ -102,7 +102,9 @@ def test_generate_mockup_success(mock_generators, test_db):
     mock_gpt4o, mock_claude = mock_generators
     with (
         patch("leadfactory.pipeline.mockup.DatabaseConnection") as mock_db,
-        patch("leadfactory.pipeline.mockup.save_mockup", return_value=True) as mock_save,
+        patch(
+            "leadfactory.pipeline.mockup.save_mockup", return_value=True
+        ) as mock_save,
         patch("leadfactory.pipeline.mockup.OPENAI_API_KEY", "test_key"),
         patch("leadfactory.pipeline.mockup.ANTHROPIC_API_KEY", "test_key"),
         patch("utils.io.track_api_cost"),
@@ -143,7 +145,9 @@ def test_generate_mockup_medium_scoring(mock_generators, test_db):
     mock_gpt4o, mock_claude = mock_generators
     with (
         patch("leadfactory.pipeline.mockup.DatabaseConnection") as mock_db,
-        patch("leadfactory.pipeline.mockup.save_mockup", return_value=True) as mock_save,
+        patch(
+            "leadfactory.pipeline.mockup.save_mockup", return_value=True
+        ) as mock_save,
         patch("leadfactory.pipeline.mockup.OPENAI_API_KEY", "test_key"),
         patch("leadfactory.pipeline.mockup.ANTHROPIC_API_KEY", "test_key"),
         patch("utils.io.track_api_cost"),
@@ -184,7 +188,9 @@ def test_generate_mockup_low_scoring(mock_generators, test_db):
     mock_gpt4o, mock_claude = mock_generators
     with (
         patch("leadfactory.pipeline.mockup.DatabaseConnection") as mock_db,
-        patch("leadfactory.pipeline.mockup.save_mockup", return_value=True) as mock_save,
+        patch(
+            "leadfactory.pipeline.mockup.save_mockup", return_value=True
+        ) as mock_save,
         patch("leadfactory.pipeline.mockup.OPENAI_API_KEY", "test_key"),
         patch("leadfactory.pipeline.mockup.ANTHROPIC_API_KEY", "test_key"),
         patch("utils.io.track_api_cost"),
@@ -227,7 +233,9 @@ def test_fallback_to_claude(mock_generators, test_db):
     mock_gpt4o.generate_mockup.return_value = (None, None, {}, "GPT-4o error")
     with (
         patch("leadfactory.pipeline.mockup.DatabaseConnection") as mock_db,
-        patch("leadfactory.pipeline.mockup.save_mockup", return_value=True) as mock_save,
+        patch(
+            "leadfactory.pipeline.mockup.save_mockup", return_value=True
+        ) as mock_save,
         patch("leadfactory.pipeline.mockup.OPENAI_API_KEY", "test_key"),
         patch("leadfactory.pipeline.mockup.ANTHROPIC_API_KEY", "test_key"),
         patch("utils.io.track_api_cost"),
@@ -313,7 +321,9 @@ def test_partial_success_html_only(mock_generators, test_db):
     )
     with (
         patch("leadfactory.pipeline.mockup.DatabaseConnection") as mock_db,
-        patch("leadfactory.pipeline.mockup.save_mockup", return_value=True) as mock_save,
+        patch(
+            "leadfactory.pipeline.mockup.save_mockup", return_value=True
+        ) as mock_save,
         patch("leadfactory.pipeline.mockup.OPENAI_API_KEY", "test_key"),
         patch("leadfactory.pipeline.mockup.ANTHROPIC_API_KEY", "test_key"),
         patch("utils.io.track_api_cost"),

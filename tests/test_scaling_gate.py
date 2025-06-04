@@ -237,7 +237,9 @@ def test_history_limit(scaling_gate_setup):
         pass
 
 
-@pytest.mark.parametrize("mock_datetime", [patch("utils.cost_tracker.datetime")], indirect=True)
+@pytest.mark.parametrize(
+    "mock_datetime", [patch("utils.cost_tracker.datetime")], indirect=True
+)
 def test_timestamps(scaling_gate_setup, mock_datetime):
     """Test that timestamps are recorded correctly."""
     try:
@@ -349,7 +351,10 @@ def test_concurrent_updates(scaling_gate_setup):
     # Check if our specific updates are in the history
     found_entries = 0
     for entry in history:
-        if "CONCURRENT_TEST_1" in entry["reason"] or "CONCURRENT_TEST_2" in entry["reason"]:
+        if (
+            "CONCURRENT_TEST_1" in entry["reason"]
+            or "CONCURRENT_TEST_2" in entry["reason"]
+        ):
             found_entries += 1
 
     # We should find at least one of our entries
@@ -371,15 +376,21 @@ def test_custom_critical_operations(scaling_gate_setup):
     }
 
     # Test a non-critical operation (should be blocked)
-    permitted, _ = check_operation_permission("test_service", "normal_operation", custom_critical_ops)
+    permitted, _ = check_operation_permission(
+        "test_service", "normal_operation", custom_critical_ops
+    )
     assert not permitted, "Non-critical operation should be blocked when gate is active"
 
     # Test a critical operation (should be allowed)
-    permitted, _ = check_operation_permission("test_service", "critical_operation", custom_critical_ops)
+    permitted, _ = check_operation_permission(
+        "test_service", "critical_operation", custom_critical_ops
+    )
     assert permitted, "Critical operation should be allowed even when gate is active"
 
     # Test another critical operation from a different service
-    permitted, _ = check_operation_permission("another_service", "important_task", custom_critical_ops)
+    permitted, _ = check_operation_permission(
+        "another_service", "important_task", custom_critical_ops
+    )
     assert permitted, "Critical operation from different service should be allowed"
 
     # Reset the scaling gate

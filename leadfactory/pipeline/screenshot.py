@@ -2,6 +2,7 @@
 """
 Screenshot generation module for the lead factory pipeline.
 """
+
 import argparse
 import logging
 import os

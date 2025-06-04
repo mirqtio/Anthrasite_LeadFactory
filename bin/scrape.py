@@ -9,6 +9,7 @@ Options:
     --zip ZIP        Process only the specified ZIP code
     --vertical VERTICAL  Process only the specified vertical
 """
+
 import argparse
 import logging
 import os

@@ -16,7 +16,6 @@ from pathlib import Path
 
 
 def main():
-
     # Required packages
     packages = ["matplotlib", "numpy", "pytest-json-report", "pytest-cov"]
 

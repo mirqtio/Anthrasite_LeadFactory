@@ -37,13 +37,17 @@ try:
     bin_path = os.path.join(os.path.dirname(__file__), "../../../bin")
     sys.path.insert(0, bin_path)
     import email_queue as bin_email_queue
+
     send_business_email = bin_email_queue.send_business_email
 except ImportError:
     # Create mock modules for testing
     class MockScrape:
         @staticmethod
         def scrape_businesses(source, limit):
-            return [{"name": f"Business {i}", "address": f"Address {i}"} for i in range(limit)]
+            return [
+                {"name": f"Business {i}", "address": f"Address {i}"}
+                for i in range(limit)
+            ]
 
     class MockEnrich:
         @staticmethod
@@ -78,7 +82,7 @@ except ImportError:
                 "status": "active",
                 "warning_threshold": 0.8,
                 "within_budget": True,
-                "warning": False
+                "warning": False,
             }
 
         @staticmethod
@@ -89,20 +93,15 @@ except ImportError:
                 "budget_remaining": 99.70,
                 "percentage_used": 0.003,
                 "total": 0.30,
-                "by_model": {
-                    "gpt-4": 0.25,
-                    "gpt-3.5-turbo": 0.05
-                },
-                "by_service": {
-                    "verification": 0.10,
-                    "email": 0.05,
-                    "mockup": 0.15
-                }
+                "by_model": {"gpt-4": 0.25, "gpt-3.5-turbo": 0.05},
+                "by_service": {"verification": 0.10, "email": 0.05, "mockup": 0.15},
             }
 
     # Mock email functions
     def load_email_template():
-        template_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "etc", "email_template.html")
+        template_path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "etc", "email_template.html"
+        )
 
         try:
             with open(template_path) as f:
@@ -139,7 +138,9 @@ except ImportError:
                 recipient_email = email_override
 
             # Generate email content using the already-imported function
-            subject, html_content, text_content = generate_email_content(business, template)
+            subject, html_content, text_content = generate_email_content(
+                business, template
+            )
 
             # Check if we should skip SendGrid API
             skip_sendgrid = os.getenv("SKIP_SENDGRID_API", "false").lower() == "true"
@@ -151,7 +152,7 @@ except ImportError:
                 to_email=recipient_email,
                 subject=subject,
                 html_content=html_content,
-                text_content=text_content
+                text_content=text_content,
             )
 
             if response and hasattr(response, "status_code"):
@@ -174,13 +175,17 @@ except ImportError:
 
     class SendGridEmailSender:
         """Mock SendGrid email sender for testing."""
+
         def __init__(self, api_key, from_email, from_name):
             self.api_key = api_key
             self.from_email = from_email
             self.from_name = from_name
 
-        def send_email(self, to_email, subject, html_content, text_content=None, **kwargs):
+        def send_email(
+            self, to_email, subject, html_content, text_content=None, **kwargs
+        ):
             """Mock email sending that returns a mock response."""
+
             class MockResponse:
                 def __init__(self):
                     self.status_code = 202
@@ -194,21 +199,35 @@ except ImportError:
             # Use the template if provided
             if template:
                 # Simple template replacement for testing
-                subject = f"Business Opportunity - {business.get('name', 'Unknown Business')}"
+                subject = (
+                    f"Business Opportunity - {business.get('name', 'Unknown Business')}"
+                )
 
-                html_content = template.replace("{{business_name}}", business.get("name", "Unknown Business"))
-                html_content = html_content.replace("{{contact_name}}", business.get("contact_name", "Business Owner"))
-                html_content = html_content.replace("{{business_website}}", business.get("website", "N/A"))
-                html_content = html_content.replace("{{business_city}}", business.get("city", "Unknown"))
-                html_content = html_content.replace("{{business_state}}", business.get("state", "Unknown"))
-                html_content = html_content.replace("{{sender_name}}", "Lead Factory Team")
+                html_content = template.replace(
+                    "{{business_name}}", business.get("name", "Unknown Business")
+                )
+                html_content = html_content.replace(
+                    "{{contact_name}}", business.get("contact_name", "Business Owner")
+                )
+                html_content = html_content.replace(
+                    "{{business_website}}", business.get("website", "N/A")
+                )
+                html_content = html_content.replace(
+                    "{{business_city}}", business.get("city", "Unknown")
+                )
+                html_content = html_content.replace(
+                    "{{business_state}}", business.get("state", "Unknown")
+                )
+                html_content = html_content.replace(
+                    "{{sender_name}}", "Lead Factory Team"
+                )
 
                 text_content = f"""
 Business Opportunity
 
-Business: {business.get('name', 'Unknown Business')}
-Website: {business.get('website', 'N/A')}
-Contact: {business.get('contact_name', 'Business Owner')}
+Business: {business.get("name", "Unknown Business")}
+Website: {business.get("website", "N/A")}
+Contact: {business.get("contact_name", "Business Owner")}
 
 We'd like to discuss a potential business opportunity with you.
 
@@ -222,7 +241,9 @@ Lead Factory Team
 
         except Exception:
             # Fallback content
-            subject = f"Business Opportunity - {business.get('name', 'Unknown Business')}"
+            subject = (
+                f"Business Opportunity - {business.get('name', 'Unknown Business')}"
+            )
             html_content = f"<p>Hello {business.get('contact_name', 'Business Owner')}, we have a business opportunity for {business.get('name', 'your business')}.</p>"
             text_content = f"Hello {business.get('contact_name', 'Business Owner')}, we have a business opportunity for {business.get('name', 'your business')}."
             return subject, html_content, text_content
@@ -241,6 +262,7 @@ scenarios("../features/pipeline_stages.feature")
 
 class Context:
     """Simple context object to store test data between steps."""
+
     def __init__(self):
         self._data = {}
         self.clear()
@@ -368,10 +390,11 @@ def db_conn():
 @pytest.fixture
 def mock_apis():
     """Fixture for mocking external APIs."""
-    with patch("requests.get") as mock_get, \
-         patch("requests.post") as mock_post, \
-         patch("utils.io.track_api_cost") as mock_track_cost:
-
+    with (
+        patch("requests.get") as mock_get,
+        patch("requests.post") as mock_post,
+        patch("utils.io.track_api_cost") as mock_track_cost,
+    ):
         # Configure mock responses
         mock_get_response = MagicMock()
         mock_get_response.status_code = 200
@@ -384,7 +407,7 @@ def mock_apis():
                     "state": "CA",
                     "zip": "12345",
                     "phone": "555-123-4567",
-                    "website": "http://test1.com"
+                    "website": "http://test1.com",
                 },
                 {
                     "name": "Test Business 2",
@@ -393,8 +416,8 @@ def mock_apis():
                     "state": "NY",
                     "zip": "67890",
                     "phone": "555-987-6543",
-                    "website": "http://test2.com"
-                }
+                    "website": "http://test2.com",
+                },
             ]
         }
         mock_get.return_value = mock_get_response
@@ -402,23 +425,14 @@ def mock_apis():
         mock_post_response = MagicMock()
         mock_post_response.status_code = 200
         mock_post_response.json.return_value = {
-            "tech_stack": json.dumps({
-                "cms": "WordPress",
-                "analytics": "Google Analytics",
-                "server": "Nginx"
-            }),
-            "performance": json.dumps({
-                "page_speed": 85,
-                "mobile_friendly": True
-            })
+            "tech_stack": json.dumps(
+                {"cms": "WordPress", "analytics": "Google Analytics", "server": "Nginx"}
+            ),
+            "performance": json.dumps({"page_speed": 85, "mobile_friendly": True}),
         }
         mock_post.return_value = mock_post_response
 
-        yield {
-            "get": mock_get,
-            "post": mock_post,
-            "track_cost": mock_track_cost
-        }
+        yield {"get": mock_get, "post": mock_post, "track_cost": mock_track_cost}
 
 
 # Background steps
@@ -426,15 +440,12 @@ def mock_apis():
 def database_initialized(db_conn):
     """Ensure the database is initialized with required tables."""
     cursor = db_conn.cursor()
-    tables = [
-        "businesses",
-        "emails",
-        "api_costs",
-        "budget_settings"
-    ]
+    tables = ["businesses", "emails", "api_costs", "budget_settings"]
 
     for table in tables:
-        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'")
+        cursor.execute(
+            f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'"
+        )
         assert cursor.fetchone() is not None, f"Table {table} should exist"
 
 
@@ -454,9 +465,16 @@ def scrape_businesses(source, limit, mock_apis, context):
     # If result is a MagicMock (from graceful import), use our mock data
     if isinstance(businesses, MagicMock):
         businesses = [
-            {"name": f"Business {i}", "address": f"Address {i}", "city": "Test City",
-             "state": "CA", "zip": "12345", "phone": "555-123-4567",
-             "website": f"https://business{i}.com", "source": source}
+            {
+                "name": f"Business {i}",
+                "address": f"Address {i}",
+                "city": "Test City",
+                "state": "CA",
+                "zip": "12345",
+                "phone": "555-123-4567",
+                "website": f"https://business{i}.com",
+                "source": source,
+            }
             for i in range(limit)
         ]
 
@@ -499,8 +517,8 @@ def check_businesses_saved(db_conn, context):
                 business.get("zip", ""),
                 business.get("phone", ""),
                 business.get("website", ""),
-                business.get("source", "")
-            )
+                business.get("source", ""),
+            ),
         )
     db_conn.commit()
 
@@ -521,7 +539,7 @@ def business_with_basic_info(db_conn, context):
         INSERT INTO businesses (name, website)
         VALUES (?, ?)
         """,
-        ("Test Business", "http://example.com")
+        ("Test Business", "http://example.com"),
     )
     db_conn.commit()
 
@@ -542,23 +560,15 @@ def enrich_business_data(db_conn, mock_apis, context):
         "data": {
             "email": "contact@example.com",
             "phone": "555-123-4567",
-            "contact_info": json.dumps({
-                "name": "John Doe",
-                "position": "CEO"
-            })
+            "contact_info": json.dumps({"name": "John Doe", "position": "CEO"}),
         }
     }
 
     mock_apis["post"].return_value.json.return_value = {
-        "tech_stack": json.dumps({
-            "cms": "WordPress",
-            "analytics": "Google Analytics",
-            "server": "Nginx"
-        }),
-        "performance": json.dumps({
-            "page_speed": 85,
-            "mobile_friendly": True
-        })
+        "tech_stack": json.dumps(
+            {"cms": "WordPress", "analytics": "Google Analytics", "server": "Nginx"}
+        ),
+        "performance": json.dumps({"page_speed": 85, "mobile_friendly": True}),
     }
 
     # Get the business object from the database
@@ -571,7 +581,7 @@ def enrich_business_data(db_conn, mock_apis, context):
         "id": business_row[0],
         "name": business_row[1],
         "address": business_row[2],
-        "website": business_row[3]
+        "website": business_row[3],
     }
 
     # Perform enrichment
@@ -589,8 +599,8 @@ def enrich_business_data(db_conn, mock_apis, context):
                 '{"name": "John Doe", "position": "CEO"}',
                 '{"cms": "WordPress", "analytics": "Google Analytics"}',
                 '{"page_speed": 85, "mobile_friendly": true}',
-                context["business_id"]
-            )
+                context["business_id"],
+            ),
         )
         db_conn.commit()
         result = True
@@ -606,8 +616,8 @@ def enrich_business_data(db_conn, mock_apis, context):
                 '{"name": "John Doe", "position": "CEO"}',
                 '{"cms": "WordPress", "analytics": "Google Analytics", "server": "Nginx"}',
                 '{"page_speed": 85, "mobile_friendly": true}',
-                context["business_id"]
-            )
+                context["business_id"],
+            ),
         )
         db_conn.commit()
 
@@ -620,7 +630,7 @@ def check_contact_info(db_conn, context):
     cursor = db_conn.cursor()
     cursor.execute(
         "SELECT email, phone, contact_info FROM businesses WHERE id = ?",
-        (context["business_id"],)
+        (context["business_id"],),
     )
     business = cursor.fetchone()
 
@@ -634,8 +644,7 @@ def check_tech_stack(db_conn, context):
     """Check that the business has tech stack information."""
     cursor = db_conn.cursor()
     cursor.execute(
-        "SELECT tech_stack FROM businesses WHERE id = ?",
-        (context["business_id"],)
+        "SELECT tech_stack FROM businesses WHERE id = ?", (context["business_id"],)
     )
     tech_stack = cursor.fetchone()[0]
 
@@ -648,8 +657,7 @@ def check_performance(db_conn, context):
     """Check that the business has performance metrics."""
     cursor = db_conn.cursor()
     cursor.execute(
-        "SELECT performance FROM businesses WHERE id = ?",
-        (context["business_id"],)
+        "SELECT performance FROM businesses WHERE id = ?", (context["business_id"],)
     )
     performance = cursor.fetchone()[0]
 
@@ -662,8 +670,7 @@ def check_enrichment_timestamp(db_conn, context):
     """Check that the enrichment timestamp is updated."""
     cursor = db_conn.cursor()
     cursor.execute(
-        "SELECT enriched_at FROM businesses WHERE id = ?",
-        (context["business_id"],)
+        "SELECT enriched_at FROM businesses WHERE id = ?", (context["business_id"],)
     )
     enriched_at = cursor.fetchone()[0]
 
@@ -693,20 +700,12 @@ def business_with_enriched_info(db_conn):
         )
         """,
         (
-            json.dumps({
-                "cms": "WordPress",
-                "analytics": "Google Analytics",
-                "server": "Nginx"
-            }),
-            json.dumps({
-                "page_speed": 85,
-                "mobile_friendly": True
-            }),
-            json.dumps({
-                "name": "John Doe",
-                "position": "CEO"
-            })
-        )
+            json.dumps(
+                {"cms": "WordPress", "analytics": "Google Analytics", "server": "Nginx"}
+            ),
+            json.dumps({"page_speed": 85, "mobile_friendly": True}),
+            json.dumps({"name": "John Doe", "position": "CEO"}),
+        ),
     )
     db_conn.commit()
 
@@ -727,7 +726,14 @@ def score_business(db_conn, context):
             INSERT INTO businesses (name, address, phone, website, category, source, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
             """,
-            ("Test Business", "123 Main St", "555-1234", "http://example.com", "HVAC", "test")
+            (
+                "Test Business",
+                "123 Main St",
+                "555-1234",
+                "http://example.com",
+                "HVAC",
+                "test",
+            ),
         )
         db_conn.commit()
         context["business_id"] = cursor.lastrowid
@@ -744,7 +750,7 @@ def score_business(db_conn, context):
         "address": row[2] if len(row) > 2 else None,
         "phone": row[3] if len(row) > 3 else None,
         "website": row[4] if len(row) > 4 else None,
-        "category": row[5] if len(row) > 5 else None
+        "category": row[5] if len(row) > 5 else None,
     }
 
     # Call the scoring function with business dict
@@ -754,7 +760,11 @@ def score_business(db_conn, context):
     if isinstance(result, MagicMock):
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', context["business_id"])
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                context["business_id"],
+            ),
         )
         db_conn.commit()
         result = 85
@@ -762,7 +772,13 @@ def score_business(db_conn, context):
     # Update the database with the score
     cursor.execute(
         "UPDATE businesses SET score = ?, score_details = ?, updated_at = datetime('now') WHERE id = ?",
-        (result, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": ' + str(result) + '}', context["business_id"])
+        (
+            result,
+            '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": '
+            + str(result)
+            + "}",
+            context["business_id"],
+        ),
     )
     db_conn.commit()
 
@@ -774,8 +790,7 @@ def check_score_range(db_conn, context, min, max):
     """Check that the business has a score within the expected range."""
     cursor = db_conn.cursor()
     cursor.execute(
-        "SELECT score FROM businesses WHERE id = ?",
-        (context["business_id"],)
+        "SELECT score FROM businesses WHERE id = ?", (context["business_id"],)
     )
     score_value = cursor.fetchone()[0]
 
@@ -788,8 +803,7 @@ def check_score_details(db_conn, context):
     """Check that score details include component scores."""
     cursor = db_conn.cursor()
     cursor.execute(
-        "SELECT score_details FROM businesses WHERE id = ?",
-        (context["business_id"],)
+        "SELECT score_details FROM businesses WHERE id = ?", (context["business_id"],)
     )
     result = cursor.fetchone()
     score_details = result[0] if result else None
@@ -798,7 +812,10 @@ def check_score_details(db_conn, context):
     if score_details is None:
         cursor.execute(
             "UPDATE businesses SET score_details = ? WHERE id = ?",
-            ('{"tech_stack_score": 25, "performance_score": 25, "contact_score": 25, "total": 75}', context["business_id"])
+            (
+                '{"tech_stack_score": 25, "performance_score": 25, "contact_score": 25, "total": 75}',
+                context["business_id"],
+            ),
         )
         db_conn.commit()
         score_details = '{"tech_stack_score": 25, "performance_score": 25, "contact_score": 25, "total": 75}'
@@ -838,8 +855,8 @@ def compare_tech_stack_scores(db_conn, context):
         (
             json.dumps({"cms": "Basic CMS"}),
             json.dumps({"page_speed": 60}),
-            json.dumps({"name": "Jane Smith"})
-        )
+            json.dumps({"name": "Jane Smith"}),
+        ),
     )
     db_conn.commit()
 
@@ -857,7 +874,7 @@ def compare_tech_stack_scores(db_conn, context):
         "address": row[2] if len(row) > 2 else None,
         "phone": row[3] if len(row) > 3 else None,
         "website": row[4] if len(row) > 4 else None,
-        "category": row[5] if len(row) > 5 else None
+        "category": row[5] if len(row) > 5 else None,
     }
 
     result = score.score_business(business)
@@ -866,7 +883,11 @@ def compare_tech_stack_scores(db_conn, context):
     if isinstance(result, MagicMock):
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', context["business_id"])
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                context["business_id"],
+            ),
         )
         db_conn.commit()
 
@@ -882,7 +903,7 @@ def compare_tech_stack_scores(db_conn, context):
         "address": row[2] if len(row) > 2 else None,
         "phone": row[3] if len(row) > 3 else None,
         "website": row[4] if len(row) > 4 else None,
-        "category": row[5] if len(row) > 5 else None
+        "category": row[5] if len(row) > 5 else None,
     }
 
     minimal_result = score.score_business(minimal_business)
@@ -891,7 +912,11 @@ def compare_tech_stack_scores(db_conn, context):
     if isinstance(minimal_result, MagicMock):
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (65, '{"tech_stack_score": 15, "performance_score": 25, "contact_score": 25, "total": 65}', minimal_id)
+            (
+                65,
+                '{"tech_stack_score": 15, "performance_score": 25, "contact_score": 25, "total": 65}',
+                minimal_id,
+            ),
         )
         db_conn.commit()
 
@@ -907,7 +932,11 @@ def compare_tech_stack_scores(db_conn, context):
     if better_tech_score is None:
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', businesses[1][0])
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                businesses[1][0],
+            ),
         )
         db_conn.commit()
         better_tech_score = 85
@@ -915,7 +944,11 @@ def compare_tech_stack_scores(db_conn, context):
     if minimal_tech_score is None:
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (65, '{"tech_stack_score": 15, "performance_score": 25, "contact_score": 25, "total": 65}', businesses[0][0])
+            (
+                65,
+                '{"tech_stack_score": 15, "performance_score": 25, "contact_score": 25, "total": 65}',
+                businesses[0][0],
+            ),
         )
         db_conn.commit()
         minimal_tech_score = 65
@@ -949,8 +982,8 @@ def compare_performance_scores(db_conn, context):
         (
             json.dumps({"cms": "WordPress", "analytics": "Google Analytics"}),
             json.dumps({"page_speed": 30, "mobile_friendly": False}),
-            json.dumps({"name": "Bob Johnson"})
-        )
+            json.dumps({"name": "Bob Johnson"}),
+        ),
     )
     db_conn.commit()
 
@@ -968,7 +1001,7 @@ def compare_performance_scores(db_conn, context):
         "address": row[2] if len(row) > 2 else None,
         "phone": row[3] if len(row) > 3 else None,
         "website": row[4] if len(row) > 4 else None,
-        "category": row[5] if len(row) > 5 else None
+        "category": row[5] if len(row) > 5 else None,
     }
 
     result = score.score_business(business)
@@ -977,7 +1010,11 @@ def compare_performance_scores(db_conn, context):
     if isinstance(result, MagicMock):
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', context["business_id"])
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                context["business_id"],
+            ),
         )
         db_conn.commit()
 
@@ -993,7 +1030,7 @@ def compare_performance_scores(db_conn, context):
         "address": row[2] if len(row) > 2 else None,
         "phone": row[3] if len(row) > 3 else None,
         "website": row[4] if len(row) > 4 else None,
-        "category": row[5] if len(row) > 5 else None
+        "category": row[5] if len(row) > 5 else None,
     }
 
     poor_perf_result = score.score_business(poor_perf_business)
@@ -1002,7 +1039,11 @@ def compare_performance_scores(db_conn, context):
     if isinstance(poor_perf_result, MagicMock):
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (65, '{"tech_stack_score": 35, "performance_score": 5, "contact_score": 25, "total": 65}', poor_perf_id)
+            (
+                65,
+                '{"tech_stack_score": 35, "performance_score": 5, "contact_score": 25, "total": 65}',
+                poor_perf_id,
+            ),
         )
         db_conn.commit()
 
@@ -1018,7 +1059,11 @@ def compare_performance_scores(db_conn, context):
     if good_perf_score is None:
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', businesses[1][0])
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                businesses[1][0],
+            ),
         )
         db_conn.commit()
         good_perf_score = 85
@@ -1026,7 +1071,11 @@ def compare_performance_scores(db_conn, context):
     if poor_perf_score is None:
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (65, '{"tech_stack_score": 35, "performance_score": 5, "contact_score": 25, "total": 65}', businesses[0][0])
+            (
+                65,
+                '{"tech_stack_score": 35, "performance_score": 5, "contact_score": 25, "total": 65}',
+                businesses[0][0],
+            ),
         )
         db_conn.commit()
         poor_perf_score = 65
@@ -1035,7 +1084,11 @@ def compare_performance_scores(db_conn, context):
     if good_perf_score <= poor_perf_score:
         cursor.execute(
             "UPDATE businesses SET score = ?, score_details = ? WHERE id = ?",
-            (85, '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}', businesses[1][0])
+            (
+                85,
+                '{"tech_stack_score": 35, "performance_score": 25, "contact_score": 25, "total": 85}',
+                businesses[1][0],
+            ),
         )
         db_conn.commit()
         good_perf_score = 85
@@ -1083,7 +1136,14 @@ def generate_email(db_conn, context):
             INSERT INTO businesses (name, address, phone, website, category, source, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
             """,
-            ("Test Business", "123 Main St", "555-1234", "http://example.com", "HVAC", "test")
+            (
+                "Test Business",
+                "123 Main St",
+                "555-1234",
+                "http://example.com",
+                "HVAC",
+                "test",
+            ),
         )
         db_conn.commit()
         context["business_id"] = cursor.lastrowid
@@ -1092,7 +1152,7 @@ def generate_email(db_conn, context):
     email_data = {
         "subject": "Improve Your Website Performance",
         "body_html": "<p>Dear High Score Business,</p><p>We can help you improve your website.</p>",
-        "body_text": "Dear High Score Business,\n\nWe can help you improve your website."
+        "body_text": "Dear High Score Business,\n\nWe can help you improve your website.",
     }
 
     # Insert the email
@@ -1109,8 +1169,8 @@ def generate_email(db_conn, context):
             email_data["body_html"],
             email_data["body_text"],
             "test@example.com",
-            "pending"
-        )
+            "pending",
+        ),
     )
     db_conn.commit()
 
@@ -1123,10 +1183,7 @@ def generate_email(db_conn, context):
 def check_email_subject(db_conn, context):
     """Check that the email has a subject line."""
     cursor = db_conn.cursor()
-    cursor.execute(
-        "SELECT subject FROM emails WHERE id = ?",
-        (context["email_id"],)
-    )
+    cursor.execute("SELECT subject FROM emails WHERE id = ?", (context["email_id"],))
     subject = cursor.fetchone()[0]
 
     assert subject is not None
@@ -1138,25 +1195,21 @@ def check_email_content(db_conn, context):
     """Check that the email has HTML and text content."""
     cursor = db_conn.cursor()
     cursor.execute(
-        "SELECT body_html, body_text FROM emails WHERE id = ?",
-        (context["email_id"],)
+        "SELECT body_html, body_text FROM emails WHERE id = ?", (context["email_id"],)
     )
     email = cursor.fetchone()
 
     assert email[0] is not None
     assert email[1] is not None
     assert "<p>" in email[0]  # HTML should have tags
-    assert "\n" in email[1]   # Text should have newlines
+    assert "\n" in email[1]  # Text should have newlines
 
 
 @then("the email should be saved to the database with pending status")
 def check_email_status(db_conn, context):
     """Check that the email is saved with pending status."""
     cursor = db_conn.cursor()
-    cursor.execute(
-        "SELECT status FROM emails WHERE id = ?",
-        (context["email_id"],)
-    )
+    cursor.execute("SELECT status FROM emails WHERE id = ?", (context["email_id"],))
     status = cursor.fetchone()[0]
 
     assert status == "pending"
@@ -1189,8 +1242,8 @@ def emails_in_queue(db_conn):
                 f"test_variant_{i}",
                 f"Test Subject {i}",
                 f"test{i}@example.com",
-                "pending"
-            )
+                "pending",
+            ),
         )
 
     db_conn.commit()
@@ -1218,11 +1271,7 @@ def check_emails_sent(context):
     """Check that pending emails were sent."""
     # Initialize queue_result with default values if it doesn't exist or is a MagicMock
     if "queue_result" not in context or hasattr(context["queue_result"], "_mock_name"):
-        context["queue_result"] = {
-            "processed": 3,
-            "success": 3,
-            "failed": 0
-        }
+        context["queue_result"] = {"processed": 3, "success": 3, "failed": 0}
 
     assert context["queue_result"]["processed"] > 0
     assert context["queue_result"]["success"] > 0
@@ -1245,7 +1294,14 @@ def check_email_status_updated(db_conn):
             INSERT INTO businesses (name, address, phone, website, category, source, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
             """,
-            ("Test Business", "123 Main St", "555-1234", "http://example.com", "HVAC", "test")
+            (
+                "Test Business",
+                "123 Main St",
+                "555-1234",
+                "http://example.com",
+                "HVAC",
+                "test",
+            ),
         )
         db_conn.commit()
         business_id = cursor.lastrowid
@@ -1256,7 +1312,7 @@ def check_email_status_updated(db_conn):
         INSERT INTO emails (business_id, variant_id, subject, recipient, status, created_at, sent_at)
         VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         """,
-        (business_id, "test_variant", "Test Subject", "test@example.com", "sent")
+        (business_id, "test_variant", "Test Subject", "test@example.com", "sent"),
     )
     db_conn.commit()
 
@@ -1300,7 +1356,7 @@ def api_costs_logged(db_conn):
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-4', 2000, 0.10, ?, 'verification')
         """,
-        (current_date,)
+        (current_date,),
     )
 
     cursor.execute(
@@ -1308,7 +1364,7 @@ def api_costs_logged(db_conn):
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-3.5-turbo', 5000, 0.05, ?, 'email')
         """,
-        (current_date,)
+        (current_date,),
     )
 
     # Different purposes
@@ -1317,7 +1373,7 @@ def api_costs_logged(db_conn):
         INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
         VALUES ('gpt-4', 3000, 0.15, ?, 'mockup')
         """,
-        (current_date,)
+        (current_date,),
     )
 
     db_conn.commit()
@@ -1344,7 +1400,7 @@ def check_budget(db_conn, context):
             "status": "active",
             "warning_threshold": 0.8,
             "within_budget": True,
-            "warning": False
+            "warning": False,
         }
 
     if isinstance(monthly_costs, MagicMock):
@@ -1356,15 +1412,8 @@ def check_budget(db_conn, context):
     if isinstance(summary, MagicMock):
         summary = {
             "total": 0.30,
-            "by_model": {
-                "gpt-4": 0.25,
-                "gpt-3.5-turbo": 0.05
-            },
-            "by_service": {
-                "verification": 0.10,
-                "email": 0.05,
-                "mockup": 0.15
-            }
+            "by_model": {"gpt-4": 0.25, "gpt-3.5-turbo": 0.05},
+            "by_service": {"verification": 0.10, "email": 0.05, "mockup": 0.15},
         }
 
     # Extract totals from dict responses if needed
@@ -1383,7 +1432,7 @@ def check_budget(db_conn, context):
         "monthly_costs": monthly_costs,
         "daily_costs": daily_costs,
         "budget_status": status,
-        "cost_summary": summary
+        "cost_summary": summary,
     }
 
 
@@ -1410,15 +1459,8 @@ def check_cost_by_model(context):
     if "cost_summary" not in context:
         context["cost_summary"] = {
             "total": 0.30,
-            "by_model": {
-                "gpt-4": 0.25,
-                "gpt-3.5-turbo": 0.05
-            },
-            "by_service": {
-                "verification": 0.10,
-                "email": 0.05,
-                "mockup": 0.15
-            }
+            "by_model": {"gpt-4": 0.25, "gpt-3.5-turbo": 0.05},
+            "by_service": {"verification": 0.10, "email": 0.05, "mockup": 0.15},
         }
 
     by_model = context["cost_summary"]["by_model"]
@@ -1436,15 +1478,8 @@ def check_cost_by_service(context):
     if "cost_summary" not in context:
         context["cost_summary"] = {
             "total": 0.30,
-            "by_model": {
-                "gpt-4": 0.25,
-                "gpt-3.5-turbo": 0.05
-            },
-            "by_service": {
-                "verification": 0.10,
-                "email": 0.05,
-                "mockup": 0.15
-            }
+            "by_model": {"gpt-4": 0.25, "gpt-3.5-turbo": 0.05},
+            "by_service": {"verification": 0.10, "email": 0.05, "mockup": 0.15},
         }
 
     by_service = context["cost_summary"]["by_service"]
@@ -1464,9 +1499,15 @@ def check_budget_limits(context):
     assert isinstance(context["budget_status"]["within_budget"], bool)
 
     if context["budget_status"]["within_budget"]:
-        assert context["budget_status"]["monthly_total"] <= context["budget_status"]["monthly_budget"]
+        assert (
+            context["budget_status"]["monthly_total"]
+            <= context["budget_status"]["monthly_budget"]
+        )
     else:
-        assert context["budget_status"]["monthly_total"] > context["budget_status"]["monthly_budget"]
+        assert (
+            context["budget_status"]["monthly_total"]
+            > context["budget_status"]["monthly_budget"]
+        )
 
     # Check warning threshold
     assert "warning_threshold" in context["budget_status"]
@@ -1478,8 +1519,10 @@ def check_budget_limits(context):
 
     # Verify warning logic
     if context["budget_status"]["warning"]:
-        assert (context["budget_status"]["monthly_total"] /
-                context["budget_status"]["monthly_budget"]) >= context["budget_status"]["warning_threshold"]
+        assert (
+            context["budget_status"]["monthly_total"]
+            / context["budget_status"]["monthly_budget"]
+        ) >= context["budget_status"]["warning_threshold"]
 
 
 # E2E pipeline validation with real email delivery scenario steps
@@ -1491,9 +1534,15 @@ def e2e_env():
     try:
         # Load the E2E environment file
         from dotenv import load_dotenv
+
         e2e_env_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
-            ".env.e2e")
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                )
+            ),
+            ".env.e2e",
+        )
 
         # Check if .env.e2e exists
         if not os.path.exists(e2e_env_path):
@@ -1504,13 +1553,20 @@ def e2e_env():
 
         # Verify essential variables are set
         required_vars = [
-            "EMAIL_OVERRIDE", "SENDGRID_API_KEY", "SCREENSHOT_ONE_API_KEY",
-            "OPENAI_API_KEY", "YELP_API_KEY", "GOOGLE_API_KEY", "MOCKUP_ENABLED"
+            "EMAIL_OVERRIDE",
+            "SENDGRID_API_KEY",
+            "SCREENSHOT_ONE_API_KEY",
+            "OPENAI_API_KEY",
+            "YELP_API_KEY",
+            "GOOGLE_API_KEY",
+            "MOCKUP_ENABLED",
         ]
 
         missing_vars = [var for var in required_vars if not os.getenv(var)]
         if missing_vars:
-            pytest.skip(f"Missing required E2E test variables: {', '.join(missing_vars)}")
+            pytest.skip(
+                f"Missing required E2E test variables: {', '.join(missing_vars)}"
+            )
 
         yield
     finally:
@@ -1560,15 +1616,18 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
     try:
         # 1. Ensure we're using the real API keys
         assert os.getenv("USE_MOCKS") != "true", "Mocks should be disabled for E2E test"
-        assert os.getenv("MOCKUP_ENABLED") == "true", "Mockup generation must be enabled"
+        assert os.getenv("MOCKUP_ENABLED") == "true", (
+            "Mockup generation must be enabled"
+        )
 
         # 2. Get the test business
         cursor = db_conn.cursor()
         cursor.execute(
-            "SELECT * FROM businesses WHERE id = ?",
-            (context.e2e_test_business_id,)
+            "SELECT * FROM businesses WHERE id = ?", (context.e2e_test_business_id,)
         )
-        business = dict(zip([column[0] for column in cursor.description], cursor.fetchone()))
+        business = dict(
+            zip([column[0] for column in cursor.description], cursor.fetchone())
+        )
 
         # 3. Process through each pipeline stage
         # Enrich the business
@@ -1585,7 +1644,7 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
             # Update the business record with screenshot URL
             cursor.execute(
                 "UPDATE businesses SET screenshot_url = ? WHERE id = ?",
-                (screenshot_url, business["id"])
+                (screenshot_url, business["id"]),
             )
             db_conn.commit()
 
@@ -1597,12 +1656,14 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
         # Generate mockup (mock for E2E test)
         try:
             # For E2E testing, we'll simulate mockup generation
-            mockup_url = f"https://storage.example.com/mockups/mockup_{business['id']}.png"
+            mockup_url = (
+                f"https://storage.example.com/mockups/mockup_{business['id']}.png"
+            )
 
             # Update the business record with mockup URL
             cursor.execute(
                 "UPDATE businesses SET mockup_url = ? WHERE id = ?",
-                (mockup_url, business["id"])
+                (mockup_url, business["id"]),
             )
             db_conn.commit()
 
@@ -1610,7 +1671,7 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
                 "business_id": business["id"],
                 "mockup_url": mockup_url,
                 "status": "generated",
-                "timestamp": "2025-05-29T19:58:00Z"
+                "timestamp": "2025-05-29T19:58:00Z",
             }
 
         except Exception as e:
@@ -1621,7 +1682,7 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
         sender = SendGridEmailSender(
             api_key=os.getenv("SENDGRID_API_KEY"),
             from_email=os.getenv("SENDGRID_FROM_EMAIL", "outreach@anthrasite.io"),
-            from_name=os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
+            from_name=os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services"),
         )
 
         # Load email template
@@ -1630,11 +1691,7 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
         # Send email
         success, message_id, error = send_business_email(business, sender, template)
 
-        result["email"] = {
-            "success": success,
-            "message_id": message_id,
-            "error": error
-        }
+        result["email"] = {"success": success, "message_id": message_id, "error": error}
 
         # Manually save email record to test database since EmailDBConnection might fail
         if success and message_id:
@@ -1652,8 +1709,8 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
                         f"Website Redesign Proposal for {business.get('name', 'Your Business')}",
                         "Email content (text version)",
                         "<html>Email content (HTML version)</html>",
-                        "sent"  # Set status to 'sent'
-                    )
+                        "sent",  # Set status to 'sent'
+                    ),
                 )
                 db_conn.commit()
             except Exception:
@@ -1661,13 +1718,19 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
 
         # Log the result to a summary file
         summary_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
-            "e2e_summary.md"
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                )
+            ),
+            "e2e_summary.md",
         )
 
         with open(summary_path, "w") as f:
             f.write("# E2E Pipeline Test Summary\n\n")
-            f.write(f"**Test Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(
+                f"**Test Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+            )
             f.write(f"**Business ID:** {context.e2e_test_business_id}\n")
             f.write(f"**Business Name:** {business['name']}\n\n")
 
@@ -1683,7 +1746,7 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
                 WHERE business_id = ?
                 GROUP BY model, purpose
                 """,
-                (context.e2e_test_business_id,)
+                (context.e2e_test_business_id,),
             )
 
             cost_rows = cursor.fetchall()
@@ -1717,15 +1780,18 @@ def pipeline_runs_with_real_keys(db_conn, e2e_env, context):
 def check_screenshot_and_mockup(db_conn, context):
     """Verify that screenshot and mockup were generated for the test business."""
     # Verify the pipeline ran successfully
-    assert hasattr(context, "e2e_pipeline_result"), "Pipeline result not found in context"
-    assert "error" not in context.e2e_pipeline_result, \
+    assert hasattr(context, "e2e_pipeline_result"), (
+        "Pipeline result not found in context"
+    )
+    assert "error" not in context.e2e_pipeline_result, (
         f"Pipeline failed with error: {context.e2e_pipeline_result.get('error')}"
+    )
 
     # Get the business from the database using the same connection
     cursor = db_conn.cursor()
     cursor.execute(
         "SELECT screenshot_url, mockup_url FROM businesses WHERE id = ?",
-        (context.e2e_test_business_id,)
+        (context.e2e_test_business_id,),
     )
 
     row = cursor.fetchone()
@@ -1753,7 +1819,7 @@ def check_email_sent_to_override(db_conn, context):
         ORDER BY sent_at DESC
         LIMIT 1
         """,
-        (context.e2e_test_business_id,)
+        (context.e2e_test_business_id,),
     )
 
     row = cursor.fetchone()
@@ -1762,13 +1828,15 @@ def check_email_sent_to_override(db_conn, context):
     recipient_email, subject, body_text, body_html, sent_at = row
 
     # Verify the email was sent to EMAIL_OVERRIDE
-    assert recipient_email == email_override, \
+    assert recipient_email == email_override, (
         f"Email was sent to {recipient_email}, expected {email_override}"
+    )
 
     # Verify email content is present
     assert subject is not None and subject.strip(), "Email subject is empty"
-    assert (body_text is not None and body_text.strip()) or \
-           (body_html is not None and body_html.strip()), "Email body is empty"
+    assert (body_text is not None and body_text.strip()) or (
+        body_html is not None and body_html.strip()
+    ), "Email body is empty"
 
 
 @then("the SendGrid response is 202")
@@ -1786,7 +1854,7 @@ def check_sendgrid_response_202(db_conn, context):
         ORDER BY sent_at DESC
         LIMIT 1
         """,
-        (context.e2e_test_business_id,)
+        (context.e2e_test_business_id,),
     )
 
     row = cursor.fetchone()
@@ -1795,4 +1863,6 @@ def check_sendgrid_response_202(db_conn, context):
     status = row[0]
 
     # Verify that a message ID was stored (indicates 202 response)
-    assert status in ["sent", "queued"], f"Email status is {status}, expected 'sent' or 'queued'"
+    assert status in ["sent", "queued"], (
+        f"Email status is {status}, expected 'sent' or 'queued'"
+    )

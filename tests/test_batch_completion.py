@@ -200,7 +200,9 @@ def step_impl(context):
     context.mock_now = context.mock_now_patcher.start()
 
     # Set to 6 AM EST (after the 5 AM deadline)
-    mock_now = datetime.utcnow().replace(hour=11, minute=0, second=0)  # 6 AM EST = 11 AM UTC
+    mock_now = datetime.utcnow().replace(
+        hour=11, minute=0, second=0
+    )  # 6 AM EST = 11 AM UTC
     context.mock_now.utcnow.return_value = mock_now
     context.mock_now.fromisoformat.side_effect = datetime.fromisoformat
 
@@ -230,7 +232,10 @@ def step_impl(context):
 def step_impl(context):
     """Verify the system reports the batch as not completed on time."""
     assert context.completed is False
-    assert "not completed" in context.reason.lower() or "deadline" in context.reason.lower()
+    assert (
+        "not completed" in context.reason.lower()
+        or "deadline" in context.reason.lower()
+    )
 
 
 @then("an alert should be triggered")
@@ -252,7 +257,9 @@ def step_impl(context):
     context.mock_now = context.mock_now_patcher.start()
 
     # Set to 6 AM EST (after the 5 AM deadline)
-    mock_now = datetime.utcnow().replace(hour=11, minute=0, second=0)  # 6 AM EST = 11 AM UTC
+    mock_now = datetime.utcnow().replace(
+        hour=11, minute=0, second=0
+    )  # 6 AM EST = 11 AM UTC
     context.mock_now.utcnow.return_value = mock_now
     context.mock_now.fromisoformat.side_effect = datetime.fromisoformat
 
@@ -260,7 +267,9 @@ def step_impl(context):
 @when("the batch completion monitor runs")
 def step_impl(context):
     """Simulate the batch completion monitor running."""
-    context.mock_send_alert = patch("bin.batch_completion_monitor.send_alert_email").start()
+    context.mock_send_alert = patch(
+        "bin.batch_completion_monitor.send_alert_email"
+    ).start()
     context.mock_send_alert.return_value = True
 
     check_and_alert()

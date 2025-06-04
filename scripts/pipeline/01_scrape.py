@@ -2,6 +2,7 @@
 """
 Wrapper script for web scraping stage of the pipeline.
 """
+
 import logging
 import os
 import sys

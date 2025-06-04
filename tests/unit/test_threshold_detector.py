@@ -2,21 +2,23 @@
 Unit tests for the threshold detection system.
 """
 
-import pytest
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
-from dataclasses import dataclass
+
+import pytest
 
 from leadfactory.services.threshold_detector import (
-    ThresholdDetector,
-    ThresholdConfig,
-    ThresholdRule,
     ThresholdBreach,
+    ThresholdConfig,
+    ThresholdDetector,
+    ThresholdRule,
     ThresholdSeverity,
     ThresholdType,
     create_default_threshold_config,
-    log_notification_callback
+    log_notification_callback,
 )
+
 
 # Mock IPSubuserStats for testing
 @dataclass
@@ -28,6 +30,7 @@ class MockIPSubuserStats:
     total_bounces: int
     last_updated: datetime
 
+
 class TestThresholdRule:
     """Test ThresholdRule dataclass."""
 
@@ -37,7 +40,7 @@ class TestThresholdRule:
             name="test_rule",
             threshold_value=0.05,
             severity=ThresholdSeverity.MEDIUM,
-            threshold_type=ThresholdType.ABSOLUTE
+            threshold_type=ThresholdType.ABSOLUTE,
         )
 
         assert rule.name == "test_rule"
@@ -56,11 +59,12 @@ class TestThresholdRule:
             threshold_value=0.05,
             severity=ThresholdSeverity.LOW,
             threshold_type=ThresholdType.VOLUME_BASED,
-            volume_ranges=volume_ranges
+            volume_ranges=volume_ranges,
         )
 
         assert rule.volume_ranges == volume_ranges
         assert rule.threshold_type == ThresholdType.VOLUME_BASED
+
 
 class TestThresholdConfig:
     """Test ThresholdConfig class."""
@@ -77,9 +81,7 @@ class TestThresholdConfig:
         """Test adding a rule to configuration."""
         config = ThresholdConfig()
         rule = ThresholdRule(
-            name="test_rule",
-            threshold_value=0.05,
-            severity=ThresholdSeverity.MEDIUM
+            name="test_rule", threshold_value=0.05, severity=ThresholdSeverity.MEDIUM
         )
 
         config.add_rule(rule)
@@ -91,9 +93,7 @@ class TestThresholdConfig:
         """Test retrieving a rule by name."""
         config = ThresholdConfig()
         rule = ThresholdRule(
-            name="test_rule",
-            threshold_value=0.05,
-            severity=ThresholdSeverity.MEDIUM
+            name="test_rule", threshold_value=0.05, severity=ThresholdSeverity.MEDIUM
         )
         config.add_rule(rule)
 
@@ -111,14 +111,14 @@ class TestThresholdConfig:
             name="enabled_rule",
             threshold_value=0.05,
             severity=ThresholdSeverity.MEDIUM,
-            enabled=True
+            enabled=True,
         )
 
         disabled_rule = ThresholdRule(
             name="disabled_rule",
             threshold_value=0.08,
             severity=ThresholdSeverity.HIGH,
-            enabled=False
+            enabled=False,
         )
 
         config.add_rule(enabled_rule)
@@ -136,12 +136,13 @@ class TestThresholdConfig:
             name="test_rule",
             threshold_value=0.05,
             severity=ThresholdSeverity.MEDIUM,
-            enabled=True
+            enabled=True,
         )
         config.add_rule(rule)
 
         enabled_rules = config.get_enabled_rules()
         assert len(enabled_rules) == 0
+
 
 class TestThresholdDetector:
     """Test ThresholdDetector class."""
@@ -149,18 +150,22 @@ class TestThresholdDetector:
     def setup_method(self):
         """Set up test fixtures."""
         self.config = ThresholdConfig()
-        self.config.add_rule(ThresholdRule(
-            name="low_threshold",
-            threshold_value=0.05,
-            severity=ThresholdSeverity.LOW,
-            minimum_sample_size=50
-        ))
-        self.config.add_rule(ThresholdRule(
-            name="high_threshold",
-            threshold_value=0.10,
-            severity=ThresholdSeverity.HIGH,
-            minimum_sample_size=100
-        ))
+        self.config.add_rule(
+            ThresholdRule(
+                name="low_threshold",
+                threshold_value=0.05,
+                severity=ThresholdSeverity.LOW,
+                minimum_sample_size=50,
+            )
+        )
+        self.config.add_rule(
+            ThresholdRule(
+                name="high_threshold",
+                threshold_value=0.10,
+                severity=ThresholdSeverity.HIGH,
+                minimum_sample_size=100,
+            )
+        )
 
         self.mock_bounce_monitor = Mock()
         self.detector = ThresholdDetector(self.config, self.mock_bounce_monitor)
@@ -187,7 +192,9 @@ class TestThresholdDetector:
         breaches = self.detector.check_thresholds("192.168.1.1", "test_user")
 
         assert len(breaches) == 0
-        self.mock_bounce_monitor.get_stats.assert_called_once_with("192.168.1.1", "test_user")
+        self.mock_bounce_monitor.get_stats.assert_called_once_with(
+            "192.168.1.1", "test_user"
+        )
 
     def test_check_thresholds_insufficient_sample_size(self):
         """Test threshold checking with insufficient sample size."""
@@ -197,7 +204,7 @@ class TestThresholdDetector:
             bounce_rate=0.08,
             total_sent=25,  # Below minimum sample size
             total_bounces=2,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -213,7 +220,7 @@ class TestThresholdDetector:
             bounce_rate=0.03,  # Below all thresholds
             total_sent=200,
             total_bounces=6,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -229,7 +236,7 @@ class TestThresholdDetector:
             bounce_rate=0.07,  # Above low threshold, below high
             total_sent=200,
             total_bounces=14,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -252,7 +259,7 @@ class TestThresholdDetector:
             bounce_rate=0.12,  # Above both thresholds
             total_sent=200,
             total_bounces=24,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -274,7 +281,7 @@ class TestThresholdDetector:
                 bounce_rate=0.07,
                 total_sent=200,
                 total_bounces=14,
-                last_updated=datetime.now()
+                last_updated=datetime.now(),
             ),
             MockIPSubuserStats(
                 ip_address="192.168.1.2",
@@ -282,8 +289,8 @@ class TestThresholdDetector:
                 bounce_rate=0.02,
                 total_sent=150,
                 total_bounces=3,
-                last_updated=datetime.now()
-            )
+                last_updated=datetime.now(),
+            ),
         ]
         self.mock_bounce_monitor.get_all_stats.return_value = stats_list
 
@@ -309,7 +316,7 @@ class TestThresholdDetector:
             severity=ThresholdSeverity.MEDIUM,
             threshold_type=ThresholdType.VOLUME_BASED,
             volume_ranges={"0-1000": 0.08, "1000-10000": 0.05, "10000+": 0.03},
-            minimum_sample_size=50
+            minimum_sample_size=50,
         )
         self.config.add_rule(volume_rule)
 
@@ -320,7 +327,7 @@ class TestThresholdDetector:
             bounce_rate=0.07,  # Above 0.05 but below 0.08
             total_sent=500,
             total_bounces=35,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -352,7 +359,7 @@ class TestThresholdDetector:
             bounce_rate=0.07,
             total_sent=200,
             total_bounces=14,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -380,7 +387,7 @@ class TestThresholdDetector:
             bounce_rate=0.07,
             total_sent=200,
             total_bounces=14,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -409,7 +416,7 @@ class TestThresholdDetector:
             bounce_rate=0.07,
             total_sent=200,
             total_bounces=14,
-            last_updated=datetime.now()
+            last_updated=datetime.now(),
         )
         self.mock_bounce_monitor.get_stats.return_value = stats
 
@@ -436,7 +443,7 @@ class TestThresholdDetector:
             severity=ThresholdSeverity.LOW,
             breach_time=datetime.now() - timedelta(hours=2),
             sample_size=200,
-            time_window_hours=24
+            time_window_hours=24,
         )
 
         breach2 = ThresholdBreach(
@@ -448,7 +455,7 @@ class TestThresholdDetector:
             severity=ThresholdSeverity.HIGH,
             breach_time=datetime.now() - timedelta(minutes=30),
             sample_size=150,
-            time_window_hours=24
+            time_window_hours=24,
         )
 
         self.detector.breach_history = [breach1, breach2]
@@ -459,7 +466,9 @@ class TestThresholdDetector:
         assert ip_filtered[0] == breach1
 
         # Test severity filtering
-        severity_filtered = self.detector.get_breach_history(severity=ThresholdSeverity.HIGH)
+        severity_filtered = self.detector.get_breach_history(
+            severity=ThresholdSeverity.HIGH
+        )
         assert len(severity_filtered) == 1
         assert severity_filtered[0] == breach2
 
@@ -480,7 +489,7 @@ class TestThresholdDetector:
             severity=ThresholdSeverity.LOW,
             breach_time=datetime.now() - timedelta(hours=25),
             sample_size=200,
-            time_window_hours=24
+            time_window_hours=24,
         )
 
         recent_breach = ThresholdBreach(
@@ -492,7 +501,7 @@ class TestThresholdDetector:
             severity=ThresholdSeverity.HIGH,
             breach_time=datetime.now() - timedelta(minutes=30),
             sample_size=150,
-            time_window_hours=24
+            time_window_hours=24,
         )
 
         self.detector.breach_history = [old_breach, recent_breach]
@@ -508,6 +517,7 @@ class TestThresholdDetector:
         cleared_count = self.detector.clear_breach_history()
         assert cleared_count == 1
         assert len(self.detector.breach_history) == 0
+
 
 class TestDefaultConfiguration:
     """Test default configuration creation."""
@@ -527,9 +537,14 @@ class TestDefaultConfiguration:
         assert ThresholdSeverity.CRITICAL in severities
 
         # Check that volume-based rule exists
-        volume_rules = [rule for rule in config.rules if rule.threshold_type == ThresholdType.VOLUME_BASED]
+        volume_rules = [
+            rule
+            for rule in config.rules
+            if rule.threshold_type == ThresholdType.VOLUME_BASED
+        ]
         assert len(volume_rules) == 1
         assert volume_rules[0].volume_ranges is not None
+
 
 class TestNotificationCallbacks:
     """Test notification callback functions."""
@@ -545,10 +560,10 @@ class TestNotificationCallbacks:
             severity=ThresholdSeverity.MEDIUM,
             breach_time=datetime.now(),
             sample_size=200,
-            time_window_hours=24
+            time_window_hours=24,
         )
 
         # This should not raise an exception
-        with patch('leadfactory.services.threshold_detector.logger') as mock_logger:
+        with patch("leadfactory.services.threshold_detector.logger") as mock_logger:
             log_notification_callback(breach)
             mock_logger.error.assert_called_once()

@@ -21,10 +21,7 @@ def test_dedupe_config_import():
         assert config.name_similarity_threshold == 0.85
 
         # Test config with custom values
-        custom_config = DedupeConfig(
-            name_similarity_threshold=0.90,
-            batch_size=50
-        )
+        custom_config = DedupeConfig(name_similarity_threshold=0.90, batch_size=50)
         assert custom_config.name_similarity_threshold == 0.90
         assert custom_config.batch_size == 50
 
@@ -45,6 +42,7 @@ def test_dedupe_connector_import():
             merge_business_records,
             update_business_fields,
         )
+
         return True
     except Exception:
         return False
@@ -99,7 +97,7 @@ def main():
         test_dedupe_config_import,
         test_dedupe_connector_import,
         test_dedupe_unified_import,
-        test_integration
+        test_integration,
     ]
 
     passed = 0
@@ -110,7 +108,6 @@ def main():
             passed += 1
         else:
             failed += 1
-
 
     return failed == 0
 

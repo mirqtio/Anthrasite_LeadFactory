@@ -11,7 +11,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 # Import the modules being tested
 from leadfactory.pipeline import email_queue
 
@@ -76,7 +78,7 @@ def setup_test_business(email_test_db, request):
         INSERT INTO businesses (name, email, score)
         VALUES (?, ?, ?)
         """,
-        (f"Business with score {score}", email, score)
+        (f"Business with score {score}", email, score),
     )
     business_id = cursor.lastrowid
     email_test_db.commit()
@@ -85,7 +87,7 @@ def setup_test_business(email_test_db, request):
         "db": email_test_db,
         "business_id": business_id,
         "score": score,
-        "email": email
+        "email": email,
     }
 
 
@@ -98,10 +100,11 @@ def setup_test_business(email_test_db, request):
         ({"score": 50, "email": "test@example.com"}, "basic"),
         ({"score": 30, "email": "test@example.com"}, "minimal"),
     ],
-    indirect=["setup_test_business"]
+    indirect=["setup_test_business"],
 )
 def test_email_template_selection(setup_test_business, expected_template):
     """Test that the correct email template is selected based on business score."""
+
     # Mock template selection function
     def select_email_template(score):
         if score >= 80:
@@ -120,8 +123,9 @@ def test_email_template_selection(setup_test_business, expected_template):
     template = select_email_template(score)
 
     # Verify template matches expected
-    assert template == expected_template, \
+    assert template == expected_template, (
         f"For score {score}, template '{template}' was selected, expected '{expected_template}'"
+    )
 
 
 # Test data for email generation
@@ -132,10 +136,10 @@ test_email_cases = [
             "id": 1,
             "name": "High Score Corp",
             "score": 90,
-            "website": "https://highscore.com"
+            "website": "https://highscore.com",
         },
         "expected_subject_contains": ["premium", "exclusive", "custom"],
-        "expected_email_length": (500, 2000)
+        "expected_email_length": (500, 2000),
     },
     {
         "id": "medium_score_business",
@@ -143,10 +147,10 @@ test_email_cases = [
             "id": 2,
             "name": "Medium Score LLC",
             "score": 65,
-            "website": "https://mediumscore.com"
+            "website": "https://mediumscore.com",
         },
         "expected_subject_contains": ["improve", "enhance", "boost"],
-        "expected_email_length": (300, 1500)
+        "expected_email_length": (300, 1500),
     },
     {
         "id": "low_score_business",
@@ -154,22 +158,21 @@ test_email_cases = [
             "id": 3,
             "name": "Low Score Inc",
             "score": 35,
-            "website": "https://lowscore.com"
+            "website": "https://lowscore.com",
         },
         "expected_subject_contains": ["upgrade", "fix", "better"],
-        "expected_email_length": (200, 1000)
-    }
+        "expected_email_length": (200, 1000),
+    },
 ]
 
 
 # Parameterized test for email content generation
 @pytest.mark.parametrize(
-    "email_case",
-    test_email_cases,
-    ids=[case["id"] for case in test_email_cases]
+    "email_case", test_email_cases, ids=[case["id"] for case in test_email_cases]
 )
 def test_email_content_generation(email_case):
     """Test email content generation with different business types."""
+
     # Mock email generation function
     def generate_email_content(business):
         """Generate email content based on business score."""
@@ -190,26 +193,26 @@ def test_email_content_generation(email_case):
             body_html = f"<h1>Website Upgrade Solutions</h1><p>Let us help fix the issues with {website}. Our team has conducted a basic assessment of your current website and identified several fundamental issues that may be limiting your online effectiveness.</p><p>We've developed a straightforward upgrade package designed to address the most critical problems, including outdated design elements, basic functionality issues, and mobile compatibility problems. Our solution focuses on implementing essential improvements that will have the most immediate impact on user experience.</p><p>The upgrade includes a refreshed design template, improved navigation structure, and basic SEO optimization to help increase your visibility online. We'll also ensure your site functions properly across all major devices and browsers, which is essential for reaching today's diverse audience.</p>"
             body_text = f"Website Upgrade Solutions\n\nLet us help fix the issues with {website}. Our team has conducted a basic assessment of your current website and identified several fundamental issues that may be limiting your online effectiveness.\n\nWe've developed a straightforward upgrade package designed to address the most critical problems, including outdated design elements, basic functionality issues, and mobile compatibility problems. Our solution focuses on implementing essential improvements that will have the most immediate impact on user experience.\n\nThe upgrade includes a refreshed design template, improved navigation structure, and basic SEO optimization to help increase your visibility online. We'll also ensure your site functions properly across all major devices and browsers, which is essential for reaching today's diverse audience."
 
-        return {
-            "subject": subject,
-            "body_html": body_html,
-            "body_text": body_text
-        }
+        return {"subject": subject, "body_html": body_html, "body_text": body_text}
 
     # Generate email content
     business = email_case["business"]
     email_content = generate_email_content(business)
 
     # Verify subject contains expected keywords
-    subject_contains_expected = any(keyword.lower() in email_content["subject"].lower()
-                                    for keyword in email_case["expected_subject_contains"])
-    assert subject_contains_expected, \
+    subject_contains_expected = any(
+        keyword.lower() in email_content["subject"].lower()
+        for keyword in email_case["expected_subject_contains"]
+    )
+    assert subject_contains_expected, (
         f"Subject '{email_content['subject']}' doesn't contain any expected keywords: {email_case['expected_subject_contains']}"
+    )
 
     # Verify email length is within expected range
     min_length, max_length = email_case["expected_email_length"]
-    assert min_length <= len(email_content["body_text"]) <= max_length, \
+    assert min_length <= len(email_content["body_text"]) <= max_length, (
         f"Email text length {len(email_content['body_text'])} not in expected range {email_case['expected_email_length']}"
+    )
 
 
 # Test data for email queue processing
@@ -217,33 +220,87 @@ email_queue_test_cases = [
     {
         "id": "all_valid_emails",
         "emails": [
-            {"id": 1, "business_id": 1, "subject": "Test Subject 1", "body_text": "Test Body 1", "status": "pending"},
-            {"id": 2, "business_id": 2, "subject": "Test Subject 2", "body_text": "Test Body 2", "status": "pending"},
-            {"id": 3, "business_id": 3, "subject": "Test Subject 3", "body_text": "Test Body 3", "status": "pending"}
+            {
+                "id": 1,
+                "business_id": 1,
+                "subject": "Test Subject 1",
+                "body_text": "Test Body 1",
+                "status": "pending",
+            },
+            {
+                "id": 2,
+                "business_id": 2,
+                "subject": "Test Subject 2",
+                "body_text": "Test Body 2",
+                "status": "pending",
+            },
+            {
+                "id": 3,
+                "business_id": 3,
+                "subject": "Test Subject 3",
+                "body_text": "Test Body 3",
+                "status": "pending",
+            },
         ],
         "expected_success": 3,
-        "expected_failure": 0
+        "expected_failure": 0,
     },
     {
         "id": "some_invalid_emails",
         "emails": [
-            {"id": 1, "business_id": 1, "subject": "Test Subject 1", "body_text": "Test Body 1", "status": "pending"},
-            {"id": 2, "business_id": 2, "subject": None, "body_text": "Test Body 2", "status": "pending"},  # Missing subject
-            {"id": 3, "business_id": 3, "subject": "Test Subject 3", "body_text": "Test Body 3", "status": "pending"}
+            {
+                "id": 1,
+                "business_id": 1,
+                "subject": "Test Subject 1",
+                "body_text": "Test Body 1",
+                "status": "pending",
+            },
+            {
+                "id": 2,
+                "business_id": 2,
+                "subject": None,
+                "body_text": "Test Body 2",
+                "status": "pending",
+            },  # Missing subject
+            {
+                "id": 3,
+                "business_id": 3,
+                "subject": "Test Subject 3",
+                "body_text": "Test Body 3",
+                "status": "pending",
+            },
         ],
         "expected_success": 2,
-        "expected_failure": 1
+        "expected_failure": 1,
     },
     {
         "id": "mixed_status_emails",
         "emails": [
-            {"id": 1, "business_id": 1, "subject": "Test Subject 1", "body_text": "Test Body 1", "status": "pending"},
-            {"id": 2, "business_id": 2, "subject": "Test Subject 2", "body_text": "Test Body 2", "status": "sent"},  # Already sent
-            {"id": 3, "business_id": 3, "subject": "Test Subject 3", "body_text": "Test Body 3", "status": "error"}  # Error status
+            {
+                "id": 1,
+                "business_id": 1,
+                "subject": "Test Subject 1",
+                "body_text": "Test Body 1",
+                "status": "pending",
+            },
+            {
+                "id": 2,
+                "business_id": 2,
+                "subject": "Test Subject 2",
+                "body_text": "Test Body 2",
+                "status": "sent",
+            },  # Already sent
+            {
+                "id": 3,
+                "business_id": 3,
+                "subject": "Test Subject 3",
+                "body_text": "Test Body 3",
+                "status": "error",
+            },  # Error status
         ],
         "expected_success": 1,
-        "expected_failure": 0
-    }
+        "expected_failure": 0,
+    },
 ]
 
 
@@ -260,7 +317,7 @@ def setup_email_queue(email_test_db, request):
             INSERT INTO businesses (id, name, email)
             VALUES (?, ?, ?)
             """,
-            (i, f"Test Business {i}", f"test{i}@example.com")
+            (i, f"Test Business {i}", f"test{i}@example.com"),
         )
 
     # Insert test emails
@@ -277,8 +334,8 @@ def setup_email_queue(email_test_db, request):
                 email["subject"],
                 email["body_text"],
                 email.get("body_html", f"<p>{email['body_text']}</p>"),
-                email["status"]
-            )
+                email["status"],
+            ),
         )
 
     email_test_db.commit()
@@ -287,7 +344,7 @@ def setup_email_queue(email_test_db, request):
         "db": email_test_db,
         "expected_success": request.param["expected_success"],
         "expected_failure": request.param["expected_failure"],
-        "test_id": request.param["id"]
+        "test_id": request.param["id"],
     }
 
 
@@ -296,7 +353,7 @@ def setup_email_queue(email_test_db, request):
     "setup_email_queue",
     email_queue_test_cases,
     ids=[case["id"] for case in email_queue_test_cases],
-    indirect=True
+    indirect=True,
 )
 def test_email_queue_processing(setup_email_queue):
     """Test processing email queue with different scenarios."""
@@ -319,7 +376,7 @@ def test_email_queue_processing(setup_email_queue):
         # Get pending emails
         cursor.execute(
             "SELECT id, business_id, subject, body_text, body_html FROM emails WHERE status = 'pending' LIMIT ?",
-            (limit,)
+            (limit,),
         )
         pending_emails = [dict(row) for row in cursor.fetchall()]
 
@@ -334,14 +391,13 @@ def test_email_queue_processing(setup_email_queue):
                 # Update status to sent
                 cursor.execute(
                     "UPDATE emails SET status = 'sent', sent_at = CURRENT_TIMESTAMP WHERE id = ?",
-                    (email["id"],)
+                    (email["id"],),
                 )
                 success_count += 1
             else:
                 # Update status to error
                 cursor.execute(
-                    "UPDATE emails SET status = 'error' WHERE id = ?",
-                    (email["id"],)
+                    "UPDATE emails SET status = 'error' WHERE id = ?", (email["id"],)
                 )
                 failure_count += 1
 
@@ -350,17 +406,19 @@ def test_email_queue_processing(setup_email_queue):
         return {
             "processed": len(pending_emails),
             "success": success_count,
-            "failed": failure_count
+            "failed": failure_count,
         }
 
     # Process the queue
     result = process_queue(db_conn)
 
     # Verify results
-    assert result["success"] == expected_success, \
+    assert result["success"] == expected_success, (
         f"Expected {expected_success} successful emails, got {result['success']}"
-    assert result["failed"] == expected_failure, \
+    )
+    assert result["failed"] == expected_failure, (
         f"Expected {expected_failure} failed emails, got {result['failed']}"
+    )
 
     # Verify database was updated correctly
     cursor = db_conn.cursor()
@@ -374,12 +432,14 @@ def test_email_queue_processing(setup_email_queue):
     test_id = setup_email_queue.get("test_id", "")
     if test_id == "mixed_status_emails":
         # For mixed_status_emails, verify we processed the correct number
-        assert result["success"] == expected_success, \
+        assert result["success"] == expected_success, (
             f"Expected to process {expected_success} emails successfully, got {result['success']}"
+        )
     else:
         # For other tests, check the total count of sent emails
-        assert sent_count == expected_success, \
+        assert sent_count == expected_success, (
             f"Expected {expected_success} emails with 'sent' status, found {sent_count}"
+        )
 
     # Check error emails
     cursor.execute("SELECT COUNT(*) FROM emails WHERE status = 'error'")
@@ -388,12 +448,14 @@ def test_email_queue_processing(setup_email_queue):
     # For mixed_status_emails test, we only care about errors generated in this run
     if test_id == "mixed_status_emails":
         # For mixed_status_emails, verify we processed the correct number
-        assert result["failed"] == expected_failure, \
+        assert result["failed"] == expected_failure, (
             f"Expected to have {expected_failure} failed emails, got {result['failed']}"
+        )
     else:
         # For other tests, check the total count of error emails
-        assert error_count == expected_failure, \
+        assert error_count == expected_failure, (
             f"Expected {expected_failure} emails with 'error' status, found {error_count}"
+        )
 
 
 if __name__ == "__main__":

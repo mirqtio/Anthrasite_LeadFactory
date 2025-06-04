@@ -9,24 +9,29 @@ from pathlib import Path
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 # Import modules being tested - TEMPORARY FIX for import issues
 try:
     from leadfactory.pipeline.score import RuleEngine, score_business
     from leadfactory.scoring import ScoringEngine
+
     IMPORT_SUCCESS = True
 except ImportError:
     # Create mock classes for testing
     class MockRuleEngine:
         def __init__(self, *args, **kwargs):
             pass
+
         def evaluate(self, *args, **kwargs):
             return {"score": 75, "tier": "standard"}
 
     class MockScoringEngine:
         def __init__(self, *args, **kwargs):
             pass
+
         def score_business(self, *args, **kwargs):
             return {"score": 75, "tier": "standard"}
 
@@ -71,14 +76,16 @@ class TestScoringIntegration:
             "name": "Modern React Company",
             "tech_stack": ["React", "Node.js", "PostgreSQL"],
             "vertical": "SaaS",
-            "employee_count": 50
+            "employee_count": 50,
         }
 
         result = scoring_engine.score_business(business)
 
         # Should get base score + React bonus
         assert result["score"] > scoring_engine.settings.base_score
-        assert any(adj["rule"] == "modern_frontend_framework" for adj in result["adjustments"])
+        assert any(
+            adj["rule"] == "modern_frontend_framework" for adj in result["adjustments"]
+        )
 
     def test_legacy_tech_scoring(self, scoring_engine):
         """Test scoring for businesses with legacy technology."""
@@ -87,7 +94,7 @@ class TestScoringIntegration:
             "id": 2,
             "name": "Legacy jQuery Company",
             "tech_stack": {"jQuery": "2.1.0"},
-            "vertical": "E-commerce"
+            "vertical": "E-commerce",
         }
 
         result = scoring_engine.score_business(business)
@@ -102,7 +109,7 @@ class TestScoringIntegration:
             "id": 3,
             "name": "WordPress Agency",
             "tech_stack": ["WordPress", "PHP", "MySQL"],
-            "vertical": "Agency"
+            "vertical": "Agency",
         }
 
         result = scoring_engine.score_business(business)
@@ -117,7 +124,7 @@ class TestScoringIntegration:
             "id": 4,
             "name": "Regular Company",
             "tech_stack": ["React"],
-            "vertical": "Retail"
+            "vertical": "Retail",
         }
 
         # High-value vertical (if defined in config)
@@ -125,14 +132,16 @@ class TestScoringIntegration:
             "id": 5,
             "name": "SaaS Company",
             "tech_stack": ["React"],
-            "vertical": "SaaS"
+            "vertical": "SaaS",
         }
 
         result1 = scoring_engine.score_business(business1)
         result2 = scoring_engine.score_business(business2)
 
         # If SaaS multiplier exists, score should be higher
-        if any(m["multiplier"] == "high_value_vertical" for m in result2["multipliers"]):
+        if any(
+            m["multiplier"] == "high_value_vertical" for m in result2["multipliers"]
+        ):
             assert result2["score"] > result1["score"]
 
     def test_multiple_tech_stack_bonuses(self, scoring_engine):
@@ -141,7 +150,7 @@ class TestScoringIntegration:
             "id": 6,
             "name": "Multi-Tech Company",
             "tech_stack": ["React", "Vue", "Angular", "jQuery", "WordPress"],
-            "vertical": "Technology"
+            "vertical": "Technology",
         }
 
         result = scoring_engine.score_business(business)
@@ -165,8 +174,8 @@ class TestScoringIntegration:
             "has_contact_form": True,
             "social_media": {
                 "twitter": {"followers": 10000},
-                "linkedin": {"followers": 5000}
-            }
+                "linkedin": {"followers": 5000},
+            },
         }
 
         result = scoring_engine.score_business(business)
@@ -176,11 +185,7 @@ class TestScoringIntegration:
 
     def test_backward_compatibility(self, rule_engine):
         """Test the backward-compatible RuleEngine wrapper."""
-        business = {
-            "id": 8,
-            "name": "Test Company",
-            "tech_stack": ["React", "Node.js"]
-        }
+        business = {"id": 8, "name": "Test Company", "tech_stack": ["React", "Node.js"]}
 
         # Should return just the score as an integer
         score = rule_engine.evaluate(business)
@@ -190,11 +195,7 @@ class TestScoringIntegration:
 
     def test_score_business_function(self):
         """Test the standalone score_business function."""
-        business = {
-            "id": 9,
-            "name": "Function Test Company",
-            "tech_stack": ["React"]
-        }
+        business = {"id": 9, "name": "Function Test Company", "tech_stack": ["React"]}
 
         score = score_business(business)
 
@@ -204,10 +205,7 @@ class TestScoringIntegration:
     def test_missing_optional_fields(self, scoring_engine):
         """Test scoring with minimal business data."""
         # Minimal business with only required fields
-        business = {
-            "id": 10,
-            "name": "Minimal Company"
-        }
+        business = {"id": 10, "name": "Minimal Company"}
 
         result = scoring_engine.score_business(business)
 
@@ -229,8 +227,8 @@ class TestScoringIntegration:
             "has_contact_form": True,
             "social_media": {
                 "twitter": {"followers": 5000, "engagement": 0.05},
-                "linkedin": {"followers": 2000}
-            }
+                "linkedin": {"followers": 2000},
+            },
         }
 
         result = scoring_engine.score_business(business)
@@ -245,7 +243,7 @@ class TestScoringIntegration:
         business = {
             "id": 12,
             "name": "Priority Test Company",
-            "tech_stack": ["React", "Vue", "Angular"]
+            "tech_stack": ["React", "Vue", "Angular"],
         }
 
         result = scoring_engine.score_business(business)
@@ -255,19 +253,22 @@ class TestScoringIntegration:
             # Rules should be evaluated based on their priority
             assert len(result["adjustments"]) > 0
 
-    @pytest.mark.parametrize("tech_stack,expected_min_score", [
-        (["React"], 60),  # Assuming React gives +15 from base 50
-        (["Vue"], 60),    # Assuming Vue also gives bonus
-        (["jQuery"], 55), # Assuming jQuery gives +5
-        (["WordPress"], 60), # Assuming WordPress gives +10
-        ([], 50),         # No tech stack, just base score
-    ])
+    @pytest.mark.parametrize(
+        "tech_stack,expected_min_score",
+        [
+            (["React"], 60),  # Assuming React gives +15 from base 50
+            (["Vue"], 60),  # Assuming Vue also gives bonus
+            (["jQuery"], 55),  # Assuming jQuery gives +5
+            (["WordPress"], 60),  # Assuming WordPress gives +10
+            ([], 50),  # No tech stack, just base score
+        ],
+    )
     def test_various_tech_stacks(self, scoring_engine, tech_stack, expected_min_score):
         """Test scoring for various tech stacks."""
         business = {
             "id": 100,
             "name": f"Test {tech_stack} Company",
-            "tech_stack": tech_stack
+            "tech_stack": tech_stack,
         }
 
         result = scoring_engine.score_business(business)

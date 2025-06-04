@@ -21,45 +21,38 @@ class TestSimplifiedYamlParser(unittest.TestCase):
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "audit_threshold": 60
+                "audit_threshold": 60,
             },
             "templates": {
                 "tech_modernization": {
                     "description": "Technology modernization opportunity",
                     "score": 15,
-                    "audit_category": "technology_upgrade"
+                    "audit_category": "technology_upgrade",
                 }
             },
             "audit_opportunities": [
                 {
                     "name": "jquery_upgrade",
                     "template": "tech_modernization",
-                    "when": {
-                        "technology": "jQuery",
-                        "version": "<3.0.0"
-                    },
+                    "when": {"technology": "jQuery", "version": "<3.0.0"},
                     "audit_potential": "high",
-                    "priority": 90
+                    "priority": 90,
                 },
                 {
                     "name": "poor_performance",
                     "description": "Website has poor performance",
                     "score": 20,
                     "audit_category": "performance",
-                    "when": {
-                        "performance_score": "<50"
-                    },
-                    "audit_potential": "high"
-                }
+                    "when": {"performance_score": "<50"},
+                    "audit_potential": "high",
+                },
             ],
             "exclusions": [
                 {
                     "name": "modern_framework",
                     "description": "Uses modern framework",
                     "score": -15,
-                    "when": {
-                        "technology": ["React", "Vue", "Angular"]
-                    }
+                    "when": {"technology": ["React", "Vue", "Angular"]},
                 }
             ],
             "audit_multipliers": [
@@ -68,18 +61,15 @@ class TestSimplifiedYamlParser(unittest.TestCase):
                     "description": "Perfect audit candidate",
                     "multiplier": 1.5,
                     "when": {
-                        "all": [
-                            {"technology": "jQuery"},
-                            {"performance_score": "<60"}
-                        ]
-                    }
+                        "all": [{"technology": "jQuery"}, {"performance_score": "<60"}]
+                    },
                 }
-            ]
+            ],
         }
 
     def test_load_valid_config(self):
         """Test loading a valid simplified configuration."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.sample_config, f)
             f.flush()
 
@@ -94,7 +84,7 @@ class TestSimplifiedYamlParser(unittest.TestCase):
 
     def test_template_resolution(self):
         """Test that template references are properly resolved."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.sample_config, f)
             f.flush()
 
@@ -104,13 +94,15 @@ class TestSimplifiedYamlParser(unittest.TestCase):
             # Check that template was resolved
             jquery_rule = config.audit_opportunities[0]
             self.assertEqual(jquery_rule.name, "jquery_upgrade")
-            self.assertEqual(jquery_rule.description, "Technology modernization opportunity")
+            self.assertEqual(
+                jquery_rule.description, "Technology modernization opportunity"
+            )
             self.assertEqual(jquery_rule.score, 15)
             self.assertEqual(jquery_rule.audit_category, "technology_upgrade")
 
     def test_get_audit_opportunities(self):
         """Test getting audit opportunities with proper sorting."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.sample_config, f)
             f.flush()
 
@@ -126,7 +118,7 @@ class TestSimplifiedYamlParser(unittest.TestCase):
 
     def test_convert_to_legacy_format(self):
         """Test conversion to legacy format."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.sample_config, f)
             f.flush()
 
@@ -145,27 +137,21 @@ class TestSimplifiedYamlParser(unittest.TestCase):
             self.assertEqual(legacy_config["settings"]["high_score_threshold"], 60)
 
             # Check rules conversion
-            self.assertEqual(len(legacy_config["rules"]), 3)  # 2 opportunities + 1 exclusion
+            self.assertEqual(
+                len(legacy_config["rules"]), 3
+            )  # 2 opportunities + 1 exclusion
 
     def test_performance_condition_parsing(self):
         """Test parsing of performance conditions."""
         config = {
             "settings": {"base_score": 50, "audit_threshold": 60},
             "audit_opportunities": [
-                {
-                    "name": "slow_lcp",
-                    "score": 15,
-                    "when": {"lcp": ">2.5s"}
-                },
-                {
-                    "name": "high_cls",
-                    "score": 10,
-                    "when": {"cls": ">0.25"}
-                }
-            ]
+                {"name": "slow_lcp", "score": 15, "when": {"lcp": ">2.5s"}},
+                {"name": "high_cls", "score": 10, "when": {"cls": ">0.25"}},
+            ],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(config, f)
             f.flush()
 
@@ -175,8 +161,12 @@ class TestSimplifiedYamlParser(unittest.TestCase):
             legacy_config = parser.convert_to_legacy_format()
 
             # Find the converted rules
-            lcp_rule = next(r for r in legacy_config["rules"] if r["name"] == "slow_lcp")
-            cls_rule = next(r for r in legacy_config["rules"] if r["name"] == "high_cls")
+            lcp_rule = next(
+                r for r in legacy_config["rules"] if r["name"] == "slow_lcp"
+            )
+            cls_rule = next(
+                r for r in legacy_config["rules"] if r["name"] == "high_cls"
+            )
 
             # Check LCP conversion (should convert seconds to milliseconds)
             self.assertIn("lcp_gt", lcp_rule["condition"])
@@ -194,17 +184,17 @@ class TestSimplifiedYamlParser(unittest.TestCase):
                 {
                     "name": "restaurant_bonus",
                     "score": 10,
-                    "when": {"business_type": ["restaurant", "cafe"]}
+                    "when": {"business_type": ["restaurant", "cafe"]},
                 },
                 {
                     "name": "retail_bonus",
                     "score": 5,
-                    "when": {"business_type": "retail"}
-                }
-            ]
+                    "when": {"business_type": "retail"},
+                },
+            ],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(config, f)
             f.flush()
 
@@ -213,12 +203,19 @@ class TestSimplifiedYamlParser(unittest.TestCase):
 
             legacy_config = parser.convert_to_legacy_format()
 
-            restaurant_rule = next(r for r in legacy_config["rules"] if r["name"] == "restaurant_bonus")
-            retail_rule = next(r for r in legacy_config["rules"] if r["name"] == "retail_bonus")
+            restaurant_rule = next(
+                r for r in legacy_config["rules"] if r["name"] == "restaurant_bonus"
+            )
+            retail_rule = next(
+                r for r in legacy_config["rules"] if r["name"] == "retail_bonus"
+            )
 
             # Check business type conversions
             self.assertIn("category_contains_any", restaurant_rule["condition"])
-            self.assertEqual(restaurant_rule["condition"]["category_contains_any"], ["restaurant", "cafe"])
+            self.assertEqual(
+                restaurant_rule["condition"]["category_contains_any"],
+                ["restaurant", "cafe"],
+            )
 
             self.assertIn("category_contains", retail_rule["condition"])
             self.assertEqual(retail_rule["condition"]["category_contains"], "retail")
@@ -228,26 +225,31 @@ class TestSimplifiedYamlParser(unittest.TestCase):
         invalid_configs = [
             # Missing required settings
             {"audit_opportunities": []},
-
             # Invalid score range
             {
                 "settings": {"base_score": 50, "audit_threshold": 60},
                 "audit_opportunities": [
                     {"name": "invalid", "score": 150, "when": {"technology": "test"}}
-                ]
+                ],
             },
-
             # Invalid audit potential
             {
                 "settings": {"base_score": 50, "audit_threshold": 60},
                 "audit_opportunities": [
-                    {"name": "invalid", "score": 10, "audit_potential": "super_high", "when": {"technology": "test"}}
-                ]
-            }
+                    {
+                        "name": "invalid",
+                        "score": 10,
+                        "audit_potential": "super_high",
+                        "when": {"technology": "test"},
+                    }
+                ],
+            },
         ]
 
         for invalid_config in invalid_configs:
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".yml", delete=False
+            ) as f:
                 yaml.dump(invalid_config, f)
                 f.flush()
 
@@ -266,26 +268,21 @@ class TestSimplifiedYamlParser(unittest.TestCase):
                     "when": {
                         "all": [
                             {"technology": "WordPress"},
-                            {"performance_score": "<60"}
+                            {"performance_score": "<60"},
                         ]
-                    }
+                    },
                 }
             ],
             "audit_multipliers": [
                 {
                     "name": "any_condition",
                     "multiplier": 1.3,
-                    "when": {
-                        "any": [
-                            {"lcp": ">3s"},
-                            {"cls": ">0.5"}
-                        ]
-                    }
+                    "when": {"any": [{"lcp": ">3s"}, {"cls": ">0.5"}]},
                 }
-            ]
+            ],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(config, f)
             f.flush()
 
@@ -302,5 +299,5 @@ class TestSimplifiedYamlParser(unittest.TestCase):
             self.assertEqual(len(any_mult.when.any), 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

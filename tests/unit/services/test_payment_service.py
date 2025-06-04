@@ -6,18 +6,19 @@ webhook handling, and payment status management.
 """
 
 import json
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from leadfactory.services.payment_service import (
-    StripePaymentService,
-    PaymentConfig,
+    Base,
     Payment,
+    PaymentConfig,
     PaymentStatus,
-    Base
+    StripePaymentService,
 )
 
 
@@ -30,7 +31,7 @@ def payment_config():
         webhook_secret="whsec_test_123",
         currency="usd",
         success_url="https://test.com/success",
-        cancel_url="https://test.com/cancel"
+        cancel_url="https://test.com/cancel",
     )
 
 
@@ -45,8 +46,10 @@ def test_db():
 @pytest.fixture
 def payment_service(payment_config, test_db):
     """Create payment service with test configuration."""
-    with patch('stripe.api_key'):
-        with patch('leadfactory.services.payment_service.ReportDeliveryService') as mock_report_delivery:
+    with patch("stripe.api_key"):
+        with patch(
+            "leadfactory.services.payment_service.ReportDeliveryService"
+        ) as mock_report_delivery:
             service = StripePaymentService(payment_config, "sqlite:///:memory:")
             service.engine = test_db
             service.SessionLocal = sessionmaker(bind=test_db)
@@ -56,15 +59,16 @@ def payment_service(payment_config, test_db):
 class TestStripePaymentService:
     """Test cases for StripePaymentService."""
 
-    @patch('stripe.PaymentIntent.create')
-    @patch('stripe.checkout.Session.create')
-    def test_create_checkout_session_success(self, mock_session_create, mock_intent_create, payment_service):
+    @patch("stripe.PaymentIntent.create")
+    @patch("stripe.checkout.Session.create")
+    def test_create_checkout_session_success(
+        self, mock_session_create, mock_intent_create, payment_service
+    ):
         """Test successful checkout session creation."""
         # Mock Stripe responses
         mock_intent_create.return_value = Mock(id="pi_test_123")
         mock_session_create.return_value = Mock(
-            id="cs_test_123",
-            url="https://checkout.stripe.com/test"
+            id="cs_test_123", url="https://checkout.stripe.com/test"
         )
 
         # Create checkout session
@@ -73,7 +77,7 @@ class TestStripePaymentService:
             customer_name="Test User",
             audit_type="seo",
             amount=9900,
-            metadata={"source": "test"}
+            metadata={"source": "test"},
         )
 
         # Verify result
@@ -94,10 +98,13 @@ class TestStripePaymentService:
             assert payment.amount == 9900
             assert payment.status == PaymentStatus.PENDING.value
 
-    @patch('stripe.PaymentIntent.create')
-    def test_create_checkout_session_stripe_error(self, mock_intent_create, payment_service):
+    @patch("stripe.PaymentIntent.create")
+    def test_create_checkout_session_stripe_error(
+        self, mock_intent_create, payment_service
+    ):
         """Test checkout session creation with Stripe error."""
         import stripe
+
         mock_intent_create.side_effect = stripe.error.StripeError("Test error")
 
         with pytest.raises(stripe.error.StripeError):
@@ -105,11 +112,13 @@ class TestStripePaymentService:
                 customer_email="test@example.com",
                 customer_name="Test User",
                 audit_type="seo",
-                amount=9900
+                amount=9900,
             )
 
-    @patch('stripe.Webhook.construct_event')
-    def test_handle_webhook_payment_succeeded(self, mock_construct_event, payment_service):
+    @patch("stripe.Webhook.construct_event")
+    def test_handle_webhook_payment_succeeded(
+        self, mock_construct_event, payment_service
+    ):
         """Test webhook handling for successful payment."""
         # Create test payment record
         with payment_service.SessionLocal() as db:
@@ -121,7 +130,7 @@ class TestStripePaymentService:
                 amount=9900,
                 currency="usd",
                 status=PaymentStatus.PENDING.value,
-                audit_type="seo"
+                audit_type="seo",
             )
             db.add(payment)
             db.commit()
@@ -129,11 +138,7 @@ class TestStripePaymentService:
         # Mock webhook event
         mock_construct_event.return_value = {
             "type": "payment_intent.succeeded",
-            "data": {
-                "object": {
-                    "id": "pi_test_123"
-                }
-            }
+            "data": {"object": {"id": "pi_test_123"}},
         }
 
         # Handle webhook
@@ -145,11 +150,13 @@ class TestStripePaymentService:
 
         # Verify database update
         with payment_service.SessionLocal() as db:
-            updated_payment = db.query(Payment).filter(Payment.id == "pi_test_123").first()
+            updated_payment = (
+                db.query(Payment).filter(Payment.id == "pi_test_123").first()
+            )
             assert updated_payment.status == PaymentStatus.SUCCEEDED.value
             assert updated_payment.webhook_received is True
 
-    @patch('stripe.Webhook.construct_event')
+    @patch("stripe.Webhook.construct_event")
     def test_handle_webhook_payment_failed(self, mock_construct_event, payment_service):
         """Test webhook handling for failed payment."""
         # Create test payment record
@@ -162,7 +169,7 @@ class TestStripePaymentService:
                 amount=9900,
                 currency="usd",
                 status=PaymentStatus.PENDING.value,
-                audit_type="seo"
+                audit_type="seo",
             )
             db.add(payment)
             db.commit()
@@ -170,11 +177,7 @@ class TestStripePaymentService:
         # Mock webhook event
         mock_construct_event.return_value = {
             "type": "payment_intent.payment_failed",
-            "data": {
-                "object": {
-                    "id": "pi_test_123"
-                }
-            }
+            "data": {"object": {"id": "pi_test_123"}},
         }
 
         # Handle webhook
@@ -186,14 +189,19 @@ class TestStripePaymentService:
 
         # Verify database update
         with payment_service.SessionLocal() as db:
-            updated_payment = db.query(Payment).filter(Payment.id == "pi_test_123").first()
+            updated_payment = (
+                db.query(Payment).filter(Payment.id == "pi_test_123").first()
+            )
             assert updated_payment.status == PaymentStatus.FAILED.value
             assert updated_payment.webhook_received is True
 
-    @patch('stripe.Webhook.construct_event')
-    def test_handle_webhook_signature_error(self, mock_construct_event, payment_service):
+    @patch("stripe.Webhook.construct_event")
+    def test_handle_webhook_signature_error(
+        self, mock_construct_event, payment_service
+    ):
         """Test webhook handling with signature verification error."""
         import stripe
+
         mock_construct_event.side_effect = stripe.error.SignatureVerificationError(
             "Invalid signature", "test_signature"
         )
@@ -213,7 +221,7 @@ class TestStripePaymentService:
                 amount=9900,
                 currency="usd",
                 status=PaymentStatus.SUCCEEDED.value,
-                audit_type="seo"
+                audit_type="seo",
             )
             db.add(payment)
             db.commit()
@@ -245,7 +253,7 @@ class TestStripePaymentService:
                 amount=9900,
                 currency="usd",
                 status=PaymentStatus.SUCCEEDED.value,
-                audit_type="seo"
+                audit_type="seo",
             )
             payment2 = Payment(
                 id="pi_test_456",
@@ -255,7 +263,7 @@ class TestStripePaymentService:
                 amount=14900,
                 currency="usd",
                 status=PaymentStatus.PENDING.value,
-                audit_type="security"
+                audit_type="security",
             )
             db.add_all([payment1, payment2])
             db.commit()
@@ -268,7 +276,7 @@ class TestStripePaymentService:
         assert result[0]["id"] == "pi_test_123"
         assert result[1]["id"] == "pi_test_456"
 
-    @patch('stripe.Refund.create')
+    @patch("stripe.Refund.create")
     def test_refund_payment_success(self, mock_refund_create, payment_service):
         """Test successful payment refund."""
         # Create test payment record
@@ -281,16 +289,13 @@ class TestStripePaymentService:
                 amount=9900,
                 currency="usd",
                 status=PaymentStatus.SUCCEEDED.value,
-                audit_type="seo"
+                audit_type="seo",
             )
             db.add(payment)
             db.commit()
 
         # Mock Stripe refund response
-        mock_refund_create.return_value = Mock(
-            id="re_test_123",
-            amount=9900
-        )
+        mock_refund_create.return_value = Mock(id="re_test_123", amount=9900)
 
         # Refund payment
         result = payment_service.refund_payment("pi_test_123")
@@ -302,7 +307,9 @@ class TestStripePaymentService:
 
         # Verify database update
         with payment_service.SessionLocal() as db:
-            updated_payment = db.query(Payment).filter(Payment.id == "pi_test_123").first()
+            updated_payment = (
+                db.query(Payment).filter(Payment.id == "pi_test_123").first()
+            )
             assert updated_payment.status == PaymentStatus.REFUNDED.value
 
     def test_refund_payment_not_found(self, payment_service):
@@ -322,7 +329,7 @@ class TestStripePaymentService:
                 amount=9900,
                 currency="usd",
                 status=PaymentStatus.PENDING.value,
-                audit_type="seo"
+                audit_type="seo",
             )
             db.add(payment)
             db.commit()
@@ -339,7 +346,7 @@ class TestPaymentConfig:
         config = PaymentConfig(
             stripe_secret_key="sk_test_123",
             stripe_publishable_key="pk_test_123",
-            webhook_secret="whsec_test_123"
+            webhook_secret="whsec_test_123",
         )
 
         assert config.stripe_secret_key == "sk_test_123"
@@ -355,7 +362,7 @@ class TestPaymentConfig:
             webhook_secret="whsec_test_123",
             currency="eur",
             success_url="https://custom.com/success",
-            cancel_url="https://custom.com/cancel"
+            cancel_url="https://custom.com/cancel",
         )
 
         assert config.currency == "eur"
@@ -380,7 +387,7 @@ class TestPaymentModel:
                 currency="usd",
                 status=PaymentStatus.PENDING.value,
                 audit_type="seo",
-                metadata='{"source": "test"}'
+                metadata='{"source": "test"}',
             )
             db.add(payment)
             db.commit()

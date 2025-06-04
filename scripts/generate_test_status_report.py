@@ -279,10 +279,10 @@ def generate_markdown_report(test_data, output_file):
         # Overall progress
         f.write("## Overall Progress\n\n")
         f.write(
-            f"- Test Files: {test_data['enabled_files']}/{test_data['total_files']} ({test_data['enabled_files']/test_data['total_files']*100:.1f}% if test_data['total_files'] > 0 else 0)\n"
+            f"- Test Files: {test_data['enabled_files']}/{test_data['total_files']} ({test_data['enabled_files'] / test_data['total_files'] * 100:.1f}% if test_data['total_files'] > 0 else 0)\n"
         )
         f.write(
-            f"- Test Cases: {test_data['enabled_test_cases']}/{test_data['total_test_cases']} ({test_data['enabled_test_cases']/test_data['total_test_cases']*100:.1f}% if test_data['total_test_cases'] > 0 else 0)\n\n"
+            f"- Test Cases: {test_data['enabled_test_cases']}/{test_data['total_test_cases']} ({test_data['enabled_test_cases'] / test_data['total_test_cases'] * 100:.1f}% if test_data['total_test_cases'] > 0 else 0)\n\n"
         )
 
         # ASCII bar chart for overall progress

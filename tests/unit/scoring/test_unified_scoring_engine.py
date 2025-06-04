@@ -22,34 +22,29 @@ class TestUnifiedScoringEngine(unittest.TestCase):
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "audit_threshold": 60
+                "audit_threshold": 60,
             },
             "templates": {
                 "tech_opportunity": {
                     "description": "Technology improvement opportunity",
                     "score": 15,
-                    "audit_category": "technology"
+                    "audit_category": "technology",
                 }
             },
             "audit_opportunities": [
                 {
                     "name": "jquery_outdated",
                     "template": "tech_opportunity",
-                    "when": {
-                        "technology": "jQuery",
-                        "version": "<3.0.0"
-                    },
-                    "audit_potential": "high"
+                    "when": {"technology": "jQuery", "version": "<3.0.0"},
+                    "audit_potential": "high",
                 },
                 {
                     "name": "poor_performance",
                     "description": "Poor website performance",
                     "score": 20,
-                    "when": {
-                        "performance_score": "<50"
-                    },
-                    "audit_potential": "high"
-                }
+                    "when": {"performance_score": "<50"},
+                    "audit_potential": "high",
+                },
             ],
             "audit_multipliers": [
                 {
@@ -57,13 +52,10 @@ class TestUnifiedScoringEngine(unittest.TestCase):
                     "description": "Perfect audit combination",
                     "multiplier": 1.5,
                     "when": {
-                        "all": [
-                            {"technology": "jQuery"},
-                            {"performance_score": "<60"}
-                        ]
-                    }
+                        "all": [{"technology": "jQuery"}, {"performance_score": "<60"}]
+                    },
                 }
-            ]
+            ],
         }
 
         # Sample legacy format
@@ -72,7 +64,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "high_score_threshold": 75
+                "high_score_threshold": 75,
             },
             "rules": [
                 {
@@ -82,19 +74,17 @@ class TestUnifiedScoringEngine(unittest.TestCase):
                         "tech_stack_contains": "jQuery",
                         "tech_stack_version_lt": {
                             "technology": "jQuery",
-                            "version": "3.0.0"
-                        }
+                            "version": "3.0.0",
+                        },
                     },
-                    "score": 10
+                    "score": 10,
                 },
                 {
                     "name": "poor_performance",
                     "description": "Poor performance score",
-                    "condition": {
-                        "performance_score_lt": 50
-                    },
-                    "score": 20
-                }
+                    "condition": {"performance_score_lt": 50},
+                    "score": 20,
+                },
             ],
             "multipliers": [
                 {
@@ -102,11 +92,11 @@ class TestUnifiedScoringEngine(unittest.TestCase):
                     "description": "Perfect tech stack match",
                     "condition": {
                         "tech_stack_contains": "jQuery",
-                        "performance_score_lt": 60
+                        "performance_score_lt": 60,
                     },
-                    "multiplier": 1.5
+                    "multiplier": 1.5,
                 }
-            ]
+            ],
         }
 
         # Sample business data for testing
@@ -118,12 +108,12 @@ class TestUnifiedScoringEngine(unittest.TestCase):
             "cls": 0.3,
             "category": ["restaurant"],
             "state": "NY",
-            "review_count": 25
+            "review_count": 25,
         }
 
     def test_format_detection_simplified(self):
         """Test detection of simplified format."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.simplified_config, f)
             f.flush()
 
@@ -136,7 +126,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
 
     def test_format_detection_legacy(self):
         """Test detection of legacy format."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.legacy_config, f)
             f.flush()
 
@@ -149,7 +139,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
 
     def test_scoring_with_simplified_format(self):
         """Test scoring business with simplified format."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.simplified_config, f)
             f.flush()
 
@@ -166,11 +156,13 @@ class TestUnifiedScoringEngine(unittest.TestCase):
             self.assertIn("applied_multipliers", result)
 
             self.assertEqual(result["format_used"], "simplified")
-            self.assertGreater(result["final_score"], 50)  # Should have positive adjustments
+            self.assertGreater(
+                result["final_score"], 50
+            )  # Should have positive adjustments
 
     def test_scoring_with_legacy_format(self):
         """Test scoring business with legacy format."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.legacy_config, f)
             f.flush()
 
@@ -186,11 +178,13 @@ class TestUnifiedScoringEngine(unittest.TestCase):
             self.assertIn("applied_multipliers", result)
 
             self.assertEqual(result["format_used"], "legacy")
-            self.assertGreater(result["final_score"], 50)  # Should have positive adjustments
+            self.assertGreater(
+                result["final_score"], 50
+            )  # Should have positive adjustments
 
     def test_audit_potential_calculation(self):
         """Test audit potential calculation for simplified format."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.simplified_config, f)
             f.flush()
 
@@ -202,7 +196,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
                 "tech_stack": ["jQuery"],
                 "tech_stack_versions": {"jQuery": "2.0.0"},
                 "performance_score": 30,  # Very poor performance
-                "category": ["restaurant"]
+                "category": ["restaurant"],
             }
 
             result = engine.score_business(high_score_business)
@@ -215,11 +209,11 @@ class TestUnifiedScoringEngine(unittest.TestCase):
         test_business = {
             "tech_stack": ["jQuery"],
             "tech_stack_versions": {"jQuery": "2.5.0"},
-            "performance_score": 40
+            "performance_score": 40,
         }
 
         # Test simplified format
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.simplified_config, f)
             f.flush()
 
@@ -228,7 +222,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
             simplified_result = simplified_engine.score_business(test_business)
 
         # Test legacy format
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.legacy_config, f)
             f.flush()
 
@@ -246,7 +240,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
 
     def test_get_format_info(self):
         """Test getting format information."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.simplified_config, f)
             f.flush()
 
@@ -268,25 +262,25 @@ class TestUnifiedScoringEngine(unittest.TestCase):
                 "base_score": 50,
                 "min_score": 0,
                 "max_score": 100,
-                "audit_threshold": 60
+                "audit_threshold": 60,
             },
             "audit_opportunities": [
                 {
                     "name": "extreme_positive",
                     "score": 200,  # This should be capped
-                    "when": {"technology": "jQuery"}
+                    "when": {"technology": "jQuery"},
                 }
             ],
             "exclusions": [
                 {
                     "name": "extreme_negative",
                     "score": -200,  # This should be floored
-                    "when": {"technology": "React"}
+                    "when": {"technology": "React"},
                 }
-            ]
+            ],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(extreme_config, f)
             f.flush()
 
@@ -306,14 +300,11 @@ class TestUnifiedScoringEngine(unittest.TestCase):
     def test_empty_rules_handling(self):
         """Test handling of empty or minimal rule sets."""
         minimal_config = {
-            "settings": {
-                "base_score": 50,
-                "audit_threshold": 60
-            },
-            "audit_opportunities": []
+            "settings": {"base_score": 50, "audit_threshold": 60},
+            "audit_opportunities": [],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(minimal_config, f)
             f.flush()
 
@@ -329,7 +320,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
 
     def test_multiplier_application(self):
         """Test that multipliers are properly applied."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump(self.simplified_config, f)
             f.flush()
 
@@ -340,7 +331,7 @@ class TestUnifiedScoringEngine(unittest.TestCase):
             multiplier_business = {
                 "tech_stack": ["jQuery"],
                 "tech_stack_versions": {"jQuery": "2.0.0"},
-                "performance_score": 45
+                "performance_score": 45,
             }
 
             result = engine.score_business(multiplier_business)
@@ -353,5 +344,5 @@ class TestUnifiedScoringEngine(unittest.TestCase):
             self.assertGreater(result["final_score"], result["preliminary_score"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

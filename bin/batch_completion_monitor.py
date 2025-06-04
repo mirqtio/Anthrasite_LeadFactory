@@ -125,9 +125,9 @@ Reason: {reason}
 Time: {datetime.utcnow().isoformat()}
 
 Batch Details:
-- Started: {status.get('current_batch_start', 'Unknown')}
-- Completion Percentage: {status.get('completion_percentage', 0):.2f}%
-- Deadline: {status.get('deadline', 'Unknown')}
+- Started: {status.get("current_batch_start", "Unknown")}
+- Completion Percentage: {status.get("completion_percentage", 0):.2f}%
+- Deadline: {status.get("deadline", "Unknown")}
 
 Stage Completion:
 """

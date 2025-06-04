@@ -57,7 +57,7 @@ except ImportError:
                 event=data.get("event", ""),
                 timestamp=data.get("timestamp", 0),
                 bounce_type=data.get("type"),
-                reason=data.get("reason")
+                reason=data.get("reason"),
             )
 
     class SendGridWebhookHandler:
@@ -70,7 +70,9 @@ except ImportError:
         def verify_signature(self, payload: bytes, signature: str) -> bool:
             return True
 
-        def process_webhook_events(self, events: list[dict[str, Any]]) -> dict[str, int]:
+        def process_webhook_events(
+            self, events: list[dict[str, Any]]
+        ) -> dict[str, int]:
             return {"bounce": len([e for e in events if e.get("event") == "bounce"])}
 
     def create_webhook_tables(db_path=None):
@@ -89,8 +91,7 @@ class TestWebhookSimulation:
 
         # Initialize webhook handler
         self.webhook_handler = SendGridWebhookHandler(
-            webhook_secret="test-webhook-secret",
-            db_path=self.db_path
+            webhook_secret="test-webhook-secret", db_path=self.db_path
         )
 
         # Create database tables
@@ -112,7 +113,9 @@ class TestWebhookSimulation:
 
         # Test with invalid signature (mocked)
         with patch("hmac.compare_digest", return_value=False):
-            assert not self.webhook_handler.verify_signature(payload, "invalid_signature")
+            assert not self.webhook_handler.verify_signature(
+                payload, "invalid_signature"
+            )
 
         # Test with no webhook secret
         handler_no_secret = SendGridWebhookHandler(webhook_secret=None)
@@ -129,14 +132,19 @@ class TestWebhookSimulation:
             "status": "5.1.1",
             "timestamp": int(datetime.now().timestamp()),
             "sg_event_id": "hard_bounce_123",
-            "sg_message_id": "msg_123"
+            "sg_message_id": "msg_123",
         }
 
         # Act
-        with patch.object(self.webhook_handler, "_store_bounce_event") as mock_store, \
-             patch.object(self.webhook_handler, "_mark_email_permanently_bounced") as mock_mark, \
-             patch.object(self.webhook_handler, "_check_bounce_rate_thresholds") as mock_check:
-
+        with (
+            patch.object(self.webhook_handler, "_store_bounce_event") as mock_store,
+            patch.object(
+                self.webhook_handler, "_mark_email_permanently_bounced"
+            ) as mock_mark,
+            patch.object(
+                self.webhook_handler, "_check_bounce_rate_thresholds"
+            ) as mock_check,
+        ):
             result = self.webhook_handler.process_webhook_events([hard_bounce_event])
 
         # Assert
@@ -156,14 +164,19 @@ class TestWebhookSimulation:
             "status": "4.2.2",
             "timestamp": int(datetime.now().timestamp()),
             "sg_event_id": "soft_bounce_123",
-            "sg_message_id": "msg_123"
+            "sg_message_id": "msg_123",
         }
 
         # Act
-        with patch.object(self.webhook_handler, "_store_bounce_event") as mock_store, \
-             patch.object(self.webhook_handler, "_increment_soft_bounce_count") as mock_increment, \
-             patch.object(self.webhook_handler, "_check_bounce_rate_thresholds") as mock_check:
-
+        with (
+            patch.object(self.webhook_handler, "_store_bounce_event") as mock_store,
+            patch.object(
+                self.webhook_handler, "_increment_soft_bounce_count"
+            ) as mock_increment,
+            patch.object(
+                self.webhook_handler, "_check_bounce_rate_thresholds"
+            ) as mock_check,
+        ):
             result = self.webhook_handler.process_webhook_events([soft_bounce_event])
 
         # Assert
@@ -183,14 +196,17 @@ class TestWebhookSimulation:
             "status": "5.7.1",
             "timestamp": int(datetime.now().timestamp()),
             "sg_event_id": "block_bounce_123",
-            "sg_message_id": "msg_123"
+            "sg_message_id": "msg_123",
         }
 
         # Act
-        with patch.object(self.webhook_handler, "_store_bounce_event") as mock_store, \
-             patch.object(self.webhook_handler, "_mark_email_blocked") as mock_block, \
-             patch.object(self.webhook_handler, "_check_bounce_rate_thresholds") as mock_check:
-
+        with (
+            patch.object(self.webhook_handler, "_store_bounce_event") as mock_store,
+            patch.object(self.webhook_handler, "_mark_email_blocked") as mock_block,
+            patch.object(
+                self.webhook_handler, "_check_bounce_rate_thresholds"
+            ) as mock_check,
+        ):
             result = self.webhook_handler.process_webhook_events([block_bounce_event])
 
         # Assert
@@ -207,14 +223,19 @@ class TestWebhookSimulation:
             "event": "spamreport",
             "timestamp": int(datetime.now().timestamp()),
             "sg_event_id": "spam_123",
-            "sg_message_id": "msg_123"
+            "sg_message_id": "msg_123",
         }
 
         # Act
-        with patch.object(self.webhook_handler, "_store_spam_event") as mock_store, \
-             patch.object(self.webhook_handler, "_mark_email_spam_complaint") as mock_mark, \
-             patch.object(self.webhook_handler, "_check_spam_rate_thresholds") as mock_check:
-
+        with (
+            patch.object(self.webhook_handler, "_store_spam_event") as mock_store,
+            patch.object(
+                self.webhook_handler, "_mark_email_spam_complaint"
+            ) as mock_mark,
+            patch.object(
+                self.webhook_handler, "_check_spam_rate_thresholds"
+            ) as mock_check,
+        ):
             result = self.webhook_handler.process_webhook_events([spam_event])
 
         # Assert
@@ -231,13 +252,16 @@ class TestWebhookSimulation:
             "event": "unsubscribe",
             "timestamp": int(datetime.now().timestamp()),
             "sg_event_id": "unsub_123",
-            "sg_message_id": "msg_123"
+            "sg_message_id": "msg_123",
         }
 
         # Act
-        with patch.object(self.webhook_handler, "_store_unsubscribe_event") as mock_store, \
-             patch.object(self.webhook_handler, "_mark_email_unsubscribed") as mock_mark:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_store_unsubscribe_event"
+            ) as mock_store,
+            patch.object(self.webhook_handler, "_mark_email_unsubscribed") as mock_mark,
+        ):
             result = self.webhook_handler.process_webhook_events([unsubscribe_event])
 
         # Assert
@@ -253,7 +277,7 @@ class TestWebhookSimulation:
             "event": "delivered",
             "timestamp": int(datetime.now().timestamp()),
             "sg_event_id": "delivered_123",
-            "sg_message_id": "msg_123"
+            "sg_message_id": "msg_123",
         }
 
         # Act
@@ -274,19 +298,19 @@ class TestWebhookSimulation:
                 "type": "hard",
                 "reason": "User unknown",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "bounce_1"
+                "sg_event_id": "bounce_1",
             },
             {
                 "email": "user2@example.com",
                 "event": "delivered",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "delivered_1"
+                "sg_event_id": "delivered_1",
             },
             {
                 "email": "user3@example.com",
                 "event": "spamreport",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "spam_1"
+                "sg_event_id": "spam_1",
             },
             {
                 "email": "user4@example.com",
@@ -294,20 +318,21 @@ class TestWebhookSimulation:
                 "type": "soft",
                 "reason": "Mailbox full",
                 "timestamp": int(datetime.now().timestamp()),
-                "sg_event_id": "bounce_2"
-            }
+                "sg_event_id": "bounce_2",
+            },
         ]
 
         # Act
-        with patch.object(self.webhook_handler, "_store_bounce_event"), \
-             patch.object(self.webhook_handler, "_store_spam_event"), \
-             patch.object(self.webhook_handler, "_mark_email_permanently_bounced"), \
-             patch.object(self.webhook_handler, "_mark_email_delivered"), \
-             patch.object(self.webhook_handler, "_mark_email_spam_complaint"), \
-             patch.object(self.webhook_handler, "_increment_soft_bounce_count"), \
-             patch.object(self.webhook_handler, "_check_bounce_rate_thresholds"), \
-             patch.object(self.webhook_handler, "_check_spam_rate_thresholds"):
-
+        with (
+            patch.object(self.webhook_handler, "_store_bounce_event"),
+            patch.object(self.webhook_handler, "_store_spam_event"),
+            patch.object(self.webhook_handler, "_mark_email_permanently_bounced"),
+            patch.object(self.webhook_handler, "_mark_email_delivered"),
+            patch.object(self.webhook_handler, "_mark_email_spam_complaint"),
+            patch.object(self.webhook_handler, "_increment_soft_bounce_count"),
+            patch.object(self.webhook_handler, "_check_bounce_rate_thresholds"),
+            patch.object(self.webhook_handler, "_check_spam_rate_thresholds"),
+        ):
             result = self.webhook_handler.process_webhook_events(events)
 
         # Assert
@@ -322,7 +347,10 @@ class TestWebhookSimulation:
             {},  # Empty event
             {"email": "test@example.com"},  # Missing event type
             {"event": "bounce"},  # Missing email
-            {"event": "invalid_event", "email": "test@example.com"}  # Invalid event type
+            {
+                "event": "invalid_event",
+                "email": "test@example.com",
+            },  # Invalid event type
         ]
 
         # Act
@@ -344,7 +372,7 @@ class TestWebhookSimulation:
             "status": "5.1.1",
             "message_id": "msg_123",
             "sg_event_id": "event_123",
-            "sg_message_id": "sg_msg_123"
+            "sg_message_id": "sg_msg_123",
         }
 
         # Act
@@ -364,59 +392,92 @@ class TestWebhookSimulation:
     def test_bounce_rate_threshold_detection(self):
         """Test bounce rate threshold detection and alerting."""
         # Test warning threshold
-        with patch.object(self.webhook_handler, "_calculate_recent_bounce_rate", return_value=0.07), \
-             patch.object(self.webhook_handler, "_trigger_warning_alert") as mock_warning:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_calculate_recent_bounce_rate", return_value=0.07
+            ),
+            patch.object(
+                self.webhook_handler, "_trigger_warning_alert"
+            ) as mock_warning,
+        ):
             self.webhook_handler._check_bounce_rate_thresholds()
             mock_warning.assert_called_once()
 
         # Test critical threshold
-        with patch.object(self.webhook_handler, "_calculate_recent_bounce_rate", return_value=0.12), \
-             patch.object(self.webhook_handler, "_trigger_critical_alert") as mock_critical:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_calculate_recent_bounce_rate", return_value=0.12
+            ),
+            patch.object(
+                self.webhook_handler, "_trigger_critical_alert"
+            ) as mock_critical,
+        ):
             self.webhook_handler._check_bounce_rate_thresholds()
             mock_critical.assert_called_once()
 
         # Test block threshold
-        with patch.object(self.webhook_handler, "_calculate_recent_bounce_rate", return_value=0.18), \
-             patch.object(self.webhook_handler, "_trigger_email_sending_block") as mock_block:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_calculate_recent_bounce_rate", return_value=0.18
+            ),
+            patch.object(
+                self.webhook_handler, "_trigger_email_sending_block"
+            ) as mock_block,
+        ):
             self.webhook_handler._check_bounce_rate_thresholds()
             mock_block.assert_called_once()
 
     def test_spam_rate_threshold_detection(self):
         """Test spam rate threshold detection and alerting."""
         # Test warning threshold
-        with patch.object(self.webhook_handler, "_calculate_recent_spam_rate", return_value=0.002), \
-             patch.object(self.webhook_handler, "_trigger_warning_alert") as mock_warning:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_calculate_recent_spam_rate", return_value=0.002
+            ),
+            patch.object(
+                self.webhook_handler, "_trigger_warning_alert"
+            ) as mock_warning,
+        ):
             self.webhook_handler._check_spam_rate_thresholds()
             mock_warning.assert_called_once()
 
         # Test critical threshold
-        with patch.object(self.webhook_handler, "_calculate_recent_spam_rate", return_value=0.007), \
-             patch.object(self.webhook_handler, "_trigger_critical_alert") as mock_critical:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_calculate_recent_spam_rate", return_value=0.007
+            ),
+            patch.object(
+                self.webhook_handler, "_trigger_critical_alert"
+            ) as mock_critical,
+        ):
             self.webhook_handler._check_spam_rate_thresholds()
             mock_critical.assert_called_once()
 
         # Test block threshold
-        with patch.object(self.webhook_handler, "_calculate_recent_spam_rate", return_value=0.015), \
-             patch.object(self.webhook_handler, "_trigger_email_sending_block") as mock_block:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_calculate_recent_spam_rate", return_value=0.015
+            ),
+            patch.object(
+                self.webhook_handler, "_trigger_email_sending_block"
+            ) as mock_block,
+        ):
             self.webhook_handler._check_spam_rate_thresholds()
             mock_block.assert_called_once()
 
-    @pytest.mark.parametrize("event_type,expected_processing", [
-        ("bounce", "bounce_processing"),
-        ("dropped", "bounce_processing"),
-        ("spamreport", "spam_processing"),
-        ("unsubscribe", "unsubscribe_processing"),
-        ("group_unsubscribe", "unsubscribe_processing"),
-        ("delivered", "delivered_processing"),
-        ("open", "generic_processing"),
-        ("click", "generic_processing"),
-    ])
+    @pytest.mark.parametrize(
+        "event_type,expected_processing",
+        [
+            ("bounce", "bounce_processing"),
+            ("dropped", "bounce_processing"),
+            ("spamreport", "spam_processing"),
+            ("unsubscribe", "unsubscribe_processing"),
+            ("group_unsubscribe", "unsubscribe_processing"),
+            ("delivered", "delivered_processing"),
+            ("open", "generic_processing"),
+            ("click", "generic_processing"),
+        ],
+    )
     def test_event_type_routing(self, event_type, expected_processing):
         """Test that different event types are routed to correct processing methods."""
         # Arrange
@@ -424,15 +485,20 @@ class TestWebhookSimulation:
             "email": "test@example.com",
             "event": event_type,
             "timestamp": int(datetime.now().timestamp()),
-            "sg_event_id": f"{event_type}_123"
+            "sg_event_id": f"{event_type}_123",
         }
 
         # Act & Assert based on expected processing
-        with patch.object(self.webhook_handler, "_process_bounce_event") as mock_bounce, \
-             patch.object(self.webhook_handler, "_process_spam_event") as mock_spam, \
-             patch.object(self.webhook_handler, "_process_unsubscribe_event") as mock_unsub, \
-             patch.object(self.webhook_handler, "_process_delivered_event") as mock_delivered:
-
+        with (
+            patch.object(self.webhook_handler, "_process_bounce_event") as mock_bounce,
+            patch.object(self.webhook_handler, "_process_spam_event") as mock_spam,
+            patch.object(
+                self.webhook_handler, "_process_unsubscribe_event"
+            ) as mock_unsub,
+            patch.object(
+                self.webhook_handler, "_process_delivered_event"
+            ) as mock_delivered,
+        ):
             self.webhook_handler.process_webhook_events([event])
 
             if expected_processing == "bounce_processing":
@@ -456,23 +522,32 @@ class TestWebhookSimulation:
                 "status": "5.1.1",
                 "timestamp": int(datetime.now().timestamp()),
                 "sg_event_id": "ZGVsaXZlcnk",
-                "sg_message_id": "14c5d75ce93.dfd.64b469d5-b3a1-11e3-a3ac-6c626d7d4b7a@ismtpd0039p1las1.sendgrid.net"
+                "sg_message_id": "14c5d75ce93.dfd.64b469d5-b3a1-11e3-a3ac-6c626d7d4b7a@ismtpd0039p1las1.sendgrid.net",
             },
             {
                 "email": "user2@example.com",
                 "event": "delivered",
                 "timestamp": int(datetime.now().timestamp()),
                 "sg_event_id": "ZGVsaXZlcnk",
-                "sg_message_id": "14c5d75ce93.dfd.64b469d5-b3a1-11e3-a3ac-6c626d7d4b7a@ismtpd0039p1las1.sendgrid.net"
-            }
+                "sg_message_id": "14c5d75ce93.dfd.64b469d5-b3a1-11e3-a3ac-6c626d7d4b7a@ismtpd0039p1las1.sendgrid.net",
+            },
         ]
 
         # Act
-        with patch.object(self.webhook_handler, "_store_bounce_event") as mock_store_bounce, \
-             patch.object(self.webhook_handler, "_mark_email_permanently_bounced") as mock_mark_bounced, \
-             patch.object(self.webhook_handler, "_mark_email_delivered") as mock_mark_delivered, \
-             patch.object(self.webhook_handler, "_check_bounce_rate_thresholds") as mock_check_bounce:
-
+        with (
+            patch.object(
+                self.webhook_handler, "_store_bounce_event"
+            ) as mock_store_bounce,
+            patch.object(
+                self.webhook_handler, "_mark_email_permanently_bounced"
+            ) as mock_mark_bounced,
+            patch.object(
+                self.webhook_handler, "_mark_email_delivered"
+            ) as mock_mark_delivered,
+            patch.object(
+                self.webhook_handler, "_check_bounce_rate_thresholds"
+            ) as mock_check_bounce,
+        ):
             result = self.webhook_handler.process_webhook_events(webhook_payload)
 
         # Assert
@@ -480,8 +555,10 @@ class TestWebhookSimulation:
         assert result["delivered"] == 1
         mock_store_bounce.assert_called_once()
         mock_mark_bounced.assert_called_once_with("user1@example.com")
-        mock_mark_delivered.assert_called_once_with("user2@example.com",
-            "14c5d75ce93.dfd.64b469d5-b3a1-11e3-a3ac-6c626d7d4b7a@ismtpd0039p1las1.sendgrid.net")
+        mock_mark_delivered.assert_called_once_with(
+            "user2@example.com",
+            "14c5d75ce93.dfd.64b469d5-b3a1-11e3-a3ac-6c626d7d4b7a@ismtpd0039p1las1.sendgrid.net",
+        )
         mock_check_bounce.assert_called_once()
 
 
@@ -520,9 +597,15 @@ class TestWebhookDatabaseIntegration:
                 db.execute("SELECT name FROM sqlite_master WHERE type='table'")
                 tables = [row[0] for row in db.fetchall()]
 
-                expected_tables = ["email_bounces", "email_spam_reports", "email_unsubscribes"]
+                expected_tables = [
+                    "email_bounces",
+                    "email_spam_reports",
+                    "email_unsubscribes",
+                ]
                 for table in expected_tables:
-                    assert table in tables or len(tables) == 0  # Allow for mock implementation
+                    assert (
+                        table in tables or len(tables) == 0
+                    )  # Allow for mock implementation
         except ImportError:
             # Skip database integration test if database module not available
             pytest.skip("Database module not available for integration testing")
@@ -544,7 +627,7 @@ class TestWebhookDatabaseIntegration:
                 timestamp=int(datetime.now().timestamp()),
                 bounce_type="hard",
                 reason="User unknown",
-                sg_event_id="test_event_123"
+                sg_event_id="test_event_123",
             )
 
             # Store the event
@@ -552,7 +635,9 @@ class TestWebhookDatabaseIntegration:
 
             # Verify it was stored
             with DatabaseConnection(self.db_path) as db:
-                db.execute("SELECT * FROM email_bounces WHERE email = ?", ("test@example.com",))
+                db.execute(
+                    "SELECT * FROM email_bounces WHERE email = ?", ("test@example.com",)
+                )
                 result = db.fetchone()
 
                 if result:  # Only assert if we have a real database

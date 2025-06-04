@@ -92,7 +92,7 @@ def summary(output_format: str):
         # Profit analysis
         profit = analytics_data.get("profit_analysis", {})
         if profit and profit.get("revenue"):
-            click.echo(f"\n💰 PROFIT ANALYSIS (Last 30 Days)")
+            click.echo("\n💰 PROFIT ANALYSIS (Last 30 Days)")
             revenue = profit["revenue"]
             costs = profit.get("costs", {})
             profit_info = profit.get("profit", {})
@@ -115,7 +115,7 @@ def summary(output_format: str):
         if customer:
             clv = customer.get("lifetime_value_dollars", 0)
             if clv > 0:
-                click.echo(f"\n👥 CUSTOMER METRICS")
+                click.echo("\n👥 CUSTOMER METRICS")
                 click.echo(f"Customer Lifetime Value: ${clv:,.2f}")
 
     except Exception as e:
@@ -412,13 +412,13 @@ def monitor(period: str, lookback_days: int, output_format: str):
             click.echo("\n💰 REVENUE BREAKDOWN")
             click.echo("-" * 40)
             click.echo(
-                f"Total Revenue: ${breakdown.get('total_revenue_cents', 0)/100:,.2f}"
+                f"Total Revenue: ${breakdown.get('total_revenue_cents', 0) / 100:,.2f}"
             )
             click.echo(
-                f"Stripe Fees: ${breakdown.get('total_stripe_fees_cents', 0)/100:,.2f}"
+                f"Stripe Fees: ${breakdown.get('total_stripe_fees_cents', 0) / 100:,.2f}"
             )
             click.echo(
-                f"Net Revenue: ${breakdown.get('net_revenue_cents', 0)/100:,.2f}"
+                f"Net Revenue: ${breakdown.get('net_revenue_cents', 0) / 100:,.2f}"
             )
 
             # Audit type breakdown
@@ -521,7 +521,7 @@ def funnel(
         click.echo(f"Period: {start_date.date()} to {end_date.date()}")
         click.echo(f"Audit Type: {audit_type or 'All'}")
         click.echo(f"Channel: {channel or 'All'}")
-        click.echo(f"Total Revenue: ${funnel_data.total_revenue_cents/100:,.2f}")
+        click.echo(f"Total Revenue: ${funnel_data.total_revenue_cents / 100:,.2f}")
         if funnel_data.average_time_to_conversion:
             click.echo(
                 f"Avg. Time to Conversion: {funnel_data.average_time_to_conversion:.1f} minutes"
@@ -711,7 +711,7 @@ def alerts():
 def dashboard(host: str, port: int, debug: bool):
     """Start the web-based purchase metrics dashboard."""
     try:
-        click.echo(f"Starting purchase metrics dashboard...")
+        click.echo("Starting purchase metrics dashboard...")
         click.echo(f"Dashboard will be available at: http://{host}:{port}")
         click.echo("Press Ctrl+C to stop the server")
 

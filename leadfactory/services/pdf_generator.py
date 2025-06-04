@@ -1040,7 +1040,7 @@ class PDFGenerator:
                                 # Simple list
                                 table_data = [["Item", "Value"]]
                                 for i, item in enumerate(chart_data):
-                                    table_data.append([f"Item {i+1}", str(item)])
+                                    table_data.append([f"Item {i + 1}", str(item)])
                         else:
                             table_data = [["Item", "Value"], ["No data", "N/A"]]
 
@@ -1100,7 +1100,6 @@ class PDFGenerator:
                     img.width > opt_config.max_image_width
                     or img.height > opt_config.max_image_height
                 ):
-
                     img.thumbnail(
                         (opt_config.max_image_width, opt_config.max_image_height),
                         PILImage.Resampling.LANCZOS,
@@ -1211,13 +1210,12 @@ class PDFGenerator:
         # Configure compression based on level
         if opt_config.compression_level == CompressionLevel.NONE:
             doc.compress = 0
-        elif opt_config.compression_level == CompressionLevel.LOW:
-            doc.compress = 1
-        elif opt_config.compression_level == CompressionLevel.MEDIUM:
-            doc.compress = 1
-        elif opt_config.compression_level == CompressionLevel.HIGH:
-            doc.compress = 1
-        elif opt_config.compression_level == CompressionLevel.MAXIMUM:
+        elif (
+            opt_config.compression_level == CompressionLevel.LOW
+            or opt_config.compression_level == CompressionLevel.MEDIUM
+            or opt_config.compression_level == CompressionLevel.HIGH
+            or opt_config.compression_level == CompressionLevel.MAXIMUM
+        ):
             doc.compress = 1
 
         # Note: ReportLab's compression is primarily for text and vector graphics

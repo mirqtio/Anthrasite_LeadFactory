@@ -72,8 +72,12 @@ except ImportError:
             self.error_history = []
             self.batch_history = []
             self.alert_thresholds = [
-                AlertThreshold(name="Test Threshold", metric_type="error_count",
-                             threshold_value=100, alert_level=AlertLevel.WARNING)
+                AlertThreshold(
+                    name="Test Threshold",
+                    metric_type="error_count",
+                    threshold_value=100,
+                    alert_level=AlertLevel.WARNING,
+                )
             ]
 
         def add_error(self, error):
@@ -92,14 +96,17 @@ except ImportError:
                 end_time=datetime.now(),
                 total_errors=len(self.error_history),
                 error_rate_per_hour=len(self.error_history) / 24.0,
-                critical_error_count=sum(1 for e in self.error_history
-                                       if e.severity == ErrorSeverity.CRITICAL),
+                critical_error_count=sum(
+                    1
+                    for e in self.error_history
+                    if e.severity == ErrorSeverity.CRITICAL
+                ),
                 affected_businesses=set(),
                 errors_by_severity={"critical": 1, "high": 2, "medium": 3},
                 errors_by_category={"network": 2, "database": 1, "validation": 3},
                 errors_by_stage={"stage1": 3, "stage2": 3},
                 errors_by_operation={"op1": 4, "op2": 2},
-                patterns=[]
+                patterns=[],
             )
 
         def add_custom_threshold(self, threshold):
@@ -108,12 +115,17 @@ except ImportError:
         def check_alert_thresholds(self, metrics):
             alerts = []
             for threshold in self.alert_thresholds:
-                if threshold.metric_type == "error_count" and metrics.total_errors > threshold.threshold_value:
-                    alerts.append({
-                        "threshold": threshold.to_dict(),
-                        "current_value": metrics.total_errors,
-                        "triggered_at": datetime.now().isoformat()
-                    })
+                if (
+                    threshold.metric_type == "error_count"
+                    and metrics.total_errors > threshold.threshold_value
+                ):
+                    alerts.append(
+                        {
+                            "threshold": threshold.to_dict(),
+                            "current_value": metrics.total_errors,
+                            "triggered_at": datetime.now().isoformat(),
+                        }
+                    )
             return alerts
 
         def generate_error_report(self, time_window):
@@ -121,7 +133,7 @@ except ImportError:
             return {
                 "report_generated_at": datetime.now().isoformat(),
                 "metrics": metrics.to_dict(),
-                "alerts": self.check_alert_thresholds(metrics)
+                "alerts": self.check_alert_thresholds(metrics),
             }
 
         def get_error_summary(self, hours=24):
@@ -130,7 +142,7 @@ except ImportError:
                 "time_period_hours": hours,
                 "total_errors": metrics.total_errors,
                 "error_rate_per_hour": metrics.error_rate_per_hour,
-                "critical_errors": metrics.critical_error_count
+                "critical_errors": metrics.critical_error_count,
             }
 
         def export_metrics_to_json(self, filepath):
@@ -156,7 +168,7 @@ except ImportError:
         def to_dict(self):
             return {
                 "total_errors": self.total_errors,
-                "error_rate_per_hour": self.error_rate_per_hour
+                "error_rate_per_hour": self.error_rate_per_hour,
             }
 
     class AlertThreshold:
@@ -173,7 +185,7 @@ except ImportError:
                 "metric_type": self.metric_type,
                 "threshold_value": self.threshold_value,
                 "alert_level": self.alert_level.value,
-                "time_window": self.time_window.value
+                "time_window": self.time_window.value,
             }
 
 
@@ -195,7 +207,7 @@ class TestErrorAggregation(unittest.TestCase):
         error = PipelineError(
             stage="test_stage",
             operation="test_operation",
-            error_message="Test error message"
+            error_message="Test error message",
         )
 
         self.aggregator.add_error(error)
@@ -208,7 +220,7 @@ class TestErrorAggregation(unittest.TestCase):
         errors = [
             PipelineError(stage="stage1", error_message="Error 1"),
             PipelineError(stage="stage2", error_message="Error 2"),
-            PipelineError(stage="stage3", error_message="Error 3")
+            PipelineError(stage="stage3", error_message="Error 3"),
         ]
 
         for error in errors:
@@ -220,13 +232,10 @@ class TestErrorAggregation(unittest.TestCase):
         """Test adding batch results with errors."""
         batch_errors = [
             PipelineError(stage="batch_stage", error_message="Batch error 1"),
-            PipelineError(stage="batch_stage", error_message="Batch error 2")
+            PipelineError(stage="batch_stage", error_message="Batch error 2"),
         ]
 
-        batch_result = BatchResult(
-            batch_id="test-batch-123",
-            errors=batch_errors
-        )
+        batch_result = BatchResult(batch_id="test-batch-123", errors=batch_errors)
 
         self.aggregator.add_batch_result(batch_result)
 
@@ -241,7 +250,9 @@ class TestErrorAggregation(unittest.TestCase):
                 stage=f"stage_{i % 2}",
                 operation=f"operation_{i % 3}",
                 severity=ErrorSeverity.HIGH if i % 2 == 0 else ErrorSeverity.LOW,
-                category=ErrorCategory.NETWORK if i % 2 == 0 else ErrorCategory.DATABASE
+                category=ErrorCategory.NETWORK
+                if i % 2 == 0
+                else ErrorCategory.DATABASE,
             )
             self.aggregator.add_error(error)
 
@@ -256,11 +267,11 @@ class TestErrorAggregation(unittest.TestCase):
         now = datetime.now()
         old_error = PipelineError(
             timestamp=now - timedelta(hours=25),  # Outside 24h window
-            error_message="Old error"
+            error_message="Old error",
         )
         recent_error = PipelineError(
-            timestamp=now - timedelta(hours=1),   # Within 24h window
-            error_message="Recent error"
+            timestamp=now - timedelta(hours=1),  # Within 24h window
+            error_message="Recent error",
         )
 
         self.aggregator.add_error(old_error)
@@ -289,7 +300,7 @@ class TestErrorPatternDetection(unittest.TestCase):
                 error_type="ConnectionError",
                 error_message=f"Connection failed {i}",
                 category=ErrorCategory.NETWORK,
-                severity=ErrorSeverity.HIGH
+                severity=ErrorSeverity.HIGH,
             )
             self.aggregator.add_error(error)
 
@@ -307,7 +318,7 @@ class TestErrorPatternDetection(unittest.TestCase):
                 stage="validation",
                 operation="validate_data",
                 error_type="ValidationError",
-                business_id=business_id
+                business_id=business_id,
             )
             self.aggregator.add_error(error)
 
@@ -339,7 +350,7 @@ class TestAlertThresholds(unittest.TestCase):
             metric_type="error_count",
             threshold_value=50,
             time_window=TimeWindow.LAST_HOUR,
-            alert_level=AlertLevel.CRITICAL
+            alert_level=AlertLevel.CRITICAL,
         )
 
         self.aggregator.add_custom_threshold(custom_threshold)
@@ -374,7 +385,7 @@ class TestErrorReporting(unittest.TestCase):
             error = PipelineError(
                 stage=f"stage_{i % 3}",
                 operation=f"operation_{i % 2}",
-                severity=ErrorSeverity.CRITICAL if i % 5 == 0 else ErrorSeverity.MEDIUM
+                severity=ErrorSeverity.CRITICAL if i % 5 == 0 else ErrorSeverity.MEDIUM,
             )
             self.aggregator.add_error(error)
 
@@ -391,7 +402,7 @@ class TestErrorReporting(unittest.TestCase):
         for i in range(5):
             error = PipelineError(
                 stage="test_stage",
-                severity=ErrorSeverity.HIGH if i % 2 == 0 else ErrorSeverity.LOW
+                severity=ErrorSeverity.HIGH if i % 2 == 0 else ErrorSeverity.LOW,
             )
             self.aggregator.add_error(error)
 

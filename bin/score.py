@@ -11,6 +11,7 @@ Options:
     --limit N        Limit the number of businesses to score (default: all)
     --id BUSINESS_ID Process only the specified business ID
 """
+
 import sys
 
 # Import the entry point from the refactored package

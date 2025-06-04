@@ -38,7 +38,7 @@ def test_containerization():
 
     # Check docker-compose for scalable services
     try:
-        with open("docker-compose.scalable.yml", "r") as f:
+        with open("docker-compose.scalable.yml") as f:
             compose_config = yaml.safe_load(f)
 
         services = compose_config.get("services", {})
@@ -90,7 +90,7 @@ def test_kubernetes():
 
     # Check for scalability configurations
     try:
-        with open("k8s/scraper-deployment.yaml", "r") as f:
+        with open("k8s/scraper-deployment.yaml") as f:
             scraper_config = yaml.safe_load_all(f)
 
         # Look for HPA or replica configurations
@@ -133,7 +133,7 @@ def test_database_optimization():
 
     # Check sharding implementation
     try:
-        with open("leadfactory/storage/sharded_postgres_storage.py", "r") as f:
+        with open("leadfactory/storage/sharded_postgres_storage.py") as f:
             content = f.read()
 
         if "class ShardedPostgresStorage" not in content:
@@ -186,7 +186,7 @@ def test_microservices():
     # Check for service orchestration
     orchestrator_path = os.path.join(services_dir, "orchestrator.py")
     try:
-        with open(orchestrator_path, "r") as f:
+        with open(orchestrator_path) as f:
             content = f.read()
 
         if "class" not in content or "orchestrator" not in content.lower():
@@ -212,7 +212,7 @@ def test_monitoring():
         return False
 
     try:
-        with open(metrics_file, "r") as f:
+        with open(metrics_file) as f:
             content = f.read()
 
         # Check for key monitoring components
@@ -268,7 +268,7 @@ def test_performance_framework():
     load_test_file = "scripts/performance/load_test.py"
     if os.path.exists(load_test_file):
         try:
-            with open(load_test_file, "r") as f:
+            with open(load_test_file) as f:
                 content = f.read()
 
             if "load" in content.lower() and "test" in content.lower():

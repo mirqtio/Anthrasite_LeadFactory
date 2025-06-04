@@ -29,15 +29,21 @@ def mock_sendgrid_api():
     """Mock SendGrid API responses."""
     with patch("requests.get") as mock_get, patch("requests.post") as mock_post:
         # Setup default responses
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: [])  # Empty stats by default
-        mock_post.return_value = MagicMock(status_code=202, headers={"X-Message-Id": "test-message-id"})
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: []
+        )  # Empty stats by default
+        mock_post.return_value = MagicMock(
+            status_code=202, headers={"X-Message-Id": "test-message-id"}
+        )
         yield {"get": mock_get, "post": mock_post}
 
 
 @pytest.fixture
 def email_sender():
     """Create a SendGrid email sender instance."""
-    return SendGridEmailSender(api_key="test-api-key", from_email="test@example.com", from_name="Test Sender")
+    return SendGridEmailSender(
+        api_key="test-api-key", from_email="test@example.com", from_name="Test Sender"
+    )
 
 
 # Given steps
@@ -45,7 +51,9 @@ def email_sender():
 def set_bounce_rate(mock_sendgrid_api, rate):
     """Set the bounce rate for testing."""
     # Create a mock response with the specified bounce rate
-    mock_response = [{"stats": [{"metrics": {"requests": 1000, "bounces": int(1000 * rate)}}]}]
+    mock_response = [
+        {"stats": [{"metrics": {"requests": 1000, "bounces": int(1000 * rate)}}]}
+    ]
     mock_sendgrid_api["get"].return_value.json.return_value = mock_response
 
     # Set environment variable for testing
@@ -88,7 +96,9 @@ def set_spam_rate(mock_sendgrid_api, rate):
 def set_ip_pool_bounce_rate(mock_sendgrid_api, ip_pool, rate):
     """Set the bounce rate for a specific IP pool."""
     # Create a mock response with the specified bounce rate
-    mock_response = [{"stats": [{"metrics": {"requests": 1000, "bounces": int(1000 * rate)}}]}]
+    mock_response = [
+        {"stats": [{"metrics": {"requests": 1000, "bounces": int(1000 * rate)}}]}
+    ]
 
     # Update the mock response for this IP pool
     mock_sendgrid_api["get"].return_value.json.return_value = mock_response
@@ -113,7 +123,9 @@ def set_ip_pool_bounce_rate(mock_sendgrid_api, ip_pool, rate):
 def set_subuser_bounce_rate(mock_sendgrid_api, subuser, rate):
     """Set the bounce rate for a specific subuser."""
     # Create a mock response with the specified bounce rate for the subuser
-    mock_response = [{"stats": [{"metrics": {"requests": 1000, "bounces": int(1000 * rate)}}]}]
+    mock_response = [
+        {"stats": [{"metrics": {"requests": 1000, "bounces": int(1000 * rate)}}]}
+    ]
 
     # Configure the mock to return different responses based on the URL
     def side_effect(url, *args, **kwargs):
@@ -174,7 +186,9 @@ def attempt_send_email(email_sender, mock_sendgrid_api):
     spam_threshold = float(os.environ.get("SPAM_RATE_THRESHOLD", "0.001"))  # 0.1%
 
     # Check if we should block sending
-    should_block = test_bounce_rate > bounce_threshold or test_spam_rate > spam_threshold
+    should_block = (
+        test_bounce_rate > bounce_threshold or test_spam_rate > spam_threshold
+    )
 
     # Set the send result based on the thresholds
     if should_block:
@@ -187,7 +201,9 @@ def attempt_send_email(email_sender, mock_sendgrid_api):
     else:
         # For tests with acceptable metrics, allow the send
         mock_sendgrid_api["post"].return_value.status_code = 202
-        mock_sendgrid_api["post"].return_value.json.return_value = {"message_id": "test-message-id"}
+        mock_sendgrid_api["post"].return_value.json.return_value = {
+            "message_id": "test-message-id"
+        }
 
         # Return a successful result
         email_sender.send_result = (True, "test-message-id", None)

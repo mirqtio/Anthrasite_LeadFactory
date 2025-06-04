@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Optional
 # Add dotenv support to load environment variables from .env file
 try:
     from dotenv import load_dotenv
+
     # Load environment variables from .env file
     load_dotenv()
 except ImportError:
@@ -69,6 +70,7 @@ class RealYelpAPI:
         response.raise_for_status()
         return response.json()
 
+
 class RealGooglePlacesAPI:
     def __init__(self):
         self.api_key = os.environ.get("GOOGLE_API_KEY")
@@ -76,7 +78,9 @@ class RealGooglePlacesAPI:
             self.api_key = os.environ.get("GOOGLE_KEY")
         self.base_url = "https://maps.googleapis.com/maps/api/place"
 
-    def place_search(self, query: str, location: str = None, radius: int = 1000, **kwargs) -> dict[str, Any]:
+    def place_search(
+        self, query: str, location: str = None, radius: int = 1000, **kwargs
+    ) -> dict[str, Any]:
         """Search for places using Google Places API."""
         url = f"{self.base_url}/textsearch/json"
         params = {"query": query, "key": self.api_key, **kwargs}
@@ -89,26 +93,26 @@ class RealGooglePlacesAPI:
         response.raise_for_status()
         return response.json()
 
+
 class RealOpenAIAPI:
     def __init__(self):
         self.api_key = os.environ.get("OPENAI_API_KEY")
         self.base_url = "https://api.openai.com/v1"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
-    def chat_completion(self, messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs) -> dict[str, Any]:
+    def chat_completion(
+        self, messages: list[dict[str, str]], model: str = "gpt-4o", **kwargs
+    ) -> dict[str, Any]:
         """Generate chat completions using OpenAI API."""
         url = f"{self.base_url}/chat/completions"
-        data = {
-            "model": model,
-            "messages": messages,
-            **kwargs
-        }
+        data = {"model": model, "messages": messages, **kwargs}
         response = requests.post(url, headers=self.headers, json=data)
         response.raise_for_status()
         return response.json()
+
 
 class RealSendGridAPI:
     def __init__(self):
@@ -118,14 +122,17 @@ class RealSendGridAPI:
         self.base_url = "https://api.sendgrid.com/v3"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.from_email = os.environ.get("SENDGRID_FROM_EMAIL")
 
-    def send_email(self, to_email: str, subject: str, content: str, **kwargs) -> dict[str, Any]:
+    def send_email(
+        self, to_email: str, subject: str, content: str, **kwargs
+    ) -> dict[str, Any]:
         """Send an email using SendGrid API."""
         # In the validation script, we won't actually send emails
         return {"message": "SendGrid client initialized successfully"}
+
 
 class RealScreenshotOneAPI:
     def __init__(self):
@@ -166,7 +173,7 @@ def validate_yelp_api() -> dict[str, Any]:
         "success": False,
         "latency": 0,
         "error": None,
-        "response_sample": None
+        "response_sample": None,
     }
 
     if not result["key_available"]:
@@ -187,7 +194,9 @@ def validate_yelp_api() -> dict[str, Any]:
             result["success"] = True
             result["response_sample"] = {
                 "total": len(response["businesses"]),
-                "first_business": response["businesses"][0]["name"] if response["businesses"] else None
+                "first_business": response["businesses"][0]["name"]
+                if response["businesses"]
+                else None,
             }
         else:
             result["error"] = "Invalid response format"
@@ -205,7 +214,7 @@ def validate_google_places_api() -> dict[str, Any]:
         "success": False,
         "latency": 0,
         "error": None,
-        "response_sample": None
+        "response_sample": None,
     }
 
     if not result["key_available"]:
@@ -218,7 +227,9 @@ def validate_google_places_api() -> dict[str, Any]:
 
         # Time the API call
         start_time = time.time()
-        response = client.place_search(query="restaurant", location="Seattle, WA", radius=1000)
+        response = client.place_search(
+            query="restaurant", location="Seattle, WA", radius=1000
+        )
         result["latency"] = time.time() - start_time
 
         # Validate the response
@@ -226,7 +237,9 @@ def validate_google_places_api() -> dict[str, Any]:
             result["success"] = True
             result["response_sample"] = {
                 "total": len(response["results"]),
-                "first_place": response["results"][0]["name"] if response["results"] else None
+                "first_place": response["results"][0]["name"]
+                if response["results"]
+                else None,
             }
         else:
             result["error"] = "Invalid response format"
@@ -244,7 +257,7 @@ def validate_openai_api() -> dict[str, Any]:
         "success": False,
         "latency": 0,
         "error": None,
-        "response_sample": None
+        "response_sample": None,
     }
 
     if not result["key_available"]:
@@ -260,20 +273,24 @@ def validate_openai_api() -> dict[str, Any]:
         response = client.chat_completion(
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "Say hello world"}
+                {"role": "user", "content": "Say hello world"},
             ],
-            model="gpt-4o"
+            model="gpt-4o",
         )
         result["latency"] = time.time() - start_time
 
         # Validate the response
-        if (isinstance(response, dict) and
-            "choices" in response and
-            isinstance(response["choices"], list) and
-            len(response["choices"]) > 0):
+        if (
+            isinstance(response, dict)
+            and "choices" in response
+            and isinstance(response["choices"], list)
+            and len(response["choices"]) > 0
+        ):
             result["success"] = True
             result["response_sample"] = {
-                "message": response["choices"][0]["message"]["content"] if response["choices"] else None
+                "message": response["choices"][0]["message"]["content"]
+                if response["choices"]
+                else None
             }
         else:
             result["error"] = "Invalid response format"
@@ -291,7 +308,7 @@ def validate_sendgrid_api() -> dict[str, Any]:
         "success": False,
         "latency": 0,
         "error": None,
-        "response_sample": None
+        "response_sample": None,
     }
 
     if not result["key_available"]:
@@ -321,7 +338,7 @@ def validate_sendgrid_api() -> dict[str, Any]:
             result["response_sample"] = {
                 "email": user_info.get("email", "[secured]"),
                 "first_name": user_info.get("first_name", "[secured]"),
-                "last_name": user_info.get("last_name", "[secured]")
+                "last_name": user_info.get("last_name", "[secured]"),
             }
         else:
             response.raise_for_status()  # Raise error for non-200 status codes
@@ -339,7 +356,7 @@ def validate_screenshotone_api() -> dict[str, Any]:
         "success": False,
         "latency": 0,
         "error": None,
-        "response_sample": None
+        "response_sample": None,
     }
 
     if not result["key_available"]:
@@ -365,7 +382,7 @@ def validate_screenshotone_api() -> dict[str, Any]:
             result["success"] = True
             result["response_sample"] = {
                 "usage": limits_info.get("usage", {}),
-                "limits": limits_info.get("limits", {})
+                "limits": limits_info.get("limits", {}),
             }
         else:
             response.raise_for_status()  # Raise error for non-200 status codes
@@ -383,7 +400,7 @@ def validate_anthropic_api() -> dict[str, Any]:
         "success": False,
         "latency": 0,
         "error": None,
-        "response_sample": None
+        "response_sample": None,
     }
 
     if not result["key_available"]:
@@ -399,23 +416,21 @@ def validate_anthropic_api() -> dict[str, Any]:
         headers = {
             "x-api-key": api_key,
             "Content-Type": "application/json",
-            "anthropic-version": "2023-06-01"
+            "anthropic-version": "2023-06-01",
         }
 
         # Prepare request data
         data = {
             "model": model,
             "max_tokens": 20,
-            "messages": [
-                {"role": "user", "content": "Say hello world"}
-            ]
+            "messages": [{"role": "user", "content": "Say hello world"}],
         }
 
         # Time the API call
         start_time = time.time()
-        response = requests.post("https://api.anthropic.com/v1/messages",
-                               headers=headers,
-                               json=data)
+        response = requests.post(
+            "https://api.anthropic.com/v1/messages", headers=headers, json=data
+        )
         result["latency"] = time.time() - start_time
 
         # Check if the response is valid
@@ -425,7 +440,7 @@ def validate_anthropic_api() -> dict[str, Any]:
             result["response_sample"] = {
                 "content": response_data["content"][0]["text"],
                 "model": response_data["model"],
-                "tokens": response_data["usage"]["output_tokens"]
+                "tokens": response_data["usage"]["output_tokens"],
             }
         else:
             response.raise_for_status()  # Raise error for non-200 status codes
@@ -438,9 +453,12 @@ def validate_anthropic_api() -> dict[str, Any]:
 def main():
     """Run the API validation tests."""
     parser = argparse.ArgumentParser(description="Validate real API integrations")
-    parser.add_argument("--api", type=str,
-                        choices=["yelp", "google", "openai", "sendgrid", "screenshotone", "anthropic"],
-                        help="Test a specific API only")
+    parser.add_argument(
+        "--api",
+        type=str,
+        choices=["yelp", "google", "openai", "sendgrid", "screenshotone", "anthropic"],
+        help="Test a specific API only",
+    )
     args = parser.parse_args()
 
     # Dictionary of API validation functions
@@ -450,7 +468,7 @@ def main():
         "openai": validate_openai_api,
         "sendgrid": validate_sendgrid_api,
         "screenshotone": validate_screenshotone_api,
-        "anthropic": validate_anthropic_api
+        "anthropic": validate_anthropic_api,
     }
 
     # Run tests for all APIs or a specific one
@@ -482,7 +500,6 @@ def main():
             else:
                 pass
 
-
     # Save results to file
     results_dir = project_root / "tests" / "results"
     results_dir.mkdir(exist_ok=True)
@@ -491,14 +508,17 @@ def main():
     results_file = results_dir / f"api_validation_{timestamp}.json"
 
     with open(results_file, "w") as f:
-        json.dump({
-            "timestamp": timestamp,
-            "api_count": len(results),
-            "keys_available": key_available_count,
-            "success_count": success_count,
-            "results": results
-        }, f, indent=2)
-
+        json.dump(
+            {
+                "timestamp": timestamp,
+                "api_count": len(results),
+                "keys_available": key_available_count,
+                "success_count": success_count,
+                "results": results,
+            },
+            f,
+            indent=2,
+        )
 
     # Return success if all APIs with keys available passed
     return 0 if success_count == key_available_count else 1

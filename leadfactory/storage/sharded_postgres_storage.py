@@ -113,7 +113,7 @@ class ShardedPostgresStorage(StorageInterface):
         try:
             conn = pool.getconn()
             yield conn
-        except Exception as e:
+        except Exception:
             if conn:
                 conn.rollback()
             raise
@@ -182,7 +182,7 @@ class ShardedPostgresStorage(StorageInterface):
         fields = list(business_data.keys())
         placeholders = ", ".join(["%s"] * len(fields))
         query = f"""
-            INSERT INTO businesses ({', '.join(fields)})
+            INSERT INTO businesses ({", ".join(fields)})
             VALUES ({placeholders})
             RETURNING id
         """
@@ -285,10 +285,10 @@ class ShardedPostgresStorage(StorageInterface):
             shard_ids = [shard.shard_id for shard in self.shard_router.config.shards]
 
         # Build update query
-        set_clauses = [f"{key} = %s" for key in updates.keys()]
+        set_clauses = [f"{key} = %s" for key in updates]
         query = f"""
             UPDATE businesses
-            SET {', '.join(set_clauses)}, updated_at = CURRENT_TIMESTAMP
+            SET {", ".join(set_clauses)}, updated_at = CURRENT_TIMESTAMP
             WHERE id = %s
         """
 

@@ -182,12 +182,12 @@ def test_volume_based_thresholds():
 
             if should_breach:
                 assert len(volume_breaches) == 1, f"Expected breach for {ip}/{subuser}"
-                print(f"  ✓ Breach detected as expected")
+                print("  ✓ Breach detected as expected")
             else:
                 assert (
                     len(volume_breaches) == 0
                 ), f"Unexpected breach for {ip}/{subuser}"
-                print(f"  ✓ No breach as expected")
+                print("  ✓ No breach as expected")
 
         print("✓ Volume-based threshold test passed!")
 

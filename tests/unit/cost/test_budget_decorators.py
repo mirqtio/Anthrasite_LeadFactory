@@ -5,21 +5,23 @@ Tests for decorators that enforce budget constraints on operations.
 """
 
 import json
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 # Try to import the real module, fall back to mocks if not available
 try:
     from leadfactory.cost.budget_decorators import (
-        budget_constrained,
-        openai_budget_check,
-        semrush_budget_check,
-        screenshot_budget_check,
-        gpu_budget_check,
         BudgetConstraintError,
+        budget_constrained,
         enforce_budget_constraint,
-        simulate_operation_cost
+        gpu_budget_check,
+        openai_budget_check,
+        screenshot_budget_check,
+        semrush_budget_check,
+        simulate_operation_cost,
     )
+
     IMPORTS_AVAILABLE = True
 except ImportError:
     # Create mock decorators for testing when imports aren't available
@@ -35,40 +37,56 @@ except ImportError:
         def __str__(self):
             return self.message
 
-    def budget_constrained(service, operation, parameters_func=None, fallback_value=None,
-                          fallback_function=None, check_periods=None):
+    def budget_constrained(
+        service,
+        operation,
+        parameters_func=None,
+        fallback_value=None,
+        fallback_function=None,
+        check_periods=None,
+    ):
         def decorator(func):
             def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def openai_budget_check(operation, parameters_func=None):
         def decorator(func):
             def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def semrush_budget_check(operation, parameters_func=None):
         def decorator(func):
             def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def screenshot_budget_check(operation, parameters_func=None):
         def decorator(func):
             def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def gpu_budget_check(operation, parameters_func=None):
         def decorator(func):
             def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def enforce_budget_constraint(service, operation, parameters):
@@ -87,7 +105,7 @@ class TestBudgetConstraintError:
             "Budget exceeded",
             service="openai",
             operation="chat_completion",
-            estimated_cost=10.0
+            estimated_cost=10.0,
         )
 
         assert str(error) == "Budget exceeded"
@@ -102,7 +120,7 @@ class TestBudgetConstraintError:
                 "Budget exceeded",
                 service="unknown",
                 operation="unknown",
-                estimated_cost=0.0
+                estimated_cost=0.0,
             )
 
             assert str(error) == "Budget exceeded"
@@ -127,8 +145,14 @@ class TestBudgetConstrainedDecorator:
         def test_function():
             return "success"
 
-        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_can_execute:
-            mock_can_execute.return_value = (True, None, [])  # Can execute, no reason, no estimates
+        with patch(
+            "leadfactory.cost.budget_constraints.can_execute_operation"
+        ) as mock_can_execute:
+            mock_can_execute.return_value = (
+                True,
+                None,
+                [],
+            )  # Can execute, no reason, no estimates
 
             result = test_function()
             assert result == "success"
@@ -143,8 +167,14 @@ class TestBudgetConstrainedDecorator:
         def test_function():
             return "success"
 
-        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_can_execute:
-            mock_can_execute.return_value = (False, "Budget exceeded", [])  # Cannot execute
+        with patch(
+            "leadfactory.cost.budget_constraints.can_execute_operation"
+        ) as mock_can_execute:
+            mock_can_execute.return_value = (
+                False,
+                "Budget exceeded",
+                [],
+            )  # Cannot execute
 
             result = test_function()
             assert result == "fallback"
@@ -162,7 +192,9 @@ class TestBudgetConstrainedDecorator:
         def test_function(tokens=2000):
             return f"processed {tokens} tokens"
 
-        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_can_execute:
+        with patch(
+            "leadfactory.cost.budget_constraints.can_execute_operation"
+        ) as mock_can_execute:
             mock_can_execute.return_value = (True, None, [])
 
             result = test_function(tokens=1500)
@@ -182,7 +214,9 @@ class TestBudgetConstrainedDecorator:
         def test_function(prompt, model="gpt-4o"):
             return f"Generated response for: {prompt}"
 
-        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_constraints:
+        with patch(
+            "leadfactory.cost.budget_decorators.budget_constraints"
+        ) as mock_constraints:
             mock_constraints.can_execute_operation.return_value = (True, None, [])
             mock_constraints.cost_tracker = None
 
@@ -203,7 +237,9 @@ class TestSpecializedDecorators:
         def generate_text(prompt, tokens=1000):
             return f"Generated text for: {prompt}"
 
-        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_budget:
+        with patch(
+            "leadfactory.cost.budget_decorators.budget_constraints"
+        ) as mock_budget:
             mock_budget.can_execute_operation.return_value = (True, None, [])
             mock_budget.cost_tracker = None
 
@@ -220,7 +256,9 @@ class TestSpecializedDecorators:
         def generate_text(prompt):
             return f"Generated text for: {prompt}"
 
-        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_budget:
+        with patch(
+            "leadfactory.cost.budget_decorators.budget_constraints"
+        ) as mock_budget:
             mock_budget.can_execute_operation.return_value = (True, None, [])
 
             result = generate_text("This is a test prompt")
@@ -236,7 +274,9 @@ class TestSpecializedDecorators:
         def analyze_domain(domain):
             return f"Analysis for {domain}"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             result = analyze_domain("example.com")
@@ -252,7 +292,9 @@ class TestSpecializedDecorators:
         def take_screenshot(url):
             return f"Screenshot of {url}"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             result = take_screenshot("https://example.com")
@@ -268,7 +310,9 @@ class TestSpecializedDecorators:
         def process_data(data):
             return f"Processed {data}"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             result = process_data("test data")
@@ -284,22 +328,24 @@ class TestEnforceBudgetConstraint:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_bc:
+        with patch(
+            "leadfactory.cost.budget_constraints.can_execute_operation"
+        ) as mock_bc:
             mock_bc.return_value = (True, "Budget allows", [])
 
             # Should not raise exception
             enforce_budget_constraint("openai", "gpt-4o", {"tokens": 1000})
 
-            mock_bc.assert_called_once_with(
-                "openai", "gpt-4o", {"tokens": 1000}
-            )
+            mock_bc.assert_called_once_with("openai", "gpt-4o", {"tokens": 1000})
 
     def test_enforce_budget_constraint_failure(self):
         """Test budget constraint enforcement when budget is exceeded."""
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_bc:
+        with patch(
+            "leadfactory.cost.budget_constraints.can_execute_operation"
+        ) as mock_bc:
             mock_bc.return_value = (False, "Budget exceeded", [])
 
             with pytest.raises(BudgetConstraintError) as exc_info:
@@ -316,7 +362,9 @@ class TestSimulateOperationCost:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.cost.budget_constraints.estimate_operation_cost') as mock_bc:
+        with patch(
+            "leadfactory.cost.budget_constraints.estimate_operation_cost"
+        ) as mock_bc:
             mock_estimate = Mock()
             mock_estimate.estimated_cost = 0.05
             mock_bc.return_value = mock_estimate
@@ -324,9 +372,7 @@ class TestSimulateOperationCost:
             cost = simulate_operation_cost("openai", "gpt-4o", {"tokens": 1000})
 
             assert cost == 0.05
-            mock_bc.assert_called_once_with(
-                "openai", "gpt-4o", {"tokens": 1000}
-            )
+            mock_bc.assert_called_once_with("openai", "gpt-4o", {"tokens": 1000})
 
 
 class TestDecoratorIntegration:
@@ -342,7 +388,9 @@ class TestDecoratorIntegration:
         def combined_operation(prompt, url, tokens=1000):
             return f"Processed {prompt} and {url}"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             result = combined_operation("Test", "https://example.com", tokens=2000)
@@ -406,7 +454,9 @@ class TestParameterExtraction:
         def openai_call(prompt, tokens=None, max_tokens=1000):
             return "response"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             openai_call("test", max_tokens=2000)
@@ -419,11 +469,15 @@ class TestParameterExtraction:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        @openai_budget_check("gpt-4o", parameters_func=lambda *args, **kwargs: {"prompt": args[0]})
+        @openai_budget_check(
+            "gpt-4o", parameters_func=lambda *args, **kwargs: {"prompt": args[0]}
+        )
         def openai_call(prompt, max_tokens=None):
             return "response"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             test_prompt = "A" * 500
@@ -441,7 +495,9 @@ class TestParameterExtraction:
         def take_screenshot(url, width=1920, height=1080, format="png"):
             return "screenshot"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             take_screenshot("https://example.com", width=1280, height=720, format="jpg")
@@ -460,7 +516,9 @@ class TestParameterExtraction:
         def gpu_operation(duration_hours=1.0, gpu_type="A100"):
             return "result"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
+        with patch(
+            "leadfactory.cost.budget_decorators.enforce_budget_constraint"
+        ) as mock_enforce:
             mock_enforce.return_value = None
 
             gpu_operation(duration_hours=2.5, gpu_type="V100")

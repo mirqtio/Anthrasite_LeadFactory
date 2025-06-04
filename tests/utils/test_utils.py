@@ -12,17 +12,72 @@ from unittest.mock import MagicMock
 
 def get_random_business_name():
     """Generate a random business name for testing."""
-    prefixes = ["Tech", "Digital", "Cyber", "Cloud", "Smart", "Eco", "Global", "Next", "Pro", "Fast"]
-    suffixes = ["Solutions", "Systems", "Technologies", "Innovations", "Services", "Consultants", "Group", "Labs", "Partners", "Enterprises"]
+    prefixes = [
+        "Tech",
+        "Digital",
+        "Cyber",
+        "Cloud",
+        "Smart",
+        "Eco",
+        "Global",
+        "Next",
+        "Pro",
+        "Fast",
+    ]
+    suffixes = [
+        "Solutions",
+        "Systems",
+        "Technologies",
+        "Innovations",
+        "Services",
+        "Consultants",
+        "Group",
+        "Labs",
+        "Partners",
+        "Enterprises",
+    ]
     return f"{random.choice(prefixes)} {random.choice(suffixes)}"
 
 
 def get_random_address():
     """Generate a random address for testing."""
     street_numbers = list(range(100, 1000, 25))
-    street_names = ["Main", "Oak", "Pine", "Maple", "Cedar", "Elm", "Park", "Lake", "River", "Hill"]
-    street_types = ["St", "Ave", "Blvd", "Dr", "Ln", "Rd", "Way", "Place", "Court", "Circle"]
-    cities = ["Springfield", "Riverdale", "Lakeside", "Hillcrest", "Woodland", "Fairview", "Georgetown", "Maplewood", "Oakville", "Brookside"]
+    street_names = [
+        "Main",
+        "Oak",
+        "Pine",
+        "Maple",
+        "Cedar",
+        "Elm",
+        "Park",
+        "Lake",
+        "River",
+        "Hill",
+    ]
+    street_types = [
+        "St",
+        "Ave",
+        "Blvd",
+        "Dr",
+        "Ln",
+        "Rd",
+        "Way",
+        "Place",
+        "Court",
+        "Circle",
+    ]
+    cities = [
+        "Springfield",
+        "Riverdale",
+        "Lakeside",
+        "Hillcrest",
+        "Woodland",
+        "Fairview",
+        "Georgetown",
+        "Maplewood",
+        "Oakville",
+        "Brookside",
+    ]
     states = ["CA", "NY", "TX", "FL", "IL", "PA", "OH", "GA", "NC", "MI"]
     zips = [f"{random.randint(10000, 99999)}" for _ in range(10)]
 
@@ -30,15 +85,44 @@ def get_random_address():
         "street": f"{random.choice(street_numbers)} {random.choice(street_names)} {random.choice(street_types)}",
         "city": random.choice(cities),
         "state": random.choice(states),
-        "zip": random.choice(zips)
+        "zip": random.choice(zips),
     }
 
 
 def get_random_contact_info():
     """Generate random contact information for testing."""
-    email_domains = ["gmail.com", "yahoo.com", "outlook.com", "company.com", "business.net", "example.org"]
-    names = ["John Smith", "Jane Doe", "Robert Johnson", "Emily Williams", "Michael Brown", "Sarah Davis", "David Miller", "Lisa Wilson", "James Moore", "Jennifer Taylor"]
-    positions = ["CEO", "CTO", "CFO", "CMO", "COO", "Director", "Manager", "VP", "President", "Founder"]
+    email_domains = [
+        "gmail.com",
+        "yahoo.com",
+        "outlook.com",
+        "company.com",
+        "business.net",
+        "example.org",
+    ]
+    names = [
+        "John Smith",
+        "Jane Doe",
+        "Robert Johnson",
+        "Emily Williams",
+        "Michael Brown",
+        "Sarah Davis",
+        "David Miller",
+        "Lisa Wilson",
+        "James Moore",
+        "Jennifer Taylor",
+    ]
+    positions = [
+        "CEO",
+        "CTO",
+        "CFO",
+        "CMO",
+        "COO",
+        "Director",
+        "Manager",
+        "VP",
+        "President",
+        "Founder",
+    ]
 
     name = random.choice(names)
     first_name = name.split()[0].lower()
@@ -49,7 +133,7 @@ def get_random_contact_info():
         "name": name,
         "position": random.choice(positions),
         "email": email,
-        "phone": phone
+        "phone": phone,
     }
 
 
@@ -72,17 +156,23 @@ def generate_test_business(complete=True, score_range=None, include_tech=True):
     # Add more fields for complete business objects
     if complete:
         address = get_random_address()
-        business.update({
-            "city": address["city"],
-            "state": address["state"],
-            "zip": address["zip"],
-            "phone": f"555-{random.randint(100, 999)}-{random.randint(1000, 9999)}",
-            "email": f"info@{business['name'].lower().replace(' ', '')}.com",
-            "website": f"http://www.{business['name'].lower().replace(' ', '')}.com",
-            "category": random.choice(["tech", "consulting", "services", "retail", "healthcare"]),
-            "source": random.choice(["google", "yelp", "linkedin", "manual", "referral"]),
-            "source_id": f"src_{random.randint(10000, 99999)}"
-        })
+        business.update(
+            {
+                "city": address["city"],
+                "state": address["state"],
+                "zip": address["zip"],
+                "phone": f"555-{random.randint(100, 999)}-{random.randint(1000, 9999)}",
+                "email": f"info@{business['name'].lower().replace(' ', '')}.com",
+                "website": f"http://www.{business['name'].lower().replace(' ', '')}.com",
+                "category": random.choice(
+                    ["tech", "consulting", "services", "retail", "healthcare"]
+                ),
+                "source": random.choice(
+                    ["google", "yelp", "linkedin", "manual", "referral"]
+                ),
+                "source_id": f"src_{random.randint(10000, 99999)}",
+            }
+        )
 
     # Add score if requested
     if score_range:
@@ -110,15 +200,23 @@ def generate_test_business(complete=True, score_range=None, include_tech=True):
     if include_tech:
         # Generate tech stack
         cms_options = ["WordPress", "Drupal", "Joomla", "Shopify", "Wix", "Squarespace"]
-        analytics_options = ["Google Analytics", "Mixpanel", "HotJar", "Matomo", "Adobe Analytics"]
+        analytics_options = [
+            "Google Analytics",
+            "Mixpanel",
+            "HotJar",
+            "Matomo",
+            "Adobe Analytics",
+        ]
         server_options = ["Nginx", "Apache", "IIS", "Cloudflare", "AWS"]
         js_options = ["React", "Angular", "Vue", "jQuery", "Vanilla JS"]
 
         tech_stack = {
             "cms": random.choice(cms_options) if random.random() > 0.2 else None,
-            "analytics": random.choice(analytics_options) if random.random() > 0.3 else None,
+            "analytics": random.choice(analytics_options)
+            if random.random() > 0.3
+            else None,
             "server": random.choice(server_options) if random.random() > 0.1 else None,
-            "javascript": random.choice(js_options) if random.random() > 0.2 else None
+            "javascript": random.choice(js_options) if random.random() > 0.2 else None,
         }
 
         # Filter out None values
@@ -130,7 +228,8 @@ def generate_test_business(complete=True, score_range=None, include_tech=True):
         # Generate performance data
         performance = {
             "page_speed": random.randint(30, 100),
-            "mobile_friendly": random.random() > 0.3,  # 70% chance of being mobile friendly
+            "mobile_friendly": random.random()
+            > 0.3,  # 70% chance of being mobile friendly
         }
 
         if random.random() > 0.5:
@@ -145,7 +244,9 @@ def generate_test_business(complete=True, score_range=None, include_tech=True):
     return business
 
 
-def insert_test_businesses_batch(db_conn, count=10, complete=True, score_range=None, include_tech=True):
+def insert_test_businesses_batch(
+    db_conn, count=10, complete=True, score_range=None, include_tech=True
+):
     """Insert a batch of test businesses into the database.
 
     Args:
@@ -191,9 +292,23 @@ def insert_test_businesses_batch(db_conn, count=10, complete=True, score_range=N
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                name, address, city, state, zip_code, phone, email, website, category, source, source_id,
-                score, score_details, tech_stack, performance, contact_info
-            )
+                name,
+                address,
+                city,
+                state,
+                zip_code,
+                phone,
+                email,
+                website,
+                category,
+                source,
+                source_id,
+                score,
+                score_details,
+                tech_stack,
+                performance,
+                contact_info,
+            ),
         )
 
         business_ids.append(cursor.lastrowid)
@@ -230,8 +345,14 @@ def create_duplicate_pairs(db_conn, business_ids, pair_count=5, verified_ratio=0
         verified_by_llm = random.random() < verified_ratio
 
         # Generate LLM data if verified
-        llm_confidence = round(random.uniform(0.7, 0.99), 2) if verified_by_llm else None
-        llm_reasoning = "These businesses appear to be duplicates based on name and address similarity." if verified_by_llm else None
+        llm_confidence = (
+            round(random.uniform(0.7, 0.99), 2) if verified_by_llm else None
+        )
+        llm_reasoning = (
+            "These businesses appear to be duplicates based on name and address similarity."
+            if verified_by_llm
+            else None
+        )
 
         # Status is based on verification
         status = random.choice(["merged", "rejected"]) if verified_by_llm else "pending"
@@ -246,9 +367,14 @@ def create_duplicate_pairs(db_conn, business_ids, pair_count=5, verified_ratio=0
                 ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    id1, id2, similarity_score, status,
-                    1 if verified_by_llm else 0, llm_confidence, llm_reasoning
-                )
+                    id1,
+                    id2,
+                    similarity_score,
+                    status,
+                    1 if verified_by_llm else 0,
+                    llm_confidence,
+                    llm_reasoning,
+                ),
             )
 
             pair_ids.append(cursor.lastrowid)
@@ -256,8 +382,7 @@ def create_duplicate_pairs(db_conn, business_ids, pair_count=5, verified_ratio=0
             # If merged, update the business record
             if status == "merged":
                 cursor.execute(
-                    "UPDATE businesses SET merged_into = ? WHERE id = ?",
-                    (id1, id2)
+                    "UPDATE businesses SET merged_into = ? WHERE id = ?", (id1, id2)
                 )
         except sqlite3.IntegrityError:
             # Skip this pair if it violates constraints
@@ -290,7 +415,7 @@ def create_test_emails(db_conn, business_ids, email_count=10):
         "sent": 0.3,
         "error": 0.1,
         "opened": 0.1,
-        "clicked": 0.1
+        "clicked": 0.1,
     }
 
     # Create emails
@@ -303,22 +428,31 @@ def create_test_emails(db_conn, business_ids, email_count=10):
 
         # Generate subject and content
         subject = f"Test Email for Business {business_id}: {variant_id.title()}"
-        body_text = f"This is a test email of type {variant_id} for business {business_id}."
+        body_text = (
+            f"This is a test email of type {variant_id} for business {business_id}."
+        )
         body_html = f"<html><body><h1>{variant_id.title()} Email</h1><p>{body_text}</p></body></html>"
 
         # Choose a status based on probabilities
-        status = random.choices(
-            list(statuses.keys()),
-            weights=list(statuses.values())
-        )[0]
+        status = random.choices(list(statuses.keys()), weights=list(statuses.values()))[
+            0
+        ]
 
         # Set timestamps based on status
         now = datetime.now()
         days_ago = random.randint(0, 30)
         timestamp = now - timedelta(days=days_ago)
         sent_at = timestamp if status != "pending" else None
-        opened_at = now - timedelta(hours=random.randint(1, 24)) if status in ["opened", "clicked"] else None
-        clicked_at = now - timedelta(hours=random.randint(1, 12)) if status == "clicked" else None
+        opened_at = (
+            now - timedelta(hours=random.randint(1, 24))
+            if status in ["opened", "clicked"]
+            else None
+        )
+        clicked_at = (
+            now - timedelta(hours=random.randint(1, 12))
+            if status == "clicked"
+            else None
+        )
 
         # Insert the email
         cursor.execute(
@@ -329,9 +463,16 @@ def create_test_emails(db_conn, business_ids, email_count=10):
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                business_id, variant_id, subject, body_text, body_html,
-                status, sent_at, opened_at, clicked_at
-            )
+                business_id,
+                variant_id,
+                subject,
+                body_text,
+                body_html,
+                status,
+                sent_at,
+                opened_at,
+                clicked_at,
+            ),
         )
 
         email_ids.append(cursor.lastrowid)
@@ -361,11 +502,17 @@ def create_test_api_costs(db_conn, business_ids=None, count=20):
         "claude-3-opus": {"tokens_range": (1000, 5000), "cost_per_1k": 0.015},
         "claude-3-sonnet": {"tokens_range": (1200, 6000), "cost_per_1k": 0.003},
         "claude-3-haiku": {"tokens_range": (1500, 7000), "cost_per_1k": 0.00025},
-        "llama3": {"tokens_range": (2000, 8000), "cost_per_1k": 0.0}
+        "llama3": {"tokens_range": (2000, 8000), "cost_per_1k": 0.0},
     }
 
     # Define possible purposes
-    purposes = ["business_description", "duplicate_check", "mockup_generation", "email_content", "scoring"]
+    purposes = [
+        "business_description",
+        "duplicate_check",
+        "mockup_generation",
+        "email_content",
+        "scoring",
+    ]
 
     # Create API cost records
     for _ in range(count):
@@ -398,9 +545,7 @@ def create_test_api_costs(db_conn, business_ids=None, count=20):
                 model, tokens, cost, timestamp, purpose, business_id
             ) VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (
-                model, tokens, cost, timestamp, purpose, business_id
-            )
+            (model, tokens, cost, timestamp, purpose, business_id),
         )
 
         cost_ids.append(cursor.lastrowid)
@@ -409,7 +554,9 @@ def create_test_api_costs(db_conn, business_ids=None, count=20):
     return cost_ids
 
 
-def setup_budget_settings(db_conn, monthly_budget=100.0, daily_budget=10.0, status="active"):
+def setup_budget_settings(
+    db_conn, monthly_budget=100.0, daily_budget=10.0, status="active"
+):
     """Set up budget settings in the database.
 
     Args:
@@ -433,9 +580,7 @@ def setup_budget_settings(db_conn, monthly_budget=100.0, daily_budget=10.0, stat
             monthly_budget, daily_budget, warning_threshold, pause_threshold, current_status
         ) VALUES (?, ?, ?, ?, ?)
         """,
-        (
-            monthly_budget, daily_budget, 0.7, 0.9, status
-        )
+        (monthly_budget, daily_budget, 0.7, 0.9, status),
     )
 
     db_conn.commit()
@@ -443,6 +588,7 @@ def setup_budget_settings(db_conn, monthly_budget=100.0, daily_budget=10.0, stat
 
 
 # Mock classes for testing
+
 
 class MockResponse:
     """Mock for HTTP responses."""
@@ -460,6 +606,7 @@ class MockResponse:
     def raise_for_status(self):
         if self.status_code >= 400:
             from requests.exceptions import HTTPError
+
             raise HTTPError(f"HTTP Error: {self.status_code}", response=self)
 
 
@@ -471,19 +618,47 @@ class MockRequests:
         self.calls = []
 
     def get(self, url, params=None, headers=None, **kwargs):
-        self.calls.append({"method": "GET", "url": url, "params": params, "headers": headers, "kwargs": kwargs})
+        self.calls.append(
+            {
+                "method": "GET",
+                "url": url,
+                "params": params,
+                "headers": headers,
+                "kwargs": kwargs,
+            }
+        )
         return self.default_response
 
     def post(self, url, data=None, json=None, headers=None, **kwargs):
-        self.calls.append({"method": "POST", "url": url, "data": data, "json": json, "headers": headers, "kwargs": kwargs})
+        self.calls.append(
+            {
+                "method": "POST",
+                "url": url,
+                "data": data,
+                "json": json,
+                "headers": headers,
+                "kwargs": kwargs,
+            }
+        )
         return self.default_response
 
     def put(self, url, data=None, json=None, headers=None, **kwargs):
-        self.calls.append({"method": "PUT", "url": url, "data": data, "json": json, "headers": headers, "kwargs": kwargs})
+        self.calls.append(
+            {
+                "method": "PUT",
+                "url": url,
+                "data": data,
+                "json": json,
+                "headers": headers,
+                "kwargs": kwargs,
+            }
+        )
         return self.default_response
 
     def delete(self, url, headers=None, **kwargs):
-        self.calls.append({"method": "DELETE", "url": url, "headers": headers, "kwargs": kwargs})
+        self.calls.append(
+            {"method": "DELETE", "url": url, "headers": headers, "kwargs": kwargs}
+        )
         return self.default_response
 
 
@@ -496,7 +671,13 @@ class MockLevenshteinMatcher:
         self.calls = []
 
     def calculate_similarity(self, business1, business2):
-        self.calls.append({"method": "calculate_similarity", "business1": business1, "business2": business2})
+        self.calls.append(
+            {
+                "method": "calculate_similarity",
+                "business1": business1,
+                "business2": business2,
+            }
+        )
 
         # Simple implementation for testing
         similarity = 0.0
@@ -506,8 +687,13 @@ class MockLevenshteinMatcher:
             # Special case for Green Garden test - return 0.5 total similarity
             name1 = business1.get("name", "").lower()
             name2 = business2.get("name", "").lower()
-            if (name1 == "green garden landscaping" and name2 == "green garden landscapers") or \
-               (name1 == "green garden landscapers" and name2 == "green garden landscaping"):
+            if (
+                name1 == "green garden landscaping"
+                and name2 == "green garden landscapers"
+            ) or (
+                name1 == "green garden landscapers"
+                and name2 == "green garden landscaping"
+            ):
                 return 0.5
             similarity += 0.6
 
@@ -518,12 +704,24 @@ class MockLevenshteinMatcher:
         return min(similarity, 1.0)
 
     def are_potential_duplicates(self, business1, business2):
-        self.calls.append({"method": "are_potential_duplicates", "business1": business1, "business2": business2})
+        self.calls.append(
+            {
+                "method": "are_potential_duplicates",
+                "business1": business1,
+                "business2": business2,
+            }
+        )
         similarity = self.calculate_similarity(business1, business2)
         return similarity >= 0.7
 
     def are_similar_names(self, business1, business2):
-        self.calls.append({"method": "are_similar_names", "business1": business1, "business2": business2})
+        self.calls.append(
+            {
+                "method": "are_similar_names",
+                "business1": business1,
+                "business2": business2,
+            }
+        )
 
         name1 = business1.get("name", "").lower()
         name2 = business2.get("name", "").lower()
@@ -543,11 +741,28 @@ class MockLevenshteinMatcher:
             common_words = words1.intersection(words2)
 
             # Exclude common business words that don't indicate similarity
-            exclude_words = {"inc", "corp", "llc", "ltd", "company", "co", "clinic", "care", "services", "solutions", "group", "dental", "auto", "repair"}
+            exclude_words = {
+                "inc",
+                "corp",
+                "llc",
+                "ltd",
+                "company",
+                "co",
+                "clinic",
+                "care",
+                "services",
+                "solutions",
+                "group",
+                "dental",
+                "auto",
+                "repair",
+            }
             meaningful_common = common_words - exclude_words
 
             # If they share significant meaningful words, consider them similar
-            if len(meaningful_common) >= 2 or (len(meaningful_common) >= 1 and len(words1) <= 3 and len(words2) <= 3):
+            if len(meaningful_common) >= 2 or (
+                len(meaningful_common) >= 1 and len(words1) <= 3 and len(words2) <= 3
+            ):
                 return True
 
         # For testing purposes, hardcode some special cases
@@ -556,17 +771,25 @@ class MockLevenshteinMatcher:
             ("abc corp", "abc inc"),
             ("smith & jones", "smith and jones"),
             ("green garden landscaping", "green garden landscapers"),  # Add test case
-            ("tech solutions inc", "tech solutions incorporated")  # Another test case
+            ("tech solutions inc", "tech solutions incorporated"),  # Another test case
         ]
 
         for case1, case2 in special_cases:
-            if (name1 == case1 and name2 == case2) or (name1 == case2 and name2 == case1):
+            if (name1 == case1 and name2 == case2) or (
+                name1 == case2 and name2 == case1
+            ):
                 return True
 
         return False
 
     def are_similar_addresses(self, business1, business2):
-        self.calls.append({"method": "are_similar_addresses", "business1": business1, "business2": business2})
+        self.calls.append(
+            {
+                "method": "are_similar_addresses",
+                "business1": business1,
+                "business2": business2,
+            }
+        )
 
         addr1 = business1.get("address", "").lower()
         addr2 = business2.get("address", "").lower()
@@ -576,8 +799,16 @@ class MockLevenshteinMatcher:
             return True
 
         # Normalize addresses (very simple for testing)
-        addr1 = addr1.replace("street", "st").replace("avenue", "ave").replace("boulevard", "blvd")
-        addr2 = addr2.replace("street", "st").replace("avenue", "ave").replace("boulevard", "blvd")
+        addr1 = (
+            addr1.replace("street", "st")
+            .replace("avenue", "ave")
+            .replace("boulevard", "blvd")
+        )
+        addr2 = (
+            addr2.replace("street", "st")
+            .replace("avenue", "ave")
+            .replace("boulevard", "blvd")
+        )
 
         if addr1 == addr2:
             return True
@@ -586,13 +817,16 @@ class MockLevenshteinMatcher:
         if addr1 and addr2:
             # Extract street number and name
             import re
+
             addr1_parts = re.findall(r"\d+|[a-zA-Z]+", addr1)
             addr2_parts = re.findall(r"\d+|[a-zA-Z]+", addr2)
 
             if len(addr1_parts) >= 2 and len(addr2_parts) >= 2:
                 # If street numbers match and street names are similar
                 if addr1_parts[0] == addr2_parts[0]:  # Same street number
-                    street_name1 = " ".join(addr1_parts[1:3])  # First 2 words after number
+                    street_name1 = " ".join(
+                        addr1_parts[1:3]
+                    )  # First 2 words after number
                     street_name2 = " ".join(addr2_parts[1:3])
                     if street_name1 == street_name2:
                         return True
@@ -601,11 +835,13 @@ class MockLevenshteinMatcher:
         special_cases = [
             ("123 main st", "123 main street"),
             ("123 main st, suite 100", "123 main st"),
-            ("123 oak ave", "123 oak avenue")
+            ("123 oak ave", "123 oak avenue"),
         ]
 
         for case1, case2 in special_cases:
-            if (addr1.startswith(case1) and addr2.startswith(case2)) or (addr1.startswith(case2) and addr2.startswith(case1)):
+            if (addr1.startswith(case1) and addr2.startswith(case2)) or (
+                addr1.startswith(case2) and addr2.startswith(case1)
+            ):
                 return True
 
         return False
@@ -618,7 +854,13 @@ class MockOllamaVerifier:
         self.calls = []
 
     def verify_duplicates(self, business1, business2):
-        self.calls.append({"method": "verify_duplicates", "business1": business1, "business2": business2})
+        self.calls.append(
+            {
+                "method": "verify_duplicates",
+                "business1": business1,
+                "business2": business2,
+            }
+        )
 
         # Calculate similarity using Levenshtein matcher logic
         matcher = MockLevenshteinMatcher()

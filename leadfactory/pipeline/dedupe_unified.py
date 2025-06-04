@@ -194,20 +194,20 @@ class LLMVerifier:
         address proximity, phone/email/website matches, and business type.
 
         Business 1:
-        - Name: {business1.get('name', 'N/A')}
-        - Phone: {business1.get('phone', 'N/A')}
-        - Email: {business1.get('email', 'N/A')}
-        - Website: {business1.get('website', 'N/A')}
-        - Address: {business1.get('address', 'N/A')}, {business1.get('city', 'N/A')}, {business1.get('state', 'N/A')} {business1.get('zip', 'N/A')}
-        - Category: {business1.get('category', 'N/A')}
+        - Name: {business1.get("name", "N/A")}
+        - Phone: {business1.get("phone", "N/A")}
+        - Email: {business1.get("email", "N/A")}
+        - Website: {business1.get("website", "N/A")}
+        - Address: {business1.get("address", "N/A")}, {business1.get("city", "N/A")}, {business1.get("state", "N/A")} {business1.get("zip", "N/A")}
+        - Category: {business1.get("category", "N/A")}
 
         Business 2:
-        - Name: {business2.get('name', 'N/A')}
-        - Phone: {business2.get('phone', 'N/A')}
-        - Email: {business2.get('email', 'N/A')}
-        - Website: {business2.get('website', 'N/A')}
-        - Address: {business2.get('address', 'N/A')}, {business2.get('city', 'N/A')}, {business2.get('state', 'N/A')} {business2.get('zip', 'N/A')}
-        - Category: {business2.get('category', 'N/A')}
+        - Name: {business2.get("name", "N/A")}
+        - Phone: {business2.get("phone", "N/A")}
+        - Email: {business2.get("email", "N/A")}
+        - Website: {business2.get("website", "N/A")}
+        - Address: {business2.get("address", "N/A")}, {business2.get("city", "N/A")}, {business2.get("state", "N/A")} {business2.get("zip", "N/A")}
+        - Category: {business2.get("category", "N/A")}
 
         Respond in JSON format:
         {{
@@ -320,7 +320,6 @@ def merge_businesses(
         primary_id=primary_id,
         secondary_id=secondary_id,
     ):
-
         # Create backup before merge
         backup_id = preservation_manager.create_backup(
             business_ids=[primary_id, secondary_id], operation="merge"
@@ -760,7 +759,6 @@ def deduplicate(
         limit=limit,
         config_name=config.name if hasattr(config, "name") else "default",
     ):
-
         # Ensure dedupe tables exist
         if not check_dedupe_tables_exist():
             logger.info("Creating dedupe tables...")

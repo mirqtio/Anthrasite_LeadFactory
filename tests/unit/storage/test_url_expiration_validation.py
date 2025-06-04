@@ -5,14 +5,19 @@ Tests various URL expiration scenarios including edge cases,
 timezone handling, and security implications.
 """
 
-import pytest
+import time
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
-import time
 
+import pytest
+
+from leadfactory.email.secure_links import SecureLinkConfig, SecureLinkGenerator
+from leadfactory.security.secure_access_validator import (
+    AccessRequest,
+    SecureAccessValidator,
+    ValidationResult,
+)
 from leadfactory.storage.supabase_storage import SupabaseStorage
-from leadfactory.security.secure_access_validator import SecureAccessValidator, AccessRequest, ValidationResult
-from leadfactory.email.secure_links import SecureLinkGenerator, SecureLinkConfig
 
 
 class TestURLExpirationValidation:
@@ -21,7 +26,7 @@ class TestURLExpirationValidation:
     @pytest.fixture
     def mock_supabase_client(self):
         """Mock Supabase client for testing."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create:
             mock_client = Mock()
             mock_create.return_value = mock_client
             yield mock_client
@@ -29,10 +34,10 @@ class TestURLExpirationValidation:
     @pytest.fixture
     def storage(self, mock_supabase_client):
         """Create SupabaseStorage instance for testing."""
-        with patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key",
             }.get(key)
             return SupabaseStorage(bucket_name="expiration-test")
 
@@ -47,9 +52,7 @@ class TestURLExpirationValidation:
         from leadfactory.email.secure_links import SecureLinkConfig
 
         config = SecureLinkConfig(
-            secret_key="test-secret-key",
-            default_expiry_days=7,
-            max_expiry_days=30
+            secret_key="test-secret-key", default_expiry_days=7, max_expiry_days=30
         )
         return SecureLinkGenerator(config=config)
 
@@ -60,14 +63,13 @@ class TestURLExpirationValidation:
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test/file.pdf?token=future123"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             # Mock current time
             current_time = datetime(2024, 1, 1, 12, 0, 0)
             mock_datetime.utcnow.return_value = current_time
 
             result = storage.generate_secure_report_url(
-                "test-report.pdf",
-                expires_in_hours=24
+                "test-report.pdf", expires_in_hours=24
             )
 
             # Verify expiration is 24 hours in the future
@@ -78,15 +80,14 @@ class TestURLExpirationValidation:
             assert result["expires_in_hours"] == 24
             assert "future123" in result["signed_url"]
 
-    def test_url_generation_with_zero_expiration_rejected(self, storage, mock_supabase_client):
+    def test_url_generation_with_zero_expiration_rejected(
+        self, storage, mock_supabase_client
+    ):
         """Test that URLs cannot be generated with zero or negative expiration times."""
         # Mock to simulate validation in the storage layer
         with pytest.raises((ValueError, Exception)):
             # Attempt to create URL with zero expiration
-            storage.generate_secure_report_url(
-                "test-report.pdf",
-                expires_in_hours=0
-            )
+            storage.generate_secure_report_url("test-report.pdf", expires_in_hours=0)
 
     def test_access_request_validation_with_expired_token(self, secure_validator):
         """Test validation of access requests with expired tokens."""
@@ -96,14 +97,13 @@ class TestURLExpirationValidation:
             user_id="user123",
             resource_id="report456",
             operation=PDFOperation.DOWNLOAD,
-            token="expired_token_123"
+            token="expired_token_123",
         )
 
         # Mock the validation to simulate expired token
-        with patch.object(secure_validator, 'validate_access_request') as mock_validate:
+        with patch.object(secure_validator, "validate_access_request") as mock_validate:
             mock_validate.return_value = ValidationResult(
-                valid=False,
-                error_message="Access token has expired"
+                valid=False, error_message="Access token has expired"
             )
 
             result = secure_validator.validate_access_request(access_request)
@@ -119,14 +119,13 @@ class TestURLExpirationValidation:
             user_id="user123",
             resource_id="report456",
             operation=PDFOperation.DOWNLOAD,
-            token="valid_token_123"
+            token="valid_token_123",
         )
 
         # Mock the validation to simulate valid token
-        with patch.object(secure_validator, 'validate_access_request') as mock_validate:
+        with patch.object(secure_validator, "validate_access_request") as mock_validate:
             mock_validate.return_value = ValidationResult(
-                valid=True,
-                error_message=None
+                valid=True, error_message=None
             )
 
             result = secure_validator.validate_access_request(access_request)
@@ -140,14 +139,13 @@ class TestURLExpirationValidation:
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test/tz.pdf?token=tz123"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             # Test with UTC timezone
             utc_time = datetime(2024, 1, 1, 12, 0, 0)
             mock_datetime.utcnow.return_value = utc_time
 
             result = storage.generate_secure_report_url(
-                "timezone-test.pdf",
-                expires_in_hours=6
+                "timezone-test.pdf", expires_in_hours=6
             )
 
             # Verify timezone is properly handled
@@ -164,14 +162,13 @@ class TestURLExpirationValidation:
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test/edge.pdf?token=edge123"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             current_time = datetime(2024, 1, 1, 12, 0, 0)
             mock_datetime.utcnow.return_value = current_time
 
             # Test minimum expiration (1 hour - smallest practical value)
             result_min = storage.generate_secure_report_url(
-                "min-expiry.pdf",
-                expires_in_hours=1
+                "min-expiry.pdf", expires_in_hours=1
             )
 
             min_expiry = datetime.fromisoformat(result_min["expires_at"])
@@ -181,7 +178,7 @@ class TestURLExpirationValidation:
             # Test maximum expiration (30 days)
             result_max = storage.generate_secure_report_url(
                 "max-expiry.pdf",
-                expires_in_hours=30*24  # 30 days
+                expires_in_hours=30 * 24,  # 30 days
             )
 
             max_expiry = datetime.fromisoformat(result_max["expires_at"])
@@ -196,11 +193,12 @@ class TestURLExpirationValidation:
             user_id="user123",
             purchase_id="purchase789",
             base_url="https://test.example.com/reports",
-            expiry_days=1
+            expiry_days=1,
         )
 
         # Extract token from URL
-        from urllib.parse import urlparse, parse_qs
+        from urllib.parse import parse_qs, urlparse
+
         parsed_url = urlparse(secure_url)
         token = parse_qs(parsed_url.query)["token"][0]
 
@@ -214,8 +212,9 @@ class TestURLExpirationValidation:
             pytest.fail(f"Valid token validation failed: {e}")
 
         # Test with an expired token by creating one with past expiration
-        import jwt
         from datetime import datetime, timedelta
+
+        import jwt
 
         # Create a token that's already expired
         expired_payload = {
@@ -225,33 +224,34 @@ class TestURLExpirationValidation:
             "expires_at": int((datetime.utcnow() - timedelta(days=1)).timestamp()),
             "access_type": "view",
             "metadata": {},
-            "exp": int((datetime.utcnow() - timedelta(days=1)).timestamp())
+            "exp": int((datetime.utcnow() - timedelta(days=1)).timestamp()),
         }
 
         expired_token = jwt.encode(
             expired_payload,
             link_generator.config.secret_key,
-            algorithm=link_generator.config.algorithm
+            algorithm=link_generator.config.algorithm,
         )
 
         # This should raise an ExpiredSignatureError
         with pytest.raises(jwt.ExpiredSignatureError):
             link_generator.validate_secure_link(expired_token)
 
-    def test_expiration_with_different_time_formats(self, storage, mock_supabase_client):
+    def test_expiration_with_different_time_formats(
+        self, storage, mock_supabase_client
+    ):
         """Test expiration handling with different time formats."""
         mock_supabase_client.storage.from_.return_value.create_signed_url.return_value = {
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test/format.pdf?token=format123"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             # Test with microseconds
             current_time = datetime(2024, 1, 1, 12, 0, 0, 123456)
             mock_datetime.utcnow.return_value = current_time
 
             result = storage.generate_secure_report_url(
-                "format-test.pdf",
-                expires_in_hours=1
+                "format-test.pdf", expires_in_hours=1
             )
 
             # Verify ISO format is properly generated
@@ -267,15 +267,14 @@ class TestURLExpirationValidation:
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test/clock.pdf?token=clock123"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             # Initial time
             initial_time = datetime(2024, 1, 1, 12, 0, 0)
             mock_datetime.utcnow.return_value = initial_time
 
             # Generate URL
             result = storage.generate_secure_report_url(
-                "clock-test.pdf",
-                expires_in_hours=2
+                "clock-test.pdf", expires_in_hours=2
             )
 
             initial_expiry = datetime.fromisoformat(result["expires_at"])
@@ -286,8 +285,7 @@ class TestURLExpirationValidation:
 
             # Generate another URL - should still be relative to current time
             result2 = storage.generate_secure_report_url(
-                "clock-test2.pdf",
-                expires_in_hours=2
+                "clock-test2.pdf", expires_in_hours=2
             )
 
             second_expiry = datetime.fromisoformat(result2["expires_at"])
@@ -296,21 +294,22 @@ class TestURLExpirationValidation:
             time_diff = second_expiry - initial_expiry
             assert abs(time_diff.total_seconds() - 3600) < 1  # 1 hour difference
 
-    def test_expiration_edge_cases_with_leap_seconds(self, storage, mock_supabase_client):
+    def test_expiration_edge_cases_with_leap_seconds(
+        self, storage, mock_supabase_client
+    ):
         """Test expiration handling around leap seconds and DST changes."""
         mock_supabase_client.storage.from_.return_value.create_signed_url.return_value = {
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test/leap.pdf?token=leap123"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             # Test around a theoretical leap second (23:59:60)
             # Note: Python datetime doesn't support leap seconds, but we test edge behavior
             edge_time = datetime(2024, 6, 30, 23, 59, 59)
             mock_datetime.utcnow.return_value = edge_time
 
             result = storage.generate_secure_report_url(
-                "leap-test.pdf",
-                expires_in_hours=1
+                "leap-test.pdf", expires_in_hours=1
             )
 
             # Should handle the edge case gracefully
@@ -324,13 +323,12 @@ class TestURLExpirationValidation:
             "signedURL": "https://test.supabase.co/storage/v1/object/sign/test/meta.pdf?token=meta123"
         }
 
-        with patch('leadfactory.storage.supabase_storage.datetime') as mock_datetime:
+        with patch("leadfactory.storage.supabase_storage.datetime") as mock_datetime:
             current_time = datetime(2024, 1, 1, 12, 0, 0)
             mock_datetime.utcnow.return_value = current_time
 
             result = storage.generate_secure_report_url(
-                "metadata-test.pdf",
-                expires_in_hours=12
+                "metadata-test.pdf", expires_in_hours=12
             )
 
             # Verify all required metadata is present
@@ -363,14 +361,13 @@ class TestURLExpirationValidation:
             user_id="user123",
             resource_id="report456",
             operation=PDFOperation.DOWNLOAD,
-            token="revoked_token_123"
+            token="revoked_token_123",
         )
 
         # Mock revoked token validation
-        with patch.object(secure_validator, 'validate_access_request') as mock_validate:
+        with patch.object(secure_validator, "validate_access_request") as mock_validate:
             mock_validate.return_value = ValidationResult(
-                valid=False,
-                error_message="Access token has been revoked"
+                valid=False, error_message="Access token has been revoked"
             )
 
             result = secure_validator.validate_access_request(access_request)
@@ -387,15 +384,15 @@ class TestURLExpirationValidation:
             resource_id="report456",
             operation=PDFOperation.DOWNLOAD,
             token="rate_limited_token",
-            ip_address="192.168.1.1"
+            ip_address="192.168.1.1",
         )
 
         # Mock rate limit exceeded scenario
-        with patch.object(secure_validator, 'validate_access_request') as mock_validate:
+        with patch.object(secure_validator, "validate_access_request") as mock_validate:
             mock_validate.return_value = ValidationResult(
                 valid=False,
                 error_message="Rate limit exceeded. Retry after 60 seconds.",
-                rate_limit_info={"retry_after_seconds": 60}
+                rate_limit_info={"retry_after_seconds": 60},
             )
 
             result = secure_validator.validate_access_request(access_request)

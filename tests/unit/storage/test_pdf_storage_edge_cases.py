@@ -5,12 +5,13 @@ Tests edge cases including large files, invalid PDFs, network failures,
 and storage quota limitations.
 """
 
-import pytest
-import tempfile
 import os
-from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
+import tempfile
 from datetime import datetime, timedelta
+from pathlib import Path
+from unittest.mock import Mock, mock_open, patch
+
+import pytest
 
 from leadfactory.storage.supabase_storage import SupabaseStorage
 
@@ -21,7 +22,9 @@ class TestPDFStorageEdgeCases:
     def setup_method(self):
         """Set up test fixtures."""
         # Create various test PDF contents
-        self.valid_pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
+        self.valid_pdf_content = (
+            b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
+        )
         self.large_pdf_content = b"%PDF-1.4\n" + b"x" * (50 * 1024 * 1024)  # 50MB PDF
         self.huge_pdf_content = b"%PDF-1.4\n" + b"x" * (200 * 1024 * 1024)  # 200MB PDF
         self.invalid_pdf_content = b"This is not a PDF file"
@@ -36,7 +39,7 @@ class TestPDFStorageEdgeCases:
             (self.huge_pdf_content, "_huge.pdf"),
             (self.invalid_pdf_content, "_invalid.pdf"),
             (self.corrupted_pdf_content, "_corrupted.pdf"),
-            (self.empty_pdf_content, "_empty.pdf")
+            (self.empty_pdf_content, "_empty.pdf"),
         ]:
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
             temp_file.write(content)
@@ -54,7 +57,7 @@ class TestPDFStorageEdgeCases:
     @pytest.fixture
     def mock_supabase_client(self):
         """Mock Supabase client for testing."""
-        with patch('leadfactory.storage.supabase_storage.create_client') as mock_create:
+        with patch("leadfactory.storage.supabase_storage.create_client") as mock_create:
             mock_client = Mock()
             mock_create.return_value = mock_client
             yield mock_client
@@ -62,10 +65,10 @@ class TestPDFStorageEdgeCases:
     @pytest.fixture
     def storage(self, mock_supabase_client):
         """Create SupabaseStorage instance for testing."""
-        with patch('leadfactory.storage.supabase_storage.get_env') as mock_get_env:
+        with patch("leadfactory.storage.supabase_storage.get_env") as mock_get_env:
             mock_get_env.side_effect = lambda key: {
-                'SUPABASE_URL': 'https://test.supabase.co',
-                'SUPABASE_KEY': 'test-key'
+                "SUPABASE_URL": "https://test.supabase.co",
+                "SUPABASE_KEY": "test-key",
             }.get(key)
             return SupabaseStorage(bucket_name="edge-case-test")
 
@@ -82,7 +85,7 @@ class TestPDFStorageEdgeCases:
             pdf_path=large_temp_file.name,
             report_id="large_report",
             user_id="user_large",
-            purchase_id="purchase_large"
+            purchase_id="purchase_large",
         )
 
         # Verify large file handling
@@ -107,7 +110,7 @@ class TestPDFStorageEdgeCases:
                 pdf_path=huge_temp_file.name,
                 report_id="huge_report",
                 user_id="user_huge",
-                purchase_id="purchase_huge"
+                purchase_id="purchase_huge",
             )
 
     def test_invalid_pdf_format_detection(self, storage, mock_supabase_client):
@@ -117,8 +120,10 @@ class TestPDFStorageEdgeCases:
         # Mock validation that would detect invalid format
         with pytest.raises(ValueError, match="Invalid PDF format"):
             # This should be caught by PDF validation before upload
-            with patch('pathlib.Path.open', mock_open(read_data=self.invalid_pdf_content)):
-                if not self.invalid_pdf_content.startswith(b'%PDF'):
+            with patch(
+                "pathlib.Path.open", mock_open(read_data=self.invalid_pdf_content)
+            ):
+                if not self.invalid_pdf_content.startswith(b"%PDF"):
                     raise ValueError("Invalid PDF format detected")
 
     def test_corrupted_pdf_handling(self, storage, mock_supabase_client):
@@ -135,7 +140,7 @@ class TestPDFStorageEdgeCases:
                 pdf_path=corrupted_temp_file.name,
                 report_id="corrupted_report",
                 user_id="user_corrupted",
-                purchase_id="purchase_corrupted"
+                purchase_id="purchase_corrupted",
             )
 
     def test_empty_file_handling(self, storage, mock_supabase_client):
@@ -153,8 +158,8 @@ class TestPDFStorageEdgeCases:
         import socket
 
         # Mock network timeout
-        mock_supabase_client.storage.from_.return_value.upload.side_effect = socket.timeout(
-            "Network timeout during upload"
+        mock_supabase_client.storage.from_.return_value.upload.side_effect = (
+            socket.timeout("Network timeout during upload")
         )
 
         valid_temp_file = self.temp_files[0]  # valid PDF
@@ -164,7 +169,7 @@ class TestPDFStorageEdgeCases:
                 pdf_path=valid_temp_file.name,
                 report_id="timeout_report",
                 user_id="user_timeout",
-                purchase_id="purchase_timeout"
+                purchase_id="purchase_timeout",
             )
 
     def test_storage_quota_exceeded(self, storage, mock_supabase_client):
@@ -181,7 +186,7 @@ class TestPDFStorageEdgeCases:
                 pdf_path=valid_temp_file.name,
                 report_id="quota_report",
                 user_id="user_quota",
-                purchase_id="purchase_quota"
+                purchase_id="purchase_quota",
             )
 
     def test_invalid_file_path_handling(self, storage, mock_supabase_client):
@@ -191,7 +196,7 @@ class TestPDFStorageEdgeCases:
                 pdf_path="/nonexistent/path/file.pdf",
                 report_id="nonexistent_report",
                 user_id="user_nonexistent",
-                purchase_id="purchase_nonexistent"
+                purchase_id="purchase_nonexistent",
             )
 
     def test_special_characters_in_filename(self, storage, mock_supabase_client):
@@ -207,7 +212,7 @@ class TestPDFStorageEdgeCases:
             pdf_path=valid_temp_file.name,
             report_id="report@#$%^&*()",  # Special characters
             user_id="user/special\\chars",
-            purchase_id="purchase<>:\"?|"
+            purchase_id='purchase<>:"?|',
         )
 
         # Verify special characters were handled
@@ -229,10 +234,12 @@ class TestPDFStorageEdgeCases:
                 pdf_path=valid_temp_file.name,
                 report_id="conflict_report",
                 user_id="user_conflict",
-                purchase_id="purchase_conflict"
+                purchase_id="purchase_conflict",
             )
 
-    def test_url_generation_with_expired_credentials(self, storage, mock_supabase_client):
+    def test_url_generation_with_expired_credentials(
+        self, storage, mock_supabase_client
+    ):
         """Test URL generation when credentials are expired."""
         # Mock expired credentials error
         mock_supabase_client.storage.from_.return_value.create_signed_url.side_effect = Exception(
@@ -268,7 +275,7 @@ class TestPDFStorageEdgeCases:
             pdf_path=valid_temp_file.name,
             report_id=long_string[:50],  # Should be truncated
             user_id=long_string[:50],
-            purchase_id=long_string[:50]
+            purchase_id=long_string[:50],
         )
 
         # Verify metadata was processed
@@ -281,13 +288,15 @@ class TestPDFStorageEdgeCases:
         valid_temp_file = self.temp_files[0]  # valid PDF
 
         # Mock permission denied error when reading file
-        with patch('pathlib.Path.open', side_effect=PermissionError("Permission denied")):
+        with patch(
+            "pathlib.Path.open", side_effect=PermissionError("Permission denied")
+        ):
             with pytest.raises(PermissionError):
                 storage.upload_pdf_report(
                     pdf_path=valid_temp_file.name,
                     report_id="permission_report",
                     user_id="user_permission",
-                    purchase_id="purchase_permission"
+                    purchase_id="purchase_permission",
                 )
 
     def test_disk_space_exhaustion(self, storage, mock_supabase_client):
@@ -304,7 +313,7 @@ class TestPDFStorageEdgeCases:
                 pdf_path=valid_temp_file.name,
                 report_id="diskspace_report",
                 user_id="user_diskspace",
-                purchase_id="purchase_diskspace"
+                purchase_id="purchase_diskspace",
             )
 
     def test_malformed_response_handling(self, storage, mock_supabase_client):
@@ -323,7 +332,7 @@ class TestPDFStorageEdgeCases:
                 pdf_path=valid_temp_file.name,
                 report_id="malformed_report",
                 user_id="user_malformed",
-                purchase_id="purchase_malformed"
+                purchase_id="purchase_malformed",
             )
             # This should raise KeyError when accessing result["path"]
             _ = result["path"]
@@ -340,8 +349,8 @@ class TestPDFStorageEdgeCases:
         result = storage.upload_pdf_report(
             pdf_path=valid_temp_file.name,
             report_id="报告_测试",  # Chinese characters
-            user_id="用户_тест",   # Mixed Unicode
-            purchase_id="购买_αβγ"  # Greek letters
+            user_id="用户_тест",  # Mixed Unicode
+            purchase_id="购买_αβγ",  # Greek letters
         )
 
         # Verify Unicode was handled (likely converted to safe ASCII)
@@ -358,5 +367,5 @@ class TestPDFStorageEdgeCases:
             storage.upload_file(
                 file_path=long_path,
                 storage_path=long_path,
-                content_type="application/pdf"
+                content_type="application/pdf",
             )

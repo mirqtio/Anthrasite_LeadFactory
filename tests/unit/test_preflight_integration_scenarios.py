@@ -45,7 +45,7 @@ class TestPipelineValidatorIntegration:
             "GOOGLE_API_KEY": "test_google_key",
             "SCREENSHOTONE_API_KEY": "test_screenshot_key",
             "SENDGRID_API_KEY": "test_sendgrid_key",
-            "SENDGRID_FROM_EMAIL": "test@example.com"
+            "SENDGRID_FROM_EMAIL": "test@example.com",
         }
 
         with patch.dict(os.environ, env_vars):
@@ -57,7 +57,11 @@ class TestPipelineValidatorIntegration:
                     result = validator.validate()
 
         # Should have minimal issues when all dependencies are satisfied
-        critical_issues = [issue for issue in result.issues if issue.severity == ValidationSeverity.CRITICAL]
+        critical_issues = [
+            issue
+            for issue in result.issues
+            if issue.severity == ValidationSeverity.CRITICAL
+        ]
         assert len(critical_issues) == 0
 
     def test_validate_with_missing_database(self):
@@ -67,14 +71,16 @@ class TestPipelineValidatorIntegration:
         # Missing DATABASE_URL
         env_vars = {
             "YELP_API_KEY": "test_yelp_key",
-            "GOOGLE_API_KEY": "test_google_key"
+            "GOOGLE_API_KEY": "test_google_key",
         }
 
         with patch.dict(os.environ, env_vars, clear=True):
             result = validator.validate()
 
         # Should have database-related issues
-        database_issues = [issue for issue in result.issues if "DATABASE_URL" in issue.message]
+        database_issues = [
+            issue for issue in result.issues if "DATABASE_URL" in issue.message
+        ]
         assert len(database_issues) > 0
 
     def test_validate_with_missing_api_keys(self):
@@ -82,9 +88,7 @@ class TestPipelineValidatorIntegration:
         validator = PipelineValidator()
 
         # Missing API keys
-        env_vars = {
-            "DATABASE_URL": "postgresql://test:test@localhost/test"
-        }
+        env_vars = {"DATABASE_URL": "postgresql://test:test@localhost/test"}
 
         with patch.dict(os.environ, env_vars, clear=True):
             with patch("psycopg2.connect") as mock_connect:
@@ -94,7 +98,9 @@ class TestPipelineValidatorIntegration:
                 result = validator.validate()
 
         # Should have API key related issues
-        api_key_issues = [issue for issue in result.issues if "API_KEY" in issue.message]
+        api_key_issues = [
+            issue for issue in result.issues if "API_KEY" in issue.message
+        ]
         assert len(api_key_issues) > 0
 
     def test_validate_component_with_mixed_results(self):
@@ -104,7 +110,7 @@ class TestPipelineValidatorIntegration:
         # Partial environment setup - database works but missing some API keys
         env_vars = {
             "DATABASE_URL": "postgresql://test:test@localhost/test",
-            "YELP_API_KEY": "test_yelp_key"
+            "YELP_API_KEY": "test_yelp_key",
             # Missing GOOGLE_API_KEY and others
         }
 
@@ -119,7 +125,9 @@ class TestPipelineValidatorIntegration:
         assert len(result.issues) > 0
 
         # Check that we have specific API key issues
-        google_api_issues = [issue for issue in result.issues if "GOOGLE_API_KEY" in issue.message]
+        google_api_issues = [
+            issue for issue in result.issues if "GOOGLE_API_KEY" in issue.message
+        ]
         assert len(google_api_issues) > 0
 
     def test_validate_with_file_dependencies(self):
@@ -127,7 +135,9 @@ class TestPipelineValidatorIntegration:
         validator = PipelineValidator()
 
         # Create temporary files for testing
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as email_template:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".html", delete=False
+        ) as email_template:
             email_template.write("<html><body>Test template</body></html>")
             email_template_path = email_template.name
 
@@ -135,7 +145,7 @@ class TestPipelineValidatorIntegration:
             env_vars = {
                 "DATABASE_URL": "postgresql://test:test@localhost/test",
                 "YELP_API_KEY": "test_yelp_key",
-                "GOOGLE_API_KEY": "test_google_key"
+                "GOOGLE_API_KEY": "test_google_key",
             }
 
             with patch.dict(os.environ, env_vars):
@@ -147,7 +157,11 @@ class TestPipelineValidatorIntegration:
                         result = validator.validate()
 
             # Should have minimal critical issues when files exist
-            critical_issues = [issue for issue in result.issues if issue.severity == ValidationSeverity.CRITICAL]
+            critical_issues = [
+                issue
+                for issue in result.issues
+                if issue.severity == ValidationSeverity.CRITICAL
+            ]
             assert len(critical_issues) == 0
         finally:
             os.unlink(email_template_path)
@@ -159,7 +173,7 @@ class TestPipelineValidatorIntegration:
         env_vars = {
             "DATABASE_URL": "postgresql://test:test@localhost/test",
             "YELP_API_KEY": "test_yelp_key",
-            "GOOGLE_API_KEY": "test_google_key"
+            "GOOGLE_API_KEY": "test_google_key",
         }
 
         with patch.dict(os.environ, env_vars):
@@ -171,7 +185,11 @@ class TestPipelineValidatorIntegration:
                 result = validator.validate()
 
         # Should have file-related issues
-        file_issues = [issue for issue in result.issues if issue.error_code == ValidationErrorCode.FILE_NOT_FOUND]
+        file_issues = [
+            issue
+            for issue in result.issues
+            if issue.error_code == ValidationErrorCode.FILE_NOT_FOUND
+        ]
         assert len(file_issues) > 0
 
     def test_validate_dependencies_circular_detection(self):
@@ -182,14 +200,18 @@ class TestPipelineValidatorIntegration:
         circular_deps = {
             "stage1": ["stage2"],
             "stage2": ["stage3"],
-            "stage3": ["stage1"]  # Creates a cycle
+            "stage3": ["stage1"],  # Creates a cycle
         }
 
         with patch.object(validator, "STAGE_DEPENDENCIES", circular_deps):
             issues = validator.validate_dependencies(["stage1", "stage2", "stage3"])
 
         # Should detect circular dependency
-        circular_issues = [issue for issue in issues if issue.error_code == ValidationErrorCode.DEPENDENCY_CIRCULAR]
+        circular_issues = [
+            issue
+            for issue in issues
+            if issue.error_code == ValidationErrorCode.DEPENDENCY_CIRCULAR
+        ]
         assert len(circular_issues) > 0
 
     def test_validate_dependencies_missing_stages(self):
@@ -197,15 +219,17 @@ class TestPipelineValidatorIntegration:
         validator = PipelineValidator()
 
         # Mock dependencies that reference non-existent stages
-        mock_deps = {
-            "existing_stage": ["missing_stage"]
-        }
+        mock_deps = {"existing_stage": ["missing_stage"]}
 
         with patch.object(validator, "STAGE_DEPENDENCIES", mock_deps):
             issues = validator.validate_dependencies(["existing_stage"])
 
         # Should detect missing dependency
-        missing_issues = [issue for issue in issues if issue.error_code == ValidationErrorCode.DEPENDENCY_MISSING]
+        missing_issues = [
+            issue
+            for issue in issues
+            if issue.error_code == ValidationErrorCode.DEPENDENCY_MISSING
+        ]
         assert len(missing_issues) > 0
 
     def test_validate_all_comprehensive(self):
@@ -219,7 +243,7 @@ class TestPipelineValidatorIntegration:
             "GOOGLE_API_KEY": "test_google_key",
             "SCREENSHOTONE_API_KEY": "test_screenshot_key",
             "SENDGRID_API_KEY": "test_sendgrid_key",
-            "SENDGRID_FROM_EMAIL": "test@example.com"
+            "SENDGRID_FROM_EMAIL": "test@example.com",
         }
 
         with patch.dict(os.environ, env_vars):
@@ -232,7 +256,11 @@ class TestPipelineValidatorIntegration:
 
         # With all environment variables set and mocked file access,
         # there should be minimal critical issues
-        critical_issues = [issue for issue in result.issues if issue.severity == ValidationSeverity.CRITICAL]
+        critical_issues = [
+            issue
+            for issue in result.issues
+            if issue.severity == ValidationSeverity.CRITICAL
+        ]
         assert len(critical_issues) == 0  # No critical issues
 
 
@@ -248,14 +276,14 @@ class TestValidationLoggerIntegration:
             error_code=ValidationErrorCode.ENV_VAR_MISSING,
             severity=ValidationSeverity.ERROR,
             component="test_component",
-            message="Test error message"
+            message="Test error message",
         )
 
         error2 = ValidationError(
             error_code=ValidationErrorCode.DATABASE_CONNECTION_FAILED,
             severity=ValidationSeverity.CRITICAL,
             component="database",
-            message="Database connection failed"
+            message="Database connection failed",
         )
 
         # Log errors
@@ -271,9 +299,7 @@ class TestValidationLoggerIntegration:
 
         # Test summary generation
         logger.log_validation_summary(
-            total_components=5,
-            failed_components=2,
-            total_errors=3
+            total_components=5, failed_components=2, total_errors=3
         )
 
         # Should complete without errors
@@ -303,7 +329,11 @@ class TestEdgeCasesAndErrorHandling:
             result = validator.validate()
 
         # Should have multiple environment variable issues
-        env_issues = [issue for issue in result.issues if issue.error_code == ValidationErrorCode.ENV_VAR_MISSING]
+        env_issues = [
+            issue
+            for issue in result.issues
+            if issue.error_code == ValidationErrorCode.ENV_VAR_MISSING
+        ]
         assert len(env_issues) > 0
 
     def test_validation_with_malformed_database_url(self):
@@ -313,15 +343,21 @@ class TestEdgeCasesAndErrorHandling:
         env_vars = {
             "DATABASE_URL": "not-a-valid-url",
             "YELP_API_KEY": "test_key",
-            "GOOGLE_API_KEY": "test_key"
+            "GOOGLE_API_KEY": "test_key",
         }
 
         with patch.dict(os.environ, env_vars):
-            with patch("psycopg2.connect", side_effect=Exception("Invalid connection string")):
+            with patch(
+                "psycopg2.connect", side_effect=Exception("Invalid connection string")
+            ):
                 result = validator.validate()
 
         # Should have database connection issues
-        db_issues = [issue for issue in result.issues if issue.error_code == ValidationErrorCode.DATABASE_CONNECTION_FAILED]
+        db_issues = [
+            issue
+            for issue in result.issues
+            if issue.error_code == ValidationErrorCode.DATABASE_CONNECTION_FAILED
+        ]
         assert len(db_issues) > 0
 
     def test_validation_with_network_timeout(self):
@@ -388,7 +424,7 @@ class TestEdgeCasesAndErrorHandling:
             "value\nwith\nnewlines",
             "value\twith\ttabs",
             "value\"with'quotes",
-            "value\\with\\backslashes"
+            "value\\with\\backslashes",
         ]
 
         for value in special_values:
@@ -405,8 +441,12 @@ class TestEdgeCasesAndErrorHandling:
             severity=ValidationSeverity.ERROR,
             component="test_component",
             message="Test message with unicode: 测试",
-            context={"unicode_key": "unicode_value_测试", "number": 42, "boolean": True},
-            remediation_steps=["Step with unicode: 修复步骤"]
+            context={
+                "unicode_key": "unicode_value_测试",
+                "number": 42,
+                "boolean": True,
+            },
+            remediation_steps=["Step with unicode: 修复步骤"],
         )
 
         # Test dictionary conversion
@@ -432,7 +472,7 @@ class TestRealWorldScenarios:
         dev_env = {
             "DATABASE_URL": "postgresql://localhost:5432/leadfactory_dev",
             "YELP_API_KEY": "dev_yelp_key_12345",
-            "GOOGLE_API_KEY": "dev_google_key_67890"
+            "GOOGLE_API_KEY": "dev_google_key_67890",
             # Missing production keys like SENDGRID_API_KEY
         }
 
@@ -445,7 +485,9 @@ class TestRealWorldScenarios:
                 result = validator.validate()
 
                 # Check that we have specific API key issues
-                sendgrid_issues = [issue for issue in result.issues if "SENDGRID" in issue.message]
+                sendgrid_issues = [
+                    issue for issue in result.issues if "SENDGRID" in issue.message
+                ]
                 assert len(sendgrid_issues) > 0
 
     def test_production_environment_validation(self):
@@ -459,7 +501,7 @@ class TestRealWorldScenarios:
             "GOOGLE_API_KEY": "prod_google_key_ghijkl",
             "SCREENSHOTONE_API_KEY": "prod_screenshot_key_mnopqr",
             "SENDGRID_API_KEY": "prod_sendgrid_key_stuvwx",
-            "SENDGRID_FROM_EMAIL": "noreply@company.com"
+            "SENDGRID_FROM_EMAIL": "noreply@company.com",
         }
 
         with patch.dict(os.environ, prod_env):
@@ -471,7 +513,11 @@ class TestRealWorldScenarios:
                     result = validator.validate()
 
         # Production environment should have minimal issues
-        critical_issues = [issue for issue in result.issues if issue.severity == ValidationSeverity.CRITICAL]
+        critical_issues = [
+            issue
+            for issue in result.issues
+            if issue.severity == ValidationSeverity.CRITICAL
+        ]
         assert len(critical_issues) == 0
 
     def test_partial_pipeline_validation(self):
@@ -482,7 +528,7 @@ class TestRealWorldScenarios:
         env_vars = {
             "DATABASE_URL": "postgresql://test:test@localhost/test",
             "YELP_API_KEY": "test_yelp_key",
-            "GOOGLE_API_KEY": "test_google_key"
+            "GOOGLE_API_KEY": "test_google_key",
         }
 
         with patch.dict(os.environ, env_vars):
@@ -494,7 +540,11 @@ class TestRealWorldScenarios:
 
         # Should have some issues for missing API keys but not critical failures
         # for the basic components that have their dependencies satisfied
-        critical_issues = [issue for issue in result.issues if issue.severity == ValidationSeverity.CRITICAL]
+        critical_issues = [
+            issue
+            for issue in result.issues
+            if issue.severity == ValidationSeverity.CRITICAL
+        ]
         assert len(critical_issues) == 0
 
 

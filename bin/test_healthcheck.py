@@ -158,7 +158,6 @@ def check_no_skipped_tests():
         skipped_count = result.stdout.count("SKIPPED")
 
         if skipped_count > 0:
-
             # Extract skipped test info
             for line in result.stdout.split("\n"):
                 if "SKIPPED" in line:

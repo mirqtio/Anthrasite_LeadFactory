@@ -63,7 +63,7 @@ try:
 
     TEST_MONITORING_AVAILABLE = True
 
-except ImportError as e:
+except ImportError:
     TEST_MONITORING_AVAILABLE = False
     # Test monitoring dependencies not available
 

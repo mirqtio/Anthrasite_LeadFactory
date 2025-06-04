@@ -209,11 +209,11 @@ class MessageTemplates:
 Budget Warning Alert
 
 Service: {alert.service}
-Model: {alert.model or 'All models'}
+Model: {alert.model or "All models"}
 Current Utilization: {utilization:.1f}%
 Current Cost: ${alert.current_cost:.2f}
 Budget Limit: ${alert.budget_limit:.2f}
-Timestamp: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
+Timestamp: {alert.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
 
 This is a warning that your budget utilization is approaching the configured threshold.
 Please monitor your usage to avoid service disruption.
@@ -222,11 +222,11 @@ Please monitor your usage to avoid service disruption.
 <h2>Budget Warning Alert</h2>
 <table>
     <tr><td><strong>Service:</strong></td><td>{alert.service}</td></tr>
-    <tr><td><strong>Model:</strong></td><td>{alert.model or 'All models'}</td></tr>
+    <tr><td><strong>Model:</strong></td><td>{alert.model or "All models"}</td></tr>
     <tr><td><strong>Current Utilization:</strong></td><td>{utilization:.1f}%</td></tr>
     <tr><td><strong>Current Cost:</strong></td><td>${alert.current_cost:.2f}</td></tr>
     <tr><td><strong>Budget Limit:</strong></td><td>${alert.budget_limit:.2f}</td></tr>
-    <tr><td><strong>Timestamp:</strong></td><td>{alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td></tr>
+    <tr><td><strong>Timestamp:</strong></td><td>{alert.timestamp.strftime("%Y-%m-%d %H:%M:%S")}</td></tr>
 </table>
 <p>This is a warning that your budget utilization is approaching the configured threshold.</p>
 <p>Please monitor your usage to avoid service disruption.</p>
@@ -243,12 +243,12 @@ Please monitor your usage to avoid service disruption.
 CRITICAL BUDGET ALERT
 
 Service: {alert.service}
-Model: {alert.model or 'All models'}
+Model: {alert.model or "All models"}
 Current Utilization: {utilization:.1f}%
 Current Cost: ${alert.current_cost:.2f}
 Budget Limit: ${alert.budget_limit:.2f}
 Overage: ${(alert.current_cost or 0) - (alert.budget_limit or 0):.2f}
-Timestamp: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
+Timestamp: {alert.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
 
 IMMEDIATE ACTION REQUIRED: Your budget has been exceeded.
 Services may be throttled or blocked to prevent further overage.
@@ -257,12 +257,12 @@ Services may be throttled or blocked to prevent further overage.
 <h2 style="color: red;">CRITICAL BUDGET ALERT</h2>
 <table>
     <tr><td><strong>Service:</strong></td><td>{alert.service}</td></tr>
-    <tr><td><strong>Model:</strong></td><td>{alert.model or 'All models'}</td></tr>
+    <tr><td><strong>Model:</strong></td><td>{alert.model or "All models"}</td></tr>
     <tr><td><strong>Current Utilization:</strong></td><td style="color: red;">{utilization:.1f}%</td></tr>
     <tr><td><strong>Current Cost:</strong></td><td style="color: red;">${alert.current_cost:.2f}</td></tr>
     <tr><td><strong>Budget Limit:</strong></td><td>${alert.budget_limit:.2f}</td></tr>
     <tr><td><strong>Overage:</strong></td><td style="color: red;">${(alert.current_cost or 0) - (alert.budget_limit or 0):.2f}</td></tr>
-    <tr><td><strong>Timestamp:</strong></td><td>{alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td></tr>
+    <tr><td><strong>Timestamp:</strong></td><td>{alert.timestamp.strftime("%Y-%m-%d %H:%M:%S")}</td></tr>
 </table>
 <p style="color: red;"><strong>IMMEDIATE ACTION REQUIRED:</strong> Your budget has been exceeded.</p>
 <p>Services may be throttled or blocked to prevent further overage.</p>
@@ -278,8 +278,8 @@ Services may be throttled or blocked to prevent further overage.
 Throttling Activation Alert
 
 Service: {alert.service}
-Model: {alert.model or 'All models'}
-Timestamp: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
+Model: {alert.model or "All models"}
+Timestamp: {alert.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
 
 Throttling has been activated for this service due to budget constraints.
 Requests may be delayed, rejected, or downgraded to maintain budget compliance.
@@ -290,8 +290,8 @@ Details: {alert.message}
 <h2>Throttling Activation Alert</h2>
 <table>
     <tr><td><strong>Service:</strong></td><td>{alert.service}</td></tr>
-    <tr><td><strong>Model:</strong></td><td>{alert.model or 'All models'}</td></tr>
-    <tr><td><strong>Timestamp:</strong></td><td>{alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td></tr>
+    <tr><td><strong>Model:</strong></td><td>{alert.model or "All models"}</td></tr>
+    <tr><td><strong>Timestamp:</strong></td><td>{alert.timestamp.strftime("%Y-%m-%d %H:%M:%S")}</td></tr>
 </table>
 <p>Throttling has been activated for this service due to budget constraints.</p>
 <p>Requests may be delayed, rejected, or downgraded to maintain budget compliance.</p>

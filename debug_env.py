@@ -7,7 +7,7 @@ from pathlib import Path
 
 # Try different methods of loading .env file
 print("Method 1: Direct file reading")
-with open(".env", "r") as f:
+with open(".env") as f:
     for line in f:
         if "OPENAI_API_KEY" in line:
             print(f"  Found in .env: {line.strip()}")

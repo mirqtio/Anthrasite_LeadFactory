@@ -6,12 +6,13 @@ webhook handling, and payment status retrieval.
 """
 
 import json
-import pytest
 from unittest.mock import Mock
+
+import pytest
 from fastapi.testclient import TestClient
 
-from leadfactory.app import app
 from leadfactory.api.payment_api import get_payment_service
+from leadfactory.app import app
 from leadfactory.services.payment_service import PaymentStatus
 
 
@@ -39,17 +40,20 @@ class TestPaymentAPI:
             "session_id": "cs_test_123",
             "session_url": "https://checkout.stripe.com/test",
             "payment_intent_id": "pi_test_123",
-            "publishable_key": "pk_test_123"
+            "publishable_key": "pk_test_123",
         }
 
         # Make request
-        response = client.post("/api/v1/payments/checkout", json={
-            "customer_email": "test@example.com",
-            "customer_name": "Test User",
-            "audit_type": "seo",
-            "amount": 9900,
-            "metadata": {"source": "test"}
-        })
+        response = client.post(
+            "/api/v1/payments/checkout",
+            json={
+                "customer_email": "test@example.com",
+                "customer_name": "Test User",
+                "audit_type": "seo",
+                "amount": 9900,
+                "metadata": {"source": "test"},
+            },
+        )
 
         # Verify response
         assert response.status_code == 200
@@ -65,17 +69,22 @@ class TestPaymentAPI:
             customer_name="Test User",
             audit_type="seo",
             amount=9900,
-            metadata={"source": "test"}
+            metadata={"source": "test"},
         )
 
-    def test_create_checkout_session_invalid_audit_type(self, client, mock_payment_service):
+    def test_create_checkout_session_invalid_audit_type(
+        self, client, mock_payment_service
+    ):
         """Test checkout session creation with invalid audit type."""
-        response = client.post("/api/v1/payments/checkout", json={
-            "customer_email": "test@example.com",
-            "customer_name": "Test User",
-            "audit_type": "invalid_type",
-            "amount": 9900
-        })
+        response = client.post(
+            "/api/v1/payments/checkout",
+            json={
+                "customer_email": "test@example.com",
+                "customer_name": "Test User",
+                "audit_type": "invalid_type",
+                "amount": 9900,
+            },
+        )
 
         assert response.status_code == 400
         assert "Invalid audit type" in response.json()["detail"]
@@ -83,37 +92,48 @@ class TestPaymentAPI:
     def test_create_checkout_session_invalid_amount(self, client, mock_payment_service):
         """Test checkout session creation with invalid amount."""
         # Test amount too low
-        response = client.post("/api/v1/payments/checkout", json={
-            "customer_email": "test@example.com",
-            "customer_name": "Test User",
-            "audit_type": "seo",
-            "amount": 500  # Below $10 minimum
-        })
+        response = client.post(
+            "/api/v1/payments/checkout",
+            json={
+                "customer_email": "test@example.com",
+                "customer_name": "Test User",
+                "audit_type": "seo",
+                "amount": 500,  # Below $10 minimum
+            },
+        )
 
         assert response.status_code == 400
         assert "Amount must be between" in response.json()["detail"]
 
         # Test amount too high
-        response = client.post("/api/v1/payments/checkout", json={
-            "customer_email": "test@example.com",
-            "customer_name": "Test User",
-            "audit_type": "seo",
-            "amount": 1500000  # Above $10,000 maximum
-        })
+        response = client.post(
+            "/api/v1/payments/checkout",
+            json={
+                "customer_email": "test@example.com",
+                "customer_name": "Test User",
+                "audit_type": "seo",
+                "amount": 1500000,  # Above $10,000 maximum
+            },
+        )
 
         assert response.status_code == 400
         assert "Amount must be between" in response.json()["detail"]
 
     def test_create_checkout_session_service_error(self, client, mock_payment_service):
         """Test checkout session creation with service error."""
-        mock_payment_service.create_checkout_session.side_effect = Exception("Service error")
+        mock_payment_service.create_checkout_session.side_effect = Exception(
+            "Service error"
+        )
 
-        response = client.post("/api/v1/payments/checkout", json={
-            "customer_email": "test@example.com",
-            "customer_name": "Test User",
-            "audit_type": "seo",
-            "amount": 9900
-        })
+        response = client.post(
+            "/api/v1/payments/checkout",
+            json={
+                "customer_email": "test@example.com",
+                "customer_name": "Test User",
+                "audit_type": "seo",
+                "amount": 9900,
+            },
+        )
 
         assert response.status_code == 500
         assert "Failed to create checkout session" in response.json()["detail"]
@@ -123,13 +143,15 @@ class TestPaymentAPI:
         response = client.post(
             "/api/v1/payments/webhook",
             data="test_payload",
-            headers={"stripe-signature": "test_signature"}
+            headers={"stripe-signature": "test_signature"},
         )
 
         assert response.status_code == 200
         assert response.json()["status"] == "received"
 
-    def test_handle_stripe_webhook_missing_signature(self, client, mock_payment_service):
+    def test_handle_stripe_webhook_missing_signature(
+        self, client, mock_payment_service
+    ):
         """Test webhook handling with missing signature."""
         response = client.post("/api/v1/payments/webhook", data="test_payload")
 
@@ -147,7 +169,7 @@ class TestPaymentAPI:
             "currency": "usd",
             "audit_type": "seo",
             "created_at": "2023-01-01T00:00:00",
-            "updated_at": "2023-01-01T00:00:00"
+            "updated_at": "2023-01-01T00:00:00",
         }
 
         response = client.get("/api/v1/payments/status/pi_test_123")
@@ -177,7 +199,7 @@ class TestPaymentAPI:
                 "currency": "usd",
                 "audit_type": "seo",
                 "created_at": "2023-01-01T00:00:00",
-                "updated_at": "2023-01-01T00:00:00"
+                "updated_at": "2023-01-01T00:00:00",
             }
         ]
 
@@ -195,12 +217,12 @@ class TestPaymentAPI:
             "status": "refunded",
             "refund_id": "re_test_123",
             "amount": 9900,
-            "payment_id": "pi_test_123"
+            "payment_id": "pi_test_123",
         }
 
-        response = client.post("/api/v1/payments/refund/pi_test_123", json={
-            "amount": 9900
-        })
+        response = client.post(
+            "/api/v1/payments/refund/pi_test_123", json={"amount": 9900}
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -209,7 +231,9 @@ class TestPaymentAPI:
 
     def test_refund_payment_invalid_payment(self, client, mock_payment_service):
         """Test refund for invalid payment."""
-        mock_payment_service.refund_payment.side_effect = ValueError("Payment not found")
+        mock_payment_service.refund_payment.side_effect = ValueError(
+            "Payment not found"
+        )
 
         response = client.post("/api/v1/payments/refund/pi_nonexistent", json={})
 

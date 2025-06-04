@@ -2,6 +2,7 @@
 """
 Wrapper script for email queue stage of the pipeline.
 """
+
 import logging
 import os
 import sys

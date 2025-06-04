@@ -27,13 +27,17 @@ except ImportError:
             self.base_url = "https://api.sendgrid.com/v3"
             self.headers = {
                 "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             }
 
-        def get_bounce_rate(self, days: int = 7, ip_pool: str = None, subuser: str = None) -> float:
+        def get_bounce_rate(
+            self, days: int = 7, ip_pool: str = None, subuser: str = None
+        ) -> float:
             return 0.0
 
-        def get_spam_rate(self, days: int = 7, ip_pool: str = None, subuser: str = None) -> float:
+        def get_spam_rate(
+            self, days: int = 7, ip_pool: str = None, subuser: str = None
+        ) -> float:
             return 0.0
 
 
@@ -45,7 +49,7 @@ class TestBounceHandling:
         self.sender = SendGridEmailSender(
             api_key="test-api-key",
             from_email="test@example.com",
-            from_name="Test Sender"
+            from_name="Test Sender",
         )
 
     @patch("leadfactory.pipeline.email_queue.requests.get")
@@ -56,14 +60,8 @@ class TestBounceHandling:
             {
                 "date": "2024-01-01",
                 "stats": [
-                    {
-                        "metrics": {
-                            "requests": 100,
-                            "bounces": 5,
-                            "delivered": 95
-                        }
-                    }
-                ]
+                    {"metrics": {"requests": 100, "bounces": 5, "delivered": 95}}
+                ],
             }
         ]
 
@@ -86,15 +84,7 @@ class TestBounceHandling:
         mock_response_data = [
             {
                 "date": "2024-01-01",
-                "stats": [
-                    {
-                        "metrics": {
-                            "requests": 0,
-                            "bounces": 0,
-                            "delivered": 0
-                        }
-                    }
-                ]
+                "stats": [{"metrics": {"requests": 0, "bounces": 0, "delivered": 0}}],
             }
         ]
 
@@ -158,15 +148,7 @@ class TestBounceHandling:
         mock_response_data = [
             {
                 "date": "2024-01-01",
-                "stats": [
-                    {
-                        "metrics": {
-                            "requests": 50,
-                            "bounces": 3,
-                            "delivered": 47
-                        }
-                    }
-                ]
+                "stats": [{"metrics": {"requests": 50, "bounces": 3, "delivered": 47}}],
             }
         ]
 
@@ -193,15 +175,7 @@ class TestBounceHandling:
         mock_response_data = [
             {
                 "date": "2024-01-01",
-                "stats": [
-                    {
-                        "metrics": {
-                            "requests": 75,
-                            "bounces": 2,
-                            "delivered": 73
-                        }
-                    }
-                ]
+                "stats": [{"metrics": {"requests": 75, "bounces": 2, "delivered": 73}}],
             }
         ]
 
@@ -228,14 +202,8 @@ class TestBounceHandling:
             {
                 "date": "2024-01-01",
                 "stats": [
-                    {
-                        "metrics": {
-                            "requests": 1000,
-                            "spam_reports": 2,
-                            "delivered": 998
-                        }
-                    }
-                ]
+                    {"metrics": {"requests": 1000, "spam_reports": 2, "delivered": 998}}
+                ],
             }
         ]
 
@@ -258,14 +226,8 @@ class TestBounceHandling:
             {
                 "date": "2024-01-01",
                 "stats": [
-                    {
-                        "metrics": {
-                            "requests": 100,
-                            "bounces": 8,
-                            "delivered": 92
-                        }
-                    }
-                ]
+                    {"metrics": {"requests": 100, "bounces": 8, "delivered": 92}}
+                ],
             }
         ]
 
@@ -300,10 +262,10 @@ class TestBounceHandling:
                         "metrics": {
                             "requests": 100,
                             "bounces": 15,  # 15% bounce rate - very high
-                            "delivered": 85
+                            "delivered": 85,
                         }
                     }
-                ]
+                ],
             }
         ]
 
@@ -326,40 +288,16 @@ class TestBounceHandling:
         mock_response_data = [
             {
                 "date": "2024-01-01",
-                "stats": [
-                    {
-                        "metrics": {
-                            "requests": 50,
-                            "bounces": 2,
-                            "delivered": 48
-                        }
-                    }
-                ]
+                "stats": [{"metrics": {"requests": 50, "bounces": 2, "delivered": 48}}],
             },
             {
                 "date": "2024-01-02",
-                "stats": [
-                    {
-                        "metrics": {
-                            "requests": 75,
-                            "bounces": 3,
-                            "delivered": 72
-                        }
-                    }
-                ]
+                "stats": [{"metrics": {"requests": 75, "bounces": 3, "delivered": 72}}],
             },
             {
                 "date": "2024-01-03",
-                "stats": [
-                    {
-                        "metrics": {
-                            "requests": 25,
-                            "bounces": 1,
-                            "delivered": 24
-                        }
-                    }
-                ]
-            }
+                "stats": [{"metrics": {"requests": 25, "bounces": 1, "delivered": 24}}],
+            },
         ]
 
         mock_response = Mock()
@@ -374,16 +312,21 @@ class TestBounceHandling:
         # Total: 150 requests, 6 bounces = 4% bounce rate
         assert bounce_rate == 0.04
 
-    @pytest.mark.parametrize("bounce_count,request_count,expected_rate", [
-        (0, 100, 0.0),      # No bounces
-        (5, 100, 0.05),     # 5% bounce rate
-        (10, 100, 0.10),    # 10% bounce rate
-        (25, 100, 0.25),    # 25% bounce rate (high)
-        (1, 10, 0.10),      # Small volume
-        (100, 1000, 0.10),  # Large volume
-    ])
+    @pytest.mark.parametrize(
+        "bounce_count,request_count,expected_rate",
+        [
+            (0, 100, 0.0),  # No bounces
+            (5, 100, 0.05),  # 5% bounce rate
+            (10, 100, 0.10),  # 10% bounce rate
+            (25, 100, 0.25),  # 25% bounce rate (high)
+            (1, 10, 0.10),  # Small volume
+            (100, 1000, 0.10),  # Large volume
+        ],
+    )
     @patch("leadfactory.pipeline.email_queue.requests.get")
-    def test_bounce_rate_calculations(self, mock_requests_get, bounce_count, request_count, expected_rate):
+    def test_bounce_rate_calculations(
+        self, mock_requests_get, bounce_count, request_count, expected_rate
+    ):
         """Test bounce rate calculations with various scenarios."""
         # Arrange
         mock_response_data = [
@@ -394,10 +337,10 @@ class TestBounceHandling:
                         "metrics": {
                             "requests": request_count,
                             "bounces": bounce_count,
-                            "delivered": request_count - bounce_count
+                            "delivered": request_count - bounce_count,
                         }
                     }
-                ]
+                ],
             }
         ]
 
@@ -419,13 +362,13 @@ class TestBounceThresholds:
     def test_bounce_threshold_detection(self):
         """Test detection of bounce rates exceeding thresholds."""
         # Define common bounce rate thresholds
-        warning_threshold = 0.05   # 5%
+        warning_threshold = 0.05  # 5%
         critical_threshold = 0.10  # 10%
 
         test_cases = [
-            (0.02, "normal"),     # Below warning threshold
-            (0.07, "warning"),    # Above warning, below critical
-            (0.15, "critical"),   # Above critical threshold
+            (0.02, "normal"),  # Below warning threshold
+            (0.07, "warning"),  # Above warning, below critical
+            (0.15, "critical"),  # Above critical threshold
         ]
 
         for bounce_rate, expected_status in test_cases:
@@ -441,13 +384,13 @@ class TestBounceThresholds:
     def test_spam_threshold_detection(self):
         """Test detection of spam rates exceeding thresholds."""
         # Define common spam rate thresholds
-        warning_threshold = 0.001   # 0.1%
+        warning_threshold = 0.001  # 0.1%
         critical_threshold = 0.005  # 0.5%
 
         test_cases = [
-            (0.0005, "normal"),    # Below warning threshold
-            (0.003, "warning"),    # Above warning, below critical
-            (0.008, "critical"),   # Above critical threshold
+            (0.0005, "normal"),  # Below warning threshold
+            (0.003, "warning"),  # Above warning, below critical
+            (0.008, "critical"),  # Above critical threshold
         ]
 
         for spam_rate, expected_status in test_cases:

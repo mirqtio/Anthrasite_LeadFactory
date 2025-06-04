@@ -12,7 +12,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 # Import test utilities
 from tests.utils import (
@@ -144,7 +146,7 @@ def pipeline_db():
         (monthly_budget, daily_budget, warning_threshold, pause_threshold, current_status)
         VALUES (?, ?, ?, ?, ?)
         """,
-        (100.0, 10.0, 0.7, 0.9, "active")
+        (100.0, 10.0, 0.7, 0.9, "active"),
     )
 
     conn.commit()
@@ -164,11 +166,13 @@ class MockPipeline:
 
     def scrape_businesses(self, category, location, limit=20):
         """Mock scraping businesses."""
-        self.calls.append({
-            "module": "scrape",
-            "method": "scrape_businesses",
-            "args": {"category": category, "location": location, "limit": limit}
-        })
+        self.calls.append(
+            {
+                "module": "scrape",
+                "method": "scrape_businesses",
+                "args": {"category": category, "location": location, "limit": limit},
+            }
+        )
 
         # Generate mock business data
         businesses = []
@@ -200,8 +204,8 @@ class MockPipeline:
                     business.get("website", ""),
                     business.get("category", ""),
                     business.get("source", ""),
-                    business.get("source_id", "")
-                )
+                    business.get("source_id", ""),
+                ),
             )
 
         self.db.commit()
@@ -211,11 +215,13 @@ class MockPipeline:
 
     def enrich_businesses(self, business_ids):
         """Mock enriching businesses."""
-        self.calls.append({
-            "module": "enrich",
-            "method": "enrich_businesses",
-            "args": {"business_ids": business_ids}
-        })
+        self.calls.append(
+            {
+                "module": "enrich",
+                "method": "enrich_businesses",
+                "args": {"business_ids": business_ids},
+            }
+        )
 
         # Update businesses with enriched data
         cursor = self.db.cursor()
@@ -223,9 +229,11 @@ class MockPipeline:
             # Generate mock tech stack
             tech_stack = {
                 "cms": ["WordPress", "Drupal", "Shopify", None][business_id % 4],
-                "analytics": ["Google Analytics", "Mixpanel", None, None][business_id % 4],
+                "analytics": ["Google Analytics", "Mixpanel", None, None][
+                    business_id % 4
+                ],
                 "server": ["Nginx", "Apache", "IIS", None][business_id % 4],
-                "javascript": ["React", "Angular", "Vue", "jQuery"][business_id % 4]
+                "javascript": ["React", "Angular", "Vue", "jQuery"][business_id % 4],
             }
 
             # Remove None values
@@ -235,14 +243,18 @@ class MockPipeline:
             performance = {
                 "page_speed": 50 + (business_id % 5) * 10,  # 50-90
                 "mobile_friendly": business_id % 3 != 0,  # 2/3 are mobile friendly
-                "accessibility": 60 + (business_id % 4) * 10  # 60-90
+                "accessibility": 60 + (business_id % 4) * 10,  # 60-90
             }
 
             # Generate mock contact info
             contact_info = {
-                "name": ["John Smith", "Jane Doe", "Robert Johnson", "Emily Williams"][business_id % 4],
-                "position": ["CEO", "CTO", "Marketing Director", "VP Sales"][business_id % 4],
-                "email": f"contact{business_id}@example.com"
+                "name": ["John Smith", "Jane Doe", "Robert Johnson", "Emily Williams"][
+                    business_id % 4
+                ],
+                "position": ["CEO", "CTO", "Marketing Director", "VP Sales"][
+                    business_id % 4
+                ],
+                "email": f"contact{business_id}@example.com",
             }
 
             # Update the business
@@ -256,8 +268,8 @@ class MockPipeline:
                     json.dumps(tech_stack),
                     json.dumps(performance),
                     json.dumps(contact_info),
-                    business_id
-                )
+                    business_id,
+                ),
             )
 
         self.db.commit()
@@ -265,11 +277,13 @@ class MockPipeline:
 
     def find_duplicates(self, business_ids, batch_size=10):
         """Mock finding duplicate businesses."""
-        self.calls.append({
-            "module": "dedupe",
-            "method": "find_duplicates",
-            "args": {"business_ids": business_ids, "batch_size": batch_size}
-        })
+        self.calls.append(
+            {
+                "module": "dedupe",
+                "method": "find_duplicates",
+                "args": {"business_ids": business_ids, "batch_size": batch_size},
+            }
+        )
 
         # Create some duplicate pairs
         cursor = self.db.cursor()
@@ -294,7 +308,7 @@ class MockPipeline:
                         business1_id, business2_id, similarity_score, status
                     ) VALUES (?, ?, ?, ?)
                     """,
-                    (id1, id2, similarity_score, "pending")
+                    (id1, id2, similarity_score, "pending"),
                 )
                 pair_ids.append(cursor.lastrowid)
             except sqlite3.IntegrityError:
@@ -306,39 +320,51 @@ class MockPipeline:
 
     def process_duplicate_pairs(self, pair_ids=None, limit=10):
         """Mock processing duplicate pairs."""
-        self.calls.append({
-            "module": "dedupe",
-            "method": "process_duplicate_pairs",
-            "args": {"pair_ids": pair_ids, "limit": limit}
-        })
+        self.calls.append(
+            {
+                "module": "dedupe",
+                "method": "process_duplicate_pairs",
+                "args": {"pair_ids": pair_ids, "limit": limit},
+            }
+        )
 
         # If no specific pairs, get pending pairs
         cursor = self.db.cursor()
         if not pair_ids:
             cursor.execute(
                 "SELECT id FROM candidate_duplicate_pairs WHERE status = 'pending' LIMIT ?",
-                (limit,)
+                (limit,),
             )
             pair_ids = [row[0] for row in cursor.fetchall()]
 
         # Process each pair
         for pair_id in pair_ids:
             # Get the pair
-            cursor.execute("SELECT * FROM candidate_duplicate_pairs WHERE id = ?", (pair_id,))
+            cursor.execute(
+                "SELECT * FROM candidate_duplicate_pairs WHERE id = ?", (pair_id,)
+            )
             pair = dict(cursor.fetchone())
 
             # Get the businesses
-            cursor.execute("SELECT * FROM businesses WHERE id = ?", (pair["business1_id"],))
+            cursor.execute(
+                "SELECT * FROM businesses WHERE id = ?", (pair["business1_id"],)
+            )
             business1 = dict(cursor.fetchone())
 
-            cursor.execute("SELECT * FROM businesses WHERE id = ?", (pair["business2_id"],))
+            cursor.execute(
+                "SELECT * FROM businesses WHERE id = ?", (pair["business2_id"],)
+            )
             business2 = dict(cursor.fetchone())
 
             # Use the mock matcher to determine if they are duplicates
-            is_duplicate = self.mock_matcher.are_potential_duplicates(business1, business2)
+            is_duplicate = self.mock_matcher.are_potential_duplicates(
+                business1, business2
+            )
 
             # Use the mock verifier for LLM verification
-            verified, confidence, reasoning = self.mock_verifier.verify_duplicates(business1, business2)
+            verified, confidence, reasoning = self.mock_verifier.verify_duplicates(
+                business1, business2
+            )
 
             # Update the pair
             status = "merged" if verified and is_duplicate else "rejected"
@@ -348,14 +374,14 @@ class MockPipeline:
                 SET status = ?, verified_by_llm = 1, llm_confidence = ?, llm_reasoning = ?
                 WHERE id = ?
                 """,
-                (status, confidence, reasoning, pair_id)
+                (status, confidence, reasoning, pair_id),
             )
 
             # If merged, update the business
             if status == "merged":
                 cursor.execute(
                     "UPDATE businesses SET merged_into = ? WHERE id = ?",
-                    (pair["business1_id"], pair["business2_id"])
+                    (pair["business1_id"], pair["business2_id"]),
                 )
 
         self.db.commit()
@@ -363,11 +389,13 @@ class MockPipeline:
 
     def score_businesses(self, business_ids=None, limit=20):
         """Mock scoring businesses."""
-        self.calls.append({
-            "module": "score",
-            "method": "score_businesses",
-            "args": {"business_ids": business_ids, "limit": limit}
-        })
+        self.calls.append(
+            {
+                "module": "score",
+                "method": "score_businesses",
+                "args": {"business_ids": business_ids, "limit": limit},
+            }
+        )
 
         # If no specific businesses, get unscored ones
         cursor = self.db.cursor()
@@ -378,7 +406,7 @@ class MockPipeline:
                 WHERE score IS NULL AND merged_into IS NULL
                 LIMIT ?
                 """,
-                (limit,)
+                (limit,),
             )
             business_ids = [row[0] for row in cursor.fetchall()]
 
@@ -389,9 +417,15 @@ class MockPipeline:
             business = dict(cursor.fetchone())
 
             # Extract data for scoring
-            tech_stack = json.loads(business["tech_stack"]) if business["tech_stack"] else {}
-            performance = json.loads(business["performance"]) if business["performance"] else {}
-            contact_info = json.loads(business["contact_info"]) if business["contact_info"] else {}
+            tech_stack = (
+                json.loads(business["tech_stack"]) if business["tech_stack"] else {}
+            )
+            performance = (
+                json.loads(business["performance"]) if business["performance"] else {}
+            )
+            contact_info = (
+                json.loads(business["contact_info"]) if business["contact_info"] else {}
+            )
 
             # Calculate tech score (25%)
             tech_count = len(tech_stack)
@@ -404,7 +438,11 @@ class MockPipeline:
                 mobile_friendly = performance.get("mobile_friendly", False)
                 accessibility = performance.get("accessibility", 0)
 
-                perf_score = (page_speed * 0.6) + (30 if mobile_friendly else 0) + (accessibility * 0.4)
+                perf_score = (
+                    (page_speed * 0.6)
+                    + (30 if mobile_friendly else 0)
+                    + (accessibility * 0.4)
+                )
                 perf_score = min(100, perf_score)
 
             # Calculate contact score (35%)
@@ -414,10 +452,16 @@ class MockPipeline:
                 has_position = "position" in contact_info and contact_info["position"]
                 has_email = "email" in contact_info and contact_info["email"]
 
-                contact_score = (40 if has_name else 0) + (30 if has_position else 0) + (30 if has_email else 0)
+                contact_score = (
+                    (40 if has_name else 0)
+                    + (30 if has_position else 0)
+                    + (30 if has_email else 0)
+                )
 
             # Calculate final score
-            final_score = int(tech_score * 0.25 + perf_score * 0.4 + contact_score * 0.35)
+            final_score = int(
+                tech_score * 0.25 + perf_score * 0.4 + contact_score * 0.35
+            )
 
             # Create score details
             score_details = {
@@ -427,8 +471,8 @@ class MockPipeline:
                 "components": {
                     "tech_stack": list(tech_stack.keys()),
                     "performance": list(performance.keys()),
-                    "contact_info": list(contact_info.keys())
-                }
+                    "contact_info": list(contact_info.keys()),
+                },
             }
 
             # Update the business
@@ -438,7 +482,7 @@ class MockPipeline:
                 SET score = ?, score_details = ?
                 WHERE id = ?
                 """,
-                (final_score, json.dumps(score_details), business_id)
+                (final_score, json.dumps(score_details), business_id),
             )
 
         self.db.commit()
@@ -446,11 +490,17 @@ class MockPipeline:
 
     def generate_emails(self, business_ids=None, min_score=50, limit=10):
         """Mock generating emails for businesses."""
-        self.calls.append({
-            "module": "email_queue",
-            "method": "generate_emails",
-            "args": {"business_ids": business_ids, "min_score": min_score, "limit": limit}
-        })
+        self.calls.append(
+            {
+                "module": "email_queue",
+                "method": "generate_emails",
+                "args": {
+                    "business_ids": business_ids,
+                    "min_score": min_score,
+                    "limit": limit,
+                },
+            }
+        )
 
         # If no specific businesses, get scored ones above threshold
         cursor = self.db.cursor()
@@ -461,7 +511,7 @@ class MockPipeline:
                 WHERE score >= ? AND merged_into IS NULL
                 LIMIT ?
                 """,
-                (min_score, limit)
+                (min_score, limit),
             )
             business_ids = [row[0] for row in cursor.fetchall()]
 
@@ -489,7 +539,9 @@ class MockPipeline:
 
             # Generate email content
             subject = f"{subject_prefix}Custom Proposal for {business['name']}"
-            body_text = f"This is a test email for {business['name']} with score {score}."
+            body_text = (
+                f"This is a test email for {business['name']} with score {score}."
+            )
             body_html = f"<html><body><h1>{variant.title()} Proposal</h1><p>{body_text}</p></body></html>"
 
             # Insert the email
@@ -499,7 +551,7 @@ class MockPipeline:
                     business_id, variant_id, subject, body_text, body_html, status
                 ) VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (business_id, variant, subject, body_text, body_html, "pending")
+                (business_id, variant, subject, body_text, body_html, "pending"),
             )
 
             email_ids.append(cursor.lastrowid)
@@ -509,11 +561,13 @@ class MockPipeline:
 
     def process_email_queue(self, limit=10):
         """Mock processing the email queue."""
-        self.calls.append({
-            "module": "email_queue",
-            "method": "process_email_queue",
-            "args": {"limit": limit}
-        })
+        self.calls.append(
+            {
+                "module": "email_queue",
+                "method": "process_email_queue",
+                "args": {"limit": limit},
+            }
+        )
 
         # Get pending emails
         cursor = self.db.cursor()
@@ -523,7 +577,7 @@ class MockPipeline:
             FROM emails WHERE status = 'pending'
             LIMIT ?
             """,
-            (limit,)
+            (limit,),
         )
         pending_emails = [dict(row) for row in cursor.fetchall()]
 
@@ -538,13 +592,12 @@ class MockPipeline:
             if success:
                 cursor.execute(
                     "UPDATE emails SET status = 'sent', sent_at = CURRENT_TIMESTAMP WHERE id = ?",
-                    (email["id"],)
+                    (email["id"],),
                 )
                 sent_count += 1
             else:
                 cursor.execute(
-                    "UPDATE emails SET status = 'error' WHERE id = ?",
-                    (email["id"],)
+                    "UPDATE emails SET status = 'error' WHERE id = ?", (email["id"],)
                 )
                 error_count += 1
 
@@ -553,21 +606,23 @@ class MockPipeline:
         return {
             "processed": len(pending_emails),
             "sent": sent_count,
-            "error": error_count
+            "error": error_count,
         }
 
     def track_api_cost(self, model, tokens, purpose=None, business_id=None):
         """Mock tracking API costs."""
-        self.calls.append({
-            "module": "budget_gate",
-            "method": "track_api_cost",
-            "args": {
-                "model": model,
-                "tokens": tokens,
-                "purpose": purpose,
-                "business_id": business_id
+        self.calls.append(
+            {
+                "module": "budget_gate",
+                "method": "track_api_cost",
+                "args": {
+                    "model": model,
+                    "tokens": tokens,
+                    "purpose": purpose,
+                    "business_id": business_id,
+                },
             }
-        })
+        )
 
         # Calculate cost based on model
         cost_per_1k = {
@@ -588,7 +643,7 @@ class MockPipeline:
                 model, tokens, cost, purpose, business_id
             ) VALUES (?, ?, ?, ?, ?)
             """,
-            (model, tokens, cost, purpose, business_id)
+            (model, tokens, cost, purpose, business_id),
         )
 
         self.db.commit()
@@ -603,9 +658,7 @@ def test_full_pipeline_workflow(pipeline_db):
 
     # Step 1: Scrape businesses
     business_ids = pipeline.scrape_businesses(
-        category="tech",
-        location="San Francisco, CA",
-        limit=10
+        category="tech", location="San Francisco, CA", limit=10
     )
 
     # Verify businesses were created
@@ -634,7 +687,9 @@ def test_full_pipeline_workflow(pipeline_db):
     pipeline.process_duplicate_pairs(pair_ids)
 
     # Verify pairs were processed
-    cursor.execute("SELECT COUNT(*) FROM candidate_duplicate_pairs WHERE status != 'pending'")
+    cursor.execute(
+        "SELECT COUNT(*) FROM candidate_duplicate_pairs WHERE status != 'pending'"
+    )
     processed_count = cursor.fetchone()[0]
     assert processed_count > 0, "No duplicate pairs were processed"
 
@@ -666,7 +721,7 @@ def test_full_pipeline_workflow(pipeline_db):
         model="gpt-4",
         tokens=1000,
         purpose="duplicate_verification",
-        business_id=business_ids[0]
+        business_id=business_ids[0],
     )
 
     # Verify cost was tracked
@@ -676,7 +731,16 @@ def test_full_pipeline_workflow(pipeline_db):
 
     # Verify all pipeline stages were called in order
     module_sequence = [call["module"] for call in pipeline.calls]
-    expected_sequence = ["scrape", "enrich", "dedupe", "dedupe", "score", "email_queue", "email_queue", "budget_gate"]
+    expected_sequence = [
+        "scrape",
+        "enrich",
+        "dedupe",
+        "dedupe",
+        "score",
+        "email_queue",
+        "email_queue",
+        "budget_gate",
+    ]
 
     # Check that each module was called at least once
     for module in set(expected_sequence):
@@ -686,8 +750,9 @@ def test_full_pipeline_workflow(pipeline_db):
     # (allowing for potential repeated calls to the same module)
     for i, expected_module in enumerate(expected_sequence):
         if i < len(module_sequence):
-            assert module_sequence[i] == expected_module, \
+            assert module_sequence[i] == expected_module, (
                 f"Expected {expected_module} at position {i}, got {module_sequence[i]}"
+            )
 
 
 # Test pipeline with budget constraints
@@ -711,7 +776,7 @@ def test_pipeline_with_budget_constraints(pipeline_db):
         pipeline.track_api_cost(
             model="gpt-4",
             tokens=10000,  # This will cost around $0.3
-            purpose="test"
+            purpose="test",
         )
 
     # Check budget status (should be warning or paused)
@@ -723,9 +788,7 @@ def test_pipeline_with_budget_constraints(pipeline_db):
 
     # Run a simple pipeline to see if operations are affected by budget
     business_ids = pipeline.scrape_businesses(
-        category="retail",
-        location="New York, NY",
-        limit=5
+        category="retail", location="New York, NY", limit=5
     )
 
     # Try to enrich, but this should be limited by budget
@@ -734,11 +797,14 @@ def test_pipeline_with_budget_constraints(pipeline_db):
     # Verify the number of API cost entries matches expectations
     cursor.execute("SELECT COUNT(*) FROM api_costs")
     cost_entry_count = cursor.fetchone()[0]
-    assert cost_entry_count > 3, "No additional API costs were tracked after initial setup"
+    assert cost_entry_count > 3, (
+        "No additional API costs were tracked after initial setup"
+    )
 
     # Check that the pipeline recorded proper budget constraints
     budget_related_calls = [
-        call for call in pipeline.calls
+        call
+        for call in pipeline.calls
         if call["module"] == "budget_gate" or "budget" in str(call)
     ]
     assert len(budget_related_calls) > 0, "No budget-related operations were recorded"

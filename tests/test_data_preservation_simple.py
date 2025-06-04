@@ -47,7 +47,7 @@ class TestDataPreservationSimple(unittest.TestCase):
         # Mock business data
         mock_get_business.side_effect = [
             {"id": 1, "name": "Business A", "email": "a@example.com"},
-            {"id": 2, "name": "Business B", "email": "b@example.com"}
+            {"id": 2, "name": "Business B", "email": "b@example.com"},
         ]
 
         # Create backup
@@ -76,7 +76,7 @@ class TestDataPreservationSimple(unittest.TestCase):
             business1_id=1,
             business2_id=2,
             operation_data={"merged_fields": ["name", "email"]},
-            status="success"
+            status="success",
         )
 
         # Verify the insert was called
@@ -113,12 +113,12 @@ class TestDataPreservationSimple(unittest.TestCase):
         businesses = {
             "1": {
                 "core_data": {"id": 1, "name": "Business A", "email": "a@example.com"},
-                "related_data": {}
+                "related_data": {},
             },
             "2": {
                 "core_data": {"id": 2, "name": "Business B", "email": "b@example.com"},
-                "related_data": {}
-            }
+                "related_data": {},
+            },
         }
 
         # Create backup file directly
@@ -129,7 +129,7 @@ class TestDataPreservationSimple(unittest.TestCase):
             "backup_id": backup_id,
             "operation_type": "test",
             "businesses": businesses,
-            "timestamp": "2023-01-01T00:00:00"
+            "timestamp": "2023-01-01T00:00:00",
         }
 
         with open(backup_path, "w") as f:

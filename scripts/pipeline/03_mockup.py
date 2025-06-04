@@ -2,6 +2,7 @@
 """
 Wrapper script for mockup generation stage of the pipeline.
 """
+
 import logging
 import os
 import sys

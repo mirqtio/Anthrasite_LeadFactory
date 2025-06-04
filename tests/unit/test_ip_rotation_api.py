@@ -2,33 +2,34 @@
 Unit tests for IP rotation API endpoints.
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 from leadfactory.api.ip_rotation_api import (
-    router,
+    ConfigurationUpdate,
     IPSubuserRequest,
     RotationRequest,
-    ConfigurationUpdate,
-    get_rotation_service,
     get_alerting_service,
+    get_rotation_service,
+    router,
 )
 from leadfactory.services.ip_rotation import (
     IPRotationService,
-    RotationConfig,
     IPSubuserPool,
     IPSubuserStatus,
-    RotationReason,
+    RotationConfig,
     RotationEvent,
+    RotationReason,
 )
 from leadfactory.services.ip_rotation_alerting import (
-    IPRotationAlerting,
-    AlertingConfig,
     Alert,
-    AlertType,
+    AlertingConfig,
     AlertSeverity,
+    AlertType,
+    IPRotationAlerting,
 )
 
 
@@ -92,8 +93,12 @@ class TestIPRotationAPI:
         self.mock_alerting_service = Mock(spec=IPRotationAlerting)
 
         # Override dependency injection
-        router.dependency_overrides[get_rotation_service] = lambda: self.mock_rotation_service
-        router.dependency_overrides[get_alerting_service] = lambda: self.mock_alerting_service
+        router.dependency_overrides[get_rotation_service] = (
+            lambda: self.mock_rotation_service
+        )
+        router.dependency_overrides[get_alerting_service] = (
+            lambda: self.mock_alerting_service
+        )
 
         # Create test client
         self.client = TestClient(router)
@@ -153,7 +158,9 @@ class TestIPRotationAPI:
 
     def test_add_ip_subuser_error(self):
         """Test POST /pool/add endpoint with service error."""
-        self.mock_rotation_service.add_ip_subuser.side_effect = ValueError("IP already exists")
+        self.mock_rotation_service.add_ip_subuser.side_effect = ValueError(
+            "IP already exists"
+        )
 
         request_data = {
             "ip_address": "192.168.1.1",
@@ -181,7 +188,9 @@ class TestIPRotationAPI:
 
     def test_remove_ip_subuser_not_found(self):
         """Test DELETE /pool/remove endpoint with not found error."""
-        self.mock_rotation_service.remove_ip_subuser.side_effect = ValueError("IP/subuser not found")
+        self.mock_rotation_service.remove_ip_subuser.side_effect = ValueError(
+            "IP/subuser not found"
+        )
 
         response = self.client.delete("/pool/remove/192.168.1.1/test_user")
 
@@ -221,7 +230,9 @@ class TestIPRotationAPI:
 
     def test_execute_rotation_error(self):
         """Test POST /rotation/execute endpoint with rotation error."""
-        self.mock_rotation_service.execute_rotation.side_effect = ValueError("Target IP in cooldown")
+        self.mock_rotation_service.execute_rotation.side_effect = ValueError(
+            "Target IP in cooldown"
+        )
 
         request_data = {
             "from_ip": "192.168.1.1",
@@ -331,7 +342,9 @@ class TestIPRotationAPI:
         mock_pool_entry.status = IPSubuserStatus.ACTIVE
         self.mock_rotation_service.get_ip_subuser_pool.return_value = mock_pool_entry
 
-        response = self.client.post("/pool/192.168.1.1/test_user/maintenance?enabled=true")
+        response = self.client.post(
+            "/pool/192.168.1.1/test_user/maintenance?enabled=true"
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -344,7 +357,9 @@ class TestIPRotationAPI:
         """Test maintenance mode toggle with non-existent IP/subuser."""
         self.mock_rotation_service.get_ip_subuser_pool.return_value = None
 
-        response = self.client.post("/pool/192.168.1.1/test_user/maintenance?enabled=true")
+        response = self.client.post(
+            "/pool/192.168.1.1/test_user/maintenance?enabled=true"
+        )
 
         assert response.status_code == 404
         data = response.json()
@@ -364,12 +379,16 @@ class TestIPRotationAPI:
         assert data["alerts_removed"] == 3
 
         # Verify services were called with correct parameter
-        self.mock_rotation_service.cleanup_old_rotation_events.assert_called_once_with(30)
+        self.mock_rotation_service.cleanup_old_rotation_events.assert_called_once_with(
+            30
+        )
         self.mock_alerting_service.cleanup_old_alerts.assert_called_once_with(30)
 
     def test_api_error_handling(self):
         """Test API error handling for unexpected exceptions."""
-        self.mock_rotation_service.get_pool_status.side_effect = Exception("Unexpected error")
+        self.mock_rotation_service.get_pool_status.side_effect = Exception(
+            "Unexpected error"
+        )
 
         response = self.client.get("/status")
 

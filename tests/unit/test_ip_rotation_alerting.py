@@ -2,17 +2,18 @@
 Unit tests for IP rotation alerting system.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from leadfactory.services.ip_rotation_alerting import (
     Alert,
     AlertingConfig,
+    AlertSeverity,
+    AlertType,
     CircuitBreaker,
     IPRotationAlerting,
-    AlertType,
-    AlertSeverity,
 )
 
 

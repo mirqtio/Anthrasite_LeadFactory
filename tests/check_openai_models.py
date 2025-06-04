@@ -20,10 +20,7 @@ if not api_key:
     sys.exit(1)
 
 # Set up headers
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json"
-}
+headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
 # Make request to list models
 try:
@@ -33,9 +30,10 @@ try:
 
     # Filter for completion models
     completion_models = [
-        model for model in models["data"]
-        if "gpt" in model["id"].lower() or
-           any(id_part in model["id"].lower() for id_part in ["turbo", "text-davinci"])
+        model
+        for model in models["data"]
+        if "gpt" in model["id"].lower()
+        or any(id_part in model["id"].lower() for id_part in ["turbo", "text-davinci"])
     ]
 
     # Sort models by id

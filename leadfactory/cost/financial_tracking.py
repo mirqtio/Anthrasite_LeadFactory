@@ -224,7 +224,7 @@ class FinancialTracker:
 
                 return transaction_id
 
-            except sqlite3.IntegrityError as e:
+            except sqlite3.IntegrityError:
                 logger.warning(
                     f"Transaction already exists: {stripe_payment_intent_id}"
                 )
@@ -463,9 +463,9 @@ class FinancialTracker:
         """
         start_date = f"{year:04d}-{month:02d}-01"
         if month == 12:
-            end_date = f"{year+1:04d}-01-01"
+            end_date = f"{year + 1:04d}-01-01"
         else:
-            end_date = f"{year:04d}-{month+1:02d}-01"
+            end_date = f"{year:04d}-{month + 1:02d}-01"
 
         with self._lock:
             conn = sqlite3.connect(self.db_path)

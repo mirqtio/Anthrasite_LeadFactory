@@ -313,7 +313,7 @@ def generate_progress_report(status):
 
         f.write("## Overall Progress\n\n")
         f.write(
-            f"- Categories: {enabled_categories}/{total_categories} ({enabled_categories/total_categories*100:.1f}%)\n"
+            f"- Categories: {enabled_categories}/{total_categories} ({enabled_categories / total_categories * 100:.1f}%)\n"
         )
         percentage = (enabled_tests / total_tests * 100) if total_tests > 0 else 0
         f.write(f"- Tests: {enabled_tests}/{total_tests} ({percentage:.1f}%)\n\n")

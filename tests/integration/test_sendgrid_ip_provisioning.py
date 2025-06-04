@@ -30,7 +30,9 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         self.db_path = self.temp_db.name
 
         # Create provisioner instance
-        self.provisioner = SendGridIPProvisioner(api_key="test-key", db_path=self.db_path)
+        self.provisioner = SendGridIPProvisioner(
+            api_key="test-key", db_path=self.db_path
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -46,7 +48,9 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         self.assertIn("created successfully", message)
 
         # Step 2: Provision dedicated IP
-        success, message, ip = self.provisioner.provision_dedicated_ip("production-pool")
+        success, message, ip = self.provisioner.provision_dedicated_ip(
+            "production-pool"
+        )
         self.assertTrue(success)
         self.assertIsNotNone(ip)
         self.assertEqual(ip.status, IPStatus.ACTIVE)
@@ -167,7 +171,9 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         # Add more IPs to the pool
         additional_ips = ["192.168.1.3", "192.168.1.4"]
         for ip_address in additional_ips:
-            success, message = self.provisioner.add_ip_to_pool(ip_address, "managed-pool")
+            success, message = self.provisioner.add_ip_to_pool(
+                ip_address, "managed-pool"
+            )
             self.assertTrue(success)
 
         # Verify all IPs are in the pool
@@ -199,7 +205,7 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
             IPStatus.ACTIVE,
             IPStatus.PAUSED,
             IPStatus.ACTIVE,
-            IPStatus.DECOMMISSIONED
+            IPStatus.DECOMMISSIONED,
         ]
 
         for new_status in status_progression:
@@ -215,7 +221,7 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
             self.provisioner._log_event(
                 ip_address,
                 "status_change",
-                {"old_status": "previous", "new_status": new_status.value}
+                {"old_status": "previous", "new_status": new_status.value},
             )
 
         # Verify final status
@@ -238,7 +244,7 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
             ("configuration_change", {"setting": "reputation_threshold", "value": 90}),
             ("alert_triggered", {"type": "high_bounce_rate", "rate": 0.15}),
             ("maintenance_start", {"type": "scheduled", "duration": "2h"}),
-            ("maintenance_end", {"type": "scheduled", "result": "success"})
+            ("maintenance_end", {"type": "scheduled", "result": "success"}),
         ]
 
         for event_type, event_data in test_events:
@@ -246,11 +252,14 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
 
         # Verify events were logged
         with self.provisioner._get_db_connection() as conn:
-            events = conn.execute("""
+            events = conn.execute(
+                """
                 SELECT * FROM ip_events
                 WHERE ip_address = ?
                 ORDER BY timestamp DESC
-            """, (ip_address,)).fetchall()
+            """,
+                (ip_address,),
+            ).fetchall()
 
             # Should have events from provisioning, health check, pool add, plus manual events
             self.assertGreaterEqual(len(events), len(test_events))
@@ -276,7 +285,9 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         self.assertIsNone(non_existent_pool)
 
         # Test adding IP to non-existent pool
-        success, message = self.provisioner.add_ip_to_pool("192.168.1.1", "non-existent-pool")
+        success, message = self.provisioner.add_ip_to_pool(
+            "192.168.1.1", "non-existent-pool"
+        )
         # Should succeed in mock mode but log the attempt
 
         # Test health check on non-existent IP
@@ -294,7 +305,9 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         success, _, ip1 = self.provisioner.provision_dedicated_ip("persistence-pool")
         self.assertTrue(success)
 
-        success, message = self.provisioner.create_ip_pool("test-persistence", [ip1.ip_address])
+        success, message = self.provisioner.create_ip_pool(
+            "test-persistence", [ip1.ip_address]
+        )
         self.assertTrue(success)
 
         # Close first provisioner
@@ -302,7 +315,9 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         del self.provisioner
 
         # Create new provisioner with same database
-        new_provisioner = SendGridIPProvisioner(api_key="test-key", db_path=self.db_path)
+        new_provisioner = SendGridIPProvisioner(
+            api_key="test-key", db_path=self.db_path
+        )
 
         # Verify data persists
         retrieved_ip = new_provisioner.get_dedicated_ip(first_ip_address)

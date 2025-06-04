@@ -11,7 +11,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 # Import the utils module
 from utils import io
 
@@ -87,11 +89,7 @@ def test_track_api_cost():
 
         # Test tracking API cost
         io.track_api_cost(
-            model="gpt-4",
-            tokens=1000,
-            cost=0.05,
-            purpose="Testing",
-            business_id=1
+            model="gpt-4", tokens=1000, cost=0.05, purpose="Testing", business_id=1
         )
 
         # Verify the right SQL was executed
@@ -116,7 +114,7 @@ def test_get_business_by_id():
             "address": "123 Main St",
             "city": "Anytown",
             "state": "CA",
-            "zip": "12345"
+            "zip": "12345",
         }
         mock_fetchone.return_value = test_business
 
@@ -129,7 +127,9 @@ def test_get_business_by_id():
         # Verify the right SQL was executed
         assert mock_cursor.execute.called, "cursor.execute should be called"
         args = mock_cursor.execute.call_args[0]
-        assert "SELECT * FROM businesses WHERE id = ?" in args[0], "SQL should select from businesses table"
+        assert "SELECT * FROM businesses WHERE id = ?" in args[0], (
+            "SQL should select from businesses table"
+        )
         assert 1 in args[1], "Business ID should be in parameters"
 
 
@@ -150,6 +150,7 @@ def test_save_to_json():
 
         # Read back the data
         import json
+
         with open(temp_path) as f:
             loaded_data = json.load(f)
 
@@ -169,6 +170,7 @@ def test_load_from_json():
 
         # Write test data to the file
         import json
+
         test_data = {"name": "Test", "values": [1, 2, 3]}
         json.dump(test_data, temp_file)
 

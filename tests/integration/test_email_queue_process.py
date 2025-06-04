@@ -13,7 +13,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 # Import test utilities
 from tests.utils import (
@@ -91,25 +93,13 @@ def populated_email_queue_db(email_queue_db):
     """Create a test database populated with businesses and emails."""
     # Insert test businesses
     business_ids = insert_test_businesses_batch(
-        email_queue_db,
-        count=15,
-        complete=True,
-        score_range=(40, 95),
-        include_tech=True
+        email_queue_db, count=15, complete=True, score_range=(40, 95), include_tech=True
     )
 
     # Create test emails
-    email_ids = create_test_emails(
-        email_queue_db,
-        business_ids,
-        email_count=30
-    )
+    email_ids = create_test_emails(email_queue_db, business_ids, email_count=30)
 
-    return {
-        "db": email_queue_db,
-        "business_ids": business_ids,
-        "email_ids": email_ids
-    }
+    return {"db": email_queue_db, "business_ids": business_ids, "email_ids": email_ids}
 
 
 # Test data for email generation scenarios
@@ -119,29 +109,29 @@ email_generation_test_cases = [
         "score": 90,
         "email_variant": "premium",
         "subject_contains": ["exclusive", "premium", "custom"],
-        "content_contains": ["customized", "premium", "proposal"]
+        "content_contains": ["customized", "premium", "proposal"],
     },
     {
         "id": "medium_score_business",
         "score": 70,
         "email_variant": "standard",
         "subject_contains": ["improve", "enhance", "proposal"],
-        "content_contains": ["improvements", "enhance", "better"]
+        "content_contains": ["improvements", "enhance", "better"],
     },
     {
         "id": "low_score_business",
         "score": 45,
         "email_variant": "basic",
         "subject_contains": ["website", "upgrade", "solutions"],
-        "content_contains": ["affordable", "solutions", "fix"]
+        "content_contains": ["affordable", "solutions", "fix"],
     },
     {
         "id": "minimal_score_business",
         "score": 25,
         "email_variant": "minimal",
         "subject_contains": ["tips", "website", "improve"],
-        "content_contains": ["tips", "simple", "improvements"]
-    }
+        "content_contains": ["tips", "simple", "improvements"],
+    },
 ]
 
 
@@ -171,8 +161,8 @@ def business_with_score(email_queue_db, request):
             business.get("phone", ""),
             business.get("email", ""),
             business.get("website", ""),
-            business["score"]
-        )
+            business["score"],
+        ),
     )
     business_id = cursor.lastrowid
     email_queue_db.commit()
@@ -183,7 +173,7 @@ def business_with_score(email_queue_db, request):
         "score": test_case["score"],
         "email_variant": test_case["email_variant"],
         "subject_contains": test_case["subject_contains"],
-        "content_contains": test_case["content_contains"]
+        "content_contains": test_case["content_contains"],
     }
 
 
@@ -192,7 +182,7 @@ def business_with_score(email_queue_db, request):
     "business_with_score",
     email_generation_test_cases,
     ids=[case["id"] for case in email_generation_test_cases],
-    indirect=True
+    indirect=True,
 )
 def test_email_content_generation(business_with_score):
     """Test email content generation for different business scores."""
@@ -204,11 +194,12 @@ def test_email_content_generation(business_with_score):
     content_keywords = business_with_score["content_contains"]
 
     # Mock the email_queue module functions
-    with patch("bin.email_queue.get_db_connection") as mock_get_db, \
-         patch("bin.email_queue.get_business") as mock_get_business, \
-         patch("bin.email_queue.select_email_template") as mock_select_template, \
-         patch("bin.email_queue.generate_email_content") as mock_generate_content:
-
+    with (
+        patch("bin.email_queue.get_db_connection") as mock_get_db,
+        patch("bin.email_queue.get_business") as mock_get_business,
+        patch("bin.email_queue.select_email_template") as mock_select_template,
+        patch("bin.email_queue.generate_email_content") as mock_generate_content,
+    ):
         # Configure the mocks
         mock_get_db.return_value = db
 
@@ -238,7 +229,7 @@ def test_email_content_generation(business_with_score):
             # Generate body content based on template type
             if template_type == "premium":
                 body_text = f"""
-Dear {business['name']} Team,
+Dear {business["name"]} Team,
 
 We've created a customized premium website proposal for your business. Our detailed analysis shows significant opportunities for growth and optimization.
 
@@ -258,7 +249,7 @@ The Web Design Team
 <html>
 <body>
 <h1>Premium Website Proposal</h1>
-<p>Dear {business['name']} Team,</p>
+<p>Dear {business["name"]} Team,</p>
 <p>We've created a customized premium website proposal for your business. Our detailed analysis shows significant opportunities for growth and optimization.</p>
 <h2>Key highlights of our premium package:</h2>
 <ul>
@@ -274,7 +265,7 @@ The Web Design Team
                 """
             elif template_type == "standard":
                 body_text = f"""
-Dear {business['name']} Team,
+Dear {business["name"]} Team,
 
 We've analyzed your website and found several opportunities to enhance your online presence.
 
@@ -294,7 +285,7 @@ The Web Design Team
 <html>
 <body>
 <h1>Website Enhancement Proposal</h1>
-<p>Dear {business['name']} Team,</p>
+<p>Dear {business["name"]} Team,</p>
 <p>We've analyzed your website and found several opportunities to enhance your online presence.</p>
 <h2>Our standard package includes:</h2>
 <ul>
@@ -310,7 +301,7 @@ The Web Design Team
                 """
             elif template_type == "basic":
                 body_text = f"""
-Dear {business['name']} Team,
+Dear {business["name"]} Team,
 
 We've identified some key areas where your website could be improved for better results.
 
@@ -330,7 +321,7 @@ The Web Design Team
 <html>
 <body>
 <h1>Website Upgrade Solutions</h1>
-<p>Dear {business['name']} Team,</p>
+<p>Dear {business["name"]} Team,</p>
 <p>We've identified some key areas where your website could be improved for better results.</p>
 <h2>Our affordable basic package includes:</h2>
 <ul>
@@ -346,7 +337,7 @@ The Web Design Team
                 """
             else:  # minimal
                 body_text = f"""
-Dear {business['name']} Team,
+Dear {business["name"]} Team,
 
 We've noticed some simple improvements that could help your website perform better.
 
@@ -366,7 +357,7 @@ The Web Design Team
 <html>
 <body>
 <h1>Website Improvement Tips</h1>
-<p>Dear {business['name']} Team,</p>
+<p>Dear {business["name"]} Team,</p>
 <p>We've noticed some simple improvements that could help your website perform better.</p>
 <h2>Our quick-start package includes:</h2>
 <ul>
@@ -384,7 +375,7 @@ The Web Design Team
             return {
                 "subject": subject,
                 "body_text": body_text.strip(),
-                "body_html": body_html.strip()
+                "body_html": body_html.strip(),
             }
 
         mock_generate_content.side_effect = generate_email_side_effect
@@ -415,8 +406,8 @@ The Web Design Team
                     email_content["subject"],
                     email_content["body_text"],
                     email_content["body_html"],
-                    "pending"
-                )
+                    "pending",
+                ),
             )
 
             db.commit()
@@ -430,21 +421,32 @@ The Web Design Team
         email = dict(cursor.fetchone())
 
         assert email is not None, "Email was not created"
-        assert email["business_id"] == business_id, "Email associated with wrong business"
-        assert email["variant_id"] == variant, f"Expected variant {variant}, got {email['variant_id']}"
-        assert email["status"] == "pending", f"Expected status 'pending', got {email['status']}"
+        assert email["business_id"] == business_id, (
+            "Email associated with wrong business"
+        )
+        assert email["variant_id"] == variant, (
+            f"Expected variant {variant}, got {email['variant_id']}"
+        )
+        assert email["status"] == "pending", (
+            f"Expected status 'pending', got {email['status']}"
+        )
 
         # Check subject contains expected keywords
-        subject_contains_expected = any(keyword.lower() in email["subject"].lower()
-                                        for keyword in subject_keywords)
-        assert subject_contains_expected, \
+        subject_contains_expected = any(
+            keyword.lower() in email["subject"].lower() for keyword in subject_keywords
+        )
+        assert subject_contains_expected, (
             f"Subject '{email['subject']}' doesn't contain any expected keywords: {subject_keywords}"
+        )
 
         # Check body contains expected keywords
-        body_contains_expected = any(keyword.lower() in email["body_text"].lower()
-                                    for keyword in content_keywords)
-        assert body_contains_expected, \
+        body_contains_expected = any(
+            keyword.lower() in email["body_text"].lower()
+            for keyword in content_keywords
+        )
+        assert body_contains_expected, (
             f"Body doesn't contain any expected keywords: {content_keywords}"
+        )
 
 
 # Test data for email queue processing
@@ -454,14 +456,14 @@ email_queue_test_cases = [
         "pending_count": 10,
         "success_ratio": 1.0,  # All emails succeed
         "expected_sent": 10,
-        "expected_error": 0
+        "expected_error": 0,
     },
     {
         "id": "some_emails_fail",
         "pending_count": 8,
         "success_ratio": 0.75,  # 75% succeed, 25% fail
         "expected_sent": 6,
-        "expected_error": 2
+        "expected_error": 2,
     },
     {
         "id": "mixed_status_emails",
@@ -470,8 +472,8 @@ email_queue_test_cases = [
         "existing_error": 2,
         "success_ratio": 0.8,  # 80% succeed, 20% fail
         "expected_sent": 4,
-        "expected_error": 1
-    }
+        "expected_error": 1,
+    },
 ]
 
 
@@ -484,7 +486,7 @@ def email_queue_setup(email_queue_db, request):
     business_ids = insert_test_businesses_batch(
         email_queue_db,
         count=max(15, test_case["pending_count"] + 5),  # Ensure enough businesses
-        complete=True
+        complete=True,
     )
 
     cursor = email_queue_db.cursor()
@@ -503,11 +505,11 @@ def email_queue_setup(email_queue_db, request):
             (
                 business_id,
                 f"variant_{i % 4}",  # Cycle through 4 variants
-                f"Test Subject {i+1}",
-                f"Test body text for email {i+1}",
-                f"<html><body><p>Test HTML for email {i+1}</p></body></html>",
-                "pending"
-            )
+                f"Test Subject {i + 1}",
+                f"Test body text for email {i + 1}",
+                f"<html><body><p>Test HTML for email {i + 1}</p></body></html>",
+                "pending",
+            ),
         )
         pending_email_ids.append(cursor.lastrowid)
 
@@ -515,7 +517,9 @@ def email_queue_setup(email_queue_db, request):
     sent_email_ids = []
     if "existing_sent" in test_case and test_case["existing_sent"] > 0:
         for i in range(test_case["existing_sent"]):
-            business_id = business_ids[(test_case["pending_count"] + i) % len(business_ids)]
+            business_id = business_ids[
+                (test_case["pending_count"] + i) % len(business_ids)
+            ]
 
             cursor.execute(
                 """
@@ -526,12 +530,12 @@ def email_queue_setup(email_queue_db, request):
                 (
                     business_id,
                     f"variant_{i % 4}",
-                    f"Already Sent Subject {i+1}",
-                    f"Already sent body text for email {i+1}",
-                    f"<html><body><p>Already sent HTML for email {i+1}</p></body></html>",
+                    f"Already Sent Subject {i + 1}",
+                    f"Already sent body text for email {i + 1}",
+                    f"<html><body><p>Already sent HTML for email {i + 1}</p></body></html>",
                     "sent",
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                )
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                ),
             )
             sent_email_ids.append(cursor.lastrowid)
 
@@ -539,8 +543,10 @@ def email_queue_setup(email_queue_db, request):
     error_email_ids = []
     if "existing_error" in test_case and test_case["existing_error"] > 0:
         for i in range(test_case["existing_error"]):
-            business_id = business_ids[(test_case["pending_count"] +
-                                        test_case.get("existing_sent", 0) + i) % len(business_ids)]
+            business_id = business_ids[
+                (test_case["pending_count"] + test_case.get("existing_sent", 0) + i)
+                % len(business_ids)
+            ]
 
             cursor.execute(
                 """
@@ -551,11 +557,11 @@ def email_queue_setup(email_queue_db, request):
                 (
                     business_id,
                     f"variant_{i % 4}",
-                    f"Error Subject {i+1}",
-                    f"Error body text for email {i+1}",
-                    f"<html><body><p>Error HTML for email {i+1}</p></body></html>",
-                    "error"
-                )
+                    f"Error Subject {i + 1}",
+                    f"Error body text for email {i + 1}",
+                    f"<html><body><p>Error HTML for email {i + 1}</p></body></html>",
+                    "error",
+                ),
             )
             error_email_ids.append(cursor.lastrowid)
 
@@ -569,7 +575,7 @@ def email_queue_setup(email_queue_db, request):
         "error_email_ids": error_email_ids,
         "success_ratio": test_case["success_ratio"],
         "expected_sent": test_case["expected_sent"],
-        "expected_error": test_case["expected_error"]
+        "expected_error": test_case["expected_error"],
     }
 
 
@@ -578,7 +584,7 @@ def email_queue_setup(email_queue_db, request):
     "email_queue_setup",
     email_queue_test_cases,
     ids=[case["id"] for case in email_queue_test_cases],
-    indirect=True
+    indirect=True,
 )
 def test_email_queue_processing(email_queue_setup):
     """Test processing the email queue with different scenarios."""
@@ -588,9 +594,10 @@ def test_email_queue_processing(email_queue_setup):
     expected_error = email_queue_setup["expected_error"]
 
     # Mock the email_queue module functions
-    with patch("bin.email_queue.get_db_connection") as mock_get_db, \
-         patch("bin.email_queue.send_email") as mock_send_email:
-
+    with (
+        patch("bin.email_queue.get_db_connection") as mock_get_db,
+        patch("bin.email_queue.send_email") as mock_send_email,
+    ):
         # Configure the mocks
         mock_get_db.return_value = db
 
@@ -598,17 +605,19 @@ def test_email_queue_processing(email_queue_setup):
         def send_email_side_effect(email_data):
             """Mock sending an email with success based on the ratio."""
             # Determine if this email succeeds or fails
-            if email_data.get("id") % int(1/success_ratio) != 0:  # Mathematical trick to distribute failures
+            if (
+                email_data.get("id") % int(1 / success_ratio) != 0
+            ):  # Mathematical trick to distribute failures
                 return {
                     "success": True,
                     "message_id": f"test_message_{email_data['id']}",
-                    "error": None
+                    "error": None,
                 }
             else:
                 return {
                     "success": False,
                     "message_id": None,
-                    "error": "Simulated email sending failure"
+                    "error": "Simulated email sending failure",
                 }
 
         mock_send_email.side_effect = send_email_side_effect
@@ -625,7 +634,7 @@ def test_email_queue_processing(email_queue_setup):
                 FROM emails WHERE status = 'pending'
                 LIMIT ?
                 """,
-                (limit,)
+                (limit,),
             )
             pending_emails = [dict(row) for row in cursor.fetchall()]
 
@@ -644,7 +653,7 @@ def test_email_queue_processing(email_queue_setup):
                         SET status = 'sent', sent_at = ?
                         WHERE id = ?
                         """,
-                        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), email["id"])
+                        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), email["id"]),
                     )
                     sent_count += 1
                 else:
@@ -655,7 +664,7 @@ def test_email_queue_processing(email_queue_setup):
                         SET status = 'error'
                         WHERE id = ?
                         """,
-                        (email["id"],)
+                        (email["id"],),
                     )
                     error_count += 1
 
@@ -664,7 +673,7 @@ def test_email_queue_processing(email_queue_setup):
             return {
                 "processed": len(pending_emails),
                 "sent": sent_count,
-                "error": error_count
+                "error": error_count,
             }
 
         # Process the email queue
@@ -672,10 +681,12 @@ def test_email_queue_processing(email_queue_setup):
 
         # Verify the results
         assert result["processed"] > 0, "No emails were processed"
-        assert result["sent"] == expected_sent, \
+        assert result["sent"] == expected_sent, (
             f"Expected {expected_sent} sent emails, got {result['sent']}"
-        assert result["error"] == expected_error, \
+        )
+        assert result["error"] == expected_error, (
             f"Expected {expected_error} error emails, got {result['error']}"
+        )
 
         # Verify the database was updated correctly
         cursor = db.cursor()
@@ -685,24 +696,33 @@ def test_email_queue_processing(email_queue_setup):
         sent_count = cursor.fetchone()[0]
 
         # Total sent emails should include any existing ones plus newly sent ones
-        expected_total_sent = len(email_queue_setup.get("sent_email_ids", [])) + expected_sent
-        assert sent_count == expected_total_sent, \
+        expected_total_sent = (
+            len(email_queue_setup.get("sent_email_ids", [])) + expected_sent
+        )
+        assert sent_count == expected_total_sent, (
             f"Expected {expected_total_sent} total sent emails, found {sent_count}"
+        )
 
         # Check error emails
         cursor.execute("SELECT COUNT(*) FROM emails WHERE status = 'error'")
         error_count = cursor.fetchone()[0]
 
         # Total error emails should include any existing ones plus new errors
-        expected_total_error = len(email_queue_setup.get("error_email_ids", [])) + expected_error
-        assert error_count == expected_total_error, \
+        expected_total_error = (
+            len(email_queue_setup.get("error_email_ids", [])) + expected_error
+        )
+        assert error_count == expected_total_error, (
             f"Expected {expected_total_error} total error emails, found {error_count}"
+        )
 
         # Check that all newly sent emails have a sent_at timestamp
-        cursor.execute("SELECT COUNT(*) FROM emails WHERE status = 'sent' AND sent_at IS NULL")
+        cursor.execute(
+            "SELECT COUNT(*) FROM emails WHERE status = 'sent' AND sent_at IS NULL"
+        )
         missing_timestamp_count = cursor.fetchone()[0]
-        assert missing_timestamp_count == 0, \
+        assert missing_timestamp_count == 0, (
             f"Found {missing_timestamp_count} sent emails without a timestamp"
+        )
 
 
 # Test tracking email events (opens and clicks)
@@ -719,14 +739,17 @@ def test_email_event_tracking(populated_email_queue_db):
     # If not enough sent emails, update some emails to 'sent' status
     if len(sent_email_ids) < 5:
         # Get some pending emails
-        cursor.execute("SELECT id FROM emails WHERE status = 'pending' LIMIT ?", (5 - len(sent_email_ids),))
+        cursor.execute(
+            "SELECT id FROM emails WHERE status = 'pending' LIMIT ?",
+            (5 - len(sent_email_ids),),
+        )
         pending_ids = [row[0] for row in cursor.fetchall()]
 
         # Update them to sent
         for email_id in pending_ids:
             cursor.execute(
                 "UPDATE emails SET status = 'sent', sent_at = ? WHERE id = ?",
-                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), email_id)
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), email_id),
             )
 
         sent_email_ids.extend(pending_ids)
@@ -752,7 +775,7 @@ def test_email_event_tracking(populated_email_queue_db):
             # Update the email
             cursor.execute(
                 "UPDATE emails SET status = 'opened', opened_at = ? WHERE id = ?",
-                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), email_id)
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), email_id),
             )
 
             db.commit()
@@ -782,8 +805,8 @@ def test_email_event_tracking(populated_email_queue_db):
                 (
                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    email_id
-                )
+                    email_id,
+                ),
             )
 
             db.commit()
@@ -795,7 +818,9 @@ def test_email_event_tracking(populated_email_queue_db):
             assert result is True, f"Failed to track open for email {email_id}"
 
         # Test tracking clicks
-        for email_id in sent_email_ids[1:4]:  # Track clicks for emails 2-4 (overlap with opens)
+        for email_id in sent_email_ids[
+            1:4
+        ]:  # Track clicks for emails 2-4 (overlap with opens)
             result = track_email_click(email_id)
             assert result is True, f"Failed to track click for email {email_id}"
 
@@ -809,16 +834,22 @@ def test_email_event_tracking(populated_email_queue_db):
         assert clicked_count == 3, f"Expected 3 clicked emails, found {clicked_count}"
 
         # Check that all opened emails have an opened_at timestamp
-        cursor.execute("SELECT COUNT(*) FROM emails WHERE status IN ('opened', 'clicked') AND opened_at IS NULL")
+        cursor.execute(
+            "SELECT COUNT(*) FROM emails WHERE status IN ('opened', 'clicked') AND opened_at IS NULL"
+        )
         missing_opened_timestamp = cursor.fetchone()[0]
-        assert missing_opened_timestamp == 0, \
+        assert missing_opened_timestamp == 0, (
             f"Found {missing_opened_timestamp} opened/clicked emails without an opened_at timestamp"
+        )
 
         # Check that all clicked emails have a clicked_at timestamp
-        cursor.execute("SELECT COUNT(*) FROM emails WHERE status = 'clicked' AND clicked_at IS NULL")
+        cursor.execute(
+            "SELECT COUNT(*) FROM emails WHERE status = 'clicked' AND clicked_at IS NULL"
+        )
         missing_clicked_timestamp = cursor.fetchone()[0]
-        assert missing_clicked_timestamp == 0, \
+        assert missing_clicked_timestamp == 0, (
             f"Found {missing_clicked_timestamp} clicked emails without a clicked_at timestamp"
+        )
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ def load_config(env_file: Optional[str] = None) -> dict[str, Any]:
         env_paths = [
             ".env",
             ".env.local",
-            f'.env.{os.getenv("ENVIRONMENT", "development")}',
+            f".env.{os.getenv('ENVIRONMENT', 'development')}",
         ]
 
         for env_path in env_paths:

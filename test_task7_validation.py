@@ -80,7 +80,6 @@ def test_uploader_initialization():
                 "leadfactory.services.mockup_png_uploader.get_storage"
             ) as mock_storage,
         ):
-
             # Test default bucket
             uploader = MockupPNGUploader()
             mock_supabase.assert_called_with("mockups")
@@ -111,7 +110,6 @@ def test_validation_methods():
                 "leadfactory.services.mockup_png_uploader.get_storage"
             ) as mock_get_storage,
         ):
-
             mock_storage = Mock()
             mock_get_storage.return_value = mock_storage
             uploader = MockupPNGUploader()
@@ -142,7 +140,6 @@ def test_file_hash_calculation():
             patch("leadfactory.services.mockup_png_uploader.SupabaseStorage"),
             patch("leadfactory.services.mockup_png_uploader.get_storage"),
         ):
-
             uploader = MockupPNGUploader()
 
             # Create test file
@@ -222,7 +219,6 @@ def test_url_generation_methods():
             ) as mock_supabase_class,
             patch("leadfactory.services.mockup_png_uploader.get_storage"),
         ):
-
             mock_supabase = Mock()
             mock_supabase_class.return_value = mock_supabase
             uploader = MockupPNGUploader()

@@ -194,11 +194,11 @@ def create_wal_g_config():
         # S3 configuration
         config = f"""
 # S3 Storage Configuration
-WALG_S3_PREFIX=s3://{env_vars.get('S3_BUCKET', 'leadfactory-wal-archive')}/\
-{env_vars.get('S3_PREFIX', 'wal-archive')}
-AWS_ACCESS_KEY_ID={env_vars.get('AWS_ACCESS_KEY_ID', '')}
-AWS_SECRET_ACCESS_KEY={env_vars.get('AWS_SECRET_ACCESS_KEY', '')}
-AWS_REGION={env_vars.get('AWS_REGION', 'us-east-1')}
+WALG_S3_PREFIX=s3://{env_vars.get("S3_BUCKET", "leadfactory-wal-archive")}/\
+{env_vars.get("S3_PREFIX", "wal-archive")}
+AWS_ACCESS_KEY_ID={env_vars.get("AWS_ACCESS_KEY_ID", "")}
+AWS_SECRET_ACCESS_KEY={env_vars.get("AWS_SECRET_ACCESS_KEY", "")}
+AWS_REGION={env_vars.get("AWS_REGION", "us-east-1")}
 
 # Compression settings
 WALG_COMPRESSION_METHOD=lz4
@@ -207,10 +207,10 @@ WALG_COMPRESSION_METHOD=lz4
         # Google Cloud Storage configuration
         config = f"""
 # Google Cloud Storage Configuration
-WALG_GS_PREFIX=gs://{env_vars.get('GS_BUCKET', 'leadfactory-wal-archive')}/\
-{env_vars.get('GS_PREFIX', 'wal-archive')}
+WALG_GS_PREFIX=gs://{env_vars.get("GS_BUCKET", "leadfactory-wal-archive")}/\
+{env_vars.get("GS_PREFIX", "wal-archive")}
 GOOGLE_APPLICATION_CREDENTIALS=\
-{env_vars.get('GOOGLE_APPLICATION_CREDENTIALS', '/path/to/credentials.json')}
+{env_vars.get("GOOGLE_APPLICATION_CREDENTIALS", "/path/to/credentials.json")}
 
 # Compression settings
 WALG_COMPRESSION_METHOD=lz4
@@ -219,7 +219,7 @@ WALG_COMPRESSION_METHOD=lz4
         # File system configuration (default)
         config = f"""
 # File System Storage Configuration
-WALG_FILE_PREFIX={env_vars.get('BACKUP_REMOTE_PATH', '/var/backups/leadfactory')}/\
+WALG_FILE_PREFIX={env_vars.get("BACKUP_REMOTE_PATH", "/var/backups/leadfactory")}/\
 wal-archive
 
 # Compression settings

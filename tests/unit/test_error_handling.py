@@ -24,6 +24,7 @@ try:
         create_batch_processor,
         with_error_handling,
     )
+
     HAS_ERROR_HANDLING = True
 except ImportError:
     HAS_ERROR_HANDLING = False
@@ -47,9 +48,17 @@ except ImportError:
         LINEAR_BACKOFF = "linear_backoff"
 
     class MockPipelineError:
-        def __init__(self, stage="test", operation="test", error_type="TestError",
-                     error_message="Test error", severity=ErrorSeverity.MEDIUM,
-                     category=ErrorCategory.BUSINESS_LOGIC, business_id=None, batch_id=None):
+        def __init__(
+            self,
+            stage="test",
+            operation="test",
+            error_type="TestError",
+            error_message="Test error",
+            severity=ErrorSeverity.MEDIUM,
+            category=ErrorCategory.BUSINESS_LOGIC,
+            business_id=None,
+            batch_id=None,
+        ):
             self.id = "test-error-123"
             self.timestamp = datetime.now()
             self.stage = stage
@@ -84,14 +93,22 @@ except ImportError:
             }
 
         @classmethod
-        def from_exception(cls, exception, stage, operation, context=None, business_id=None, batch_id=None):
+        def from_exception(
+            cls,
+            exception,
+            stage,
+            operation,
+            context=None,
+            business_id=None,
+            batch_id=None,
+        ):
             return cls(
                 stage=stage,
                 operation=operation,
                 error_type=type(exception).__name__,
                 error_message=str(exception),
                 business_id=business_id,
-                batch_id=batch_id
+                batch_id=batch_id,
             )
 
     class MockBatchResult:
@@ -120,7 +137,9 @@ except ImportError:
 
         @property
         def has_critical_errors(self):
-            return any(error.severity == ErrorSeverity.CRITICAL for error in self.errors)
+            return any(
+                error.severity == ErrorSeverity.CRITICAL for error in self.errors
+            )
 
         def add_error(self, error):
             self.errors.append(error)
@@ -171,26 +190,35 @@ except ImportError:
                 "by_category": {},
                 "by_severity": {},
                 "by_stage": {},
-                "recent_errors": []
+                "recent_errors": [],
             }
 
     class MockBatchProcessor:
-        def __init__(self, stage, operation, error_manager=None, continue_on_error=True):
+        def __init__(
+            self, stage, operation, error_manager=None, continue_on_error=True
+        ):
             self.stage = stage
             self.operation = operation
             self.error_manager = error_manager
             self.continue_on_error = continue_on_error
 
         def __call__(self, items, processor_func, batch_id=None, context=None):
-            batch_result = MockBatchResult(batch_id=batch_id or "test-batch", stage=self.stage, operation=self.operation)
+            batch_result = MockBatchResult(
+                batch_id=batch_id or "test-batch",
+                stage=self.stage,
+                operation=self.operation,
+            )
             batch_result.total_items = len(items)
 
             for i, item in enumerate(items):
                 try:
                     # Check if processor_func accepts kwargs
                     import inspect
+
                     sig = inspect.signature(processor_func)
-                    if len(sig.parameters) > 1 or any(p.kind == p.VAR_KEYWORD for p in sig.parameters.values()):
+                    if len(sig.parameters) > 1 or any(
+                        p.kind == p.VAR_KEYWORD for p in sig.parameters.values()
+                    ):
                         # Pass item_index and batch_id as kwargs
                         result = processor_func(item, item_index=i, batch_id=batch_id)
                     else:
@@ -202,7 +230,9 @@ except ImportError:
                     else:
                         batch_result.skipped_items += 1
                 except Exception as e:
-                    error = MockPipelineError.from_exception(e, self.stage, self.operation, batch_id=batch_id)
+                    error = MockPipelineError.from_exception(
+                        e, self.stage, self.operation, batch_id=batch_id
+                    )
                     batch_result.add_error(error)
                     if self.error_manager:
                         self.error_manager.record_error(error)
@@ -219,19 +249,30 @@ except ImportError:
     ErrorPropagationManager = MockErrorPropagationManager
     create_batch_processor = MockBatchProcessor
 
-    def with_error_handling(stage, operation, error_manager=None, business_id=None, batch_id=None, context=None):
+    def with_error_handling(
+        stage,
+        operation,
+        error_manager=None,
+        business_id=None,
+        batch_id=None,
+        context=None,
+    ):
         def decorator(func):
             def wrapper(*args, **kwargs):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
-                    error = PipelineError.from_exception(e, stage, operation, context, business_id, batch_id)
+                    error = PipelineError.from_exception(
+                        e, stage, operation, context, business_id, batch_id
+                    )
                     if error_manager:
                         error_manager.record_error(error)
                     if error.severity == ErrorSeverity.CRITICAL:
                         raise
                     return None
+
             return wrapper
+
         return decorator
 
 
@@ -245,7 +286,7 @@ class TestPipelineError:
             operation="fetch_business",
             error_type="ConnectionError",
             error_message="Failed to connect to API",
-            business_id=123
+            business_id=123,
         )
 
         assert error.stage == "scraping"
@@ -264,7 +305,7 @@ class TestPipelineError:
             exception=exception,
             stage="validation",
             operation="validate_business",
-            business_id=456
+            business_id=456,
         )
 
         assert error.stage == "validation"
@@ -280,7 +321,7 @@ class TestPipelineError:
             stage="enrichment",
             operation="enrich_business",
             error_type="TimeoutError",
-            error_message="Request timed out"
+            error_message="Request timed out",
         )
 
         error_dict = error.to_dict()
@@ -298,7 +339,12 @@ class TestPipelineError:
         critical_error = ValueError("Critical system failure")
         error = PipelineError.from_exception(critical_error, "test", "test")
         # Note: In mock implementation, severity is always MEDIUM
-        assert error.severity in [ErrorSeverity.CRITICAL, ErrorSeverity.HIGH, ErrorSeverity.MEDIUM, ErrorSeverity.LOW]
+        assert error.severity in [
+            ErrorSeverity.CRITICAL,
+            ErrorSeverity.HIGH,
+            ErrorSeverity.MEDIUM,
+            ErrorSeverity.LOW,
+        ]
 
     def test_error_category_classification(self):
         """Test error category classification."""
@@ -344,7 +390,7 @@ class TestBatchResult:
             stage="test",
             operation="test",
             error_type="TestError",
-            error_message="Test error"
+            error_message="Test error",
         )
 
         batch_result.add_error(error)
@@ -391,7 +437,9 @@ class TestErrorPropagationManager:
 
     def test_error_manager_creation(self):
         """Test ErrorPropagationManager creation."""
-        manager = ErrorPropagationManager(max_error_threshold=0.2, stop_on_critical=False)
+        manager = ErrorPropagationManager(
+            max_error_threshold=0.2, stop_on_critical=False
+        )
 
         assert manager.max_error_threshold == 0.2
         assert manager.stop_on_critical is False
@@ -438,7 +486,7 @@ class TestErrorPropagationManager:
             stage="scraping",
             operation="fetch_business",
             error_type="ConnectionError",
-            error_message="API unavailable"
+            error_message="API unavailable",
         )
 
         manager.record_error(error)
@@ -470,7 +518,7 @@ class TestErrorPropagationManager:
                 stage=f"stage_{i}",
                 operation=f"operation_{i}",
                 error_type="TestError",
-                error_message=f"Error {i}"
+                error_message=f"Error {i}",
             )
             manager.record_error(error)
 
@@ -568,7 +616,9 @@ class TestBatchProcessor:
     def test_batch_processing_stop_on_error(self):
         """Test batch processing that stops on first error."""
         manager = MockErrorPropagationManager()
-        processor = create_batch_processor("test", "test_batch", error_manager=manager, continue_on_error=False)
+        processor = create_batch_processor(
+            "test", "test_batch", error_manager=manager, continue_on_error=False
+        )
 
         def failing_processor(item, **kwargs):
             item_index = kwargs.get("item_index", 0)
@@ -594,7 +644,9 @@ class TestBatchProcessor:
             )
 
             manager = ErrorPropagationManager()
-            processor = create_batch_processor("test", "test_batch", error_manager=manager)
+            processor = create_batch_processor(
+                "test", "test_batch", error_manager=manager
+            )
 
             def context_processor(item, **kwargs):
                 # Check that context is passed correctly
@@ -603,7 +655,9 @@ class TestBatchProcessor:
                 return item * 2
 
             items = [1, 2, 3]
-            result = processor(items, context_processor, batch_id="test-123", context={"test": "value"})
+            result = processor(
+                items, context_processor, batch_id="test-123", context={"test": "value"}
+            )
 
             assert result.batch_id == "test-123"
             assert result.total_items == 3
@@ -619,7 +673,9 @@ class TestBatchProcessor:
                 return item * 2
 
             items = [1, 2, 3]
-            result = processor(items, context_processor, batch_id="test-123", context={"test": "value"})
+            result = processor(
+                items, context_processor, batch_id="test-123", context={"test": "value"}
+            )
 
             # Mock implementation - just verify it runs
             assert result is not None
@@ -685,14 +741,34 @@ class TestIntegrationScenarios:
 
         # Simulate various errors across different stages
         errors = [
-            PipelineError(stage="scraping", operation="fetch", error_type="ConnectionError",
-                         category=ErrorCategory.NETWORK, severity=ErrorSeverity.HIGH),
-            PipelineError(stage="enrichment", operation="enrich", error_type="TimeoutError",
-                         category=ErrorCategory.NETWORK, severity=ErrorSeverity.MEDIUM),
-            PipelineError(stage="scoring", operation="score", error_type="ValueError",
-                         category=ErrorCategory.VALIDATION, severity=ErrorSeverity.LOW),
-            PipelineError(stage="scraping", operation="parse", error_type="JSONDecodeError",
-                         category=ErrorCategory.VALIDATION, severity=ErrorSeverity.MEDIUM),
+            PipelineError(
+                stage="scraping",
+                operation="fetch",
+                error_type="ConnectionError",
+                category=ErrorCategory.NETWORK,
+                severity=ErrorSeverity.HIGH,
+            ),
+            PipelineError(
+                stage="enrichment",
+                operation="enrich",
+                error_type="TimeoutError",
+                category=ErrorCategory.NETWORK,
+                severity=ErrorSeverity.MEDIUM,
+            ),
+            PipelineError(
+                stage="scoring",
+                operation="score",
+                error_type="ValueError",
+                category=ErrorCategory.VALIDATION,
+                severity=ErrorSeverity.LOW,
+            ),
+            PipelineError(
+                stage="scraping",
+                operation="parse",
+                error_type="JSONDecodeError",
+                category=ErrorCategory.VALIDATION,
+                severity=ErrorSeverity.MEDIUM,
+            ),
         ]
 
         for error in errors:

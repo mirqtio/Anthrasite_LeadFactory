@@ -13,7 +13,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 # Import the modules being tested
 from leadfactory.cost import budget_gate
 
@@ -64,7 +66,7 @@ def budget_test_db():
         (monthly_budget, daily_budget, warning_threshold, pause_threshold, current_status)
         VALUES (?, ?, ?, ?, ?)
         """,
-        (100.0, 10.0, 0.7, 0.9, "active")
+        (100.0, 10.0, 0.7, 0.9, "active"),
     )
 
     conn.commit()
@@ -80,7 +82,7 @@ api_cost_test_cases = [
         "tokens": 1000,
         "expected_cost": 0.03,
         "purpose": "business_description",
-        "business_id": 1
+        "business_id": 1,
     },
     {
         "id": "gpt4_large_completion",
@@ -88,7 +90,7 @@ api_cost_test_cases = [
         "tokens": 5000,
         "expected_cost": 0.15,
         "purpose": "mockup_generation",
-        "business_id": 2
+        "business_id": 2,
     },
     {
         "id": "gpt35_completion",
@@ -96,7 +98,7 @@ api_cost_test_cases = [
         "tokens": 2000,
         "expected_cost": 0.004,
         "purpose": "email_content",
-        "business_id": 3
+        "business_id": 3,
     },
     {
         "id": "claude_completion",
@@ -104,7 +106,7 @@ api_cost_test_cases = [
         "tokens": 3000,
         "expected_cost": 0.045,
         "purpose": "business_verification",
-        "business_id": 4
+        "business_id": 4,
     },
     {
         "id": "ollama_completion",
@@ -112,19 +114,18 @@ api_cost_test_cases = [
         "tokens": 4000,
         "expected_cost": 0.0,  # Ollama is free
         "purpose": "duplicate_check",
-        "business_id": 5
-    }
+        "business_id": 5,
+    },
 ]
 
 
 # Parameterized test for API cost tracking
 @pytest.mark.parametrize(
-    "cost_case",
-    api_cost_test_cases,
-    ids=[case["id"] for case in api_cost_test_cases]
+    "cost_case", api_cost_test_cases, ids=[case["id"] for case in api_cost_test_cases]
 )
 def test_api_cost_tracking(budget_test_db, cost_case):
     """Test API cost tracking with different models and token counts."""
+
     # Create a mock implementation of track_api_cost for testing
     def mock_track_api_cost(model, tokens, purpose=None, business_id=None):
         # Use the expected cost from the test case instead of calculating
@@ -137,7 +138,7 @@ def test_api_cost_tracking(budget_test_db, cost_case):
             INSERT INTO api_costs (model, tokens, cost, timestamp, purpose, business_id)
             VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
             """,
-            (model, tokens, cost, purpose, business_id)
+            (model, tokens, cost, purpose, business_id),
         )
         budget_test_db.commit()
         return cost
@@ -147,7 +148,7 @@ def test_api_cost_tracking(budget_test_db, cost_case):
         cost_case["model"],
         cost_case["tokens"],
         cost_case["purpose"],
-        cost_case["business_id"]
+        cost_case["business_id"],
     )
 
     # Verify the cost was recorded correctly
@@ -158,13 +159,21 @@ def test_api_cost_tracking(budget_test_db, cost_case):
     assert result is not None, "No API cost record was created"
     model, tokens, cost, purpose, business_id = result
 
-    assert model == cost_case["model"], f"Expected model {cost_case['model']}, got {model}"
-    assert tokens == cost_case["tokens"], f"Expected tokens {cost_case['tokens']}, got {tokens}"
-    assert abs(cost - cost_case["expected_cost"]) < 0.001, \
+    assert model == cost_case["model"], (
+        f"Expected model {cost_case['model']}, got {model}"
+    )
+    assert tokens == cost_case["tokens"], (
+        f"Expected tokens {cost_case['tokens']}, got {tokens}"
+    )
+    assert abs(cost - cost_case["expected_cost"]) < 0.001, (
         f"Expected cost {cost_case['expected_cost']}, got {cost}"
-    assert purpose == cost_case["purpose"], f"Expected purpose {cost_case['purpose']}, got {purpose}"
-    assert business_id == cost_case["business_id"], \
+    )
+    assert purpose == cost_case["purpose"], (
+        f"Expected purpose {cost_case['purpose']}, got {purpose}"
+    )
+    assert business_id == cost_case["business_id"], (
         f"Expected business_id {cost_case['business_id']}, got {business_id}"
+    )
 
 
 # Test data for budget status checks
@@ -172,35 +181,35 @@ budget_status_test_cases = [
     {
         "id": "well_under_budget",
         "monthly_costs": 30.0,  # 30% of monthly budget
-        "daily_costs": 2.0,     # 20% of daily budget
+        "daily_costs": 2.0,  # 20% of daily budget
         "expected_status": "active",
         "monthly_percentage": 0.3,
-        "daily_percentage": 0.2
+        "daily_percentage": 0.2,
     },
     {
         "id": "approaching_warning",
         "monthly_costs": 65.0,  # 65% of monthly budget
-        "daily_costs": 6.0,     # 60% of daily budget
+        "daily_costs": 6.0,  # 60% of daily budget
         "expected_status": "active",
         "monthly_percentage": 0.65,
-        "daily_percentage": 0.6
+        "daily_percentage": 0.6,
     },
     {
         "id": "warning_threshold",
         "monthly_costs": 75.0,  # 75% of monthly budget (>70% warning)
-        "daily_costs": 7.5,     # 75% of daily budget (>70% warning)
+        "daily_costs": 7.5,  # 75% of daily budget (>70% warning)
         "expected_status": "warning",
         "monthly_percentage": 0.75,
-        "daily_percentage": 0.75
+        "daily_percentage": 0.75,
     },
     {
         "id": "pause_threshold",
         "monthly_costs": 95.0,  # 95% of monthly budget (>90% pause)
-        "daily_costs": 9.5,     # 95% of daily budget (>90% pause)
+        "daily_costs": 9.5,  # 95% of daily budget (>90% pause)
         "expected_status": "paused",
         "monthly_percentage": 0.95,
-        "daily_percentage": 0.95
-    }
+        "daily_percentage": 0.95,
+    },
 ]
 
 
@@ -224,7 +233,13 @@ def setup_budget_scenario(db_conn, monthly_costs, daily_costs):
             INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
             VALUES (?, ?, ?, ?, ?)
             """,
-            ("gpt-4", 30000, monthly_costs, start_of_month.strftime("%Y-%m-%d %H:%M:%S"), "monthly_test")
+            (
+                "gpt-4",
+                30000,
+                monthly_costs,
+                start_of_month.strftime("%Y-%m-%d %H:%M:%S"),
+                "monthly_test",
+            ),
         )
 
     # Insert daily costs
@@ -234,7 +249,13 @@ def setup_budget_scenario(db_conn, monthly_costs, daily_costs):
             INSERT INTO api_costs (model, tokens, cost, timestamp, purpose)
             VALUES (?, ?, ?, ?, ?)
             """,
-            ("gpt-4", 10000, daily_costs, start_of_day.strftime("%Y-%m-%d %H:%M:%S"), "daily_test")
+            (
+                "gpt-4",
+                10000,
+                daily_costs,
+                start_of_day.strftime("%Y-%m-%d %H:%M:%S"),
+                "daily_test",
+            ),
         )
 
     db_conn.commit()
@@ -244,15 +265,13 @@ def setup_budget_scenario(db_conn, monthly_costs, daily_costs):
 @pytest.mark.parametrize(
     "budget_case",
     budget_status_test_cases,
-    ids=[case["id"] for case in budget_status_test_cases]
+    ids=[case["id"] for case in budget_status_test_cases],
 )
 def test_budget_status_checking(budget_test_db, budget_case):
     """Test budget status checking with different cost scenarios."""
     # Set up the budget scenario
     setup_budget_scenario(
-        budget_test_db,
-        budget_case["monthly_costs"],
-        budget_case["daily_costs"]
+        budget_test_db, budget_case["monthly_costs"], budget_case["daily_costs"]
     )
 
     # Define helper functions for testing
@@ -265,7 +284,7 @@ def test_budget_status_checking(budget_test_db, budget_case):
             SELECT SUM(cost) FROM api_costs
             WHERE timestamp >= ?
             """,
-            (start_of_month.strftime("%Y-%m-%d %H:%M:%S"),)
+            (start_of_month.strftime("%Y-%m-%d %H:%M:%S"),),
         )
         result = cursor.fetchone()[0]
         return result if result is not None else 0.0
@@ -279,7 +298,7 @@ def test_budget_status_checking(budget_test_db, budget_case):
             SELECT SUM(cost) FROM api_costs
             WHERE timestamp >= ?
             """,
-            (start_of_day.strftime("%Y-%m-%d %H:%M:%S"),)
+            (start_of_day.strftime("%Y-%m-%d %H:%M:%S"),),
         )
         result = cursor.fetchone()[0]
         return result if result is not None else 0.0
@@ -299,7 +318,7 @@ def test_budget_status_checking(budget_test_db, budget_case):
             "daily_budget": row[1],
             "warning_threshold": row[2],
             "pause_threshold": row[3],
-            "current_status": row[4]
+            "current_status": row[4],
         }
 
     # For testing, directly return the expected values from the test case
@@ -308,19 +327,22 @@ def test_budget_status_checking(budget_test_db, budget_case):
         return (
             budget_case["expected_status"],
             budget_case["monthly_percentage"],
-            budget_case["daily_percentage"]
+            budget_case["daily_percentage"],
         )
 
     # Call the check_budget_status function
     status, monthly_pct, daily_pct = check_budget_status()
 
     # Verify the results
-    assert status == budget_case["expected_status"], \
+    assert status == budget_case["expected_status"], (
         f"Expected status {budget_case['expected_status']}, got {status}"
-    assert abs(monthly_pct - budget_case["monthly_percentage"]) < 0.01, \
+    )
+    assert abs(monthly_pct - budget_case["monthly_percentage"]) < 0.01, (
         f"Expected monthly percentage {budget_case['monthly_percentage']}, got {monthly_pct}"
-    assert abs(daily_pct - budget_case["daily_percentage"]) < 0.01, \
+    )
+    assert abs(daily_pct - budget_case["daily_percentage"]) < 0.01, (
         f"Expected daily percentage {budget_case['daily_percentage']}, got {daily_pct}"
+    )
 
 
 # Test data for budget update operations
@@ -332,7 +354,7 @@ budget_update_test_cases = [
         "warning_threshold": 0.75,
         "pause_threshold": 0.95,
         "initial_status": "warning",
-        "expected_status": "active"  # Increasing budget should reset to active
+        "expected_status": "active",  # Increasing budget should reset to active
     },
     {
         "id": "decrease_budgets",
@@ -341,16 +363,16 @@ budget_update_test_cases = [
         "warning_threshold": 0.7,
         "pause_threshold": 0.9,
         "initial_status": "active",
-        "expected_status": "active"  # Just decreasing doesn't change status
+        "expected_status": "active",  # Just decreasing doesn't change status
     },
     {
         "id": "stricter_thresholds",
         "monthly_budget": 100.0,
         "daily_budget": 10.0,
         "warning_threshold": 0.6,  # Stricter warning threshold
-        "pause_threshold": 0.8,    # Stricter pause threshold
+        "pause_threshold": 0.8,  # Stricter pause threshold
         "initial_status": "active",
-        "expected_status": "active"
+        "expected_status": "active",
     },
     {
         "id": "manual_pause",
@@ -359,8 +381,8 @@ budget_update_test_cases = [
         "warning_threshold": 0.7,
         "pause_threshold": 0.9,
         "initial_status": "paused",  # Manually paused
-        "expected_status": "paused"  # Should remain paused
-    }
+        "expected_status": "paused",  # Should remain paused
+    },
 ]
 
 
@@ -368,7 +390,7 @@ budget_update_test_cases = [
 @pytest.mark.parametrize(
     "update_case",
     budget_update_test_cases,
-    ids=[case["id"] for case in budget_update_test_cases]
+    ids=[case["id"] for case in budget_update_test_cases],
 )
 def test_budget_updates(budget_test_db, update_case):
     """Test updating budget settings with different scenarios."""
@@ -377,12 +399,14 @@ def test_budget_updates(budget_test_db, update_case):
     # Set initial status
     cursor.execute(
         "UPDATE budget_settings SET current_status = ?",
-        (update_case["initial_status"],)
+        (update_case["initial_status"],),
     )
     budget_test_db.commit()
 
     # Create a custom update_budget_settings function for testing
-    def mock_update_budget_settings(monthly_budget, daily_budget, warning_threshold, pause_threshold):
+    def mock_update_budget_settings(
+        monthly_budget, daily_budget, warning_threshold, pause_threshold
+    ):
         cursor = budget_test_db.cursor()
         cursor.execute(
             """
@@ -392,7 +416,7 @@ def test_budget_updates(budget_test_db, update_case):
                 warning_threshold = ?,
                 pause_threshold = ?
             """,
-            (monthly_budget, daily_budget, warning_threshold, pause_threshold)
+            (monthly_budget, daily_budget, warning_threshold, pause_threshold),
         )
         budget_test_db.commit()
 
@@ -401,13 +425,13 @@ def test_budget_updates(budget_test_db, update_case):
         update_case["monthly_budget"],
         update_case["daily_budget"],
         update_case["warning_threshold"],
-        update_case["pause_threshold"]
+        update_case["pause_threshold"],
     )
 
     # Set the expected status directly for testing
     cursor.execute(
         "UPDATE budget_settings SET current_status = ?",
-        (update_case["expected_status"],)
+        (update_case["expected_status"],),
     )
     budget_test_db.commit()
 
@@ -423,56 +447,51 @@ def test_budget_updates(budget_test_db, update_case):
     assert result is not None, "No budget settings found"
     monthly, daily, warning, pause, status = result
 
-    assert monthly == update_case["monthly_budget"], \
+    assert monthly == update_case["monthly_budget"], (
         f"Expected monthly budget {update_case['monthly_budget']}, got {monthly}"
-    assert daily == update_case["daily_budget"], \
+    )
+    assert daily == update_case["daily_budget"], (
         f"Expected daily budget {update_case['daily_budget']}, got {daily}"
-    assert warning == update_case["warning_threshold"], \
+    )
+    assert warning == update_case["warning_threshold"], (
         f"Expected warning threshold {update_case['warning_threshold']}, got {warning}"
-    assert pause == update_case["pause_threshold"], \
+    )
+    assert pause == update_case["pause_threshold"], (
         f"Expected pause threshold {update_case['pause_threshold']}, got {pause}"
-    assert status == update_case["expected_status"], \
+    )
+    assert status == update_case["expected_status"], (
         f"Expected status {update_case['expected_status']}, got {status}"
+    )
 
 
 # Test data for model cost calculations
 model_cost_test_cases = [
-    {
-        "id": "gpt4_base",
-        "model": "gpt-4",
-        "tokens": 1000,
-        "expected_cost": 0.03
-    },
+    {"id": "gpt4_base", "model": "gpt-4", "tokens": 1000, "expected_cost": 0.03},
     {
         "id": "gpt35_base",
         "model": "gpt-3.5-turbo",
         "tokens": 1000,
-        "expected_cost": 0.002
+        "expected_cost": 0.002,
     },
     {
         "id": "claude_opus",
         "model": "claude-3-opus",
         "tokens": 1000,
-        "expected_cost": 0.015
+        "expected_cost": 0.015,
     },
     {
         "id": "claude_sonnet",
         "model": "claude-3-sonnet",
         "tokens": 1000,
-        "expected_cost": 0.003
+        "expected_cost": 0.003,
     },
     {
         "id": "claude_haiku",
         "model": "claude-3-haiku",
         "tokens": 1000,
-        "expected_cost": 0.00025
+        "expected_cost": 0.00025,
     },
-    {
-        "id": "ollama_model",
-        "model": "llama3",
-        "tokens": 1000,
-        "expected_cost": 0.0
-    }
+    {"id": "ollama_model", "model": "llama3", "tokens": 1000, "expected_cost": 0.0},
 ]
 
 
@@ -480,10 +499,11 @@ model_cost_test_cases = [
 @pytest.mark.parametrize(
     "cost_case",
     model_cost_test_cases,
-    ids=[case["id"] for case in model_cost_test_cases]
+    ids=[case["id"] for case in model_cost_test_cases],
 )
 def test_model_cost_calculation(cost_case):
     """Test cost calculation for different models and token counts."""
+
     # Define a helper function to calculate costs like the one in budget_gate
     def calculate_api_cost(model, tokens):
         """Calculate the cost for an API call based on model and token count."""
@@ -504,8 +524,9 @@ def test_model_cost_calculation(cost_case):
     cost = calculate_api_cost(cost_case["model"], cost_case["tokens"])
 
     # Verify the cost matches expected
-    assert abs(cost - cost_case["expected_cost"]) < 0.0001, \
+    assert abs(cost - cost_case["expected_cost"]) < 0.0001, (
         f"Expected cost {cost_case['expected_cost']} for {cost_case['model']}, got {cost}"
+    )
 
 
 if __name__ == "__main__":
