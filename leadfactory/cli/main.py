@@ -64,8 +64,19 @@ def dev():
     pass
 
 
+@cli.group()
+def analytics():
+    """Business analytics and metrics"""
+    pass
+
+
 # Import command modules
-from .commands import admin_commands, dev_commands, pipeline_commands
+from .commands import (
+    admin_commands,
+    dev_commands,
+    pipeline_commands,
+    purchase_analytics,
+)
 
 # Register command groups
 pipeline.add_command(pipeline_commands.scrape)
@@ -82,6 +93,8 @@ admin.add_command(admin_commands.backup)
 dev.add_command(dev_commands.test)
 dev.add_command(dev_commands.lint)
 dev.add_command(dev_commands.format_code)
+
+analytics.add_command(purchase_analytics.purchase)
 
 
 if __name__ == "__main__":

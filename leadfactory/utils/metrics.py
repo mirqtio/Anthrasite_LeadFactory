@@ -138,6 +138,38 @@ if METRICS_AVAILABLE:
         "Failure rate of pipeline operations",
         ["operation", "stage"],
     )
+
+    # Purchase and revenue metrics
+    PURCHASES_TOTAL = Counter(
+        "purchases_total",
+        "Total number of successful purchases",
+        ["audit_type", "currency"],
+    )
+    REVENUE_TOTAL = Counter(
+        "revenue_total_cents", "Total revenue in cents", ["audit_type", "currency"]
+    )
+    STRIPE_FEES_TOTAL = Counter(
+        "stripe_fees_total_cents", "Total Stripe fees in cents", ["currency"]
+    )
+    REFUNDS_TOTAL = Counter(
+        "refunds_total", "Total number of refunds", ["reason", "currency"]
+    )
+    REFUND_AMOUNT_TOTAL = Counter(
+        "refund_amount_total_cents", "Total refund amount in cents", ["currency"]
+    )
+    AVERAGE_ORDER_VALUE = Gauge(
+        "average_order_value_cents", "Average order value in cents", ["audit_type"]
+    )
+    CUSTOMER_LIFETIME_VALUE = Gauge(
+        "customer_lifetime_value_cents", "Customer lifetime value in cents"
+    )
+    MONTHLY_RECURRING_REVENUE = Gauge(
+        "monthly_recurring_revenue_cents", "Monthly recurring revenue in cents"
+    )
+    DAILY_REVENUE = Gauge("daily_revenue_cents", "Daily revenue in cents", ["date"])
+    CONVERSION_FUNNEL = Gauge(
+        "conversion_funnel_rate", "Conversion funnel metrics", ["stage", "audit_type"]
+    )
 else:
     # Define a more robust placeholder metric class that logs metric operations when Prometheus isn't available
     class LoggingNoOpMetric:
@@ -261,6 +293,40 @@ else:
         "pipeline_failure_rate",
         "Failure rate of pipeline operations",
         ["operation", "stage"],
+    )
+
+    # Purchase and revenue metrics
+    PURCHASES_TOTAL = LoggingNoOpMetric(
+        "purchases_total",
+        "Total number of successful purchases",
+        ["audit_type", "currency"],
+    )
+    REVENUE_TOTAL = LoggingNoOpMetric(
+        "revenue_total_cents", "Total revenue in cents", ["audit_type", "currency"]
+    )
+    STRIPE_FEES_TOTAL = LoggingNoOpMetric(
+        "stripe_fees_total_cents", "Total Stripe fees in cents", ["currency"]
+    )
+    REFUNDS_TOTAL = LoggingNoOpMetric(
+        "refunds_total", "Total number of refunds", ["reason", "currency"]
+    )
+    REFUND_AMOUNT_TOTAL = LoggingNoOpMetric(
+        "refund_amount_total_cents", "Total refund amount in cents", ["currency"]
+    )
+    AVERAGE_ORDER_VALUE = LoggingNoOpMetric(
+        "average_order_value_cents", "Average order value in cents", ["audit_type"]
+    )
+    CUSTOMER_LIFETIME_VALUE = LoggingNoOpMetric(
+        "customer_lifetime_value_cents", "Customer lifetime value in cents"
+    )
+    MONTHLY_RECURRING_REVENUE = LoggingNoOpMetric(
+        "monthly_recurring_revenue_cents", "Monthly recurring revenue in cents"
+    )
+    DAILY_REVENUE = LoggingNoOpMetric(
+        "daily_revenue_cents", "Daily revenue in cents", ["date"]
+    )
+    CONVERSION_FUNNEL = LoggingNoOpMetric(
+        "conversion_funnel_rate", "Conversion funnel metrics", ["stage", "audit_type"]
     )
 
 

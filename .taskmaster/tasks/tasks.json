@@ -146,7 +146,7 @@
       "velocity_metadata": {
         "complexity_score": 9,
         "estimated_hours": null,
-        "actual_hours": 5.555555555555555e-7,
+        "actual_hours": 5.555555555555555e-07,
         "velocity_points": 9,
         "blocked_time": 0,
         "status_history": [
@@ -158,7 +158,7 @@
           {
             "status": "in-progress",
             "timestamp": "2025-05-29T23:20:36.858Z",
-            "duration_hours": 5.555555555555555e-7
+            "duration_hours": 5.555555555555555e-07
           },
           {
             "status": "done",
@@ -3118,7 +3118,7 @@
       "id": 27,
       "title": "Extend Supabase PNG Upload for Report Storage and Delivery",
       "description": "Extend existing PNG upload functionality to include final PDF report storage and secure URL generation with expiration for audit report delivery via Stripe webhook flow",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         23
       ],
@@ -3168,10 +3168,12 @@
           "description": "Create a complete testing suite covering unit, integration, and end-to-end tests for the PDF storage and delivery functionality.",
           "dependencies": [],
           "details": "1. Write unit tests for PDF upload and URL generation functions\n2. Create integration tests with Supabase storage\n3. Implement end-to-end tests for secure file access, URL expiration, and Stripe webhook integration\n4. Add tests for edge cases (large files, invalid PDFs, etc.)\n5. Update CI pipeline configuration to include storage tests",
-          "status": "in-progress",
-          "testStrategy": "Run tests in isolated environments with mocked Supabase services for unit tests and real Supabase test instance for integration tests. Use mock Stripe events for webhook testing."
+          "status": "done",
+          "testStrategy": "Run tests in isolated environments with mocked Supabase services for unit tests and real Supabase test instance for integration tests. Use mock Stripe events for webhook testing.",
+          "last_updated": "2025-06-04T06:56:06.064555Z"
         }
-      ]
+      ],
+      "last_updated": "2025-06-04T06:56:06.064567Z"
     },
     {
       "id": 28,

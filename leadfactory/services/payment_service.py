@@ -30,6 +30,9 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 # Import financial tracking
 from leadfactory.cost.financial_tracking import financial_tracker
 
+# Import purchase metrics tracking
+from leadfactory.cost.purchase_metrics import purchase_metrics_tracker
+
 # Import report delivery service
 from leadfactory.services.report_delivery import ReportDeliveryService
 
@@ -290,8 +293,8 @@ class StripePaymentService:
                             except (ValueError, TypeError):
                                 pass
 
-                        # Record in financial tracking system
-                        financial_tracker.record_stripe_payment(
+                        # Record purchase in metrics and financial tracking system
+                        purchase_metrics_tracker.record_purchase(
                             stripe_payment_intent_id=payment_intent_id,
                             stripe_charge_id=charge["id"],
                             customer_email=payment.customer_email,
@@ -299,10 +302,8 @@ class StripePaymentService:
                             gross_amount_cents=gross_amount_cents,
                             net_amount_cents=net_amount_cents,
                             stripe_fee_cents=stripe_fee_cents,
-                            application_fee_cents=application_fee_cents,
-                            tax_amount_cents=tax_amount_cents,
-                            currency=charge.get("currency", "usd"),
                             audit_type=payment.audit_type,
+                            currency=charge.get("currency", "usd"),
                             metadata={
                                 "charge_id": charge["id"],
                                 "balance_transaction_id": balance_transaction_id,
@@ -311,6 +312,8 @@ class StripePaymentService:
                                 ).get("type"),
                                 "receipt_url": charge.get("receipt_url"),
                                 "stripe_metadata": charge.get("metadata", {}),
+                                "application_fee_cents": application_fee_cents,
+                                "tax_amount_cents": tax_amount_cents,
                             },
                         )
 
@@ -467,17 +470,18 @@ class StripePaymentService:
                                 f"Could not retrieve refund balance transaction {balance_transaction_id}: {e}"
                             )
 
-                    financial_tracker.record_stripe_refund(
+                    purchase_metrics_tracker.record_refund(
                         stripe_payment_intent_id=payment_intent_id,
                         stripe_charge_id=charge_id,
                         refund_amount_cents=refund_amount_cents,
-                        stripe_fee_refund_cents=stripe_fee_refund_cents,
                         reason=reason,
+                        currency=refund.get("currency", "usd"),
                         metadata={
                             "refund_id": refund["id"],
                             "balance_transaction_id": balance_transaction_id,
                             "refund_status": refund.get("status"),
                             "refund_metadata": refund.get("metadata", {}),
+                            "stripe_fee_refund_cents": stripe_fee_refund_cents,
                         },
                     )
 
