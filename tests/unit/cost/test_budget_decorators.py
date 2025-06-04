@@ -26,9 +26,11 @@ except ImportError:
     IMPORTS_AVAILABLE = False
 
     class BudgetConstraintError(Exception):
-        def __init__(self, message, constraint_info=None):
+        def __init__(self, message, service=None, operation=None, estimated_cost=None):
             self.message = message
-            self.constraint_info = constraint_info or {}
+            self.service = service
+            self.operation = operation
+            self.estimated_cost = estimated_cost
 
         def __str__(self):
             return self.message
@@ -80,25 +82,33 @@ class TestBudgetConstraintError:
     """Test BudgetConstraintError exception."""
 
     def test_budget_constraint_error_creation(self):
-        """Test creating a budget constraint error."""
-        if IMPORTS_AVAILABLE:
-            error = BudgetConstraintError("Budget exceeded", {"service": "openai", "cost": 10.0})
+        """Test BudgetConstraintError creation and attributes."""
+        error = BudgetConstraintError(
+            "Budget exceeded",
+            service="openai",
+            operation="chat_completion",
+            estimated_cost=10.0
+        )
 
-            assert str(error) == "Budget exceeded"
-            assert error.constraint_info["service"] == "openai"
-            assert error.constraint_info["cost"] == 10.0
-        else:
-            # Test with mock implementation
-            error = BudgetConstraintError("Budget exceeded")
-            assert str(error) == "Budget exceeded"
+        assert str(error) == "Budget exceeded"
+        assert error.service == "openai"
+        assert error.operation == "chat_completion"
+        assert error.estimated_cost == 10.0
 
     def test_budget_constraint_error_without_info(self):
         """Test creating error without constraint info."""
         if IMPORTS_AVAILABLE:
-            error = BudgetConstraintError("Budget exceeded")
+            error = BudgetConstraintError(
+                "Budget exceeded",
+                service="unknown",
+                operation="unknown",
+                estimated_cost=0.0
+            )
 
             assert str(error) == "Budget exceeded"
-            assert error.constraint_info == {}
+            assert error.service == "unknown"
+            assert error.operation == "unknown"
+            assert error.estimated_cost == 0.0
         else:
             # Test with mock implementation
             error = BudgetConstraintError("Budget exceeded")
@@ -117,12 +127,12 @@ class TestBudgetConstrainedDecorator:
         def test_function():
             return "success"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
-            mock_enforce.return_value = None  # No exception means budget OK
+        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_can_execute:
+            mock_can_execute.return_value = (True, None, [])  # Can execute, no reason, no estimates
 
             result = test_function()
             assert result == "success"
-            mock_enforce.assert_called_once()
+            mock_can_execute.assert_called_once()
 
     def test_budget_constrained_decorator_failure(self):
         """Test decorator when budget is exceeded."""
@@ -133,11 +143,12 @@ class TestBudgetConstrainedDecorator:
         def test_function():
             return "success"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
-            mock_enforce.side_effect = BudgetConstraintError("Budget exceeded")
+        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_can_execute:
+            mock_can_execute.return_value = (False, "Budget exceeded", [])  # Cannot execute
 
             result = test_function()
             assert result == "fallback"
+            mock_can_execute.assert_called_once()
 
     def test_budget_constrained_with_custom_param_extractor(self):
         """Test decorator with custom parameter extraction."""
@@ -151,14 +162,15 @@ class TestBudgetConstrainedDecorator:
         def test_function(tokens=2000):
             return f"processed {tokens} tokens"
 
-        with patch('leadfactory.cost.budget_decorators.enforce_budget_constraint') as mock_enforce:
-            mock_enforce.return_value = None
+        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_can_execute:
+            mock_can_execute.return_value = (True, None, [])
 
             result = test_function(tokens=1500)
             assert result == "processed 1500 tokens"
 
-            # Check that custom parameters were passed
-            call_args = mock_enforce.call_args[0]
+            # Check that the function was called with custom parameters
+            mock_can_execute.assert_called_once()
+            call_args = mock_can_execute.call_args[0]
             assert call_args[2]["tokens"] == 1500
 
     def test_budget_constrained_with_args(self):
@@ -270,13 +282,13 @@ class TestEnforceBudgetConstraint:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_bc:
-            mock_bc.can_execute_operation.return_value = (True, "Budget allows", [])
+        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_bc:
+            mock_bc.return_value = (True, "Budget allows", [])
 
             # Should not raise exception
             enforce_budget_constraint("openai", "gpt-4o", {"tokens": 1000})
 
-            mock_bc.can_execute_operation.assert_called_once_with(
+            mock_bc.assert_called_once_with(
                 "openai", "gpt-4o", {"tokens": 1000}
             )
 
@@ -285,8 +297,8 @@ class TestEnforceBudgetConstraint:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_bc:
-            mock_bc.can_execute_operation.return_value = (False, "Budget exceeded", [])
+        with patch('leadfactory.cost.budget_constraints.can_execute_operation') as mock_bc:
+            mock_bc.return_value = (False, "Budget exceeded", [])
 
             with pytest.raises(BudgetConstraintError) as exc_info:
                 enforce_budget_constraint("openai", "gpt-4o", {"tokens": 50000})
@@ -302,15 +314,15 @@ class TestSimulateOperationCost:
         if not IMPORTS_AVAILABLE:
             pytest.skip("Skipping detailed test with mock implementation")
 
-        with patch('leadfactory.cost.budget_decorators.budget_constraints') as mock_bc:
+        with patch('leadfactory.cost.budget_constraints.estimate_operation_cost') as mock_bc:
             mock_estimate = Mock()
             mock_estimate.estimated_cost = 0.05
-            mock_bc.estimate_operation_cost.return_value = mock_estimate
+            mock_bc.return_value = mock_estimate
 
             cost = simulate_operation_cost("openai", "gpt-4o", {"tokens": 1000})
 
             assert cost == 0.05
-            mock_bc.estimate_operation_cost.assert_called_once_with(
+            mock_bc.assert_called_once_with(
                 "openai", "gpt-4o", {"tokens": 1000}
             )
 

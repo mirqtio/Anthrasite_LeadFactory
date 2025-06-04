@@ -2978,7 +2978,7 @@
       "id": 25,
       "title": "Build Secure PDF Rendering Pipeline",
       "description": "Implement PDF generation using wkhtmltopdf or similar with clean template design and secure output styling for audit reports",
-      "status": "pending",
+      "status": "in-progress",
       "dependencies": [
         23
       ],
@@ -2992,7 +2992,7 @@
           "description": "Install and configure wkhtmltopdf or Puppeteer as the PDF generation engine. Create a wrapper service that handles the core PDF generation functionality.",
           "dependencies": [],
           "details": "1. Research and select between wkhtmltopdf and Puppeteer based on project requirements\n2. Install the chosen library and any dependencies\n3. Create a service class that wraps the PDF generation functionality\n4. Implement basic configuration options (page size, margins, etc.)\n5. Add error handling for generation failures",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests to verify the PDF generation service can create basic PDFs with various configurations. Test error handling for invalid inputs."
         },
         {
@@ -3049,7 +3049,7 @@
           "title": "Quality Validation & Integrity",
           "description": "Implement PDF quality validation, integrity checks, file size optimization, and automated testing for PDF structure, readability, and security compliance.",
           "details": "",
-          "status": "pending",
+          "status": "in-progress",
           "dependencies": [],
           "parentTaskId": 25
         }
@@ -3560,7 +3560,7 @@
       "id": 34,
       "title": "SendGrid dedicated-IP warm-up scheduler",
       "description": "Implement dedicated IP warm-up system for 110k daily cold email volume with automated throttling and bounce integration",
-      "status": "in-progress",
+      "status": "done",
       "priority": "high",
       "type": "feature",
       "created_at": "2025-06-03T11:02:00Z",
@@ -3628,7 +3628,7 @@
             5
           ],
           "details": "Create comprehensive unit tests for scheduling and throttling logic. Develop integration tests with SendGrid API and bounce monitoring systems. Implement e2e tests simulating complete warm-up cycles. Run all tests and resolve any issues. Update CI pipeline with new tests. Merge to master and confirm successful deployment via GitHub CLI logs.",
-          "status": "in-progress"
+          "status": "done"
         }
       ]
     }
