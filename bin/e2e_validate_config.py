@@ -12,16 +12,16 @@ This script validates that all parts of the system are ready for end-to-end test
 Logs results to logs/e2e_preflight.log and exits with non-zero code if any check fails.
 """
 
-import os
-import sys
 import json
-import sqlite3
 import logging
+import os
+import sqlite3
+import sys
 import tempfile
 import traceback
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 def setup_logging():

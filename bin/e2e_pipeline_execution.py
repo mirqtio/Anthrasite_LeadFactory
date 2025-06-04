@@ -32,16 +32,16 @@ Details:
    - 'e2e_summary.md' is present and complete
 """
 
-import os
-import sys
 import json
-import sqlite3
 import logging
+import os
+import sqlite3
 import subprocess
+import sys
 import traceback
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def setup_logging():

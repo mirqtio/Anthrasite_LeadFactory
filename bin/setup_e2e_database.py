@@ -10,15 +10,16 @@ This script provisions a PostgreSQL database for end-to-end testing:
 5. Creates .env.e2e configuration file
 """
 
+import csv
 import os
+import subprocess
 import sys
 import time
-import subprocess
-import csv
-import yaml
-import psycopg2
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
+import psycopg2
+import yaml
 
 
 def run_command(cmd: List[str], check: bool = True) -> subprocess.CompletedProcess:

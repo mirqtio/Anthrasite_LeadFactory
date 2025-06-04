@@ -1,5 +1,12 @@
 # Ruff Configuration for Anthrasite Lead-Factory
 
+# Target Python version
+target-version = "py310"
+
+# Line length limit
+line-length = 100
+
+[lint]
 # Enable specific rules
 select = [
     "F401",  # Unused imports
@@ -12,12 +19,6 @@ ignore = [
     "E501",  # Line length
     "E722",  # Bare except
 ]
-
-# Target Python version
-target-version = "py310"
-
-# Line length limit
-line-length = 100
 
 # Exclude directories
 exclude = [

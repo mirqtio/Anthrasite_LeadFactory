@@ -6,14 +6,15 @@ This script sets up the database for end-to-end testing without requiring Docker
 It can work with an existing PostgreSQL installation or SQLite for testing.
 """
 
-import os
-import sys
 import csv
-import yaml
+import os
 import sqlite3
+import sys
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
+import yaml
 
 
 def create_sqlite_database():
