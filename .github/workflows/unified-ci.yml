@@ -265,7 +265,7 @@ jobs:
           echo "Core tests finished. Deduplication tests and unit tests were attempted."
 
       - name: Publish coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         continue-on-error: true  # Don't fail CI if codecov has rate limits or issues
         with:
           file: ./coverage.xml
@@ -396,7 +396,7 @@ jobs:
           "
 
       - name: Publish scoring engine coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         continue-on-error: true
         with:
           file: ./coverage-scoring.xml
@@ -479,7 +479,7 @@ jobs:
           echo "This will be addressed in a future iteration"
 
       - name: Publish NodeCapability coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         continue-on-error: true
         with:
           file: ./coverage-nodeconfig-${{ matrix.environment }}.xml
@@ -946,7 +946,7 @@ jobs:
           }
 
       - name: Publish BDD test coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         continue-on-error: true
         with:
           file: ./coverage-bdd.xml
