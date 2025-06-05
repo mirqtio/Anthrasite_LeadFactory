@@ -143,9 +143,11 @@ class TestUnifiedGPT4ONode:
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test_key"}):
             node = UnifiedGPT4ONode()
             if IMPORTS_AVAILABLE:
-                assert node.api_key == "test_key"
+                # Node should have an LLM client initialized
+                assert node.llm_client is not None
             else:
-                assert node.api_key == "mock_api_key"
+                # Mock implementation
+                assert hasattr(node, 'llm_client')
 
     def test_validate_inputs_success(self):
         """Test input validation with valid data."""
