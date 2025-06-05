@@ -106,6 +106,21 @@ class MockupPNGUploader:
         start_time = time.time()
         png_path = Path(png_path)
 
+        # Validate path to prevent directory traversal
+        try:
+            png_path = png_path.resolve()
+            # Ensure the file exists and is not a directory
+            if not png_path.exists():
+                raise ValueError(f"File not found: {png_path}")
+            if png_path.is_dir():
+                raise ValueError(f"Path is a directory, not a file: {png_path}")
+            # Ensure file is within expected boundaries (optional additional check)
+            # You can add checks here to ensure the path is within allowed directories
+        except (ValueError, OSError) as e:
+            result = MockupUploadResult(success=False, business_id=business_id)
+            result.error_message = f"Invalid file path: {str(e)}"
+            return result
+
         result = MockupUploadResult(success=False, business_id=business_id)
 
         try:

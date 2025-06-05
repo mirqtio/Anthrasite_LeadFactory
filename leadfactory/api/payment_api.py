@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 
 from leadfactory.ab_testing.pricing_ab_test import PricingABTest
+from leadfactory.security.auth_middleware import api_key_auth, optional_auth
 from leadfactory.services.payment_service import (
     StripePaymentService,
     create_payment_service,
@@ -257,6 +258,7 @@ async def refund_payment(
     payment_id: str,
     request: RefundRequest,
     payment_service: StripePaymentService = Depends(get_payment_service),
+    _: bool = Depends(api_key_auth),  # Require API key for refunds
 ):
     """Refund a payment."""
     try:

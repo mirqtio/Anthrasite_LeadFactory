@@ -378,13 +378,13 @@ def main():
     if args.format == "simplified":
         success = converter.convert_legacy_to_simplified(args.input, args.output)
     else:
-        print("Legacy format conversion not implemented yet")
+        logger.warning("Legacy format conversion not implemented yet")
         success = False
 
     if success:
-        print(f"Successfully converted {args.input} to {args.output}")
+        logger.info(f"Successfully converted {args.input} to {args.output}")
     else:
-        print("Conversion failed")
+        logger.error("Conversion failed")
         exit(1)
 
 

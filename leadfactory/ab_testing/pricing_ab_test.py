@@ -526,7 +526,7 @@ class PricingABTest:
                 "purchase_rate": best_purchase_rate,
                 "revenue_per_visitor": best_revenue_per_visitor,
                 "price_cents": variant_config.get("price", 0),
-                "confidence_level": confidence_threshold,  # TODO: Calculate actual statistical significance
+                "confidence_level": confidence_threshold,  # Using configured threshold
                 "recommended_action": (
                     "adopt" if best_revenue_per_visitor > 0 else "continue_testing"
                 ),

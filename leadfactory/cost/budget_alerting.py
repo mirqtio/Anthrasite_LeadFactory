@@ -447,10 +447,10 @@ class BudgetNotificationService:
     def _send_console_alert(self, alert: AlertMessage) -> bool:
         """Send alert to console."""
         try:
-            print(
+            logger.warning(
                 f"[{alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] {alert.severity.value.upper()}: {alert.title}"
             )
-            print(f"  {alert.message}")
+            logger.warning(f"  {alert.message}")
             return True
         except Exception as e:
             logger.error(f"Failed to send console alert: {e}")

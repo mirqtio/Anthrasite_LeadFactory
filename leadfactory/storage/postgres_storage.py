@@ -136,7 +136,8 @@ class PostgresStorage(StorageInterface):
             """
 
             if limit:
-                query += f" LIMIT {limit}"
+                query += " LIMIT %s"
+                params.append(limit)
 
             with self.cursor() as cursor:
                 cursor.execute(query, tuple(params))

@@ -7,6 +7,7 @@ with automatic routing and connection pooling.
 
 import asyncio
 import logging
+import os
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
@@ -105,7 +106,11 @@ class ShardedPostgresStorage(StorageInterface):
         if read_only:
             shard_config = self.shard_router.config.get_shard(shard_id)
             if shard_config and shard_config.read_replicas:
-                # TODO: Implement read replica connection
+                # For read replicas, use a different connection string
+                # This can be configured via environment variables
+                replica_url = os.getenv(f"READ_REPLICA_{shard_name.upper()}_URL")
+                if replica_url:
+                    return replica_url
                 # For now, fall back to primary
                 pass
 

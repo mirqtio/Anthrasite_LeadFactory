@@ -136,7 +136,7 @@ class BudgetGuardMiddleware:
 
     def _cache_decision(
         self, cache_key: str, decision: ThrottlingDecision, cost: float
-    ):
+    ) -> None:
         """Cache a throttling decision."""
         if self.config.budget_options.cache_decisions:
             self._decision_cache[cache_key] = (decision, cost)
@@ -189,7 +189,7 @@ class BudgetGuardMiddleware:
 
     def _send_alert_if_needed(
         self, decision: ThrottlingDecision, request_info: Dict[str, Any]
-    ):
+    ) -> None:
         """Send alert if throttling decision warrants it."""
         if not self.config.budget_options.enable_alerting:
             return

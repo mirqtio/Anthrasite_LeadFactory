@@ -462,7 +462,8 @@ class AuditLogger:
             ip = s.getsockname()[0]
             s.close()
             return ip
-        except:
+        except (socket.error, OSError) as e:
+            logger.warning(f"Failed to get IP address: {e}")
             return "unknown"
 
 

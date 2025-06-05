@@ -315,7 +315,22 @@ class PipelineDAG:
                     missing_optional.append(dep.from_stage)
                 elif dep.dependency_type == DependencyType.CONDITIONAL:
                     # For now, treat conditional as optional
-                    # TODO: Implement condition evaluation
+                    # Evaluate condition based on node data
+                    if callable(edge.condition):
+                        if not edge.condition(node_data):
+                            continue
+                    elif isinstance(edge.condition, str):
+                        # Simple string conditions
+                        if (
+                            edge.condition == "success"
+                            and node_data.get("status") != "success"
+                        ):
+                            continue
+                        elif (
+                            edge.condition == "failure"
+                            and node_data.get("status") != "failure"
+                        ):
+                            continue
                     missing_optional.append(dep.from_stage)
 
         can_run = len(missing_required) == 0

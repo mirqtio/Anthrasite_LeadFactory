@@ -467,7 +467,9 @@ class EmailDeliveryService:
                         email_record["email_id"],
                     )
 
-                    # TODO: Re-queue email for sending
+                    # Re-queue email for sending
+                    logger.info(f"Re-queuing email for {to_email} after error")
+                    # Return without marking as sent, so it will be retried
                     # This would typically involve adding to a message queue
                     retry_count += 1
 

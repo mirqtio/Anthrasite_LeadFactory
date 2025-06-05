@@ -118,7 +118,7 @@ class EmailTemplateEngine:
             try:
                 text_template = self.env.get_template(f"{template_name}.txt")
                 text_content = text_template.render(**context)
-            except:
+            except jinja2.TemplateNotFound:
                 # Generate basic text version from HTML
                 text_content = self._html_to_text(html_content)
 
@@ -140,7 +140,7 @@ class EmailTemplateEngine:
         try:
             subject_template = self.env.get_template(f"{template_name}_subject.txt")
             return subject_template.render(**context).strip()
-        except:
+        except jinja2.TemplateNotFound:
             # Default subject based on template name
             if "delivery" in template_name:
                 return f"Your {context['user'].report_title} is ready!"

@@ -320,7 +320,8 @@ class TestGovernanceManager:
         try:
             stat = os.stat(file_path)
             return datetime.fromtimestamp(stat.st_ctime)
-        except:
+        except (OSError, IOError) as e:
+            logger.warning(f"Failed to get creation date for {file_path}: {e}")
             return datetime.now()
 
     def _get_file_modification_date(self, file_path: str) -> datetime:
@@ -328,7 +329,8 @@ class TestGovernanceManager:
         try:
             stat = os.stat(file_path)
             return datetime.fromtimestamp(stat.st_mtime)
-        except:
+        except (OSError, IOError) as e:
+            logger.warning(f"Failed to get modification date for {file_path}: {e}")
             return datetime.now()
 
     def assign_test_owner(

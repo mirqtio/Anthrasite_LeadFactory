@@ -62,8 +62,19 @@ class PaymentConfig:
     stripe_publishable_key: str
     webhook_secret: str
     currency: str = "usd"
-    success_url: str = "https://yourdomain.com/success"
-    cancel_url: str = "https://yourdomain.com/cancel"
+    success_url: str = None
+    cancel_url: str = None
+
+    def __post_init__(self):
+        """Set default URLs from environment variables."""
+        if self.success_url is None:
+            self.success_url = os.getenv(
+                "STRIPE_SUCCESS_URL", "http://localhost:3000/success"
+            )
+        if self.cancel_url is None:
+            self.cancel_url = os.getenv(
+                "STRIPE_CANCEL_URL", "http://localhost:3000/cancel"
+            )
 
 
 class Payment(Base):

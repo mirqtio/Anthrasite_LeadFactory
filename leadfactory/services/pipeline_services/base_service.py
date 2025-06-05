@@ -7,6 +7,7 @@ health checks, metrics, error handling, and service discovery.
 
 import asyncio
 import logging
+import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -33,10 +34,11 @@ class ServiceConfig:
     debug: bool = False
     enable_metrics: bool = True
     enable_tracing: bool = True
-    kafka_brokers: str = "localhost:9092"
-    redis_url: str = "redis://localhost:6379"
-    postgres_url: str = (
-        "postgresql://postgres:postgres@localhost:5432/leadfactory"  # pragma: allowlist secret
+    kafka_brokers: str = os.getenv("KAFKA_BROKERS", "localhost:9092")
+    redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379")
+    postgres_url: str = os.getenv(
+        "DATABASE_URL",
+        "postgresql://postgres:postgres@localhost:5432/leadfactory",  # pragma: allowlist secret
     )
 
 
@@ -90,13 +92,14 @@ class BasePipelineService(ABC):
             description=f"Scalable {config.service_name} service for LeadFactory pipeline",
         )
 
-        # Add CORS middleware
+        # Add CORS middleware with secure defaults
+        allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
+            allow_origins=allowed_origins,
             allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type", "X-API-Key"],
         )
 
         # Service metrics
