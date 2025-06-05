@@ -101,7 +101,20 @@
 
         <p>Dear {{ user.user_name }},</p>
 
+        {% if user.ai_intro %}
+        <p>{{ user.ai_intro }}</p>
+        {% else %}
         <p>Great news! Your comprehensive audit report has been generated and is ready for viewing. We've analyzed your digital presence and compiled actionable insights to help you grow your business.</p>
+        {% endif %}
+
+        <!-- Website Preview Section (if thumbnail available) -->
+        {% if website_thumbnail_available %}
+        <div style="text-align: center; margin: 30px 0; background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <h3 style="margin-bottom: 15px; color: #1f2937;">🌐 Your Website Preview</h3>
+            <img src="cid:website-thumbnail.png" alt="Website thumbnail" style="max-width: 100%; height: auto; border: 2px solid #e5e7eb; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <p style="margin-top: 10px; font-size: 14px; color: #6b7280;">This is how your website appears to visitors</p>
+        </div>
+        {% endif %}
 
         <div class="report-info">
             <h3>📊 Report Details</h3>
@@ -123,8 +136,24 @@
             <strong>⏰ Important:</strong> Your secure access link will expire on {{ user.expiry_date|format_date }}. Make sure to download your report before then!
         </div>
 
+        <!-- AI-Generated Improvements Section -->
+        {% if user.ai_improvements %}
+        <h3>🎯 Key Opportunities for {{ user.company_name or "Your Business" }}</h3>
+        <p>Based on our analysis, here are the top opportunities to improve your digital presence:</p>
+
+        <ul style="background-color: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            {% for improvement in user.ai_improvements %}
+            <li style="margin-bottom: 10px;">{{ improvement }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
         <h3>🚀 What's Next?</h3>
+        {% if user.ai_cta %}
+        <p>{{ user.ai_cta }}</p>
+        {% else %}
         <p>Your audit report contains valuable insights, but implementing the recommendations can be challenging. That's where our partner agencies come in!</p>
+        {% endif %}
 
         <ul>
             <li>✅ Expert implementation of audit recommendations</li>
@@ -133,13 +162,32 @@
             <li>✅ Proven track record of success</li>
         </ul>
 
+        {% if not user.ai_cta %}
         <p>Ready to take your business to the next level? Connect with one of our vetted growth agencies today!</p>
+        {% endif %}
 
         <div class="footer">
-            <p>Need help? Contact us at <a href="mailto:{{ user.support_email }}">{{ user.support_email }}</a></p>
+            <p>Need help? Contact us at <a href="mailto:{{ user.support_email or 'support@anthrasite.com' }}">{{ user.support_email or 'support@anthrasite.com' }}</a></p>
+
+            <!-- CAN-SPAM Compliance Footer -->
+            <p style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
+                This email was sent by Anthrasite<br>
+                123 Main Street, Suite 100<br>
+                San Francisco, CA 94105<br>
+                United States
+            </p>
+
             {% if user.unsubscribe_link %}
-            <p><a href="{{ user.unsubscribe_link }}">Unsubscribe</a> from these emails</p>
+            <p style="margin-top: 15px;">
+                <a href="{{ user.unsubscribe_link }}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> |
+                <a href="{{ user.preferences_link or user.unsubscribe_link }}" style="color: #6b7280; text-decoration: underline;">Update Preferences</a>
+            </p>
             {% endif %}
+
+            <p style="margin-top: 10px; font-size: 11px; color: #9ca3af;">
+                You received this email because you purchased a website audit report from Anthrasite.
+            </p>
+
             <p>&copy; {{ current_year }} Anthrasite. All rights reserved.</p>
         </div>
     </div>

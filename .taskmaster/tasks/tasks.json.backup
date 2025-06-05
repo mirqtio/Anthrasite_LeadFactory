@@ -146,7 +146,7 @@
       "velocity_metadata": {
         "complexity_score": 9,
         "estimated_hours": null,
-        "actual_hours": 5.555555555555555e-07,
+        "actual_hours": 5.555555555555555e-7,
         "velocity_points": 9,
         "blocked_time": 0,
         "status_history": [
@@ -158,7 +158,7 @@
           {
             "status": "in-progress",
             "timestamp": "2025-05-29T23:20:36.858Z",
-            "duration_hours": 5.555555555555555e-07
+            "duration_hours": 5.555555555555555e-7
           },
           {
             "status": "done",
@@ -3899,7 +3899,7 @@
       "dependencies": [],
       "priority": "high",
       "details": "This task is the first priority in the implementation order. We need to filter out modern, well-performing websites early in the lead funnel to avoid sending unnecessary emails to sites that are already well-optimized.",
-      "testStrategy": "1. Test with sample sites that have PageSpeed scores \u226590 and are mobile responsive to ensure they're properly filtered out\n2. Test with sites that have good PageSpeed but poor mobile responsiveness to ensure they still proceed in the funnel\n3. Verify the enrichment step correctly marks these leads as processed without triggering email sequences",
+      "testStrategy": "1. Test with sample sites that have PageSpeed scores ≥90 and are mobile responsive to ensure they're properly filtered out\n2. Test with sites that have good PageSpeed but poor mobile responsiveness to ensure they still proceed in the funnel\n3. Verify the enrichment step correctly marks these leads as processed without triggering email sequences",
       "subtasks": [
         {
           "id": "41.1",
@@ -4307,293 +4307,10 @@
           "status": "pending"
         }
       ]
-    },
-    {
-      "id": 54,
-      "title": "Parse and Store City/State for Businesses",
-      "description": "Extract city and state from business address and save to the businesses table instead of leaving them NULL. Update create_business logic to parse address into city/state fields.",
-      "status": "done",
-      "priority": "high",
-      "type": "feature",
-      "created_at": "2025-06-05T15:34:42.735696+00:00",
-      "dependencies": [],
-      "tags": [
-        "data",
-        "parsing"
-      ],
-      "estimate": "2 hours",
-      "details": "The Yelp scraping logic only joins the display_address into one string and captures ZIP; it never extracts city or state (both passed as blank to DB). This task will parse the address components and properly populate the city and state fields in the businesses table.",
-      "test_strategy": "1. Unit tests for address parsing logic\n2. Integration tests with sample Yelp business data\n3. Verify city/state fields are populated in database\n4. Test edge cases like incomplete addresses",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Implement address parsing logic",
-          "description": "Create function to extract city and state from display_address array",
-          "status": "done",
-          "estimated_hours": 1
-        },
-        {
-          "id": 2,
-          "title": "Update create_business function",
-          "description": "Modify create_business to use parsed city/state values",
-          "status": "done",
-          "estimated_hours": 0.5
-        },
-        {
-          "id": 3,
-          "title": "Add tests for address parsing",
-          "description": "Write comprehensive tests for the parsing logic",
-          "status": "done",
-          "estimated_hours": 0.5
-        }
-      ]
-    },
-    {
-      "id": 55,
-      "title": "Decide & Implement Yelp JSON Retention",
-      "description": "Determine retention policy for raw Yelp/Google API JSON. If keeping, pass API response data into businesses.yelp_response_json (and document it); if purging, remove these fields and any related storage to avoid PII retention.",
-      "status": "pending",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-06-05T15:34:42.735696+00:00",
-      "dependencies": [],
-      "tags": [
-        "data",
-        "privacy"
-      ],
-      "estimate": "6 hours",
-      "details": "The system currently always stores the raw Yelp/Google API JSON in the businesses record (passed into create_business), and no config or job purges it after use (privacy decision #1 from PRD remains unaddressed).",
-      "test_strategy": "1. Implement configuration for retention policy\n2. Test JSON storage vs purging based on config\n3. Verify privacy compliance\n4. Document retention decisions",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Define retention policy configuration",
-          "description": "Add config options for JSON retention decisions",
-          "status": "pending",
-          "estimated_hours": 2
-        },
-        {
-          "id": 2,
-          "title": "Implement conditional JSON storage",
-          "description": "Store or purge JSON based on retention policy",
-          "status": "pending",
-          "estimated_hours": 3
-        },
-        {
-          "id": 3,
-          "title": "Add documentation for privacy decisions",
-          "description": "Document the retention policy and privacy implications",
-          "status": "pending",
-          "estimated_hours": 1
-        }
-      ]
-    },
-    {
-      "id": 56,
-      "title": "Implement Local Screenshot Capture",
-      "description": "Add a Playwright (headless Chromium) fallback to capture full-page screenshots when SCREENSHOT_ONE_KEY is not provided, so the system can run fully on local hardware without external screenshot APIs.",
-      "status": "done",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-06-05T15:34:42.735696+00:00",
-      "dependencies": [],
-      "tags": [
-        "screenshot",
-        "headless",
-        "local"
-      ],
-      "estimate": "8 hours",
-      "details": "The code uses the ScreenshotOne API exclusively and only captures a screenshot if SCREENSHOT_ONE_KEY is set. There is no Playwright/Chromium usage for local captures, conflicting with the local-stack requirement (Mac Mini) in v1.0.",
-      "test_strategy": "1. Install and configure Playwright with Chromium\n2. Implement fallback logic when API key not available\n3. Test screenshot capture quality and performance\n4. Integration tests with existing pipeline",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Add Playwright dependency and setup",
-          "description": "Install Playwright and configure headless Chromium",
-          "status": "done",
-          "estimated_hours": 2
-        },
-        {
-          "id": 2,
-          "title": "Implement local screenshot capture",
-          "description": "Create screenshot function using Playwright",
-          "status": "done",
-          "estimated_hours": 4
-        },
-        {
-          "id": 3,
-          "title": "Add fallback logic to enrichment pipeline",
-          "description": "Integrate local capture as fallback when API unavailable",
-          "status": "done",
-          "estimated_hours": 2
-        }
-      ]
-    },
-    {
-      "id": 57,
-      "title": "Embed Website Thumbnail in Email",
-      "description": "Modify email content generation to include the screenshot thumbnail. Use the stored screenshot asset (embed as inline image with content-ID or via a public link) in the email HTML as a small preview of the site, per PRD.",
-      "status": "completed",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-06-05T15:34:42.735696+00:00",
-      "dependencies": [],
-      "tags": [
-        "email",
-        "thumbnail",
-        "HTML"
-      ],
-      "estimate": "4 hours",
-      "details": "The generated HTML for emails contains no <img> tag or content ID for a website thumbnail (the template had a .mockup-container placeholder not populated). Attachments for screenshot are prepared, but the email content never references the inline thumbnail.",
-      "test_strategy": "1. Update email template to include thumbnail placeholder\n2. Modify email generation to embed screenshot\n3. Test email rendering with thumbnails\n4. Verify compatibility across email clients",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Update email template with thumbnail placeholder",
-          "description": "Add proper img tag or content-ID reference to template",
-          "status": "completed",
-          "estimated_hours": 1
-        },
-        {
-          "id": 2,
-          "title": "Implement thumbnail embedding logic",
-          "description": "Modify email queue to include screenshot in content",
-          "status": "completed",
-          "estimated_hours": 2
-        },
-        {
-          "id": 3,
-          "title": "Test email rendering across clients",
-          "description": "Verify thumbnail displays properly in various email clients",
-          "status": "completed",
-          "estimated_hours": 1
-        }
-      ]
-    },
-    {
-      "id": 58,
-      "title": "Integrate AI Content with Email Template",
-      "description": "Use the Jinja EmailTemplateEngine to inject GPT-generated text (subject, intro, issues list, etc.) into the predefined HTML template that includes our CAN-SPAM footer and unsubscribe link. Ensure the final sent email consistently uses the unified template.",
-      "status": "completed",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-06-05T15:34:42.735696+00:00",
-      "dependencies": [],
-      "tags": [
-        "email",
-        "template",
-        "compliance"
-      ],
-      "estimate": "8 hours",
-      "details": "The Unified GPT-4o pipeline was constructing its own HTML body (subject line, intro, issues list, etc.) in code, bypassing the Jinja email template that includes our address and unsubscribe link. Although an AI personalization module exists, the final assembly still risks skipping the official template in some flows.",
-      "test_strategy": "1. Audit current AI content generation flows\n2. Integrate AI content with Jinja templates\n3. Verify CAN-SPAM compliance in all emails\n4. Test template consistency across email types",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Audit current AI email generation",
-          "description": "Review unified_gpt4o.py email construction",
-          "status": "pending",
-          "estimated_hours": 2
-        },
-        {
-          "id": 2,
-          "title": "Integrate AI content with Jinja templates",
-          "description": "Modify AI pipeline to use EmailTemplateEngine",
-          "status": "pending",
-          "estimated_hours": 4
-        },
-        {
-          "id": 3,
-          "title": "Verify CAN-SPAM compliance",
-          "description": "Ensure all emails include required compliance elements",
-          "status": "pending",
-          "estimated_hours": 2
-        }
-      ]
-    },
-    {
-      "id": 59,
-      "title": "Auto-Monitor Bounce Rate & IP Warmup",
-      "description": "Implement periodic or pre-send checks on bounce rate (bounces/total emails). If >2%, log an alert and automatically switch the SendGrid IP pool from 'shared' to 'dedicated' (or trigger a warm-up sequence for a new IP). Include unit tests with fake bounce data to validate pool switching.",
-      "status": "completed",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-06-05T15:34:42.735696+00:00",
-      "dependencies": [],
-      "tags": [
-        "deliverability",
-        "monitoring"
-      ],
-      "estimate": "6 hours",
-      "details": "The system checks bounce rate on startup and aborts sending if the current pool's rate exceeds 2%, but it doesn't initiate any IP pool switch or warming workflow. The PRD task (#21) for automatically swapping to a dedicated pool and warming it up is not implemented.",
-      "test_strategy": "1. Implement bounce rate monitoring logic\n2. Create IP pool switching mechanism\n3. Test with simulated bounce scenarios\n4. Verify alert and logging functionality",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Implement periodic bounce rate monitoring",
-          "description": "Create monitoring service for bounce rate checks",
-          "status": "pending",
-          "estimated_hours": 2
-        },
-        {
-          "id": 2,
-          "title": "Implement automatic IP pool switching",
-          "description": "Add logic to switch from shared to dedicated pool",
-          "status": "pending",
-          "estimated_hours": 3
-        },
-        {
-          "id": 3,
-          "title": "Add bounce simulation tests",
-          "description": "Create unit tests with fake bounce data",
-          "status": "pending",
-          "estimated_hours": 1
-        }
-      ]
-    },
-    {
-      "id": 60,
-      "title": "Enforce Per-Service Daily Cost Caps",
-      "description": "Extend cost tracking to enforce daily spend limits for LLM and SEMrush usage. Introduce env vars (e.g. MAX_DOLLARS_LLM, MAX_DOLLARS_SEMRUSH); when usage exceeds these, disable or queue those API calls until next day and log alerts. Update docs and tests for budget enforcement.",
-      "status": "completed",
-      "priority": "medium",
-      "type": "feature",
-      "created_at": "2025-06-05T15:34:42.735696+00:00",
-      "dependencies": [],
-      "tags": [
-        "cost",
-        "monitoring"
-      ],
-      "estimate": "6 hours",
-      "details": "The config implements a global daily/monthly budget limit, but there are no environment vars for e.g. MAX_DOLLARS_LLM or MAX_DOLLARS_SEMRUSH. This means the system won't halt or alert if one service (GPT-4 or SEMrush) exceeds its intended daily cost in isolation.",
-      "test_strategy": "1. Extend cost tracking for per-service limits\n2. Implement service-specific budget enforcement\n3. Test cost cap functionality with mock usage\n4. Verify alerting and queueing behavior",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Add per-service environment variables",
-          "description": "Create config for MAX_DOLLARS_LLM, MAX_DOLLARS_SEMRUSH",
-          "status": "pending",
-          "estimated_hours": 1
-        },
-        {
-          "id": 2,
-          "title": "Implement per-service cost tracking",
-          "description": "Extend cost tracker to monitor individual services",
-          "status": "pending",
-          "estimated_hours": 3
-        },
-        {
-          "id": 3,
-          "title": "Add service-specific budget enforcement",
-          "description": "Implement logic to halt/queue calls when caps exceeded",
-          "status": "pending",
-          "estimated_hours": 2
-        }
-      ]
     }
   ],
   "metadata": {
-    "last_updated": "2025-06-05T17:57:42.471028+00:00",
-    "total_tasks": 60
+    "last_updated": "2025-06-05T04:36:53.385436",
+    "total_tasks": 40
   }
 }

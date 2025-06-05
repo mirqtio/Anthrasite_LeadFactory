@@ -9,10 +9,12 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional
 
+import jinja2
 from jinja2 import Environment, FileSystemLoader, Template
 from pydantic import BaseModel, Field
 
 from leadfactory.config import get_env
+from leadfactory.email.ai_content_generator import email_content_personalizer
 
 
 class EmailTemplate(BaseModel):
@@ -35,12 +37,29 @@ class EmailPersonalization(BaseModel):
     download_link: Optional[str] = Field(None, description="Direct download link")
     agency_cta_link: str = Field(..., description="Agency connection CTA link")
     company_name: Optional[str] = Field(None, description="User's company name")
+    website_url: Optional[str] = Field(None, description="User's website URL")
+    website_thumbnail_path: Optional[str] = Field(
+        None, description="Path to website thumbnail"
+    )
     purchase_date: datetime = Field(..., description="Report purchase date")
     expiry_date: datetime = Field(..., description="Link expiry date")
     support_email: str = Field(
         default="support@anthrasite.com", description="Support contact"
     )
     unsubscribe_link: Optional[str] = Field(None, description="Unsubscribe link")
+
+    # AI-generated content fields
+    ai_intro: Optional[str] = Field(
+        None, description="AI-generated personalized introduction"
+    )
+    ai_improvements: Optional[List[str]] = Field(
+        None, description="AI-generated improvement suggestions"
+    )
+    ai_cta: Optional[str] = Field(None, description="AI-generated call-to-action")
+    business_data: Optional[dict] = Field(
+        None, description="Business data for AI content generation"
+    )
+    score_data: Optional[dict] = Field(None, description="Scoring data for AI analysis")
 
 
 class CTAButton(BaseModel):
@@ -107,6 +126,12 @@ class EmailTemplateEngine:
                 "user": personalization,
                 "cta_buttons": cta_buttons or [],
                 "current_year": datetime.now().year,
+                "website_thumbnail_available": bool(
+                    personalization.website_thumbnail_path
+                    and os.path.exists(personalization.website_thumbnail_path)
+                    if personalization.website_thumbnail_path
+                    else False
+                ),
                 **(additional_context or {}),
             }
 
@@ -164,6 +189,46 @@ class EmailTemplateEngine:
         text = text.strip()
 
         return text
+
+    async def generate_ai_content(
+        self, personalization: EmailPersonalization
+    ) -> EmailPersonalization:
+        """Generate AI content and update personalization object.
+
+        Args:
+            personalization: Email personalization data with business_data and score_data
+
+        Returns:
+            Updated personalization with AI-generated content
+        """
+        if not personalization.business_data:
+            return personalization
+
+        try:
+            # Generate AI content using the AI content generator
+            ai_intro = await email_content_personalizer.content_generator.generate_personalized_intro(
+                personalization.business_data
+            )
+
+            ai_improvements = await email_content_personalizer.content_generator.generate_email_improvements(
+                personalization.business_data,
+                score_breakdown=personalization.score_data,
+            )
+
+            ai_cta = await email_content_personalizer.content_generator.generate_call_to_action(
+                personalization.business_data, ai_improvements
+            )
+
+            # Update personalization with AI content
+            personalization.ai_intro = ai_intro
+            personalization.ai_improvements = ai_improvements
+            personalization.ai_cta = ai_cta
+
+            return personalization
+
+        except Exception as e:
+            logger.error(f"Failed to generate AI content: {str(e)}")
+            return personalization
 
     def create_report_delivery_email(
         self, personalization: EmailPersonalization, include_download: bool = True

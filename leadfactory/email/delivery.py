@@ -8,6 +8,7 @@ with tracking capabilities for opens, clicks, and delivery status.
 import asyncio
 import json
 import logging
+import os
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Union
@@ -157,7 +158,7 @@ class EmailDeliveryService:
             logger.error(f"Failed to send email {email_id}: {str(e)}")
             raise
 
-    def send_email(
+    def send_simple_email(
         self,
         to_email: str,
         subject: str,
@@ -279,6 +280,31 @@ class EmailDeliveryService:
         tracking_settings.subscription_tracking = subscription_tracking
 
         mail.tracking_settings = tracking_settings
+
+        # Add website thumbnail as inline attachment if available
+        if personalization.website_thumbnail_path and os.path.exists(
+            personalization.website_thumbnail_path
+        ):
+            try:
+                import base64
+
+                with open(personalization.website_thumbnail_path, "rb") as f:
+                    thumbnail_data = f.read()
+
+                attachment = Attachment()
+                attachment.content = base64.b64encode(thumbnail_data).decode()
+                attachment.filename = "website-thumbnail.png"
+                attachment.type = "image/png"
+                attachment.disposition = "inline"
+                attachment.content_id = "website-thumbnail.png"
+
+                mail.add_attachment(attachment)
+                logger.info(f"Added website thumbnail attachment for email {email_id}")
+
+            except Exception as e:
+                logger.warning(
+                    f"Failed to attach website thumbnail for email {email_id}: {str(e)}"
+                )
 
         # Add custom headers for tracking
         mail.add_header("X-Email-ID", email_id)

@@ -10,10 +10,15 @@ import re
 import sys
 import time
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Tuple, Union
 
 # Use dict instead of Dict for Python 3.9 compatibility
 from leadfactory.config import load_config
+from leadfactory.config.json_retention_policy import (
+    get_retention_expiry_date,
+    process_json_for_storage,
+    should_store_json,
+)
 
 # Import storage abstraction
 from leadfactory.storage import get_storage_instance
@@ -353,6 +358,300 @@ class GooglePlacesAPI:
         if error:
             return None, error
         return response_data.get("result", {}), None
+
+
+def parse_city_state_from_address(address: str) -> Tuple[str, str]:
+    """Parse city and state from a business address string.
+
+    Args:
+        address: Full business address string
+
+    Returns:
+        Tuple of (city, state) strings, empty strings if not found
+    """
+    if not address or not address.strip():
+        return "", ""
+
+    address = address.strip()
+
+    # Common US address patterns:
+    # "123 Main St, City, ST 12345"
+    # "123 Main St, City, State 12345"
+    # "123 Main St, City ST 12345"
+    # "City, ST"
+    # "City, State"
+
+    # Try to match address with city, state, zip pattern
+    # Pattern: ... City, ST ZIP or ... City, State ZIP
+    pattern1 = r",\s*([^,]+),\s*([A-Z]{2})\s+\d{5}"
+    match = re.search(pattern1, address)
+    if match:
+        city = match.group(1).strip()
+        state = match.group(2).strip()
+        return city, state
+
+    # Pattern: ... City, State ZIP (full state name)
+    pattern2 = r",\s*([^,]+),\s*([A-Za-z\s]+)\s+\d{5}"
+    match = re.search(pattern2, address)
+    if match:
+        city = match.group(1).strip()
+        state = match.group(2).strip()
+        # Convert full state names to abbreviations if needed
+        state_abbrev = _get_state_abbreviation(state)
+        return city, state_abbrev
+
+    # Pattern: ... City ST ZIP (no comma before state)
+    pattern3 = r",\s*([^,]+)\s+([A-Z]{2})\s+\d{5}"
+    match = re.search(pattern3, address)
+    if match:
+        city = match.group(1).strip()
+        state = match.group(2).strip()
+        return city, state
+
+    # Pattern: ... City, State (without ZIP, full state name)
+    pattern4 = r",\s*([^,]+),\s*([A-Za-z\s]+)$"
+    match = re.search(pattern4, address)
+    if match:
+        city = match.group(1).strip()
+        state = match.group(2).strip()
+        # Only proceed if state is a valid US state
+        us_state_names = [
+            "alabama",
+            "alaska",
+            "arizona",
+            "arkansas",
+            "california",
+            "colorado",
+            "connecticut",
+            "delaware",
+            "florida",
+            "georgia",
+            "hawaii",
+            "idaho",
+            "illinois",
+            "indiana",
+            "iowa",
+            "kansas",
+            "kentucky",
+            "louisiana",
+            "maine",
+            "maryland",
+            "massachusetts",
+            "michigan",
+            "minnesota",
+            "mississippi",
+            "missouri",
+            "montana",
+            "nebraska",
+            "nevada",
+            "new hampshire",
+            "new jersey",
+            "new mexico",
+            "new york",
+            "north carolina",
+            "north dakota",
+            "ohio",
+            "oklahoma",
+            "oregon",
+            "pennsylvania",
+            "rhode island",
+            "south carolina",
+            "south dakota",
+            "tennessee",
+            "texas",
+            "utah",
+            "vermont",
+            "virginia",
+            "washington",
+            "west virginia",
+            "wisconsin",
+            "wyoming",
+        ]
+        us_state_abbrevs = [
+            "AL",
+            "AK",
+            "AZ",
+            "AR",
+            "CA",
+            "CO",
+            "CT",
+            "DE",
+            "FL",
+            "GA",
+            "HI",
+            "ID",
+            "IL",
+            "IN",
+            "IA",
+            "KS",
+            "KY",
+            "LA",
+            "ME",
+            "MD",
+            "MA",
+            "MI",
+            "MN",
+            "MS",
+            "MO",
+            "MT",
+            "NE",
+            "NV",
+            "NH",
+            "NJ",
+            "NM",
+            "NY",
+            "NC",
+            "ND",
+            "OH",
+            "OK",
+            "OR",
+            "PA",
+            "RI",
+            "SC",
+            "SD",
+            "TN",
+            "TX",
+            "UT",
+            "VT",
+            "VA",
+            "WA",
+            "WV",
+            "WI",
+            "WY",
+        ]
+
+        if state.lower() in us_state_names or state.upper() in us_state_abbrevs:
+            state_abbrev = _get_state_abbreviation(state)
+            return city, state_abbrev
+
+    # Last resort: try to extract from end of address
+    # Split by comma and take last 2 parts if they look like city, state
+    parts = [part.strip() for part in address.split(",")]
+    if len(parts) >= 2:
+        last_part = parts[-1]
+        second_last = parts[-2]
+
+        # Check if last part has a US state abbreviation (exactly 2 uppercase letters)
+        state_match = re.search(r"\b([A-Z]{2})\b", last_part)
+        if state_match:
+            state = state_match.group(1)
+            # Verify it's a valid US state abbreviation
+            us_states = [
+                "AL",
+                "AK",
+                "AZ",
+                "AR",
+                "CA",
+                "CO",
+                "CT",
+                "DE",
+                "FL",
+                "GA",
+                "HI",
+                "ID",
+                "IL",
+                "IN",
+                "IA",
+                "KS",
+                "KY",
+                "LA",
+                "ME",
+                "MD",
+                "MA",
+                "MI",
+                "MN",
+                "MS",
+                "MO",
+                "MT",
+                "NE",
+                "NV",
+                "NH",
+                "NJ",
+                "NM",
+                "NY",
+                "NC",
+                "ND",
+                "OH",
+                "OK",
+                "OR",
+                "PA",
+                "RI",
+                "SC",
+                "SD",
+                "TN",
+                "TX",
+                "UT",
+                "VT",
+                "VA",
+                "WA",
+                "WV",
+                "WI",
+                "WY",
+            ]
+            if state in us_states:
+                city = second_last
+                return city, state
+
+    return "", ""
+
+
+def _get_state_abbreviation(state_name: str) -> str:
+    """Convert full state name to abbreviation."""
+    state_mapping = {
+        "alabama": "AL",
+        "alaska": "AK",
+        "arizona": "AZ",
+        "arkansas": "AR",
+        "california": "CA",
+        "colorado": "CO",
+        "connecticut": "CT",
+        "delaware": "DE",
+        "florida": "FL",
+        "georgia": "GA",
+        "hawaii": "HI",
+        "idaho": "ID",
+        "illinois": "IL",
+        "indiana": "IN",
+        "iowa": "IA",
+        "kansas": "KS",
+        "kentucky": "KY",
+        "louisiana": "LA",
+        "maine": "ME",
+        "maryland": "MD",
+        "massachusetts": "MA",
+        "michigan": "MI",
+        "minnesota": "MN",
+        "mississippi": "MS",
+        "missouri": "MO",
+        "montana": "MT",
+        "nebraska": "NE",
+        "nevada": "NV",
+        "new hampshire": "NH",
+        "new jersey": "NJ",
+        "new mexico": "NM",
+        "new york": "NY",
+        "north carolina": "NC",
+        "north dakota": "ND",
+        "ohio": "OH",
+        "oklahoma": "OK",
+        "oregon": "OR",
+        "pennsylvania": "PA",
+        "rhode island": "RI",
+        "south carolina": "SC",
+        "south dakota": "SD",
+        "tennessee": "TN",
+        "texas": "TX",
+        "utah": "UT",
+        "vermont": "VT",
+        "virginia": "VA",
+        "washington": "WA",
+        "west virginia": "WV",
+        "wisconsin": "WI",
+        "wyoming": "WY",
+    }
+
+    state_lower = state_name.lower().strip()
+    return state_mapping.get(state_lower, state_name.upper()[:2])
 
 
 def save_business(
@@ -983,15 +1282,23 @@ def process_yelp_business(business: dict, category: str) -> Optional[int]:
         # Get address components
         location = business.get("location", {})
         address_parts = location.get("display_address", [])
-        address = " ".join(address_parts) if address_parts else ""
+        address = ", ".join(address_parts) if address_parts else ""
         zip_code = location.get("zip_code", "")
         if not zip_code:
             return None
+
+        # Parse city and state from address
+        city, state = parse_city_state_from_address(address)
 
         # Get other business details
         phone = business.get("display_phone", "")
         website = business.get("url", "")
         yelp_id = business.get("id", "")
+
+        # Process JSON response according to retention policy
+        processed_yelp_json = (
+            process_json_for_storage(business) if should_store_json() else None
+        )
 
         # Save to database
         business_id = save_business(
@@ -999,11 +1306,13 @@ def process_yelp_business(business: dict, category: str) -> Optional[int]:
             address=address,
             zip_code=zip_code,
             category=category,
+            city=city,
+            state=state,
             phone=phone,
             website=website,
             source="yelp",
             source_id=yelp_id,
-            yelp_response_json=business,
+            yelp_response_json=processed_yelp_json,
         )
 
         # Try to extract email from website if provided
@@ -1073,9 +1382,17 @@ def process_google_place(
         if error or not details:
             return None
 
+        # Parse city and state from address
+        city, state = parse_city_state_from_address(address)
+
         # Get other business details
         phone = details.get("formatted_phone_number", "")
         website = details.get("website", "")
+
+        # Process JSON response according to retention policy
+        processed_google_json = (
+            process_json_for_storage(place) if should_store_json() else None
+        )
 
         # Save to database
         business_id = save_business(
@@ -1083,11 +1400,13 @@ def process_google_place(
             address=address,
             zip_code=zip_code,
             category=category,
+            city=city,
+            state=state,
             phone=phone,
             website=website,
             source="google",
             source_id=place_id,
-            google_response_json=place,
+            google_response_json=processed_google_json,
         )
 
         # Try to extract email from website if provided

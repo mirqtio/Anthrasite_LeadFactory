@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import psycopg2
 import psycopg2.extras
 
+from leadfactory.config.json_retention_policy import get_retention_expiry_date
 from leadfactory.utils.e2e_db_connector import (
     check_connection,
     db_connection,
@@ -511,17 +512,23 @@ class PostgresStorage(StorageInterface):
     ) -> Optional[int]:
         """Create a new business record."""
         try:
+            # Get retention expiry date if JSON responses are provided
+            retention_expiry = None
+            if yelp_response_json or google_response_json:
+                retention_expiry = get_retention_expiry_date()
+
             with self.cursor() as cursor:
                 insert_query = """
                     INSERT INTO businesses (
                         name, address, city, state, zip, phone, email, website,
                         vertical_id, created_at, updated_at, status, processed,
-                        source, source_id, yelp_response_json, google_response_json
+                        source, source_id, yelp_response_json, google_response_json,
+                        json_retention_expires_at
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s,
                         (SELECT id FROM verticals WHERE name = %s LIMIT 1),
                         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'pending', FALSE,
-                        %s, %s, %s, %s
+                        %s, %s, %s, %s, %s
                     ) RETURNING id
                 """
 
@@ -545,6 +552,7 @@ class PostgresStorage(StorageInterface):
                             if google_response_json
                             else None
                         ),
+                        retention_expiry,
                     ),
                 )
 

@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from leadfactory.utils.e2e_db_connector import db_connection
 from leadfactory.utils.logging import get_logger
 from leadfactory.utils.metrics import record_metric
+from leadfactory.config.json_retention_policy import get_retention_policy
 
 logger = get_logger(__name__)
 
@@ -208,6 +209,9 @@ def main():
         "--stats", action="store_true", help="Show JSON storage statistics and exit"
     )
     parser.add_argument(
+        "--policy", action="store_true", help="Show current retention policy and exit"
+    )
+    parser.add_argument(
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         default="INFO",
@@ -221,9 +225,30 @@ def main():
         logger.setLevel(args.log_level)
 
     try:
+        if args.policy:
+            # Show retention policy
+            policy = get_retention_policy()
+            summary = policy.get_policy_summary()
+
+            print("Current JSON Retention Policy:")
+            print("=" * 40)
+            print(f"Enabled: {summary['enabled']}")
+            print(f"Retention Period: {summary['retention_behavior']}")
+            print(f"Anonymization: {'Enabled' if summary['anonymize'] else 'Disabled'}")
+            print(f"Will Store JSON: {summary['should_store']}")
+            if summary["preserve_fields"]:
+                print(f"Preserved Fields: {', '.join(summary['preserve_fields'])}")
+
+            return 0
+
         if args.stats:
             # Show statistics
-            get_json_storage_stats()
+            stats = get_json_storage_stats()
+
+            print("JSON Storage Statistics:")
+            print("=" * 30)
+            for key, value in stats.items():
+                print(f"{key.replace('_', ' ').title()}: {value}")
 
             return 0
 

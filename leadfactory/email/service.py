@@ -8,6 +8,7 @@ and automated follow-up workflows.
 
 import asyncio
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
@@ -18,6 +19,8 @@ from leadfactory.email.delivery import EmailDeliveryService
 from leadfactory.email.secure_links import SecureLinkGenerator
 from leadfactory.email.templates import EmailPersonalization, EmailTemplateEngine
 from leadfactory.email.workflows import EmailWorkflowEngine
+from leadfactory.pipeline.screenshot import generate_business_screenshot
+from leadfactory.storage import get_storage
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +35,23 @@ class ReportDeliveryRequest(BaseModel):
     report_title: str = Field(..., description="Report title")
     purchase_id: str = Field(..., description="Purchase transaction ID")
     company_name: Optional[str] = Field(None, description="User's company name")
+    website_url: Optional[str] = Field(None, description="User's website URL")
+    business_id: Optional[int] = Field(
+        None, description="Business ID for screenshot retrieval"
+    )
+    business_vertical: Optional[str] = Field(
+        None, description="Business industry/vertical"
+    )
+    city: Optional[str] = Field(None, description="Business city")
+    state: Optional[str] = Field(None, description="Business state")
+    score_data: Optional[dict] = Field(
+        None, description="Audit score breakdown for AI content"
+    )
     include_download_link: bool = Field(
         default=True, description="Include direct download link"
+    )
+    include_ai_content: bool = Field(
+        default=True, description="Include AI-generated personalized content"
     )
     custom_message: Optional[str] = Field(None, description="Custom message to include")
     metadata: dict = Field(default_factory=dict, description="Additional metadata")
@@ -76,6 +94,59 @@ class EmailReportService:
             Service response with delivery status
         """
         try:
+            # Get website thumbnail path if business_id is provided
+            website_thumbnail_path = None
+            if request.business_id and request.website_url:
+                try:
+                    storage = get_storage()
+
+                    # Check if screenshot exists
+                    screenshot_asset = storage.get_business_asset(
+                        request.business_id, "screenshot"
+                    )
+                    if screenshot_asset:
+                        website_thumbnail_path = screenshot_asset.get("file_path")
+                        if website_thumbnail_path and not os.path.exists(
+                            website_thumbnail_path
+                        ):
+                            logger.warning(
+                                f"Screenshot file not found at {website_thumbnail_path}"
+                            )
+                            website_thumbnail_path = None
+
+                    # If no screenshot exists, try to generate one
+                    if not website_thumbnail_path:
+                        logger.info(
+                            f"Generating screenshot for website: {request.website_url}"
+                        )
+                        business_data = {
+                            "id": request.business_id,
+                            "name": request.company_name or "Business",
+                            "website": request.website_url,
+                        }
+
+                        if generate_business_screenshot(business_data):
+                            # Try to get the newly created screenshot
+                            screenshot_asset = storage.get_business_asset(
+                                request.business_id, "screenshot"
+                            )
+                            if screenshot_asset:
+                                website_thumbnail_path = screenshot_asset.get(
+                                    "file_path"
+                                )
+                                logger.info(
+                                    f"Generated screenshot for business {request.business_id}"
+                                )
+                        else:
+                            logger.warning(
+                                f"Failed to generate screenshot for business {request.business_id}"
+                            )
+
+                except Exception as e:
+                    logger.warning(
+                        f"Error handling website thumbnail for business {request.business_id}: {str(e)}"
+                    )
+
             # Generate secure links
             report_link = self.link_generator.generate_secure_link(
                 report_id=request.report_id,
@@ -102,6 +173,18 @@ class EmailReportService:
                 link_type="agency_cta",
             )
 
+            # Prepare business data for AI content generation
+            business_data = None
+            if request.include_ai_content:
+                business_data = {
+                    "name": request.company_name or "Business",
+                    "website": request.website_url,
+                    "vertical": request.business_vertical or "business",
+                    "city": request.city,
+                    "state": request.state,
+                    "contact_name": request.user_name,
+                }
+
             # Create personalization
             personalization = EmailPersonalization(
                 user_name=request.user_name,
@@ -111,9 +194,27 @@ class EmailReportService:
                 download_link=download_link,
                 agency_cta_link=agency_cta_link,
                 company_name=request.company_name,
+                website_url=request.website_url,
+                website_thumbnail_path=website_thumbnail_path,
                 purchase_date=datetime.utcnow(),
                 expiry_date=datetime.utcnow() + timedelta(days=7),
+                business_data=business_data,
+                score_data=request.score_data,
             )
+
+            # Generate AI content if requested
+            if request.include_ai_content and business_data:
+                try:
+                    personalization = await self.template_engine.generate_ai_content(
+                        personalization
+                    )
+                    logger.info(
+                        f"Generated AI content for business: {request.company_name}"
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to generate AI content: {str(e)}, continuing without AI content"
+                    )
 
             # Generate email with A/B testing variant
             variant_id, email_template = self.ab_test.generate_email_with_variant(

@@ -157,10 +157,27 @@
         {% endif %}
 
         <div class="footer">
-            <p>Questions? We're here to help at <a href="mailto:{{ user.support_email }}">{{ user.support_email }}</a></p>
+            <p>Questions? We're here to help at <a href="mailto:{{ user.support_email or 'support@anthrasite.com' }}">{{ user.support_email or 'support@anthrasite.com' }}</a></p>
+
+            <!-- CAN-SPAM Compliance Footer -->
+            <p style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
+                This email was sent by Anthrasite<br>
+                123 Main Street, Suite 100<br>
+                San Francisco, CA 94105<br>
+                United States
+            </p>
+
             {% if user.unsubscribe_link %}
-            <p><a href="{{ user.unsubscribe_link }}">Unsubscribe</a> from these emails</p>
+            <p style="margin-top: 15px;">
+                <a href="{{ user.unsubscribe_link }}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> |
+                <a href="{{ user.preferences_link or user.unsubscribe_link }}" style="color: #6b7280; text-decoration: underline;">Update Preferences</a>
+            </p>
             {% endif %}
+
+            <p style="margin-top: 10px; font-size: 11px; color: #9ca3af;">
+                You received this email because you purchased a website audit report from Anthrasite.
+            </p>
+
             <p>&copy; {{ current_year }} Anthrasite. All rights reserved.</p>
         </div>
     </div>

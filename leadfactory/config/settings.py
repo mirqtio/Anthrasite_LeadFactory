@@ -100,6 +100,24 @@ if PDF_DELIVERY_MODE in ["local", "email"]:
     Path(LOCAL_PDF_STORAGE_PATH).mkdir(parents=True, exist_ok=True)
 
 # ==================
+# JSON Response Retention Policy
+# ==================
+# Control whether to store raw API JSON responses
+JSON_RETENTION_ENABLED = get_boolean_env("JSON_RETENTION_ENABLED", True)
+
+# Retention period in days (0 = purge immediately, -1 = keep forever)
+JSON_RETENTION_DAYS = get_int_env("JSON_RETENTION_DAYS", 90)
+
+# Whether to anonymize JSON before purging (remove PII while keeping structure)
+JSON_RETENTION_ANONYMIZE = get_boolean_env("JSON_RETENTION_ANONYMIZE", False)
+
+# Fields to preserve when anonymizing (comma-separated)
+JSON_RETENTION_PRESERVE_FIELDS = get_env(
+    "JSON_RETENTION_PRESERVE_FIELDS",
+    "id,rating,price,categories,hours,location.zip_code,location.state",
+)
+
+# ==================
 # Application
 # ==================
 MOCKUP_ENABLED = get_boolean_env("MOCKUP_ENABLED", False)
