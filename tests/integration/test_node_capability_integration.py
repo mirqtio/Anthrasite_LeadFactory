@@ -78,7 +78,7 @@ class TestCostTrackingIntegration:
     """Test integration with cost tracking system."""
 
     @patch("leadfactory.config.node_config.is_api_available")
-    @patch("leadfactory.cost.cost_tracking.track_api_cost")
+    @patch("leadfactory.cost.cost_tracking.track_cost")
     def test_environment_cost_tracking(self, mock_track_cost, mock_api_available):
         """Test cost tracking with environment-aware capabilities."""
         # Mock all APIs as available

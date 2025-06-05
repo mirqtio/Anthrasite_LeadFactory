@@ -384,6 +384,7 @@ def get_enabled_capabilities(
 
     node_config = get_node_config(node_type)
     enabled_capabilities = []
+    current_cost = 0.0
 
     logger.debug(
         f"Evaluating capabilities for {node_type.value} in {environment.value} environment"
@@ -419,21 +420,25 @@ def get_enabled_capabilities(
                 logger.info(f"Fallback available for {capability.name}")
             continue
 
-        # Check budget if required
+        # Check budget if required (cumulative cost tracking)
         budget_ok = True
         if budget_cents is not None and capability.cost_estimate_cents > 0:
-            budget_ok = budget_cents >= capability.cost_estimate_cents
+            potential_cost = current_cost + capability.cost_estimate_cents
+            budget_ok = potential_cost <= budget_cents
 
         if not budget_ok:
             logger.debug(
                 f"Capability {capability.name} disabled due to budget constraint: "
-                f"requires {capability.cost_estimate_cents}, available {budget_cents}"
+                f"requires {capability.cost_estimate_cents}, "
+                f"current cost {current_cost}, budget {budget_cents}"
             )
             continue
 
         enabled_capabilities.append(capability)
+        current_cost += capability.cost_estimate_cents
         logger.debug(
-            f"Enabled capability: {capability.name} (tier: {capability.tier.value})"
+            f"Enabled capability: {capability.name} (tier: {capability.tier.value}, "
+            f"cost: {capability.cost_estimate_cents}, total: {current_cost})"
         )
 
     logger.info(

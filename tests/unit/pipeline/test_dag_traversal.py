@@ -290,6 +290,7 @@ class TestPipelineStage:
             "email_queue",
             "mockup",
             "screenshot",
+            "unified_gpt4o",
         }
         actual_stages = {stage.value for stage in PipelineStage}
         assert actual_stages == expected_stages
@@ -463,12 +464,17 @@ class TestPipelineDAG:
         """Test topological sorting with capability filtering."""
         dag = PipelineDAG()
 
-        # Mock limited capabilities
-        mock_get_capabilities.return_value = ["web_scraping", "data_processing"]
+        # Mock limited capabilities - create mock NodeCapability objects
+        from unittest.mock import MagicMock
+        mock_capability1 = MagicMock()
+        mock_capability1.name = "tech_stack_analysis"
+        mock_capability2 = MagicMock()
+        mock_capability2.name = "email_generation"
+        mock_get_capabilities.return_value = [mock_capability1, mock_capability2]
 
         all_stages = set(PipelineStage)
         sorted_stages = dag.topological_sort(
-            all_stages, node_type=NodeType.BASIC, budget_cents=100.0
+            all_stages, node_type=NodeType.ENRICH, budget_cents=100.0
         )
 
         # For mock implementation, just verify the function was called correctly
@@ -478,9 +484,17 @@ class TestPipelineDAG:
             assert len(sorted_stages) == len(PipelineStage)
         else:
             # Real implementation should filter by capabilities
-            expected_stages = {PipelineStage.SCRAPE, PipelineStage.DEDUPE}
+            # With tech_stack_analysis and email_generation capabilities:
+            # - SCRAPE, DEDUPE, SCORE, UNIFIED_GPT4O: no requirements (always included)
+            # - ENRICH: has tech_stack_analysis capability (included)
+            # - EMAIL_QUEUE: has email_generation capability (included)
+            # - MOCKUP, SCREENSHOT: missing capabilities (excluded)
+            expected_stages = {
+                PipelineStage.SCRAPE, PipelineStage.DEDUPE, PipelineStage.SCORE,
+                PipelineStage.ENRICH, PipelineStage.EMAIL_QUEUE, PipelineStage.UNIFIED_GPT4O
+            }
             assert set(sorted_stages) == expected_stages
-            mock_get_capabilities.assert_called_once_with(NodeType.BASIC, 100.0)
+            mock_get_capabilities.assert_called_once_with(NodeType.ENRICH, 100.0, None)
 
     def test_get_execution_plan(self):
         """Test getting an execution plan."""
@@ -495,8 +509,14 @@ class TestPipelineDAG:
         # For mock implementation, just verify we get a valid plan
         # For real implementation, verify dependency order
         if IMPORTS_AVAILABLE:
-            # Scrape should come first in real implementation
-            assert plan[0] == PipelineStage.SCRAPE
+            # SCRAPE should come before ENRICH (dependency)
+            scrape_idx = plan.index(PipelineStage.SCRAPE)
+            enrich_idx = plan.index(PipelineStage.ENRICH)
+            assert scrape_idx < enrich_idx, "SCRAPE should come before ENRICH"
+
+            # ENRICH should come before SCORE (dependency)
+            score_idx = plan.index(PipelineStage.SCORE)
+            assert enrich_idx < score_idx, "ENRICH should come before SCORE"
         else:
             # Mock implementation - just verify we have all stages
             assert PipelineStage.SCRAPE in plan
@@ -789,10 +809,15 @@ class TestIntegration:
     )
     def test_capability_based_execution(self, mock_get_capabilities):
         """Test execution plan based on node capabilities."""
-        # Mock limited capabilities
-        mock_get_capabilities.return_value = ["web_scraping", "data_processing"]
+        # Mock limited capabilities - create mock NodeCapability objects
+        from unittest.mock import MagicMock
+        mock_capability1 = MagicMock()
+        mock_capability1.name = "tech_stack_analysis"
+        mock_capability2 = MagicMock()
+        mock_capability2.name = "email_generation"
+        mock_get_capabilities.return_value = [mock_capability1, mock_capability2]
 
-        plan = get_execution_plan(node_type=NodeType.BASIC, budget_cents=50.0)
+        plan = get_execution_plan(node_type=NodeType.ENRICH, budget_cents=50.0)
 
         # For mock implementation, just verify the function works
         if not IMPORTS_AVAILABLE:
@@ -800,9 +825,13 @@ class TestIntegration:
             assert len(plan) == len(PipelineStage)
         else:
             # Real implementation should filter by capabilities
-            expected_stages = {PipelineStage.SCRAPE, PipelineStage.DEDUPE}
+            # With tech_stack_analysis and email_generation capabilities:
+            expected_stages = {
+                PipelineStage.SCRAPE, PipelineStage.DEDUPE, PipelineStage.SCORE,
+                PipelineStage.ENRICH, PipelineStage.EMAIL_QUEUE, PipelineStage.UNIFIED_GPT4O
+            }
             assert set(plan) == expected_stages
-            mock_get_capabilities.assert_called_once_with(NodeType.BASIC, 50.0)
+            mock_get_capabilities.assert_called_once_with(NodeType.ENRICH, 50.0, None)
 
 
 if __name__ == "__main__":

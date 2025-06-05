@@ -194,8 +194,10 @@ class PipelineDAG:
             enabled_capabilities = get_enabled_capabilities(
                 node_type, budget_cents, None
             )  # Auto-detect environment
+            # Convert NodeCapability objects to capability name strings
+            capability_names = [cap.name for cap in enabled_capabilities]
             available_stages = self._filter_by_capabilities(
-                available_stages, enabled_capabilities
+                available_stages, capability_names
             )
 
         # Calculate in-degrees for available stages
@@ -240,28 +242,51 @@ class PipelineDAG:
         self, stages: Set[PipelineStage], capabilities: List[str]
     ) -> Set[PipelineStage]:
         """Filter stages based on available capabilities."""
-        # Map stages to required capabilities
+        # Map stages to required capabilities based on actual NodeCapability names
         stage_capabilities = {
-            PipelineStage.SCRAPE: ["web_scraping"],
-            PipelineStage.ENRICH: ["api_enrichment"],
-            PipelineStage.DEDUPE: ["data_processing"],
-            PipelineStage.SCORE: ["scoring"],
+            # Basic pipeline stages - always available
+            PipelineStage.SCRAPE: [],  # No specific capability requirement
+            PipelineStage.DEDUPE: [],  # No specific capability requirement
+            PipelineStage.SCORE: [],  # No specific capability requirement
+            # ENRICH stage requires any enrich capability
+            PipelineStage.ENRICH: [],  # Will be allowed if any ENRICH capabilities exist
+            # Final output stages require specific capabilities
             PipelineStage.EMAIL_QUEUE: ["email_generation"],
             PipelineStage.MOCKUP: ["mockup_generation"],
             PipelineStage.SCREENSHOT: ["screenshot_capture"],
-            PipelineStage.UNIFIED_GPT4O: ["unified_gpt4o"],  # New unified terminal node
+            PipelineStage.UNIFIED_GPT4O: [],  # Generic stage, no specific requirement
         }
+
+        # ENRICH stage should be available if we have any ENRICH node capabilities
+        enrich_capabilities = {
+            "tech_stack_analysis",
+            "core_web_vitals",
+            "screenshot_capture",
+            "semrush_site_audit",
+        }
+        has_enrich_capability = any(cap in enrich_capabilities for cap in capabilities)
 
         filtered_stages = set()
         for stage in stages:
             required_caps = stage_capabilities.get(stage, [])
-            if all(cap in capabilities for cap in required_caps):
+
+            # Special handling for ENRICH stage
+            if stage == PipelineStage.ENRICH:
+                if has_enrich_capability:
+                    filtered_stages.add(stage)
+                else:
+                    logger.info(
+                        f"Stage {stage.value} filtered out due to no enrich capabilities available"
+                    )
+            elif all(cap in capabilities for cap in required_caps):
                 filtered_stages.add(stage)
             else:
-                logger.info(
-                    f"Stage {stage.value} filtered out due to missing capabilities: "
-                    f"{set(required_caps) - set(capabilities)}"
-                )
+                missing_caps = set(required_caps) - set(capabilities)
+                if missing_caps:  # Only log if there are missing capabilities
+                    logger.info(
+                        f"Stage {stage.value} filtered out due to missing capabilities: "
+                        f"{missing_caps}"
+                    )
 
         return filtered_stages
 
