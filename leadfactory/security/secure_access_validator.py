@@ -208,7 +208,7 @@ class SecureAccessValidator:
         resource_id: str,
         operation: PDFOperation,
         base_url: str,
-        expiry_hours: int = 72,
+        expiry_hours: int = 720,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> Tuple[bool, Optional[str], Optional[str]]:

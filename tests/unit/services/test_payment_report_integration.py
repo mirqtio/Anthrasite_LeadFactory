@@ -170,7 +170,7 @@ class TestPaymentReportIntegration:
         assert delivery_call[1]["user_email"] == "test@example.com"
         assert delivery_call[1]["purchase_id"] == "pi_test_123"
         assert delivery_call[1]["business_name"] == "Test Customer"
-        assert delivery_call[1]["expiry_hours"] == 72
+        assert delivery_call[1]["expiry_hours"] == 720
 
         # Verify report ID format
         report_id = delivery_call[1]["report_id"]

@@ -115,7 +115,7 @@ API_CONFIGS = {
         enabled_by_default=False,  # Updated: disabled by default due to cost
         requires_budget=True,
         fallback_available=True,
-        fallback_description="Local Puppeteer screenshot generation",
+        fallback_description="Local Playwright screenshot generation (free)",
     ),
     "semrush": APIConfiguration(
         name="SEMrush",

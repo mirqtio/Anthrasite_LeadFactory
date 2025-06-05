@@ -360,6 +360,8 @@ def save_business(
     address: str,
     zip_code: str,
     category: str,
+    city: str = "",
+    state: str = "",
     website: Optional[str] = None,
     email: Optional[str] = None,
     phone: Optional[str] = None,
@@ -413,6 +415,8 @@ def save_business(
                 new_data = {
                     "name": name,
                     "address": address,
+                    "city": city,
+                    "state": state,
                     "phone": phone,
                     "email": email,
                     "website": website,
@@ -450,6 +454,8 @@ def save_business(
                 new_data = {
                     "name": name,
                     "address": address,
+                    "city": city,
+                    "state": state,
                     "phone": phone,
                     "email": email,
                     "website": website,
@@ -487,6 +493,8 @@ def save_business(
                 new_data = {
                     "name": name,
                     "address": address,
+                    "city": city,
+                    "state": state,
                     "phone": phone,
                     "email": email,
                     "website": website,
@@ -519,6 +527,8 @@ def save_business(
         business_id = storage.create_business(
             name,
             address,
+            city,
+            state,
             zip_code,
             category,
             phone,

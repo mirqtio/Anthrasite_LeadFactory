@@ -25,6 +25,8 @@ from leadfactory.security import (
     get_secure_access_validator,
 )
 from leadfactory.storage.supabase_storage import SupabaseStorage
+from leadfactory.services.local_pdf_delivery import LocalPDFDeliveryService
+from leadfactory.config.settings import PDF_DELIVERY_MODE
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +42,7 @@ class ReportDeliveryService:
     def __init__(
         self,
         storage_bucket: str = "reports",
-        link_expiry_hours: int = 72,
+        link_expiry_hours: int = 720,
         storage=None,
         email_service=None,
         link_generator=None,
@@ -68,6 +70,10 @@ class ReportDeliveryService:
         self.link_generator = link_generator or SecureLinkGenerator()
         self.email_service = email_service or EmailDeliveryService()
         self.default_expiry_hours = link_expiry_hours
+        
+        # Initialize local delivery service for non-cloud delivery modes
+        self.local_delivery = LocalPDFDeliveryService()
+        self.delivery_mode = PDF_DELIVERY_MODE
 
         # Initialize security components with dependency injection support
         self.secure_validator = secure_validator or get_secure_access_validator()
@@ -146,7 +152,54 @@ class ReportDeliveryService:
                     f"Access denied: {validation_result.error_message}"
                 )
 
-            # Step 2: Upload PDF to Supabase
+            # Step 2: Route to appropriate delivery method based on configuration
+            if self.delivery_mode == "email":
+                return self._deliver_via_email_attachment(
+                    pdf_path, report_id, user_id, user_email, business_name, 
+                    purchase_id, expiry_hours, ip_address, user_agent
+                )
+            elif self.delivery_mode == "local":
+                return self._deliver_via_local_http(
+                    pdf_path, report_id, user_id, user_email, business_name,
+                    purchase_id, expiry_hours, ip_address, user_agent
+                )
+            
+            # Default: Cloud delivery via Supabase (original behavior)
+            return self._deliver_via_cloud_storage(
+                pdf_path, report_id, user_id, user_email, business_name,
+                purchase_id, expiry_hours, ip_address, user_agent, validation_result
+            )
+
+        except Exception as e:
+            # Log security violation if this was a permission error
+            if isinstance(e, PermissionError):
+                self.audit_logger.log_security_violation(
+                    user_id=user_id,
+                    violation_type="unauthorized_report_generation",
+                    description=str(e),
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                )
+
+            logger.error(f"Failed to deliver report {report_id}: {e}")
+            raise
+
+    def _deliver_via_cloud_storage(
+        self,
+        pdf_path: Union[str, Path],
+        report_id: str,
+        user_id: str,
+        user_email: str,
+        business_name: str,
+        purchase_id: str,
+        expiry_hours: int,
+        ip_address: Optional[str],
+        user_agent: Optional[str],
+        validation_result
+    ) -> Dict[str, any]:
+        """Original cloud storage delivery method (Supabase)."""
+        try:
+            # Step 2a: Upload PDF to Supabase
             logger.info(f"Uploading report {report_id} for user {user_id}")
             upload_result = self.storage.upload_pdf_report(
                 pdf_path=pdf_path,
@@ -227,17 +280,142 @@ class ReportDeliveryService:
             return delivery_result
 
         except Exception as e:
-            # Log security violation if this was a permission error
-            if isinstance(e, PermissionError):
-                self.audit_logger.log_security_violation(
+            logger.error(f"Cloud storage delivery failed for report {report_id}: {e}")
+            raise
+
+    def _deliver_via_email_attachment(
+        self,
+        pdf_path: Union[str, Path],
+        report_id: str,
+        user_id: str,
+        user_email: str,
+        business_name: str,
+        purchase_id: str,
+        expiry_hours: int,
+        ip_address: Optional[str],
+        user_agent: Optional[str],
+    ) -> Dict[str, any]:
+        """Deliver PDF via email attachment."""
+        try:
+            logger.info(f"Delivering report {report_id} via email attachment to {user_email}")
+            
+            # Use local delivery service for email attachment
+            result = self.local_delivery.deliver_via_email_attachment(
+                pdf_path=pdf_path,
+                report_id=report_id,
+                user_email=user_email,
+                business_name=business_name,
+                email_service=self.email_service
+            )
+            
+            if result.get("success", False):
+                # Log successful delivery
+                self.audit_logger.log_access_granted(
                     user_id=user_id,
-                    violation_type="unauthorized_report_generation",
-                    description=str(e),
+                    resource_id=report_id,
+                    operation=PDFOperation.GENERATE.value,
                     ip_address=ip_address,
                     user_agent=user_agent,
+                    additional_data={
+                        "purchase_id": purchase_id,
+                        "business_name": business_name,
+                        "delivery_method": "email_attachment",
+                        "attachment_size": result.get("attachment_size"),
+                    },
                 )
+                
+                # Format result to match expected interface
+                return {
+                    "status": "delivered",
+                    "report_id": report_id,
+                    "user_id": user_id,
+                    "purchase_id": purchase_id,
+                    "delivery_method": "email_attachment",
+                    "email_sent": result.get("email_sent", False),
+                    "message_id": result.get("message_id"),
+                    "attachment_size": result.get("attachment_size"),
+                    "delivered_at": result.get("delivered_at"),
+                    "security_validated": True,
+                }
+            else:
+                # Handle fallback to local HTTP if email attachment fails
+                if result.get("fallback_required", False):
+                    logger.warning(f"Email attachment failed for {report_id}, falling back to local HTTP")
+                    return self._deliver_via_local_http(
+                        pdf_path, report_id, user_id, user_email, business_name,
+                        purchase_id, expiry_hours, ip_address, user_agent
+                    )
+                else:
+                    raise Exception(f"Email attachment delivery failed: {result.get('error', 'Unknown error')}")
+                    
+        except Exception as e:
+            logger.error(f"Email attachment delivery failed for report {report_id}: {e}")
+            raise
 
-            logger.error(f"Failed to deliver report {report_id}: {e}")
+    def _deliver_via_local_http(
+        self,
+        pdf_path: Union[str, Path],
+        report_id: str,
+        user_id: str,
+        user_email: str,
+        business_name: str,
+        purchase_id: str,
+        expiry_hours: int,
+        ip_address: Optional[str],
+        user_agent: Optional[str],
+    ) -> Dict[str, any]:
+        """Deliver PDF via local HTTP serving."""
+        try:
+            logger.info(f"Delivering report {report_id} via local HTTP to {user_email}")
+            
+            # Use local delivery service for HTTP serving
+            result = self.local_delivery.deliver_via_local_http(
+                pdf_path=pdf_path,
+                report_id=report_id,
+                user_id=user_id,
+                user_email=user_email,
+                business_name=business_name,
+                expiry_hours=expiry_hours,
+                email_service=self.email_service
+            )
+            
+            if result.get("success", False):
+                # Log successful delivery
+                self.audit_logger.log_access_granted(
+                    user_id=user_id,
+                    resource_id=report_id,
+                    operation=PDFOperation.GENERATE.value,
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                    additional_data={
+                        "purchase_id": purchase_id,
+                        "business_name": business_name,
+                        "delivery_method": "local_http",
+                        "download_url": result.get("download_url"),
+                    },
+                )
+                
+                # Format result to match expected interface
+                return {
+                    "status": "delivered",
+                    "report_id": report_id,
+                    "user_id": user_id,
+                    "purchase_id": purchase_id,
+                    "delivery_method": "local_http",
+                    "download_url": result.get("download_url"),
+                    "local_path": result.get("local_path"),
+                    "file_size": result.get("file_size"),
+                    "expires_at": result.get("expires_at"),
+                    "email_sent": result.get("email_sent", False),
+                    "message_id": result.get("message_id"),
+                    "delivered_at": result.get("delivered_at"),
+                    "security_validated": True,
+                }
+            else:
+                raise Exception(f"Local HTTP delivery failed: {result.get('error', 'Unknown error')}")
+                
+        except Exception as e:
+            logger.error(f"Local HTTP delivery failed for report {report_id}: {e}")
             raise
 
     def _create_secure_link_data(

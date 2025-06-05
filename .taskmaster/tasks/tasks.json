@@ -146,7 +146,7 @@
       "velocity_metadata": {
         "complexity_score": 9,
         "estimated_hours": null,
-        "actual_hours": 5.555555555555555e-07,
+        "actual_hours": 5.555555555555555e-7,
         "velocity_points": 9,
         "blocked_time": 0,
         "status_history": [
@@ -158,7 +158,7 @@
           {
             "status": "in-progress",
             "timestamp": "2025-05-29T23:20:36.858Z",
-            "duration_hours": 5.555555555555555e-07
+            "duration_hours": 5.555555555555555e-7
           },
           {
             "status": "done",
@@ -3888,6 +3888,423 @@
           "description": "Properly configure database connection pools",
           "status": "pending",
           "estimated_hours": 4
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "title": "Skip Modern Sites in Lead Funnel",
+      "description": "If PageSpeed Insights shows performance >= 90 and mobile responsive, mark lead as processed without email. Implement check in enrichment step to drop these leads.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "This task is the first priority in the implementation order. We need to filter out modern, well-performing websites early in the lead funnel to avoid sending unnecessary emails to sites that are already well-optimized.",
+      "testStrategy": "1. Test with sample sites that have PageSpeed scores ≥90 and are mobile responsive to ensure they're properly filtered out\n2. Test with sites that have good PageSpeed but poor mobile responsiveness to ensure they still proceed in the funnel\n3. Verify the enrichment step correctly marks these leads as processed without triggering email sequences",
+      "subtasks": [
+        {
+          "id": "41.1",
+          "description": "Implement PageSpeed Insights check in the enrichment step",
+          "status": "pending"
+        },
+        {
+          "id": "41.2",
+          "description": "Implement mobile responsiveness check in the enrichment step",
+          "status": "pending"
+        },
+        {
+          "id": "41.3",
+          "description": "Add logic to mark qualifying leads as processed without email",
+          "status": "pending"
+        },
+        {
+          "id": "41.4",
+          "description": "Add logging to track how many leads are being filtered by this criteria",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "title": "Parse and Store City/State for Businesses",
+      "description": "Extract city and state from business address and save to the businesses table instead of leaving them NULL. Update create_business logic to parse address into city/state fields.",
+      "status": "pending",
+      "dependencies": [
+        41
+      ],
+      "priority": "high",
+      "details": "This task is the second step in the implementation order, following the 'Skip Modern Sites' task (ID: 41).",
+      "testStrategy": "1. Test that city and state are correctly extracted from various address formats.\n2. Verify that the extracted data is properly stored in the businesses table.\n3. Confirm that the create_business logic correctly handles the parsing of addresses.",
+      "subtasks": [
+        {
+          "id": "42.1",
+          "description": "Implement address parsing function to extract city and state",
+          "status": "pending"
+        },
+        {
+          "id": "42.2",
+          "description": "Update database schema to ensure city and state fields are properly defined",
+          "status": "pending"
+        },
+        {
+          "id": "42.3",
+          "description": "Modify create_business logic to use the parsing function and save extracted data",
+          "status": "pending"
+        },
+        {
+          "id": "42.4",
+          "description": "Write tests to verify correct extraction and storage of city/state data",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "title": "Decide & Implement Yelp JSON Retention",
+      "description": "Determine retention policy for raw Yelp/Google API JSON. If keeping, pass API response data into create_business so it's stored in businesses.yelp_response_json; if purging, remove these fields and any related storage to avoid PII retention.",
+      "status": "pending",
+      "dependencies": [
+        42
+      ],
+      "priority": "high",
+      "details": "This task is third in the prescribed implementation order, following task 42.",
+      "testStrategy": "Test both scenarios (retention and purging) to ensure proper handling of API response data.",
+      "subtasks": []
+    },
+    {
+      "id": 44,
+      "title": "Implement Local Screenshot Capture",
+      "description": "Add a Playwright (headless Chromium) fallback to capture full-page screenshots when SCREENSHOT_ONE_KEY is not provided, so the system can run fully on local hardware without external screenshot APIs.",
+      "status": "pending",
+      "dependencies": [
+        43
+      ],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up Playwright integration for headless browser",
+          "description": "Install and configure Playwright to enable headless Chromium for local screenshot capture when SCREENSHOT_ONE_KEY is not provided.",
+          "dependencies": [],
+          "details": "Install Playwright package and its dependencies. Create a utility module that initializes a headless browser instance. Implement browser launch configuration with appropriate viewport settings and default timeout values. Ensure the browser instance is properly managed (created/destroyed) to prevent memory leaks.",
+          "status": "pending",
+          "testStrategy": "Write unit tests to verify Playwright initialization with different configuration options. Test browser launch and teardown processes."
+        },
+        {
+          "id": 2,
+          "title": "Implement screenshot capture functionality",
+          "description": "Create the core functionality to navigate to URLs and capture full-page screenshots using Playwright.",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop a function that takes a URL as input, navigates to the page, waits for the page to fully load (including dynamic content), and captures a full-page screenshot. Handle different page sizes and ensure the entire content is captured. Implement proper resource cleanup after screenshot capture. Return the screenshot as a buffer or save it to a configurable location.",
+          "status": "pending",
+          "testStrategy": "Test screenshot capture with various websites including static pages, dynamic content, and different viewport sizes. Compare screenshot dimensions with expected page dimensions."
+        },
+        {
+          "id": 3,
+          "title": "Implement configuration management for screenshot service",
+          "description": "Create a configuration system that determines whether to use the external API (SCREENSHOT_ONE_KEY) or the local Playwright fallback.",
+          "dependencies": [
+            2
+          ],
+          "details": "Develop a configuration module that checks for the presence of SCREENSHOT_ONE_KEY in environment variables. Implement a factory pattern that returns either the API-based screenshot service or the local Playwright implementation based on configuration. Add additional configuration options for local screenshot capture (quality, format, timeout settings). Ensure backward compatibility with existing code that uses the screenshot service.",
+          "status": "pending",
+          "testStrategy": "Test configuration loading with and without API keys. Verify correct service selection based on environment variables."
+        },
+        {
+          "id": 4,
+          "title": "Add error handling and retry mechanisms",
+          "description": "Implement robust error handling for the local screenshot capture process, including timeouts, navigation errors, and resource limitations.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Identify common failure scenarios (page load timeouts, navigation errors, rendering issues). Implement appropriate error handling with informative error messages. Add a configurable retry mechanism for transient failures. Implement graceful degradation when screenshots cannot be captured. Add logging for debugging purposes. Consider implementing circuit breaker pattern for problematic URLs.",
+          "status": "pending",
+          "testStrategy": "Test error scenarios by using intentionally broken URLs, slow-loading pages, and pages with various errors. Verify retry behavior and error reporting."
+        },
+        {
+          "id": 5,
+          "title": "Optimize performance and resource usage",
+          "description": "Optimize the local screenshot capture process for performance, memory usage, and concurrency.",
+          "dependencies": [
+            4
+          ],
+          "details": "Implement browser instance pooling to reduce startup overhead for multiple screenshots. Add configurable concurrency limits to prevent resource exhaustion. Optimize page load strategies (e.g., block unnecessary resources, set appropriate wait conditions). Implement caching for frequently accessed screenshots. Add performance metrics collection to identify bottlenecks. Consider implementing queue-based processing for high-volume screenshot requests.",
+          "status": "pending",
+          "testStrategy": "Benchmark screenshot capture performance with various optimization settings. Test memory usage under load with multiple concurrent screenshot requests. Verify system stability during extended operation."
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "title": "Embed Website Thumbnail in Email",
+      "description": "Modify email content generation to include the screenshot thumbnail. Use the stored screenshot asset (embed as inline image or via public link) in the email HTML as a small preview of the site, per PRD.",
+      "status": "pending",
+      "dependencies": [
+        44
+      ],
+      "priority": "high",
+      "details": "This task is fifth in the prescribed implementation order and requires screenshot capture (task 44) to be implemented first. The thumbnail should be embedded in the email to provide users with a visual preview of the website.",
+      "testStrategy": "Verify that the screenshot thumbnail appears correctly in the email across different email clients. Test both inline image embedding and public link approaches to determine the most reliable method.",
+      "subtasks": []
+    },
+    {
+      "id": 46,
+      "title": "Apply Outdatedness Score Threshold",
+      "description": "After scoring leads, only queue personalization/email for those above the outdatedness threshold (e.g. score >= 70%). Implement filtering (e.g., mark others as processed=TRUE without email) and adjust email query to exclude low-score leads.",
+      "status": "pending",
+      "dependencies": [
+        45
+      ],
+      "priority": "high",
+      "details": "This task is sixth in the prescribed implementation order. It involves filtering leads based on their outdatedness score and only proceeding with personalization and email for those that meet or exceed the threshold.",
+      "testStrategy": "1. Test that leads with scores below threshold are marked as processed without generating emails\n2. Test that only leads with scores at or above threshold are queued for personalization/email\n3. Verify the email query correctly excludes low-scoring leads",
+      "subtasks": []
+    },
+    {
+      "id": 47,
+      "title": "Integrate AI Content with Email Template",
+      "description": "Use the Jinja EmailTemplateEngine to inject GPT-generated text (subject, intro, issues list, etc.) into the predefined HTML template that includes our CAN-SPAM compliant footer and unsubscribe link. Ensure the final sent email uses the unified template.",
+      "status": "pending",
+      "dependencies": [
+        46
+      ],
+      "priority": "high",
+      "details": "This task is seventh in the prescribed implementation order. The integration should ensure that all AI-generated content is properly formatted and displayed within our standard email template structure.",
+      "testStrategy": "Test the integration by generating sample AI content and verifying it renders correctly in the email template. Check that all dynamic content is properly escaped and formatted. Verify that the CAN-SPAM footer and unsubscribe links remain functional.",
+      "subtasks": []
+    },
+    {
+      "id": 48,
+      "title": "Auto-Monitor Bounce Rate & IP Warmup",
+      "description": "Implement a periodic check on the email_events table for bounce rate (bounces/emails sent). If >2%, log alert and switch SENDGRID_IP_POOL from 'shared' to 'dedicated' (or trigger IP warm-up workflow). Include unit test with fake bounce data.",
+      "status": "pending",
+      "dependencies": [
+        47
+      ],
+      "priority": "high",
+      "details": "This task is eighth in the prescribed implementation order and builds upon the foundation established in task 47.",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Bounce Rate Calculation Service",
+          "description": "Implement a service that queries the email_events table to calculate the current bounce rate (bounces/emails sent) over configurable time periods.",
+          "dependencies": [],
+          "details": "Create a new BounceRateService class with methods to query the email_events table, count total emails and bounces, and calculate the bounce rate percentage. Include configuration for the time window to consider (e.g., last hour, last day). The service should handle edge cases like no emails sent during the period.",
+          "status": "pending",
+          "testStrategy": "Unit test with mock database responses to verify correct calculation of bounce rates under various scenarios (zero emails, zero bounces, various percentages)."
+        },
+        {
+          "id": 2,
+          "title": "Implement Threshold Configuration System",
+          "description": "Create a configuration system for bounce rate thresholds that will trigger alerts and actions.",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop a configuration module that defines thresholds (default 2%) and allows for easy modification. Store configurations in environment variables or a database table. Include the ability to have different thresholds for different email types or campaigns if needed. The configuration should also specify the check frequency (how often to run the monitoring).",
+          "status": "pending",
+          "testStrategy": "Test that the system correctly loads configurations and applies the right thresholds based on the context."
+        },
+        {
+          "id": 3,
+          "title": "Build Alert Logging System",
+          "description": "Create a system to log alerts when bounce rate exceeds the configured threshold.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implement an AlertLogger class that records alerts to a database table and/or log files when the bounce rate exceeds the threshold. Include details such as timestamp, current bounce rate, threshold value, and affected email campaigns or types. Consider integrating with existing monitoring systems or adding email notifications to administrators.",
+          "status": "pending",
+          "testStrategy": "Verify alerts are properly logged when thresholds are exceeded and not logged when below threshold."
+        },
+        {
+          "id": 4,
+          "title": "Implement IP Pool Switching Logic",
+          "description": "Create the logic to switch SENDGRID_IP_POOL from 'shared' to 'dedicated' or trigger IP warm-up workflow when bounce rate exceeds threshold.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Develop a service that can modify the SENDGRID_IP_POOL configuration or trigger the IP warm-up workflow. This should include safety checks to prevent rapid switching back and forth, and logging of all IP pool changes. Implement a cool-down period before switching back to 'shared' pool. Create appropriate interfaces to the email sending system to apply these changes.",
+          "status": "pending",
+          "testStrategy": "Test the switching logic with various bounce rate scenarios to ensure it correctly switches pools and handles edge cases."
+        },
+        {
+          "id": 5,
+          "title": "Create Scheduled Monitoring Job",
+          "description": "Implement a periodic job that runs the bounce rate check and triggers the appropriate actions based on results.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Create a scheduled job using the application's job scheduling system that periodically runs the bounce rate calculation, compares against thresholds, logs alerts, and triggers IP pool changes as needed. Include error handling and logging for job execution. The job should be configurable for frequency and should avoid overlapping executions. Implement comprehensive test scenarios with simulated bounce data to verify the entire workflow.",
+          "status": "pending",
+          "testStrategy": "Create integration tests with fake bounce data in the email_events table to verify the entire monitoring workflow functions correctly. Include scenarios for rates above and below threshold, and verify correct alerting and IP pool switching."
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "title": "Generate Real Audit PDF Content",
+      "description": "Replace placeholder PDF generation with a comprehensive audit report. Use stored metrics (Core Web Vitals, tech stack, SEMrush data) and GPT-4 to generate an executive summary and 2-3 key findings with recommendations. Utilize the existing pdf_generator module or WeasyPrint to format a branded PDF.",
+      "status": "pending",
+      "dependencies": [
+        48
+      ],
+      "priority": "high",
+      "details": "",
+      "testStrategy": "",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design Audit Report Structure and Content Sections",
+          "description": "Create a comprehensive structure for the audit PDF report, defining all sections, their order, and content requirements.",
+          "dependencies": [],
+          "details": "Define a JSON schema that outlines the complete report structure including: cover page, table of contents, executive summary, Core Web Vitals analysis, technical stack assessment, SEO metrics (SEMrush data), key findings, recommendations, and appendices. For each section, specify required data inputs, visualization types (charts/tables), and approximate content length. This schema will serve as the blueprint for all subsequent implementation tasks.",
+          "status": "pending",
+          "testStrategy": "Review the schema with stakeholders to ensure it covers all required audit aspects and aligns with business goals."
+        },
+        {
+          "id": 2,
+          "title": "Implement Data Collection and Aggregation Module",
+          "description": "Create a module to collect and aggregate all required metrics and data points from various sources needed for the audit report.",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop functions to retrieve and format data from: 1) Core Web Vitals API (LCP, FID, CLS metrics), 2) Technology detection service (tech stack identification), 3) SEMrush API integration (keyword rankings, backlink data, competitor analysis), and 4) Any additional site metrics stored in the database. Implement caching mechanisms to avoid redundant API calls and ensure data consistency throughout report generation.",
+          "status": "pending",
+          "testStrategy": "Create unit tests with mock API responses to verify data retrieval, transformation, and error handling. Test with various site profiles to ensure robust data collection."
+        },
+        {
+          "id": 3,
+          "title": "Develop GPT-4 Prompt Engineering for Report Analysis",
+          "description": "Design and implement prompts for GPT-4 to generate the executive summary and key findings with actionable recommendations based on collected data.",
+          "dependencies": [
+            2
+          ],
+          "details": "Create a prompt engineering module that: 1) Formats collected metrics into structured context for GPT-4, 2) Designs specific prompts for executive summary generation (business-focused overview of site performance), 3) Creates prompts for identifying 2-3 key improvement areas with specific recommendations, and 4) Implements retry logic and fallback mechanisms for API failures. Include guardrails to ensure consistent tone, actionable advice, and appropriate technical depth.",
+          "status": "pending",
+          "testStrategy": "Test prompts with various site profiles (high-performing, average, problematic) to ensure GPT-4 generates relevant, accurate, and useful insights across different scenarios."
+        },
+        {
+          "id": 4,
+          "title": "Build PDF Formatting and Layout Engine",
+          "description": "Implement the core PDF generation functionality using the existing pdf_generator module or WeasyPrint to create well-formatted report pages.",
+          "dependencies": [
+            1
+          ],
+          "details": "Extend the existing pdf_generator module or implement WeasyPrint integration to: 1) Create a base template system for consistent page layouts, 2) Implement styling for different content types (text, tables, charts, code snippets), 3) Add page numbering, section headers, and navigation elements, 4) Support dynamic content sizing and pagination, and 5) Optimize for both screen viewing and printing. Use HTML/CSS templates as the intermediate format for maximum flexibility.",
+          "status": "pending",
+          "testStrategy": "Generate sample PDFs with various content types and lengths to verify layout consistency, proper pagination, and rendering quality across different PDF viewers."
+        },
+        {
+          "id": 5,
+          "title": "Integrate Branding and Visual Elements",
+          "description": "Add company branding, data visualizations, and visual elements to enhance the professional appearance and readability of the audit report.",
+          "dependencies": [
+            4
+          ],
+          "details": "Implement: 1) Branded cover page with logo, client information, and report date, 2) Consistent header/footer with branding elements, 3) Custom charts and graphs for performance metrics using a library like Chart.js rendered to images, 4) Visual indicators for performance scores (red/yellow/green), 5) Custom fonts and color schemes matching brand guidelines, and 6) Professional formatting for tables and data presentations.",
+          "status": "pending",
+          "testStrategy": "Review generated PDFs with design team to ensure brand compliance. Test across multiple browsers and PDF viewers to verify visual consistency."
+        },
+        {
+          "id": 6,
+          "title": "Assemble Complete Report Generator and Implement Testing",
+          "description": "Integrate all components into a cohesive report generation pipeline and implement comprehensive testing across various site profiles.",
+          "dependencies": [
+            2,
+            3,
+            5
+          ],
+          "details": "Create the main report generation orchestrator that: 1) Coordinates the entire process from data collection to final PDF output, 2) Implements proper error handling and logging at each stage, 3) Adds configurable options for report customization (sections to include, detail level), 4) Optimizes performance for quick report generation, and 5) Implements a preview mode for faster iteration. Include a progress tracking mechanism for long-running report generation.",
+          "status": "pending",
+          "testStrategy": "Develop end-to-end tests with various real and synthetic site profiles. Test edge cases including sites with missing metrics, extremely good/poor performance, and unusual tech stacks. Implement automated visual regression testing to catch rendering issues."
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "title": "Extend Report Link Expiry to 30 Days",
+      "description": "Increase the expiry_hours for audit report links from 72 to 720 (30 days) when calling ReportDeliveryService.upload_and_deliver_report, to match the offering in the PRD.",
+      "status": "pending",
+      "dependencies": [
+        49
+      ],
+      "priority": "high",
+      "details": "This task is tenth in the prescribed implementation order. We need to modify the expiry_hours parameter in the ReportDeliveryService.upload_and_deliver_report method to extend the validity period of report links from the current 72 hours (3 days) to 720 hours (30 days).",
+      "testStrategy": "1. Verify that when a report is uploaded and delivered, the expiry_hours parameter is set to 720.\n2. Confirm that report links remain valid for 30 days after generation.\n3. Test that existing functionality works correctly with the extended expiry period.",
+      "subtasks": []
+    },
+    {
+      "id": 51,
+      "title": "Support Local PDF Delivery",
+      "description": "Add a configuration to optionally skip Supabase upload and instead either attach the PDF to the report email or serve it via a local HTTP link. This ensures audit reports can be delivered without cloud storage when running on a local stack.",
+      "status": "pending",
+      "dependencies": [
+        49,
+        50
+      ],
+      "priority": "high",
+      "details": "This task is eleventh in the prescribed implementation order and requires PDF generation to be implemented first. It builds upon the PDF generation functionality to provide alternative delivery methods when running in local environments.",
+      "testStrategy": "Test both delivery methods (email attachment and local HTTP link) when the Supabase upload is disabled. Verify that the configuration properly controls which delivery method is used.",
+      "subtasks": []
+    },
+    {
+      "id": 52,
+      "title": "Enforce Per-Service Daily Cost Caps",
+      "description": "Extend cost_tracking to enforce daily spend limits for LLM and SEMrush. Introduce env vars (e.g. MAX_DOLLARS_LLM, MAX_DOLLARS_SEMRUSH); when cost_tracker tallies exceed these, disable or delay those API calls for the day and log alerts.",
+      "status": "pending",
+      "dependencies": [
+        51
+      ],
+      "priority": "high",
+      "details": "This task is twelfth in the prescribed implementation order. It builds upon the cost tracking infrastructure to add enforcement mechanisms that prevent exceeding daily budgets for external services.",
+      "testStrategy": "Test that API calls are properly disabled when daily limits are reached. Verify that alerts are logged appropriately. Include tests with mock time progression to ensure limits reset correctly at day boundaries.",
+      "subtasks": []
+    },
+    {
+      "id": 53,
+      "title": "Implement Nightly DB Backup",
+      "description": "At end of nightly.sh, add steps to dump the PostgreSQL database to local storage and rsync/SCP it to the off-site NAS. Ensure this runs after pipeline success and logs success/failure. Test by verifying a backup file appears in the expected NAS location.",
+      "status": "pending",
+      "dependencies": [
+        52
+      ],
+      "priority": "high",
+      "details": "This is the final step in the implementation order (13th of 13). The database backup should only run after all other nightly processes have completed successfully.",
+      "testStrategy": "1. Run the nightly.sh script in a test environment\n2. Verify that the PostgreSQL database is properly dumped to local storage\n3. Confirm that the backup file is successfully transferred to the off-site NAS\n4. Check logs for proper success/failure reporting\n5. Test error handling by simulating backup failures",
+      "subtasks": [
+        {
+          "id": "53.1",
+          "description": "Add database dump commands to nightly.sh",
+          "status": "pending"
+        },
+        {
+          "id": "53.2",
+          "description": "Implement rsync/SCP transfer to off-site NAS",
+          "status": "pending"
+        },
+        {
+          "id": "53.3",
+          "description": "Add logging for backup success/failure",
+          "status": "pending"
+        },
+        {
+          "id": "53.4",
+          "description": "Test backup process in staging environment",
+          "status": "pending"
+        },
+        {
+          "id": "53.5",
+          "description": "Document backup process and recovery procedures",
+          "status": "pending"
         }
       ]
     }

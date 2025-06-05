@@ -1,12 +1,12 @@
 {
   "meta": {
-    "generatedAt": "2025-06-03T11:04:26.095Z",
-    "tasksAnalyzed": 17,
-    "totalTasks": 34,
-    "analysisCount": 17,
+    "generatedAt": "2025-06-05T11:31:42.324Z",
+    "tasksAnalyzed": 19,
+    "totalTasks": 53,
+    "analysisCount": 36,
     "thresholdScore": 5,
     "projectName": "Task Master",
-    "usedResearch": true
+    "usedResearch": false
   },
   "complexityAnalysis": [
     {
@@ -144,6 +144,158 @@
       "recommendedSubtasks": 3,
       "expansionPrompt": "Break down this task with a focus on revise roadmap documentation.",
       "reasoning": "Automatically added due to missing analysis in AI response."
+    },
+    {
+      "taskId": 35,
+      "taskTitle": "Fix Critical Test Coverage Gaps",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the test coverage implementation for each component (storage abstraction, CLI commands, pipeline orchestration) into more granular tasks including test plan creation, mocking strategy, unit tests, integration tests, and test documentation.",
+      "reasoning": "This task involves complex test implementation across multiple critical systems with no existing coverage. Each component requires different testing approaches and extensive mocking."
+    },
+    {
+      "taskId": 36,
+      "taskTitle": "Fix Security Vulnerabilities",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Expand the security vulnerability fixes into more specific subtasks including security audit documentation, automated scanning implementation, and verification testing for each vulnerability type.",
+      "reasoning": "Security fixes require careful implementation and validation. The task covers multiple vulnerability types that each need specialized approaches and verification."
+    },
+    {
+      "taskId": 37,
+      "taskTitle": "Complete Code Quality Improvements",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the code quality improvements by creating specific subtasks for each file category, including automated tooling setup, standards documentation, and verification processes.",
+      "reasoning": "While individually straightforward, the scale (140+ files) and variety of quality issues make this moderately complex. Proper organization and automation are needed."
+    },
+    {
+      "taskId": 38,
+      "taskTitle": "Complete Microservices Migration",
+      "complexityScore": 9,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Expand the microservices migration into more detailed subtasks covering service boundary definition, communication protocols, deployment strategies, testing approaches, and migration validation for each service component.",
+      "reasoning": "Architectural migration is highly complex, requiring deep system understanding and careful coordination. Each service needs individual attention for proper separation and integration."
+    },
+    {
+      "taskId": 39,
+      "taskTitle": "Create Comprehensive Documentation",
+      "complexityScore": 5,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the documentation tasks by audience (developers, operators, end-users) and by documentation type (reference, tutorials, architecture), with specific templates and standards for each.",
+      "reasoning": "Documentation requires understanding of the entire system but is moderately complex. Organization by documentation type and audience will improve quality and completeness."
+    },
+    {
+      "taskId": 40,
+      "taskTitle": "Implement Performance Optimizations",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Expand the performance optimization work into specific subtasks covering benchmarking, profiling, optimization strategy documentation, implementation, and verification for each performance area.",
+      "reasoning": "Performance optimization requires deep technical expertise across async patterns, database optimization, and streaming implementations. Each area needs measurement, implementation, and validation."
+    },
+    {
+      "taskId": 41,
+      "taskTitle": "Skip Modern Sites in Lead Funnel",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the modern site detection feature into subtasks covering PageSpeed API integration, threshold configuration, lead processing logic modification, and testing with various site types.",
+      "reasoning": "This requires integration with external APIs and modifications to the lead processing pipeline, with moderate complexity in determining and implementing the right filtering logic."
+    },
+    {
+      "taskId": 42,
+      "taskTitle": "Parse and Store City/State for Businesses",
+      "complexityScore": 4,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the address parsing implementation into subtasks covering database schema updates, address parsing algorithm selection/implementation, and data backfill for existing records.",
+      "reasoning": "Address parsing is a well-understood problem with existing libraries, though care is needed for edge cases and international addresses. Database updates add some complexity."
+    },
+    {
+      "taskId": 43,
+      "taskTitle": "Decide & Implement Yelp JSON Retention",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the Yelp data retention implementation into subtasks covering policy decision documentation, PII identification and handling, database schema changes, and code modifications for the selected approach.",
+      "reasoning": "This requires both policy decisions and technical implementation. PII considerations add complexity, and changes may impact multiple system components."
+    },
+    {
+      "taskId": 44,
+      "taskTitle": "Implement Local Screenshot Capture",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the local screenshot implementation into subtasks covering Playwright integration, configuration management, error handling, performance optimization, and testing across different site types.",
+      "reasoning": "Headless browser integration is complex, requiring careful handling of various website types, performance considerations, and error cases. Local vs. API fallback logic adds complexity."
+    },
+    {
+      "taskId": 45,
+      "taskTitle": "Embed Website Thumbnail in Email",
+      "complexityScore": 4,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the thumbnail embedding task into subtasks covering image processing/resizing, email template modification, and testing across various email clients.",
+      "reasoning": "Email template modification is straightforward, though care is needed for image handling and email client compatibility. The implementation builds on existing systems."
+    },
+    {
+      "taskId": 46,
+      "taskTitle": "Apply Outdatedness Score Threshold",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the score threshold implementation into subtasks covering threshold configuration management, lead processing logic updates, database query modifications, and testing with various score scenarios.",
+      "reasoning": "This requires modifications to the lead processing pipeline with moderate complexity. Threshold determination and implementation across the system requires careful coordination."
+    },
+    {
+      "taskId": 47,
+      "taskTitle": "Integrate AI Content with Email Template",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the AI content integration into subtasks covering template structure design, Jinja implementation, content formatting standardization, and testing with various AI-generated content types.",
+      "reasoning": "Template integration requires careful handling of variable AI content while maintaining email standards and compliance. Testing across different content variations adds complexity."
+    },
+    {
+      "taskId": 48,
+      "taskTitle": "Auto-Monitor Bounce Rate & IP Warmup",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the bounce rate monitoring into subtasks covering metrics collection, threshold configuration, alerting implementation, IP pool switching logic, and testing with simulated bounce scenarios.",
+      "reasoning": "Email deliverability management is complex, requiring careful monitoring and automated responses. IP warmup strategies and integration with email provider APIs add significant complexity."
+    },
+    {
+      "taskId": 49,
+      "taskTitle": "Generate Real Audit PDF Content",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the PDF audit report generation into subtasks covering data collection, GPT-4 prompt engineering, report structure design, PDF formatting implementation, branding integration, and testing with various site profiles.",
+      "reasoning": "Creating comprehensive audit reports involves complex data integration, AI content generation, and professional PDF formatting. Each component requires significant attention to detail."
+    },
+    {
+      "taskId": 50,
+      "taskTitle": "Extend Report Link Expiry to 30 Days",
+      "complexityScore": 2,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Break down the link expiry extension into subtasks covering configuration update and verification testing for different expiry scenarios.",
+      "reasoning": "This is a simple configuration change with minimal complexity. Basic testing is needed to verify the change works as expected."
+    },
+    {
+      "taskId": 51,
+      "taskTitle": "Support Local PDF Delivery",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the local PDF delivery implementation into subtasks covering configuration management, email attachment handling, local HTTP server implementation, and testing of each delivery method.",
+      "reasoning": "Supporting multiple delivery methods requires careful configuration and implementation. Email attachment handling and local HTTP serving add moderate complexity."
+    },
+    {
+      "taskId": 52,
+      "taskTitle": "Enforce Per-Service Daily Cost Caps",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the cost cap implementation into subtasks covering configuration management, cost tracking enhancements, service disabling logic, alerting implementation, and testing with simulated cost scenarios.",
+      "reasoning": "Cost tracking across services requires careful implementation and coordination. The ability to disable or delay API calls based on cost adds significant complexity."
+    },
+    {
+      "taskId": 53,
+      "taskTitle": "Implement Nightly DB Backup",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the database backup implementation into subtasks covering backup script creation, scheduling integration, off-site transfer implementation, and monitoring/alerting for backup failures.",
+      "reasoning": "Database backup implementation involves multiple steps including dump creation, secure transfer, and monitoring. Ensuring reliability and security of backups adds moderate complexity."
     }
   ]
 }

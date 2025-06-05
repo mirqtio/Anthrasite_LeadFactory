@@ -74,6 +74,7 @@ def analytics():
 from .commands import (
     admin_commands,
     dev_commands,
+    monitoring_commands,
     pipeline_commands,
     purchase_analytics,
 )
@@ -95,6 +96,9 @@ dev.add_command(dev_commands.lint)
 dev.add_command(dev_commands.format_code)
 
 analytics.add_command(purchase_analytics.purchase)
+
+# Register monitoring commands
+cli.add_command(monitoring_commands.monitoring)
 
 
 if __name__ == "__main__":

@@ -197,6 +197,15 @@ else
   log "Pipeline completed before 05:00 EST deadline"
 fi
 
+# Step 8: Cleanup expired JSON responses
+log "Step 8: Cleaning up expired JSON responses"
+if [ "$DRY_RUN" = "false" ]; then
+  python bin/cleanup_json_responses.py --batch-size 500 || log "Warning: JSON cleanup failed but continuing"
+else
+  log "Dry run: Showing what JSON cleanup would do"
+  python bin/cleanup_json_responses.py --dry-run
+fi
+
 # Run Supabase usage monitoring
 log "Checking Supabase usage"
 if [ "$DRY_RUN" = "false" ] || [ "$CHECK_SUPABASE" = "true" ]; then

@@ -69,7 +69,7 @@ class AuditRule(BaseModel):
     description: Optional[str] = None
     score: Optional[int] = Field(None, ge=-100, le=100)
     audit_category: Optional[str] = None
-    audit_potential: Optional[str] = Field(None, regex="^(low|medium|high)$")
+    audit_potential: Optional[str] = Field(None, pattern="^(low|medium|high)$")
     when: SimpleCondition
     enabled: bool = True
     priority: int = Field(default=0, ge=0, le=100)

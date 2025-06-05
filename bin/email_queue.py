@@ -219,12 +219,29 @@ SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.io")
 SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
 DAILY_EMAIL_LIMIT = int(os.getenv("DAILY_EMAIL_LIMIT", "50"))
 # 2% bounce rate threshold
-BOUNCE_RATE_THRESHOLD = float(os.getenv("BOUNCE_RATE_THRESHOLD", "0.02"))
-SPAM_RATE_THRESHOLD = float(
-    os.getenv("SPAM_RATE_THRESHOLD", "0.001")
-)  # 0.1% spam rate threshold
-COST_PER_EMAIL = float(os.getenv("COST_PER_EMAIL", "0.10"))  # $0.10 per email
-MONTHLY_BUDGET = float(os.getenv("MONTHLY_BUDGET", "250"))  # $250 monthly budget
+bounce_rate_str = os.getenv("BOUNCE_RATE_THRESHOLD", "0.02")
+# Strip any comments from the environment variable
+if "#" in bounce_rate_str:
+    bounce_rate_str = bounce_rate_str.split("#")[0].strip()
+BOUNCE_RATE_THRESHOLD = float(bounce_rate_str)
+
+# 0.1% spam rate threshold
+spam_rate_str = os.getenv("SPAM_RATE_THRESHOLD", "0.001")
+if "#" in spam_rate_str:
+    spam_rate_str = spam_rate_str.split("#")[0].strip()
+SPAM_RATE_THRESHOLD = float(spam_rate_str)
+
+# $0.10 per email
+cost_per_email_str = os.getenv("COST_PER_EMAIL", "0.10")
+if "#" in cost_per_email_str:
+    cost_per_email_str = cost_per_email_str.split("#")[0].strip()
+COST_PER_EMAIL = float(cost_per_email_str)
+
+# $250 monthly budget  
+monthly_budget_str = os.getenv("MONTHLY_BUDGET", "250")
+if "#" in monthly_budget_str:
+    monthly_budget_str = monthly_budget_str.split("#")[0].strip()
+MONTHLY_BUDGET = float(monthly_budget_str)
 # SendGrid IP/Sub-user configuration
 SENDGRID_IP_POOL_NAMES = os.getenv(
     "SENDGRID_IP_POOL_NAMES", "primary,secondary,tertiary"

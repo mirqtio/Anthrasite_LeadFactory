@@ -5,6 +5,7 @@ This module provides functionality to generate and send emails to businesses.
 """
 
 import argparse
+import asyncio
 import base64
 import html
 import json
@@ -563,9 +564,49 @@ def get_businesses_for_email(
         list of dictionaries containing business information.
     """
     try:
-        return storage.get_businesses_for_email(
+        businesses = storage.get_businesses_for_email(
             force=force, business_id=business_id, limit=limit
         )
+        
+        # Filter businesses based on audit threshold
+        filtered_businesses = []
+        for business in businesses:
+            # Get the business score
+            score = business.get('score', 0)
+            
+            # Check if score meets audit threshold
+            from leadfactory.pipeline.score import meets_audit_threshold
+            from leadfactory.scoring.simplified_yaml_parser import SimplifiedYamlParser
+            
+            # Get the current threshold
+            try:
+                parser = SimplifiedYamlParser()
+                config = parser.load_and_validate()
+                threshold = config.settings.audit_threshold
+            except:
+                threshold = 60  # Default
+            
+            if meets_audit_threshold(score):
+                filtered_businesses.append(business)
+            else:
+                skip_reason = f"Score below audit threshold: {score} < {threshold}"
+                logger.info(
+                    f"Skipping business {business.get('id')} ({business.get('name')}) "
+                    f"with score {score} below audit threshold"
+                )
+                
+                # Track skip reason in database
+                try:
+                    storage.update_processing_status(
+                        business_id=business.get('id'),
+                        stage='email',
+                        status='skipped',
+                        skip_reason=skip_reason
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to track skip reason: {e}")
+        
+        return filtered_businesses
     except Exception as e:
         logger.exception(f"Error getting businesses for email: {str(e)}")
         return []
@@ -695,8 +736,8 @@ def save_email_record(
         return False
 
 
-def generate_email_content(business: dict, template: str) -> tuple[str, str, str]:
-    """Generate email content for a business.
+async def generate_email_content(business: dict, template: str) -> tuple[str, str, str]:
+    """Generate email content for a business with AI personalization.
 
     Args:
         business: Business data.
@@ -706,60 +747,96 @@ def generate_email_content(business: dict, template: str) -> tuple[str, str, str
         tuple of (subject, html_content, text_content).
     """
     try:
-        # Extract business data
-        business_name = business["name"]
-        contact_name = business.get("contact_name") or "Owner"
-        business_type = business.get("business_type") or "business"
-        business_website = (
-            business.get("website") or business.get("url") or "your website"
-        )
-        business_email = business.get("email") or business.get("contact_email") or ""
-
-        # Get sender information from environment
-        sender_name = os.getenv("SENDGRID_FROM_NAME", "Charlie Irwin")
-        sender_email = os.getenv("SENDGRID_FROM_EMAIL", "charlie@anthrasite.io")
-        sender_phone = os.getenv("SENDER_PHONE", "(555) 123-4567")
-
-        # Generate subject line
-        subject = f"Free Website Mockup for {business_name}"
-
-        # Apply template variables
-        html_content = template
-
-        # Replace all template variables
-        replacements = {
-            "{{business_name}}": html.escape(business_name),
-            "{{contact_name}}": html.escape(contact_name),
-            "{{business_category}}": html.escape(business_type),
-            "{{business_website}}": html.escape(business_website),
-            "{{sender_name}}": html.escape(sender_name),
-            "{{sender_email}}": html.escape(sender_email),
-            "{{sender_phone}}": html.escape(sender_phone),
-            "{{to_email}}": html.escape(business_email),
-            "{{unsubscribe_link}}": f"https://app.anthrasite.io/unsubscribe?email={business_email}",
-        }
-
-        # Apply all replacements
-        for placeholder, value in replacements.items():
-            html_content = html_content.replace(placeholder, value)
-
-        # Handle the improvements section (replace Handlebars with static content)
-        improvements_html = """
-                <li>Modern, mobile-responsive design that looks great on all devices</li>
-                <li>Improved search engine optimization (SEO) to help customers find you</li>
-                <li>Clear calls-to-action to convert visitors into customers</li>
-                <li>Professional branding that builds trust with potential clients</li>
-                <li>Fast loading speeds for better user experience</li>
-        """
-
-        # Replace the Handlebars improvements section
-        improvements_pattern = r"{{#each improvements}}.*?{{/each}}"
-        html_content = re.sub(
-            improvements_pattern, improvements_html, html_content, flags=re.DOTALL
+        # Check if AI content generation is enabled
+        use_ai_content = os.getenv("USE_AI_EMAIL_CONTENT", "true").lower() == "true"
+        
+        if use_ai_content:
+            try:
+                # Use AI content generator
+                from leadfactory.email.ai_content_generator import email_content_personalizer
+                
+                # Get score data if available
+                score_data = None
+                if 'score' in business:
+                    score_data = {
+                        'score': business.get('score', 0),
+                        'performance_score': business.get('performance_score', 50),
+                        'technology_score': business.get('technology_score', 50),
+                        'seo_score': business.get('seo_score', 50),
+                        'mobile_score': business.get('mobile_score', 50)
+                    }
+                
+                # Generate personalized content
+                subject, html_content, text_content = await email_content_personalizer.personalize_email_content(
+                    business_data=business,
+                    template=template,
+                    score_data=score_data
+                )
+                
+                # Apply standard template replacements
+                html_content = apply_template_replacements(html_content, business)
+                
+                return subject, html_content, text_content
+                
+            except Exception as e:
+                logger.warning(f"AI content generation failed, falling back to standard: {e}")
+                # Fall through to standard generation
+        
+        # Standard email generation (fallback or if AI is disabled)
+        return generate_standard_email_content(business, template)
+        
+    except Exception as e:
+        logger.exception(f"Error generating email content: {str(e)}")
+        # Return fallback content
+        return (
+            "Website proposal for your business",
+            "<p>Hello! We've created a website mockup for your business.</p>",
+            "Hello! We've created a website mockup for your business.",
         )
 
-        # Generate plain text version
-        text_content = f"""
+
+def generate_standard_email_content(business: dict, template: str) -> tuple[str, str, str]:
+    """Generate standard email content without AI.
+    
+    Args:
+        business: Business data.
+        template: Email template.
+        
+    Returns:
+        tuple of (subject, html_content, text_content).
+    """
+    # Extract business data
+    business_name = business["name"]
+    contact_name = business.get("contact_name") or "Owner"
+    business_type = business.get("business_type") or "business"
+    business_website = (
+        business.get("website") or business.get("url") or "your website"
+    )
+    business_email = business.get("email") or business.get("contact_email") or ""
+
+    # Generate subject line
+    subject = f"Free Website Mockup for {business_name}"
+
+    # Apply template variables
+    html_content = apply_template_replacements(template, business)
+
+    # Handle the improvements section (replace Handlebars with static content)
+    improvements_html = """
+            <li>Modern, mobile-responsive design that looks great on all devices</li>
+            <li>Improved search engine optimization (SEO) to help customers find you</li>
+            <li>Clear calls-to-action to convert visitors into customers</li>
+            <li>Professional branding that builds trust with potential clients</li>
+            <li>Fast loading speeds for better user experience</li>
+    """
+
+    # Replace the Handlebars improvements section
+    improvements_pattern = r"{{#each improvements}}.*?{{/each}}"
+    html_content = re.sub(
+        improvements_pattern, improvements_html, html_content, flags=re.DOTALL
+    )
+
+    # Generate plain text version
+    text_content = f"""
 Hello {contact_name},
 
 I noticed your website at {business_website} and wanted to reach out with some ideas for improvement.
@@ -787,31 +864,62 @@ I'd love to discuss these ideas with you. Would you be available for a quick 15-
 Schedule a Free Consultation: https://calendly.com/anthrasite/website-consultation
 
 Best regards,
-{sender_name}
+{os.getenv("SENDGRID_FROM_NAME", "Charlie Irwin")}
 Anthrasite Web Services
-{sender_email}
-{sender_phone}
+{os.getenv("SENDGRID_FROM_EMAIL", "charlie@anthrasite.io")}
+{os.getenv("SENDER_PHONE", "(555) 123-4567")}
 
 ---
 This email was sent to {business_email}. If you'd prefer not to receive these emails, you can unsubscribe: https://app.anthrasite.io/unsubscribe?email={business_email}
-Anthrasite Web Services
-PO Box 12345
-San Francisco, CA 94107
- 2025 Anthrasite Web Services. All rights reserved.
-        """
+"""
 
-        return subject, html_content, text_content
-    except Exception as e:
-        logger.exception(f"Error generating email content: {str(e)}")
-        # Return fallback content
-        return (
-            "Website proposal for your business",
-            "<p>Hello! We've created a website mockup for your business.</p>",
-            "Hello! We've created a website mockup for your business.",
-        )
+    return subject, html_content, text_content
 
 
-def send_business_email(
+def apply_template_replacements(template: str, business: dict) -> str:
+    """Apply standard template variable replacements.
+    
+    Args:
+        template: HTML template with placeholders
+        business: Business data dictionary
+        
+    Returns:
+        Template with placeholders replaced
+    """
+    # Extract business data
+    business_name = business.get("name", "Business")
+    contact_name = business.get("contact_name") or "Owner"
+    business_type = business.get("business_type") or business.get("vertical") or "business"
+    business_website = business.get("website") or business.get("url") or "your website"
+    business_email = business.get("email") or business.get("contact_email") or ""
+
+    # Get sender information from environment
+    sender_name = os.getenv("SENDGRID_FROM_NAME", "Charlie Irwin")
+    sender_email = os.getenv("SENDGRID_FROM_EMAIL", "charlie@anthrasite.io")
+    sender_phone = os.getenv("SENDER_PHONE", "(555) 123-4567")
+
+    # Replace all template variables
+    replacements = {
+        "{{business_name}}": html.escape(business_name),
+        "{{contact_name}}": html.escape(contact_name),
+        "{{business_category}}": html.escape(business_type),
+        "{{business_website}}": html.escape(business_website),
+        "{{sender_name}}": html.escape(sender_name),
+        "{{sender_email}}": html.escape(sender_email),
+        "{{sender_phone}}": html.escape(sender_phone),
+        "{{to_email}}": html.escape(business_email),
+        "{{unsubscribe_link}}": f"https://app.anthrasite.io/unsubscribe?email={business_email}",
+    }
+
+    # Apply all replacements
+    html_content = template
+    for placeholder, value in replacements.items():
+        html_content = html_content.replace(placeholder, value)
+    
+    return html_content
+
+
+async def send_business_email(
     business: dict,
     email_sender: SendGridEmailSender,
     template: str,
@@ -850,7 +958,7 @@ def send_business_email(
             return False
 
         # Generate personalized email content from template
-        subject, html_content, text_content = generate_email_content(business, template)
+        subject, html_content, text_content = await generate_email_content(business, template)
 
         # Get mockup file path from assets table
         mockup_path = None
@@ -861,6 +969,17 @@ def send_business_email(
         except Exception as e:
             logger.exception(
                 f"Error getting mockup asset for business {business['id']}: {str(e)}"
+            )
+        
+        # Get screenshot (thumbnail) file path from assets table
+        screenshot_path = None
+        try:
+            screenshot_asset = storage.get_business_asset(business["id"], "screenshot")
+            if screenshot_asset:
+                screenshot_path = screenshot_asset.get("file_path")
+        except Exception as e:
+            logger.exception(
+                f"Error getting screenshot asset for business {business['id']}: {str(e)}"
             )
 
         if is_dry_run:
@@ -892,14 +1011,37 @@ def send_business_email(
 
         # Prepare attachments
         attachments = []
+        
+        # Add screenshot/thumbnail as inline attachment if available
+        if screenshot_path and os.path.exists(screenshot_path):
+            try:
+                # Read the screenshot file
+                with open(screenshot_path, "rb") as f:
+                    screenshot_data = f.read()
+                # Create embedded attachment with Content-ID
+                import base64
+
+                encoded_screenshot = base64.b64encode(screenshot_data).decode()
+                screenshot_attachment = {
+                    "content": encoded_screenshot,
+                    "filename": "website-thumbnail.png",
+                    "type": "image/png",
+                    "disposition": "inline",
+                    "content_id": "website-thumbnail.png",
+                }
+                attachments.append(screenshot_attachment)
+                logger.info(f"Embedded screenshot thumbnail for business {business['id']}")
+            except Exception as e:
+                logger.warning(f"Failed to read screenshot file {screenshot_path}: {str(e)}")
+                # Screenshot is optional, so we continue
+        
+        # Add mockup as inline attachment
         if mockup_path and os.path.exists(mockup_path):
             try:
                 # Read the mockup file
                 with open(mockup_path, "rb") as f:
                     mockup_data = f.read()
                 # Create embedded attachment with Content-ID
-                import base64
-
                 encoded_content = base64.b64encode(mockup_data).decode()
                 attachment = {
                     "content": encoded_content,
@@ -981,7 +1123,7 @@ def send_business_email(
         return False
 
 
-def process_business_email(business_id: int, dry_run: bool = None) -> bool:
+async def process_business_email(business_id: int, dry_run: bool = None) -> bool:
     """Process a single business for email sending.
 
     Args:
@@ -1019,7 +1161,7 @@ def process_business_email(business_id: int, dry_run: bool = None) -> bool:
         )
 
         # Send the email
-        result = send_business_email(business, sender, template, is_dry_run)
+        result = await send_business_email(business, sender, template, is_dry_run)
         return result
     except Exception as e:
         logger.exception(f"Error processing business email: {str(e)}")
@@ -1163,7 +1305,7 @@ def main() -> int:
             logger.info(f"Processing business {business_id}: {business_name}")
 
             # Send the email
-            success = send_business_email(business, sender, template, DRY_RUN)
+            success = asyncio.run(send_business_email(business, sender, template, DRY_RUN))
 
             if success:
                 total_sent += 1

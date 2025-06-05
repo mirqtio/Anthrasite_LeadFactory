@@ -7,6 +7,7 @@ security events, access attempts, and administrative actions.
 
 import json
 import logging
+import os
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum

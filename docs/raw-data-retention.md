@@ -23,6 +23,7 @@ This document describes the implementation of raw data retention features for th
 - Configurable retention period (default: 90 days)
 - Automatic identification of expired data
 - Scheduled cleanup process via nightly batch job
+- Includes cleanup of Yelp/Google API JSON responses
 
 ## Implementation Details
 
@@ -55,6 +56,10 @@ Two new tables have been added to the database:
    - `metadata` - Additional metadata for the interaction
    - `created_at` - Timestamp when the interaction occurred
 
+3. `businesses` table additions for JSON retention:
+   - `json_retention_expires_at` - Timestamp when JSON responses should be deleted
+   - JSON fields subject to retention: `yelp_response_json`, `google_response_json`
+
 ### Core Modules
 
 1. `utils/raw_data_retention.py` - Core utilities for storing and retrieving raw HTML and logging LLM interactions
@@ -65,6 +70,7 @@ Two new tables have been added to the database:
 
 1. `bin/process_raw_data.py` - Processes pending websites and stores their HTML content
 2. `bin/cleanup_expired_data.py` - Cleans up expired HTML files and LLM logs
+3. `bin/cleanup_json_responses.py` - Cleans up expired JSON responses from businesses table
 
 ### Integration Points
 
@@ -115,7 +121,17 @@ python bin/process_raw_data.py --process-websites --verbose
 ### Cleaning Up Expired Data
 
 ```bash
+# Clean up HTML and LLM logs
 python bin/cleanup_expired_data.py --verbose
+
+# Clean up JSON responses
+python bin/cleanup_json_responses.py --batch-size 500
+
+# Check JSON storage statistics
+python bin/cleanup_json_responses.py --stats
+
+# Dry run to see what would be cleaned
+python bin/cleanup_json_responses.py --dry-run
 ```
 
 ## Testing

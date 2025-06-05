@@ -296,6 +296,7 @@ class PostgresStorage(StorageInterface):
         stage: str,
         status: str,
         metadata: Optional[Dict[str, Any]] = None,
+        skip_reason: Optional[str] = None,
     ) -> bool:
         """Update processing status for a business at a specific stage."""
         try:
@@ -304,15 +305,16 @@ class PostgresStorage(StorageInterface):
             with self.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO processing_status (business_id, stage, status, metadata)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO processing_status (business_id, stage, status, metadata, skip_reason)
+                    VALUES (%s, %s, %s, %s, %s)
                     ON CONFLICT (business_id, stage)
                     DO UPDATE SET
                         status = EXCLUDED.status,
                         metadata = EXCLUDED.metadata,
+                        skip_reason = EXCLUDED.skip_reason,
                         updated_at = CURRENT_TIMESTAMP
                     """,
-                    (business_id, stage, status, metadata_json),
+                    (business_id, stage, status, metadata_json, skip_reason),
                 )
                 return cursor.rowcount > 0
 
@@ -495,6 +497,8 @@ class PostgresStorage(StorageInterface):
         self,
         name: str,
         address: str,
+        city: str,
+        state: str,
         zip_code: str,
         category: str,
         phone: Optional[str] = None,
@@ -526,8 +530,8 @@ class PostgresStorage(StorageInterface):
                     (
                         name,
                         address,
-                        None,  # city
-                        None,  # state
+                        city,
+                        state,
                         zip_code,
                         phone,
                         email,
@@ -853,13 +857,15 @@ class PostgresStorage(StorageInterface):
         """Get businesses ready for email sending."""
         try:
             with self.cursor() as cursor:
-                # Build the query - join with assets table to get mockup URLs
+                # Build the query - join with assets table to get mockup URLs and stage_results for score
                 query = """
                 SELECT b.id, b.name, b.email, b.phone, b.address, b.city, b.state, b.zip,
-                       b.website, a.url as mockup_url, '' as contact_name, 0 as score, '' as notes
+                       b.website, a.url as mockup_url, '' as contact_name, 
+                       COALESCE((sr.results->>'score')::int, 0) as score, '' as notes
                 FROM businesses b
                 LEFT JOIN emails e ON b.id = e.business_id
                 LEFT JOIN assets a ON b.id = a.business_id AND a.asset_type = 'mockup'
+                LEFT JOIN stage_results sr ON b.id = sr.business_id AND sr.stage = 'score'
                 WHERE b.email IS NOT NULL
                   AND b.email != ''
                   AND a.url IS NOT NULL

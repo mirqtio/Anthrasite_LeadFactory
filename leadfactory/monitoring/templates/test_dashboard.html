@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Monitoring Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .grade-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin: 2px;
+        }
+        .grade-a { background-color: #4CAF50; }
+        .grade-b { background-color: #8BC34A; }
+        .grade-c { background-color: #FFC107; }
+        .grade-d { background-color: #FF9800; }
+        .grade-f { background-color: #F44336; }
+        .test-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .test-table th, .test-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .test-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .trend-improving { color: #4CAF50; }
+        .trend-stable { color: #2196F3; }
+        .trend-degrading { color: #F44336; }
+        .status-healthy { color: #4CAF50; }
+        .status-warning { color: #FF9800; }
+        .status-critical { color: #F44336; }
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CI Pipeline Test Monitoring Dashboard</h1>
+        <p>Real-time visibility into test reliability and pipeline health</p>
+    </div>
+
+    <button class="refresh-btn" onclick="refreshData()">Refresh Metrics</button>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="metric-value" id="total-tests">-</div>
+            <div class="metric-label">Total Tests</div>
+        </div>
+        <div class="card">
+            <div class="metric-value" id="overall-pass-rate">-</div>
+            <div class="metric-label">Overall Pass Rate</div>
+        </div>
+        <div class="card">
+            <div class="metric-value" id="flaky-tests">-</div>
+            <div class="metric-label">Flaky Tests</div>
+        </div>
+        <div class="card">
+            <div class="metric-value" id="degrading-tests">-</div>
+            <div class="metric-label">Degrading Tests</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Test Reliability Distribution</h3>
+        <div id="grade-distribution">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Problematic Tests Requiring Attention</h3>
+        <div id="problematic-tests">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Test Suite Health</h3>
+        <div id="suite-health">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchData(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return null;
+            }
+        }
+
+        async function loadDashboard() {
+            // Load summary data
+            const summary = await fetchData('/api/summary');
+            if (summary) {
+                updateSummary(summary);
+            }
+
+            // Load problematic tests
+            const problematicTests = await fetchData('/api/problematic-tests');
+            if (problematicTests) {
+                updateProblematicTests(problematicTests);
+            }
+        }
+
+        function updateSummary(summary) {
+            document.getElementById('total-tests').textContent = summary.total_tests || 0;
+            document.getElementById('overall-pass-rate').textContent =
+                ((summary.overall_pass_rate || 0) * 100).toFixed(1) + '%';
+            document.getElementById('flaky-tests').textContent = summary.flaky_tests || 0;
+            document.getElementById('degrading-tests').textContent = summary.degrading_tests || 0;
+
+            // Update grade distribution
+            const gradeDistribution = summary.grade_distribution || {};
+            const gradeHtml = Object.entries(gradeDistribution)
+                .map(([grade, count]) =>
+                    `<span class="grade-indicator grade-${grade.toLowerCase()}">${grade}: ${count}</span>`
+                ).join('');
+            document.getElementById('grade-distribution').innerHTML = gradeHtml;
+
+            // Update suite statistics
+            const suiteStats = summary.suite_statistics || [];
+            const suiteHtml = suiteStats.length > 0 ? `
+                <table class="test-table">
+                    <thead>
+                        <tr>
+                            <th>Suite Name</th>
+                            <th>Test Count</th>
+                            <th>Pass Rate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${suiteStats.map(suite => `
+                            <tr>
+                                <td>${suite.suite_name}</td>
+                                <td>${suite.test_count}</td>
+                                <td>${(suite.pass_rate * 100).toFixed(1)}%</td>
+                                <td class="status-${getHealthStatus(suite.pass_rate)}">
+                                    ${getHealthStatus(suite.pass_rate)}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="loading">No suite data available</div>';
+            document.getElementById('suite-health').innerHTML = suiteHtml;
+        }
+
+        function updateProblematicTests(tests) {
+            if (tests.length === 0) {
+                document.getElementById('problematic-tests').innerHTML =
+                    '<div style="color: #4CAF50; text-align: center; padding: 20px;">🎉 All tests are healthy!</div>';
+                return;
+            }
+
+            const testsHtml = `
+                <table class="test-table">
+                    <thead>
+                        <tr>
+                            <th>Test Name</th>
+                            <th>Suite</th>
+                            <th>Pass Rate</th>
+                            <th>Flakiness</th>
+                            <th>Grade</th>
+                            <th>Issue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tests.slice(0, 20).map(test => `
+                            <tr>
+                                <td>${test.test_name}</td>
+                                <td>${test.test_suite}</td>
+                                <td>${test.pass_rate}%</td>
+                                <td>${test.flakiness_score}%</td>
+                                <td><span class="grade-indicator grade-${test.reliability_grade.toLowerCase()}">${test.reliability_grade}</span></td>
+                                <td>${test.issue_type === 'low_pass_rate' ? 'Low Pass Rate' : 'Flaky Behavior'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('problematic-tests').innerHTML = testsHtml;
+        }
+
+        function getHealthStatus(passRate) {
+            if (passRate >= 0.9) return 'healthy';
+            if (passRate >= 0.7) return 'warning';
+            return 'critical';
+        }
+
+        async function refreshData() {
+            document.querySelectorAll('.loading').forEach(el => el.style.display = 'block');
+
+            // Trigger metrics refresh
+            await fetchData('/api/refresh');
+
+            // Reload dashboard
+            await loadDashboard();
+        }
+
+        // Load dashboard on page load
+        window.addEventListener('load', loadDashboard);
+
+        // Auto-refresh every 5 minutes
+        setInterval(loadDashboard, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

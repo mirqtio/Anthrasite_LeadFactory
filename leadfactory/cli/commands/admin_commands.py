@@ -55,26 +55,5 @@ def migrate(ctx, target: Optional[str], rollback: bool):
         click.echo("Warning: Migration module not found")
 
 
-@click.command()
-@click.option("--output", help="Backup output directory")
-@click.option("--compress", is_flag=True, help="Compress backup files")
-@click.pass_context
-def backup(ctx, output: Optional[str], compress: bool):
-    """Create database backup"""
-    click.echo("Creating database backup")
-    if output:
-        click.echo(f"Output directory: {output}")
-    if compress:
-        click.echo("Compression enabled")
-
-    if ctx.obj["dry_run"]:
-        click.echo("DRY RUN: Would create backup")
-        return
-
-    # Import and execute backup logic
-    try:
-        from leadfactory.utils.backup import main as backup_main
-
-        backup_main(output=output, compress=compress)
-    except ImportError:
-        click.echo("Warning: Backup module not found")
+# Import the new backup commands
+from .backup_commands import backup

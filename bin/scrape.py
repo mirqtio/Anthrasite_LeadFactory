@@ -78,8 +78,10 @@ if not has_io_imports:
     def save_business(
         name: str,
         address: str,
-        zip_code: str,
-        category: str,
+        city: str = "",
+        state: str = "",
+        zip_code: str = "",
+        category: str = "",
         website: Optional[str] = None,
         email: Optional[str] = None,
         phone: Optional[str] = None,
@@ -358,19 +360,19 @@ def process_yelp_business(business: dict, category: str) -> Optional[int]:
     try:
         # Extract location information
         location = business.get("location", {})
-        address = ", ".join(
-            [
-                component
-                for component in [
-                    location.get("address1"),
-                    location.get("address2"),
-                    location.get("city"),
-                    location.get("state"),
-                    location.get("zip_code"),
-                ]
-                if component
-            ]
-        )
+        
+        # Task 42: Extract city and state separately
+        city = location.get("city", "")
+        state = location.get("state", "")
+        
+        # Build address without city/state for the address field
+        address_parts = []
+        if location.get("address1"):
+            address_parts.append(location.get("address1"))
+        if location.get("address2"):
+            address_parts.append(location.get("address2"))
+        address = ", ".join(address_parts) if address_parts else ""
+        
         # Extract other information
         name = business.get("name", "")
         zip_code = location.get("zip_code", "")
@@ -382,6 +384,8 @@ def process_yelp_business(business: dict, category: str) -> Optional[int]:
         business_id = save_business(
             name=name,
             address=address,
+            city=city,
+            state=state,
             zip_code=zip_code,
             category=category,
             website=website,
@@ -421,24 +425,48 @@ def process_google_place(
             return None
         # Extract information
         name = details.get("name", "")
-        address = details.get("formatted_address", "")
+        formatted_address = details.get("formatted_address", "")
         website = details.get("website", "")
         phone = details.get("formatted_phone_number", "")
-        # Extract ZIP code from address
+        
+        # Task 42: Parse city, state, and zip from formatted address
+        # Google provides address_components which we can use
+        address_components = details.get("address_components", [])
+        street_number = ""
+        route = ""
+        city = ""
+        state = ""
         zip_code = ""
-        if address:
-            # This is a simplified approach; in a real implementation, you'd use a more robust method
-            address_parts = address.split()
-            for i, part in enumerate(address_parts):
-                if part.isdigit() and len(part) == 5 and i > 0:
-                    zip_code = part
-                    break
+        
+        for component in address_components:
+            types = component.get("types", [])
+            if "street_number" in types:
+                street_number = component.get("long_name", "")
+            elif "route" in types:
+                route = component.get("long_name", "")
+            elif "locality" in types:
+                city = component.get("long_name", "")
+            elif "administrative_area_level_1" in types:
+                state = component.get("short_name", "")
+            elif "postal_code" in types:
+                zip_code = component.get("long_name", "")
+        
+        # Build street address
+        address_parts = []
+        if street_number:
+            address_parts.append(street_number)
+        if route:
+            address_parts.append(route)
+        address = " ".join(address_parts) if address_parts else formatted_address
+        
         # Extract email (in a real implementation, this would involve scraping the website)
         email = extract_email_from_website(website)
         # Save business to database
         business_id = save_business(
             name=name,
             address=address,
+            city=city,
+            state=state,
             zip_code=zip_code,
             category=category,
             website=website,

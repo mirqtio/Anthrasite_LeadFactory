@@ -1,0 +1,25 @@
+[Unit]
+Description=Anthrasite Lead Factory Database Backup
+Documentation=https://github.com/anthrasite/leadfactory
+Wants=leadfactory-backup.timer
+
+[Service]
+Type=oneshot
+User=leadfactory
+Group=leadfactory
+WorkingDirectory=/opt/leadfactory
+Environment=PATH=/opt/leadfactory/.venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/opt/leadfactory/.venv/bin/python -m leadfactory.cli backup create
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits
+MemoryMax=1G
+TimeoutStartSec=3600
+
+# Restart policy
+Restart=no
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

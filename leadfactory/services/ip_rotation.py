@@ -683,6 +683,14 @@ class IPRotationService:
             "recent_rotations": len(self.get_rotation_history(hours_back=1)),
         }
 
+    def get_all_pools(self):
+        """Get all pools (compatibility method for monitoring)."""
+        class PoolWrapper:
+            def __init__(self, pool_list):
+                self.pool = pool_list
+        
+        return [PoolWrapper(self.ip_pool)]
+
     def cleanup_old_history(self, days_to_keep: int = 7) -> int:
         """Clean up old rotation history."""
         cutoff_time = datetime.now() - timedelta(days=days_to_keep)

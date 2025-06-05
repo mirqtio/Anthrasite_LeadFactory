@@ -497,6 +497,47 @@ def save_features(
         return False
 
 
+def mark_business_as_processed(business_id: int, skip_reason: str) -> bool:
+    """Mark a business as processed without sending email.
+    Args:
+        business_id: Business ID.
+        skip_reason: Reason for skipping (e.g., "modern_site").
+    Returns:
+        True if successful, False otherwise.
+    """
+    try:
+        with get_database_connection() as cursor:
+            # Update business status to indicate it was skipped
+            cursor.execute(
+                """
+                UPDATE businesses
+                SET status = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                ("skipped_" + skip_reason, business_id),
+            )
+            # Also insert a minimal features record to prevent re-processing
+            cursor.execute(
+                """
+                INSERT INTO features
+                (business_id, tech_stack, page_speed, screenshot_url, semrush_json)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    business_id,
+                    json.dumps({"skip_reason": skip_reason}),
+                    90,  # High performance score that triggered the skip
+                    None,
+                    None,
+                ),
+            )
+        logger.info(f"Marked business ID {business_id} as processed (reason: {skip_reason})")
+        return True
+    except Exception as e:
+        logger.error(f"Error marking business ID {business_id} as processed: {e}")
+        return False
+
+
 def enrich_business(business: dict) -> bool:
     """Enrich a business with tech stack and performance data.
     Args:
@@ -521,6 +562,22 @@ def enrich_business(business: dict) -> bool:
     performance_data, perf_error = pagespeed_analyzer.analyze_website(website)
     if perf_error:
         logger.warning(f"Error analyzing performance for {website}: {perf_error}")
+    
+    # Task 41: Skip modern sites with high performance scores
+    # Check if site has performance score >= 90 and is mobile responsive
+    performance_score = performance_data.get("performance_score", 0)
+    accessibility_score = performance_data.get("accessibility_score", 0)
+    
+    # Consider a site "modern" if it has high performance and good accessibility (proxy for mobile responsiveness)
+    if performance_score >= 90 and accessibility_score >= 80:
+        logger.info(
+            f"Skipping modern site {website} (performance: {performance_score}, "
+            f"accessibility: {accessibility_score}) - marking as processed"
+        )
+        # Mark business as processed without further enrichment or email
+        mark_business_as_processed(business_id, skip_reason="modern_site")
+        return True
+    
     # Tier-specific enrichment
     screenshot_url = None
     semrush_data = None

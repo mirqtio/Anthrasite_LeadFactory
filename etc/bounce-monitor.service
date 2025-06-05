@@ -1,0 +1,26 @@
+[Unit]
+Description=LeadFactory Bounce Rate Monitor
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=simple
+User=leadfactory
+Group=leadfactory
+WorkingDirectory=/opt/leadfactory
+Environment="PATH=/opt/leadfactory/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/opt/leadfactory"
+ExecStart=/opt/leadfactory/venv/bin/python -m leadfactory.cli monitoring start-bounce-monitor --daemon --interval 300
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/leadfactory/bounce-monitor.log
+StandardError=append:/var/log/leadfactory/bounce-monitor.log
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/leadfactory /opt/leadfactory/data
+
+[Install]
+WantedBy=multi-user.target

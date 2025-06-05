@@ -25,6 +25,26 @@ from leadfactory.cost.budget_decorators import (
 from leadfactory.cost.budget_gate import budget_gate
 from leadfactory.cost.cost_tracking import cost_tracker, track_cost
 
+# Import per-service cost caps
+from leadfactory.cost.per_service_cost_caps import (
+    can_execute_service_operation,
+    get_cost_caps_summary,
+    get_service_cost_status,
+    per_service_cost_caps,
+    ServiceStatus,
+)
+from leadfactory.cost.service_cost_decorators import (
+    ServiceCostCapExceeded,
+    conditional_execution,
+    cost_aware,
+    enforce_service_cost_cap,
+    gpu_cost_cap,
+    openai_cost_cap,
+    screenshot_cost_cap,
+    semrush_cost_cap,
+    track_service_cost,
+)
+
 __all__ = [
     # Core tracking
     "cost_tracker",
@@ -45,4 +65,20 @@ __all__ = [
     "simulate_operation_cost",
     # Legacy budget gate
     "budget_gate",
+    # Per-service cost caps
+    "per_service_cost_caps",
+    "can_execute_service_operation",
+    "get_cost_caps_summary",
+    "get_service_cost_status",
+    "ServiceStatus",
+    # Service cost decorators
+    "enforce_service_cost_cap",
+    "track_service_cost",
+    "cost_aware",
+    "conditional_execution",
+    "openai_cost_cap",
+    "semrush_cost_cap",
+    "screenshot_cost_cap",
+    "gpu_cost_cap",
+    "ServiceCostCapExceeded",
 ]

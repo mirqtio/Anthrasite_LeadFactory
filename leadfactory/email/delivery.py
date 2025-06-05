@@ -157,6 +157,80 @@ class EmailDeliveryService:
             logger.error(f"Failed to send email {email_id}: {str(e)}")
             raise
 
+    def send_email(
+        self,
+        to_email: str,
+        subject: str,
+        content: str,
+        attachments: Optional[List[Dict]] = None,
+        email_id: Optional[str] = None,
+    ) -> Dict[str, any]:
+        """
+        Send a simple email with optional attachments.
+        
+        Args:
+            to_email: Recipient email address
+            subject: Email subject
+            content: Email body content (plain text)
+            attachments: List of attachment dicts with 'content', 'filename', 'content_type'
+            email_id: Optional custom email ID
+            
+        Returns:
+            Dict with success status and message ID
+        """
+        email_id = email_id or str(uuid4())
+        
+        try:
+            # Create basic email
+            from_email = Email("reports@anthrasite.com", "Anthrasite Reports")
+            to = Email(to_email)
+            content_obj = Content("text/plain", content)
+            
+            mail = Mail(from_email, to, subject, content_obj)
+            
+            # Add attachments if provided
+            if attachments:
+                import base64
+                for attachment_data in attachments:
+                    attachment = Attachment()
+                    # Encode content as base64 if it's bytes
+                    content = attachment_data["content"]
+                    if isinstance(content, bytes):
+                        attachment.content = base64.b64encode(content).decode()
+                    else:
+                        attachment.content = content
+                    attachment.filename = attachment_data["filename"]
+                    attachment.type = attachment_data.get("content_type", "application/pdf")
+                    attachment.disposition = "attachment"
+                    mail.add_attachment(attachment)
+            
+            # Configure tracking
+            tracking = TrackingSettings()
+            tracking.click_tracking = ClickTracking(True, True)
+            tracking.open_tracking = OpenTracking(True)
+            tracking.subscription_tracking = SubscriptionTracking(False)
+            mail.tracking_settings = tracking
+            
+            # Send email
+            response = self.client.send(mail)
+            
+            logger.info(f"Email sent successfully to {to_email}, ID: {email_id}")
+            
+            return {
+                "success": True,
+                "message_id": email_id,
+                "email_id": email_id,
+                "status_code": response.status_code,
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to send email to {to_email}: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "email_id": email_id,
+            }
+
     def _prepare_sendgrid_email(
         self,
         template: EmailTemplate,

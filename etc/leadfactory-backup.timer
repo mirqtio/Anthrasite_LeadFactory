@@ -1,0 +1,16 @@
+[Unit]
+Description=Anthrasite Lead Factory Database Backup Timer
+Documentation=https://github.com/anthrasite/leadfactory
+Requires=leadfactory-backup.service
+
+[Timer]
+# Run daily at 2:00 AM
+OnCalendar=daily
+Persistent=true
+AccuracySec=1m
+
+# Start backup service
+Unit=leadfactory-backup.service
+
+[Install]
+WantedBy=timers.target
