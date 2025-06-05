@@ -494,5 +494,6 @@ def cleanup_temp_files(email_context):
             try:
                 if os.path.exists(email_context[path_key]):
                     os.unlink(email_context[path_key])
-            except:
+            except (OSError, FileNotFoundError):
+                # Expected if file doesn't exist or can't be deleted
                 pass

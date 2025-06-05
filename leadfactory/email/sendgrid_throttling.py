@@ -114,7 +114,7 @@ class SendMetrics:
     hourly_counts: dict[int, int] = None  # Hour -> count mapping
     last_send_time: Optional[datetime] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.hourly_counts is None:
             self.hourly_counts = {}
 
@@ -201,7 +201,7 @@ class SendGridThrottler:
         )
 
     @contextmanager
-    def _get_db_connection(self):
+    def _get_db_connection(self) -> sqlite3.Connection:
         """Get database connection with proper error handling."""
         conn = None
         try:
@@ -217,7 +217,7 @@ class SendGridThrottler:
             if conn:
                 conn.close()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize SQLite database tables."""
         with self._get_db_connection() as conn:
             # Email batches queue table
@@ -380,7 +380,7 @@ class SendGridThrottler:
             logger.error(f"Failed to get metrics for {ip_address}: {e}")
             return SendMetrics(date=target_date, ip_address=ip_address)
 
-    def _store_metrics(self, metrics: SendMetrics):
+    def _store_metrics(self, metrics: SendMetrics) -> None:
         """Store send metrics to database."""
         try:
             with self._get_db_connection() as conn:
@@ -587,7 +587,7 @@ class SendGridThrottler:
 
         return None
 
-    def record_send_success(self, batch: EmailBatch, sent_count: int):
+    def record_send_success(self, batch: EmailBatch, sent_count: int) -> None:
         """
         Record successful email sends.
 
@@ -638,7 +638,7 @@ class SendGridThrottler:
                 f"Failed to record send success for batch {batch.batch_id}: {e}"
             )
 
-    def record_send_failure(self, batch: EmailBatch, error: str):
+    def record_send_failure(self, batch: EmailBatch, error: str) -> None:
         """
         Record failed email sends.
 

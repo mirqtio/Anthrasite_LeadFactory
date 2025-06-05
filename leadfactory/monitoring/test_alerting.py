@@ -16,9 +16,9 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from email import encoders
-from email.mime.base import MimeBase
-from email.mime.multipart import MimeMultipart
-from email.mime.text import MimeText
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Any, Callable, Dict, List, Optional
 
 from .test_monitoring import TestMetrics, TestSuiteMetrics, metrics_collector
@@ -412,7 +412,7 @@ class AlertManager:
             logger.warning("Email notification not configured properly")
             return
 
-        msg = MimeMultipart()
+        msg = MIMEMultipart()
         msg["From"] = config["from_email"] or config["username"]
         msg["To"] = ", ".join(config["to_emails"])
         msg["Subject"] = f"Test Alert: {alert.severity.upper()} - {alert.test_name}"
@@ -442,7 +442,7 @@ class AlertManager:
         </html>
         """
 
-        msg.attach(MimeText(html_body, "html"))
+        msg.attach(MIMEText(html_body, "html"))
 
         # Send email
         server = smtplib.SMTP(config["smtp_server"], config["smtp_port"])

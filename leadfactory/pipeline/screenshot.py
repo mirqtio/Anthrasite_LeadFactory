@@ -94,9 +94,15 @@ def generate_business_screenshot(business: dict) -> bool:
 
         import requests
 
+        from leadfactory.cost.service_cost_decorators import enforce_service_cost_cap
+
         try:
-            response = requests.get(api_url, params=params, timeout=30)
-            response.raise_for_status()
+            # Apply cost cap for screenshot API call (estimated $0.001 per screenshot)
+            with enforce_service_cost_cap(
+                "screenshotone", "capture", estimated_cost=0.001
+            ):
+                response = requests.get(api_url, params=params, timeout=30)
+                response.raise_for_status()
 
             # Save the screenshot file
             with open(screenshot_path, "wb") as f:
@@ -146,7 +152,7 @@ def generate_business_screenshot(business: dict) -> bool:
                         font = ImageFont.truetype(
                             "/System/Library/Fonts/Helvetica.ttc", 36
                         )
-                    except:
+                    except (OSError, IOError):
                         font = ImageFont.load_default()
 
                     # Calculate text position

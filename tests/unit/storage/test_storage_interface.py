@@ -134,7 +134,7 @@ except ImportError:
             try:
                 with open(file_path, encoding="utf-8") as f:
                     return f.read()
-            except:
+            except (IOError, FileNotFoundError, UnicodeDecodeError):
                 return ""
 
     class MockPostgresStorage(MockStorageInterface):

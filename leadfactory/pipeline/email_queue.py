@@ -78,8 +78,11 @@ def load_sendgrid_config():
     global SENDGRID_IP_POOL_NAMES, SENDGRID_SUBUSER_NAMES
 
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-    SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "leads@anthrasite.io")
-    SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Anthrasite Web Services")
+    SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL")
+    SENDGRID_FROM_NAME = os.getenv("SENDGRID_FROM_NAME", "Web Services")
+
+    if not SENDGRID_FROM_EMAIL:
+        raise ValueError("SENDGRID_FROM_EMAIL environment variable must be set")
 
     # IP pool configuration
     ip_pool_names = os.getenv("SENDGRID_IP_POOL_NAMES", "primary,secondary,tertiary")
@@ -583,7 +586,10 @@ def get_businesses_for_email(
                 parser = SimplifiedYamlParser()
                 config = parser.load_and_validate()
                 threshold = config.settings.audit_threshold
-            except:
+            except (ImportError, AttributeError, KeyError, FileNotFoundError) as e:
+                logger.warning(
+                    f"Failed to load audit threshold from config: {e}, using default"
+                )
                 threshold = 60  # Default
 
             if meets_audit_threshold(score):

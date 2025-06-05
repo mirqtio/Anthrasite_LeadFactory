@@ -148,10 +148,10 @@ class PipelineError:
     @staticmethod
     def _determine_category(exception: Exception) -> ErrorCategory:
         """Determine error category based on exception type."""
-        if isinstance(exception, (ConnectionError, OSError)):
-            return ErrorCategory.NETWORK
-        elif isinstance(exception, TimeoutError):
+        if isinstance(exception, TimeoutError):
             return ErrorCategory.TIMEOUT
+        elif isinstance(exception, (ConnectionError, OSError)):
+            return ErrorCategory.NETWORK
         elif isinstance(exception, (ValueError, TypeError)):
             return ErrorCategory.VALIDATION
         elif isinstance(exception, PermissionError):
@@ -170,6 +170,12 @@ class PipelineError:
             return RetryStrategy.NONE
         else:
             return RetryStrategy.LINEAR_BACKOFF
+
+    @staticmethod
+    def _is_recoverable(exception: Exception) -> bool:
+        """Determine if an error is recoverable based on exception type."""
+        non_recoverable_errors = (SystemExit, KeyboardInterrupt)
+        return not isinstance(exception, non_recoverable_errors)
 
 
 @dataclass

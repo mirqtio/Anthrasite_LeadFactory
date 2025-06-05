@@ -22,6 +22,12 @@ from flask import Flask, Response, jsonify, request, send_file
 from flask_cors import CORS
 
 from leadfactory.api.cache import get_cache
+from leadfactory.api.input_validation import (
+    rate_limit,
+    sanitize_string,
+    validate_log_type,
+    validate_request_args,
+)
 from leadfactory.storage import get_storage
 from leadfactory.utils.logging import get_logger
 
@@ -76,7 +82,7 @@ class LogsAPI:
         if app:
             self.init_app(app)
 
-    def init_app(self, app: Flask):
+    def init_app(self, app: Flask) -> None:
         """Initialize Flask app with API routes."""
         CORS(app)
 
@@ -182,6 +188,7 @@ class LogsAPI:
             logger.error(f"Error retrieving log detail {log_id}: {e}")
             return jsonify({"error": "Internal server error"}), 500
 
+    @rate_limit(max_requests=100, window_seconds=60)
     def search_logs(self) -> Response:
         """
         Advanced search across log content with filters.
@@ -210,21 +217,26 @@ class LogsAPI:
             if not data:
                 return jsonify({"error": "JSON payload required"}), 400
 
-            # Parse search parameters
-            search_query = data.get("query", "")
+            # Parse and sanitize search parameters
+            search_query = sanitize_string(data.get("query", ""))
             filter_data = data.get("filters", {})
             pagination = data.get("pagination", {})
             sort_data = data.get("sort", {})
 
+            # Validate log type if provided
+            log_type = filter_data.get("log_type")
+            if log_type and not validate_log_type(log_type):
+                return jsonify({"error": f"Invalid log_type: {log_type}"}), 400
+
             # Build search filters
             filters = LogSearchFilters(
                 business_id=filter_data.get("business_id"),
-                log_type=filter_data.get("log_type"),
+                log_type=log_type,
                 start_date=self._parse_datetime(filter_data.get("start_date")),
                 end_date=self._parse_datetime(filter_data.get("end_date")),
                 search_query=search_query if search_query else None,
                 limit=min(pagination.get("limit", 50), 1000),
-                offset=pagination.get("offset", 0),
+                offset=max(pagination.get("offset", 0), 0),  # Ensure non-negative
                 sort_by=sort_data.get("by", "timestamp"),
                 sort_order=sort_data.get("order", "desc"),
             )
@@ -504,7 +516,7 @@ class LogsAPI:
 
     def _format_log_entry(
         self, log: LogEntry, include_full_content: bool = False
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Format log entry for API response."""
         formatted = {
             "id": log.id,
@@ -934,14 +946,14 @@ def create_logs_app() -> Flask:
     LogsAPI(app)
 
     @app.route("/api/health")
-    def health_check():
+    def health_check() -> Response:
         """Health check endpoint."""
         return jsonify(
             {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
         )
 
     @app.route("/")
-    def index():
+    def index() -> Response:
         """Root endpoint."""
         return jsonify(
             {

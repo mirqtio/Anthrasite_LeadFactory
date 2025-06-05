@@ -10,8 +10,10 @@ import os
 import re
 import sqlite3
 import sys
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 # Add project root to path so we can import properly
 project_root = str(Path(__file__).resolve().parent.parent.parent)
@@ -20,6 +22,15 @@ sys.path.insert(0, project_root)
 # Set up logging for import diagnostics
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class DedupeDecision(Enum):
+    """Decisions for handling duplicates."""
+
+    KEEP_FIRST = "keep_first"
+    KEEP_SECOND = "keep_second"
+    MERGE = "merge"
+    KEEP_BOTH = "keep_both"
 
 
 # Define the DatabaseConnection class that's required by tests
@@ -287,6 +298,284 @@ def deduplicate(
             merged_count += 1
 
     return merged_count
+
+
+def calculate_similarity_score(
+    business1: Dict[str, Any], business2: Dict[str, Any]
+) -> float:
+    """
+    Calculate similarity score between two businesses.
+
+    Args:
+        business1: First business record
+        business2: Second business record
+
+    Returns:
+        Similarity score between 0 and 1
+    """
+    score = 0.0
+    weights = {"name": 0.4, "phone": 0.3, "address": 0.2, "website": 0.1}
+
+    for field, weight in weights.items():
+        val1 = str(business1.get(field, "")).lower().strip()
+        val2 = str(business2.get(field, "")).lower().strip()
+
+        if val1 and val2:
+            # Simple string similarity
+            if val1 == val2:
+                score += weight
+            elif len(val1) > 3 and len(val2) > 3:
+                # Partial match for longer strings
+                shorter = min(val1, val2, key=len)
+                longer = max(val1, val2, key=len)
+                if shorter in longer:
+                    score += weight * 0.8
+                elif any(word in longer for word in shorter.split() if len(word) > 3):
+                    score += weight * 0.5
+
+    return score
+
+
+def merge_business_data(
+    business1: Dict[str, Any], business2: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Merge two business records, preserving the most complete data.
+
+    Args:
+        business1: First business record
+        business2: Second business record
+
+    Returns:
+        Merged business record
+    """
+    merged = business1.copy()
+
+    for key, value in business2.items():
+        if key == "id":
+            # Keep the first ID
+            continue
+        elif key == "score":
+            # Keep higher score
+            if value and value > merged.get(key, 0):
+                merged[key] = value
+        elif key == "name":
+            # Keep longer name (usually more complete)
+            if value and len(str(value)) > len(str(merged.get(key, ""))):
+                merged[key] = value
+        elif key not in merged or not merged[key]:
+            # Fill in missing fields
+            if value:
+                merged[key] = value
+        elif not value:
+            # Keep existing non-empty value
+            continue
+        else:
+            # Both have values - keep the more recent or complete one
+            # For now, keep existing (from business1)
+            pass
+
+    return merged
+
+
+def make_dedupe_decision(
+    business1: Dict[str, Any], business2: Dict[str, Any], strategy: str = "keep_older"
+) -> DedupeDecision:
+    """
+    Decide how to handle duplicate businesses.
+
+    Args:
+        business1: First business record
+        business2: Second business record
+        strategy: Deduplication strategy
+
+    Returns:
+        Deduplication decision
+    """
+    if strategy == "merge":
+        return DedupeDecision.MERGE
+    elif strategy == "keep_both":
+        return DedupeDecision.KEEP_BOTH
+    elif strategy == "keep_newer":
+        date1 = business1.get("created_at", "")
+        date2 = business2.get("created_at", "")
+        if date2 > date1:
+            return DedupeDecision.KEEP_SECOND
+        else:
+            return DedupeDecision.KEEP_FIRST
+    elif strategy == "keep_complete":
+        # Count non-empty fields
+        count1 = sum(1 for v in business1.values() if v)
+        count2 = sum(1 for v in business2.values() if v)
+        if count2 > count1:
+            return DedupeDecision.KEEP_SECOND
+        else:
+            return DedupeDecision.KEEP_FIRST
+    else:  # keep_older (default)
+        date1 = business1.get("created_at", "")
+        date2 = business2.get("created_at", "")
+        if date1 <= date2:
+            return DedupeDecision.KEEP_FIRST
+        else:
+            return DedupeDecision.KEEP_SECOND
+
+
+class DuplicateDetector:
+    """Detects duplicate businesses based on similarity."""
+
+    def __init__(self, similarity_threshold: float = 0.8):
+        """
+        Initialize duplicate detector.
+
+        Args:
+            similarity_threshold: Minimum similarity score to consider duplicates
+        """
+        self.similarity_threshold = similarity_threshold
+
+    def find_duplicates(self, businesses: List[Dict[str, Any]]) -> List[List[int]]:
+        """
+        Find groups of duplicate businesses.
+
+        Args:
+            businesses: List of business records
+
+        Returns:
+            List of duplicate groups (each group is a list of business IDs)
+        """
+        if not businesses:
+            return []
+
+        # Build similarity matrix
+        n = len(businesses)
+        duplicates = []
+        processed = set()
+
+        for i in range(n):
+            if i in processed:
+                continue
+
+            group = [businesses[i]["id"]]
+            processed.add(i)
+
+            for j in range(i + 1, n):
+                if j in processed:
+                    continue
+
+                score = calculate_similarity_score(businesses[i], businesses[j])
+                if score >= self.similarity_threshold:
+                    group.append(businesses[j]["id"])
+                    processed.add(j)
+
+            if len(group) > 1:
+                duplicates.append(group)
+
+        return duplicates
+
+
+def find_duplicates(
+    businesses: List[Dict[str, Any]], threshold: float = 0.8
+) -> List[List[int]]:
+    """
+    Find duplicate businesses.
+
+    Args:
+        businesses: List of business records
+        threshold: Similarity threshold
+
+    Returns:
+        List of duplicate groups
+    """
+    detector = DuplicateDetector(threshold)
+    return detector.find_duplicates(businesses)
+
+
+def deduplicate_businesses(
+    businesses: List[Dict[str, Any]],
+    strategy: str = "keep_older",
+    merge_data: bool = False,
+    similarity_threshold: float = 0.8,
+) -> List[Dict[str, Any]]:
+    """
+    Remove duplicate businesses from a list.
+
+    Args:
+        businesses: List of business records
+        strategy: How to handle duplicates
+        merge_data: Whether to merge data from duplicates
+        similarity_threshold: Minimum similarity to consider duplicates
+
+    Returns:
+        Deduplicated list of businesses
+    """
+    if not businesses:
+        return []
+
+    # Find duplicates
+    detector = DuplicateDetector(similarity_threshold)
+    duplicate_groups = detector.find_duplicates(businesses)
+
+    if not duplicate_groups:
+        return businesses
+
+    # Create a mapping of business ID to business
+    business_map = {b["id"]: b for b in businesses}
+
+    # Track which businesses to keep and which to remove
+    to_remove = set()
+    to_update = {}
+
+    # Get storage for marking duplicates
+    storage = None
+    try:
+        from leadfactory.storage import get_storage
+
+        storage = get_storage()
+    except Exception as e:
+        logger.error(f"Failed to get storage: {e}")
+
+    # Process each duplicate group
+    for group in duplicate_groups:
+        # Get business records for this group
+        group_businesses = [business_map[bid] for bid in group]
+
+        # Sort by creation date (oldest first)
+        group_businesses.sort(key=lambda b: b.get("created_at", ""))
+
+        # Decide which to keep
+        keeper = group_businesses[0]  # Default to oldest
+
+        if merge_data:
+            # Merge all duplicates into the keeper
+            for dup in group_businesses[1:]:
+                keeper = merge_business_data(keeper, dup)
+            to_update[keeper["id"]] = keeper
+
+        # Mark others as duplicates
+        for dup in group_businesses[1:]:
+            to_remove.add(dup["id"])
+
+            # Mark in database if storage available
+            if storage:
+                try:
+                    storage.mark_as_duplicate(dup["id"], keeper["id"])
+                except Exception as e:
+                    logger.error(f"Failed to mark duplicate {dup['id']}: {e}")
+
+    # Build deduplicated list
+    result = []
+    for business in businesses:
+        if business["id"] not in to_remove:
+            # Use updated version if available
+            if business["id"] in to_update:
+                result.append(to_update[business["id"]])
+            else:
+                result.append(business)
+
+    logger.info(
+        f"Deduplicated {len(businesses)} businesses to {len(result)} unique records"
+    )
+
+    return result
 
 
 def main():

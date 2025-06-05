@@ -84,7 +84,7 @@ class PipelineDAG:
         )
         self._setup_default_dependencies()
 
-    def _setup_default_dependencies(self):
+    def _setup_default_dependencies(self) -> None:
         """Set up the default pipeline dependencies."""
         # Define the standard pipeline flow
         default_deps = [
@@ -145,12 +145,14 @@ class PipelineDAG:
         for dep in default_deps:
             self.add_dependency(dep)
 
-    def add_dependency(self, dependency: StageDependency):
+    def add_dependency(self, dependency: StageDependency) -> None:
         """Add a dependency to the DAG."""
         self.dependencies[dependency.to_stage].append(dependency)
         self.reverse_dependencies[dependency.from_stage].append(dependency)
 
-    def remove_dependency(self, from_stage: PipelineStage, to_stage: PipelineStage):
+    def remove_dependency(
+        self, from_stage: PipelineStage, to_stage: PipelineStage
+    ) -> None:
         """Remove a dependency from the DAG."""
         self.dependencies[to_stage] = [
             dep for dep in self.dependencies[to_stage] if dep.from_stage != from_stage
@@ -174,7 +176,7 @@ class PipelineDAG:
         available_stages: Optional[set[PipelineStage]] = None,
         node_type: Optional[NodeType] = None,
         budget_cents: Optional[float] = None,
-    ) -> list[PipelineStage]:
+    ) -> List[PipelineStage]:
         """
         Perform topological sorting on the DAG.
 

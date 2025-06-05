@@ -52,8 +52,8 @@ SEMRUSH_API_KEY = get_env("SEMRUSH_KEY")
 
 # Email configuration
 SENDGRID_API_KEY = get_env("SENDGRID_KEY")
-SENDGRID_FROM_EMAIL = get_env("SENDGRID_FROM_EMAIL", "outreach@anthrasite.io")
-SENDGRID_FROM_NAME = get_env("SENDGRID_FROM_NAME", "Anthrasite Lead Factory")
+SENDGRID_FROM_EMAIL = get_env("SENDGRID_FROM_EMAIL")
+SENDGRID_FROM_NAME = get_env("SENDGRID_FROM_NAME", "Lead Factory")
 SENDGRID_SHARED_IP_POOL = get_env("SENDGRID_SHARED_IP_POOL", "shared")
 SENDGRID_DEDICATED_IP_POOL = get_env("SENDGRID_DEDICATED_IP_POOL", "dedicated")
 

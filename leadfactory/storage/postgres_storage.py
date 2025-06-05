@@ -866,6 +866,7 @@ class PostgresStorage(StorageInterface):
         try:
             with self.cursor() as cursor:
                 # Build the query - join with assets table to get mockup URLs and stage_results for score
+                # Also exclude modern sites by checking processing_status
                 query = """
                 SELECT b.id, b.name, b.email, b.phone, b.address, b.city, b.state, b.zip,
                        b.website, a.url as mockup_url, '' as contact_name,
@@ -874,10 +875,13 @@ class PostgresStorage(StorageInterface):
                 LEFT JOIN emails e ON b.id = e.business_id
                 LEFT JOIN assets a ON b.id = a.business_id AND a.asset_type = 'mockup'
                 LEFT JOIN stage_results sr ON b.id = sr.business_id AND sr.stage = 'score'
+                LEFT JOIN processing_status ps ON b.id = ps.business_id AND ps.stage = 'enrich'
                 WHERE b.email IS NOT NULL
                   AND b.email != ''
                   AND a.url IS NOT NULL
                   AND a.url != ''
+                  -- Exclude modern sites (PageSpeed >= 90)
+                  AND (ps.skip_reason IS NULL OR ps.skip_reason != 'modern_site')
                 """
 
                 # Add filters

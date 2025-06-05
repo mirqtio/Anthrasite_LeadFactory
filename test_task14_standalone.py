@@ -354,7 +354,7 @@ def test_task_requirements_coverage():
                                 if component in f.read():
                                     found = True
                                     break
-                        except:
+                        except (FileNotFoundError, IOError, UnicodeDecodeError):
                             continue
 
                 if not found:

@@ -12,6 +12,14 @@ import time
 from dataclasses import asdict
 from typing import Any, Dict, List, Optional, Union
 
+from leadfactory.cost.per_service_cost_caps import (
+    can_execute_service_operation,
+)
+from leadfactory.cost.service_cost_decorators import (
+    ServiceCostCapExceeded,
+    enforce_service_cost_cap,
+)
+
 from .config import FallbackStrategy, LLMConfig
 from .exceptions import (
     AllProvidersFailedError,
@@ -237,6 +245,34 @@ class LLMClient:
         # All providers failed
         raise AllProvidersFailedError(provider_errors)
 
+    def _estimate_cost(self, provider: str, model: str, max_tokens: int) -> float:
+        """Estimate cost for a request based on provider, model, and tokens."""
+        # Cost per 1K tokens (approximate)
+        cost_per_1k = {
+            "openai": {
+                "gpt-4": 0.03,
+                "gpt-4-turbo": 0.01,
+                "gpt-4o": 0.015,
+                "gpt-3.5-turbo": 0.002,
+            },
+            "anthropic": {
+                "claude-3-opus": 0.015,
+                "claude-3-sonnet": 0.003,
+                "claude-3-haiku": 0.0004,
+            },
+        }
+
+        provider_costs = cost_per_1k.get(provider, {})
+        model_cost = provider_costs.get(model, 0.01)  # Default to $0.01 per 1K tokens
+
+        return (max_tokens / 1000) * model_cost
+
+    def _calculate_actual_cost(
+        self, provider: str, model: str, total_tokens: int
+    ) -> float:
+        """Calculate actual cost based on token usage."""
+        return self._estimate_cost(provider, model, total_tokens)
+
     def _make_request(
         self,
         provider_name: str,
@@ -273,6 +309,15 @@ class LLMClient:
         """Make OpenAI API request."""
         client = self._provider_clients["openai"]
 
+        # Estimate cost based on model and tokens
+        estimated_cost = self._estimate_cost("openai", model, max_tokens)
+
+        # Check if we can execute the operation
+        if not can_execute_service_operation("openai", model, estimated_cost):
+            raise ServiceCostCapExceeded(
+                f"OpenAI daily cost cap would be exceeded. Estimated cost: ${estimated_cost:.4f}"
+            )
+
         response = client.chat.completions.create(
             model=model,
             messages=messages,
@@ -280,6 +325,13 @@ class LLMClient:
             max_tokens=max_tokens,
             **kwargs,
         )
+
+        # Record actual cost based on usage
+        if response.usage:
+            actual_cost = self._calculate_actual_cost(
+                "openai", model, response.usage.total_tokens
+            )
+            # Cost tracking is handled by the cost_tracker module automatically
 
         return {
             "provider": "openai",

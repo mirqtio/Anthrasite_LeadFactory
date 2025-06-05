@@ -133,8 +133,15 @@ class EmailDeliveryService:
             # Prepare SendGrid email
             mail = self._prepare_sendgrid_email(template, personalization, email_id)
 
-            # Send email
-            response = self.client.send(mail)
+            # Send email with cost tracking
+            from leadfactory.cost.service_cost_decorators import (
+                enforce_service_cost_cap,
+            )
+
+            with enforce_service_cost_cap(
+                "sendgrid", "send_email", estimated_cost=0.0001
+            ):
+                response = self.client.send(mail)
 
             if response.status_code in [200, 202]:
                 # Update status to sent
@@ -215,8 +222,15 @@ class EmailDeliveryService:
             tracking.subscription_tracking = SubscriptionTracking(False)
             mail.tracking_settings = tracking
 
-            # Send email
-            response = self.client.send(mail)
+            # Send email with cost tracking
+            from leadfactory.cost.service_cost_decorators import (
+                enforce_service_cost_cap,
+            )
+
+            with enforce_service_cost_cap(
+                "sendgrid", "send_email", estimated_cost=0.0001
+            ):
+                response = self.client.send(mail)
 
             logger.info(f"Email sent successfully to {to_email}, ID: {email_id}")
 

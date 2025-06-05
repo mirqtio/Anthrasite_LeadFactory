@@ -53,13 +53,50 @@ def save_features(
         True if successful
     """
     skip_reason = kwargs.get("skip_reason")
-    if skip_reason:
-        logger.info(
-            f"Saving features for business {business_id} with skip_reason: {skip_reason}"
-        )
-    else:
-        logger.info(f"Saving features for business {business_id} (stub implementation)")
-    return True
+
+    # Save to storage
+    from leadfactory.storage.factory import get_storage
+
+    storage = get_storage()
+
+    try:
+        # Save the enrichment results
+        results = {
+            "tech_stack": tech_stack or {},
+            "page_speed": page_speed or {},
+            "screenshot_url": screenshot_url,
+            "semrush_json": semrush_json or {},
+        }
+
+        # Update processing status
+        if skip_reason:
+            # Mark as skipped with reason
+            storage.update_processing_status(
+                business_id=business_id,
+                stage="enrich",
+                status="skipped",
+                metadata=results,
+                skip_reason=skip_reason,
+            )
+            logger.info(
+                f"Business {business_id} marked as skipped: {skip_reason}",
+                extra={"business_id": business_id, "skip_reason": skip_reason},
+            )
+        else:
+            # Mark as completed
+            storage.update_processing_status(
+                business_id=business_id,
+                stage="enrich",
+                status="completed",
+                metadata=results,
+            )
+            logger.info(f"Saved enrichment features for business {business_id}")
+
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to save features for business {business_id}: {e}")
+        return False
 
 
 def validate_enrichment_dependencies(business: dict[str, Any]) -> dict[str, Any]:

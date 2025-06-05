@@ -52,7 +52,11 @@ class SecureLinkGenerator:
 
     def _get_default_config(self) -> SecureLinkConfig:
         """Get default configuration from settings."""
-        secret_key = get_env("SECRET_KEY", "dev-secret-key-change-in-production")
+        secret_key = get_env("SECRET_KEY")
+        if not secret_key:
+            raise ValueError(
+                "SECRET_KEY environment variable must be set for secure link generation"
+            )
         return SecureLinkConfig(
             secret_key=secret_key, default_expiry_days=7, max_expiry_days=30
         )

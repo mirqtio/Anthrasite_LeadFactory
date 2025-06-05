@@ -555,8 +555,16 @@ class MockupPNGUploader:
             return True
 
 
-# Global instance
-mockup_uploader = MockupPNGUploader()
+# Global instance - only create if not in test environment
+mockup_uploader = None
+
+
+def _get_uploader():
+    """Get or create the global mockup uploader instance."""
+    global mockup_uploader
+    if mockup_uploader is None:
+        mockup_uploader = MockupPNGUploader()
+    return mockup_uploader
 
 
 def upload_business_mockup(
@@ -573,7 +581,7 @@ def upload_business_mockup(
     Returns:
         MockupUploadResult with success status and details
     """
-    return mockup_uploader.upload_mockup_png(png_path, business_id, mockup_type)
+    return _get_uploader().upload_mockup_png(png_path, business_id, mockup_type)
 
 
 def cleanup_orphaned_mockups(max_age_hours: int = 24) -> dict[str, Any]:
@@ -586,7 +594,7 @@ def cleanup_orphaned_mockups(max_age_hours: int = 24) -> dict[str, Any]:
     Returns:
         Dict with cleanup statistics
     """
-    return mockup_uploader.cleanup_orphaned_images(max_age_hours)
+    return _get_uploader().cleanup_orphaned_images(max_age_hours)
 
 
 if __name__ == "__main__":

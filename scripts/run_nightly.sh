@@ -212,5 +212,19 @@ if [ "$DRY_RUN" = "false" ] || [ "$CHECK_SUPABASE" = "true" ]; then
   python scripts/monitor_supabase_usage.py --alert-threshold 80
 fi
 
+# Step 9: Database backup (only after successful completion)
+log "Step 9: Performing database backup"
+if [ "$DRY_RUN" = "false" ]; then
+  # Use the existing backup script
+  if [ -f scripts/backup_postgres.sh ]; then
+    log "Running PostgreSQL backup script"
+    ./scripts/backup_postgres.sh || log "Warning: Database backup failed but continuing"
+  else
+    log "Warning: Database backup script not found at scripts/backup_postgres.sh"
+  fi
+else
+  log "Dry run: Skipping database backup"
+fi
+
 log "Nightly batch processing completed successfully at $(date)"
 exit 0
