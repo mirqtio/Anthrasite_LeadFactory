@@ -35,7 +35,7 @@ class CheckoutRequest(BaseModel):
     customer_name: str
     audit_type: str
     amount: int  # Amount in cents
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[dict[str, Any]] = None
 
 
 class PaymentStatusResponse(BaseModel):

@@ -405,15 +405,12 @@ class TestMockupPNGUploadEndToEnd:
 
 if __name__ == "__main__":
     # Run a simple test
-    print("Running basic mockup PNG upload tests...")
 
     # Create a simple test image
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
         test_image = Image.new("RGBA", (400, 300), (0, 0, 255, 128))
         test_image.save(tmp_file.name, "PNG")
 
-        print(f"Created test image: {tmp_file.name}")
-        print("✅ Test image creation successful")
 
         # Test basic functionality (would need real config for full test)
         try:
@@ -430,11 +427,9 @@ if __name__ == "__main__":
                 file_size_bytes=1024,
             )
 
-            print("✅ Metadata creation successful")
-            print("✅ MockupPNGUploader implementation validated")
 
-        except Exception as e:
-            print(f"❌ Error testing implementation: {e}")
+        except Exception:
+            pass
 
         finally:
             # Cleanup

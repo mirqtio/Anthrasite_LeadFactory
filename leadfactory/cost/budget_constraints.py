@@ -25,7 +25,7 @@ class CostEstimate:
     operation: str
     estimated_cost: float
     confidence: float  # 0.0 to 1.0
-    details: Optional[Dict[str, Any]] = None
+    details: Optional[dict[str, Any]] = None
 
 
 @dataclass
@@ -77,7 +77,7 @@ class BudgetConstraints:
             logger.warning("Cost tracker not available, using mock")
             return None
 
-    def _load_budget_limits(self) -> Dict[str, BudgetLimit]:
+    def _load_budget_limits(self) -> dict[str, BudgetLimit]:
         """Load budget limits from environment variables."""
         return {
             "daily": BudgetLimit(
@@ -104,7 +104,7 @@ class BudgetConstraints:
             ),
         }
 
-    def _initialize_cost_models(self) -> Dict[str, Dict[str, float]]:
+    def _initialize_cost_models(self) -> dict[str, dict[str, float]]:
         """Initialize cost estimation models for different services."""
         return {
             "openai": {
@@ -130,7 +130,7 @@ class BudgetConstraints:
         }
 
     def estimate_operation_cost(
-        self, service: str, operation: str, parameters: Optional[Dict[str, Any]] = None
+        self, service: str, operation: str, parameters: Optional[dict[str, Any]] = None
     ) -> CostEstimate:
         """Estimate the cost of an operation before execution."""
         if service not in self.cost_models:
@@ -171,7 +171,7 @@ class BudgetConstraints:
         )
 
     def _scale_cost_by_parameters(
-        self, base_cost: float, service: str, operation: str, parameters: Dict[str, Any]
+        self, base_cost: float, service: str, operation: str, parameters: dict[str, Any]
     ) -> float:
         """Scale base cost based on operation parameters."""
         if service == "openai":
@@ -232,9 +232,9 @@ class BudgetConstraints:
         self,
         service: str,
         operation: str,
-        parameters: Optional[Dict[str, Any]] = None,
-        check_periods: List[str] = None,
-    ) -> Tuple[bool, str, List[CostEstimate]]:
+        parameters: Optional[dict[str, Any]] = None,
+        check_periods: list[str] = None,
+    ) -> tuple[bool, str, list[CostEstimate]]:
         """
         Check if an operation can be executed within budget constraints.
 
@@ -277,8 +277,8 @@ class BudgetConstraints:
         return (True, "Operation within budget constraints", [cost_estimate])
 
     def simulate_pipeline_costs(
-        self, operations: List[Tuple[str, str, Optional[Dict[str, Any]]]]
-    ) -> Dict[str, Any]:
+        self, operations: list[tuple[str, str, Optional[dict[str, Any]]]]
+    ) -> dict[str, Any]:
         """
         Simulate the total cost of a pipeline execution.
 
@@ -321,7 +321,7 @@ class BudgetConstraints:
             "can_execute": daily_remaining_after >= 0 and monthly_remaining_after >= 0,
         }
 
-    def get_budget_report(self) -> Dict[str, Any]:
+    def get_budget_report(self) -> dict[str, Any]:
         """Generate a comprehensive budget report."""
         daily_status = self.get_budget_status("daily")
         monthly_status = self.get_budget_status("monthly")
@@ -362,8 +362,8 @@ budget_constraints = BudgetConstraints()
 
 
 def budget_check(
-    service: str, operation: str, parameters: Optional[Dict[str, Any]] = None
-) -> Tuple[bool, str]:
+    service: str, operation: str, parameters: Optional[dict[str, Any]] = None
+) -> tuple[bool, str]:
     """
     Convenience function to check if an operation can be executed.
 
@@ -377,7 +377,7 @@ def budget_check(
 
 
 def estimate_cost(
-    service: str, operation: str, parameters: Optional[Dict[str, Any]] = None
+    service: str, operation: str, parameters: Optional[dict[str, Any]] = None
 ) -> float:
     """
     Convenience function to estimate operation cost.
@@ -391,7 +391,7 @@ def estimate_cost(
     return estimate.estimated_cost
 
 
-def get_budget_summary() -> Dict[str, Any]:
+def get_budget_summary() -> dict[str, Any]:
     """
     Convenience function to get budget summary.
 

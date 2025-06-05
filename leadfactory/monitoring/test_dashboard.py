@@ -489,7 +489,6 @@ with open(os.path.join(template_dir, "test_dashboard.html"), "w") as f:
 
 def run_dashboard(host="localhost", port=5000, debug=False):
     """Run the dashboard web server."""
-    print(f"Starting Test Monitoring Dashboard at http://{host}:{port}")
     app.run(host=host, port=port, debug=debug)
 
 

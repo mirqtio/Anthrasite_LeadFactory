@@ -212,7 +212,7 @@ class BudgetConstraintError(Exception):
 def enforce_budget_constraint(
     service: str,
     operation: str,
-    parameters: Optional[Dict[str, Any]] = None,
+    parameters: Optional[dict[str, Any]] = None,
     raise_on_violation: bool = True,
 ) -> bool:
     """
@@ -247,7 +247,7 @@ def enforce_budget_constraint(
 
 
 def simulate_operation_cost(
-    service: str, operation: str, parameters: Optional[Dict[str, Any]] = None
+    service: str, operation: str, parameters: Optional[dict[str, Any]] = None
 ) -> float:
     """
     Simulate the cost of an operation without executing it.

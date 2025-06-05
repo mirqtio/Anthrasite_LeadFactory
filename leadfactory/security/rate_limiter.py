@@ -61,15 +61,15 @@ class PDFRateLimiter:
     def __init__(self):
         """Initialize the PDF rate limiter."""
         self._configs = self._initialize_default_configs()
-        self._user_requests: Dict[str, Dict[RateLimitType, deque]] = defaultdict(
+        self._user_requests: dict[str, dict[RateLimitType, deque]] = defaultdict(
             lambda: defaultdict(deque)
         )
-        self._user_violations: Dict[str, Dict[RateLimitType, int]] = defaultdict(
+        self._user_violations: dict[str, dict[RateLimitType, int]] = defaultdict(
             lambda: defaultdict(int)
         )
         self._lock = threading.RLock()
 
-    def _initialize_default_configs(self) -> Dict[RateLimitType, RateLimitConfig]:
+    def _initialize_default_configs(self) -> dict[RateLimitType, RateLimitConfig]:
         """Initialize default rate limit configurations."""
         return {
             RateLimitType.PDF_GENERATION: RateLimitConfig(
@@ -263,7 +263,7 @@ class PDFRateLimiter:
             },
         )
 
-    def get_user_stats(self, user_id: str) -> Dict:
+    def get_user_stats(self, user_id: str) -> dict:
         """Get rate limiting statistics for a user."""
         with self._lock:
             stats = {}

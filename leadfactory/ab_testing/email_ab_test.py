@@ -42,7 +42,7 @@ class EmailVariant:
     sender_email: Optional[str] = None
     cta_text: Optional[str] = None
     cta_style: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[dict[str, Any]] = None
 
 
 class EmailABTest:
@@ -62,10 +62,10 @@ class EmailABTest:
         self,
         name: str,
         description: str,
-        subject_variants: List[Dict[str, Any]],
+        subject_variants: list[dict[str, Any]],
         target_sample_size: int = 1000,
         email_template: str = "report_delivery",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Create a subject line A/B test.
 
@@ -139,9 +139,9 @@ class EmailABTest:
         self,
         name: str,
         description: str,
-        content_variants: List[Dict[str, Any]],
+        content_variants: list[dict[str, Any]],
         target_sample_size: int = 1000,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Create an email content A/B test.
 
@@ -194,10 +194,10 @@ class EmailABTest:
         self,
         name: str,
         description: str,
-        cta_variants: List[Dict[str, Any]],
+        cta_variants: list[dict[str, Any]],
         target_sample_size: int = 1000,
         email_template: str = "report_delivery",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Create a CTA button A/B test.
 
@@ -259,7 +259,7 @@ class EmailABTest:
         user_email: str,
         test_id: Optional[str] = None,
         email_type: str = "report_delivery",
-    ) -> Tuple[str, Dict[str, Any]]:
+    ) -> tuple[str, dict[str, Any]]:
         """Get the email variant assigned to a user.
 
         Args:
@@ -317,7 +317,7 @@ class EmailABTest:
         personalization: EmailPersonalization,
         test_id: Optional[str] = None,
         email_type: str = "report_delivery",
-    ) -> Tuple[str, Dict[str, Any]]:
+    ) -> tuple[str, dict[str, Any]]:
         """Generate personalized email using A/B test variant.
 
         Args:
@@ -405,7 +405,7 @@ class EmailABTest:
         test_id: str,
         user_id: str,
         event_type: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ):
         """Record an email-related event for A/B testing.
 
@@ -426,7 +426,7 @@ class EmailABTest:
             f"Recorded email event {event_type} for user {user_id} in test {test_id}"
         )
 
-    def get_email_test_performance(self, test_id: str) -> Dict[str, Any]:
+    def get_email_test_performance(self, test_id: str) -> dict[str, Any]:
         """Get detailed performance metrics for an email A/B test.
 
         Args:

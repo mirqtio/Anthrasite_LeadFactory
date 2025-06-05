@@ -110,8 +110,8 @@ class SendGridWarmupIntegration:
         self.config = config or WarmupIntegrationConfig()
 
         # Track integration state
-        self.monitored_ips: Dict[str, datetime] = {}
-        self.integration_events: List[Dict] = []
+        self.monitored_ips: dict[str, datetime] = {}
+        self.integration_events: list[dict] = []
 
         logger.info(
             f"Warmup integration initialized with mode: {self._get_integration_mode()}"
@@ -182,7 +182,7 @@ class SendGridWarmupIntegration:
         self,
         ip_address: str,
         subuser: str = "default",
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, Optional[str]]:
         """
         Check bounce thresholds with warmup-aware logic.
 
@@ -311,7 +311,7 @@ class SendGridWarmupIntegration:
         self,
         exclude_ip: str = None,
         require_warmup_complete: bool = None,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get IPs available for rotation, considering warmup status.
 
@@ -353,7 +353,7 @@ class SendGridWarmupIntegration:
         self,
         ip_address: str,
         subuser: str = "default",
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, Optional[str]]:
         """
         Determine if an IP should be rotated based on integrated logic.
 
@@ -389,7 +389,7 @@ class SendGridWarmupIntegration:
         self,
         event_type: str,
         ip_address: str,
-        details: Dict = None,
+        details: dict = None,
     ):
         """Log an integration event."""
         event = {
@@ -404,7 +404,7 @@ class SendGridWarmupIntegration:
         if len(self.integration_events) > 1000:
             self.integration_events = self.integration_events[-500:]
 
-    def get_integration_status(self) -> Dict:
+    def get_integration_status(self) -> dict:
         """Get current integration status."""
         warmup_ips = []
         completed_ips = []

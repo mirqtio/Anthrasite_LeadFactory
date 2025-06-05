@@ -31,7 +31,7 @@ class DockerComposeManager:
         self.compose_file = compose_file
         self.client = docker.from_env()
 
-    def start_services(self, services: List[str] = None):
+    def start_services(self, services: list[str] = None):
         """Start specific services or all services."""
         cmd = ["docker-compose", "-f", self.compose_file, "up", "-d"]
         if services:
@@ -76,7 +76,7 @@ class DockerComposeManager:
         )
         return result.stdout
 
-    def _get_all_services(self) -> List[str]:
+    def _get_all_services(self) -> list[str]:
         """Get list of all services in compose file."""
         result = subprocess.run(
             ["docker-compose", "-f", self.compose_file, "config", "--services"],
@@ -85,7 +85,7 @@ class DockerComposeManager:
         )
         return result.stdout.strip().split("\n")
 
-    def _wait_for_services_ready(self, services: List[str], timeout: int = 300):
+    def _wait_for_services_ready(self, services: list[str], timeout: int = 300):
         """Wait for services to report healthy status."""
         start_time = time.time()
 

@@ -320,7 +320,7 @@ class TestBudgetGuardMiddleware:
             patch("leadfactory.middleware.budget_middleware.BudgetConfig"),
             patch(
                 "leadfactory.middleware.budget_middleware.ThrottlingService"
-            ) as mock_throttling,
+            ),
             patch("leadfactory.middleware.budget_middleware.GPTUsageTracker"),
             patch("leadfactory.middleware.budget_middleware.CostTracker"),
         ):

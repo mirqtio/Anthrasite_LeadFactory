@@ -71,7 +71,7 @@ class RateLimitConfig:
 class RequestTracker:
     """Tracks request timing and counts."""
 
-    timestamps: List[float] = field(default_factory=list)
+    timestamps: list[float] = field(default_factory=list)
     concurrent_count: int = 0
     lock: RLock = field(default_factory=RLock)
 
@@ -91,7 +91,7 @@ class RequestTracker:
         with self.lock:
             self.concurrent_count = max(0, self.concurrent_count - 1)
 
-    def get_request_counts(self) -> Tuple[int, int]:
+    def get_request_counts(self) -> tuple[int, int]:
         """Get request counts for the last minute and hour."""
         with self.lock:
             current_time = time.time()
@@ -115,7 +115,7 @@ class ThrottlingService:
         self.budget_config = get_budget_config()
         self.usage_tracker = get_gpt_usage_tracker()
         self.rate_limit_config = RateLimitConfig()
-        self.request_trackers: Dict[str, RequestTracker] = {}
+        self.request_trackers: dict[str, RequestTracker] = {}
         self.lock = Lock()
 
         # Model alternatives for graceful degradation
@@ -196,7 +196,7 @@ class ThrottlingService:
 
     def _get_budget_status(
         self, service: str, model: str, endpoint: str
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Get current budget utilization status."""
         try:
             # Get usage for different periods using get_usage_stats
@@ -314,7 +314,7 @@ class ThrottlingService:
             return ThrottlingDecision(action=ThrottlingAction.ALLOW)
 
     def _choose_adaptive_strategy(
-        self, budget_status: Dict[str, float]
+        self, budget_status: dict[str, float]
     ) -> ThrottlingStrategy:
         """Choose the best strategy based on current budget status."""
         max_utilization = max(
@@ -336,7 +336,7 @@ class ThrottlingService:
         model: str,
         endpoint: str,
         estimated_cost: float,
-        budget_status: Dict[str, float],
+        budget_status: dict[str, float],
         strategy: ThrottlingStrategy,
     ) -> ThrottlingDecision:
         """Make the actual throttling decision based on strategy."""
@@ -654,7 +654,7 @@ class ThrottlingService:
             if key in self.request_trackers:
                 self.request_trackers[key].complete_request()
 
-    def get_throttling_stats(self) -> Dict[str, Any]:
+    def get_throttling_stats(self) -> dict[str, Any]:
         """Get current throttling statistics."""
         stats = {
             "rate_limit_config": {

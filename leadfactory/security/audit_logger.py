@@ -57,7 +57,7 @@ class AuditEvent:
     session_id: Optional[str] = None
     success: bool = True
     error_message: Optional[str] = None
-    additional_data: Optional[Dict[str, Any]] = None
+    additional_data: Optional[dict[str, Any]] = None
     timestamp: Optional[datetime] = None
 
     def __post_init__(self):
@@ -155,7 +155,7 @@ class SecurityAuditLogger:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
         session_id: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log successful access grant."""
         event = AuditEvent(
@@ -181,7 +181,7 @@ class SecurityAuditLogger:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
         session_id: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log access denial."""
         event = AuditEvent(
@@ -206,7 +206,7 @@ class SecurityAuditLogger:
         token_id: str,
         expiry_time: datetime,
         ip_address: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log token generation."""
         event = AuditEvent(
@@ -230,7 +230,7 @@ class SecurityAuditLogger:
         token_id: str,
         reason: str,
         revoked_by: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log token revocation."""
         event = AuditEvent(
@@ -255,7 +255,7 @@ class SecurityAuditLogger:
         current_count: int,
         limit_value: int,
         ip_address: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log rate limit violation."""
         event = AuditEvent(
@@ -282,7 +282,7 @@ class SecurityAuditLogger:
         description: str,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log security violation."""
         event = AuditEvent(
@@ -306,7 +306,7 @@ class SecurityAuditLogger:
         session_id: str,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log session creation."""
         event = AuditEvent(
@@ -327,7 +327,7 @@ class SecurityAuditLogger:
         session_id: str,
         reason: str,
         revoked_by: Optional[str] = None,
-        additional_data: Optional[Dict] = None,
+        additional_data: Optional[dict] = None,
     ):
         """Log session revocation."""
         event = AuditEvent(

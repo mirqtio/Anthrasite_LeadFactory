@@ -45,7 +45,7 @@ class CredentialManager:
             encryption_key: Optional encryption key for credentials
         """
         self.encryption_key = encryption_key or self._get_or_create_encryption_key()
-        self._credentials_cache: Dict[str, Dict[str, Any]] = {}
+        self._credentials_cache: dict[str, dict[str, Any]] = {}
 
     def _get_or_create_encryption_key(self) -> str:
         """Get or create encryption key for credentials."""
@@ -199,7 +199,7 @@ class CredentialManager:
         except Exception as e:
             logger.error(f"Failed to update last used timestamp: {e}")
 
-    def validate_credentials(self, provider: str) -> Dict[str, bool]:
+    def validate_credentials(self, provider: str) -> dict[str, bool]:
         """
         Validate stored credentials for a provider.
 
@@ -237,10 +237,10 @@ class NetworkSecurityManager:
             config: Security configuration
         """
         self.config = config
-        self.allowed_ssh_keys: List[str] = []
-        self.security_groups: Dict[str, Dict[str, Any]] = {}
+        self.allowed_ssh_keys: list[str] = []
+        self.security_groups: dict[str, dict[str, Any]] = {}
 
-    def load_ssh_keys(self) -> List[str]:
+    def load_ssh_keys(self) -> list[str]:
         """
         Load SSH keys for GPU instance access.
 
@@ -278,7 +278,7 @@ class NetworkSecurityManager:
             logger.error(f"Failed to load SSH keys: {e}")
             return []
 
-    def generate_security_group_rules(self, provider: str) -> Dict[str, Any]:
+    def generate_security_group_rules(self, provider: str) -> dict[str, Any]:
         """
         Generate security group rules for GPU instances.
 
@@ -341,7 +341,7 @@ class NetworkSecurityManager:
 
     def validate_instance_security(
         self, instance_id: str, provider: str
-    ) -> Dict[str, bool]:
+    ) -> dict[str, bool]:
         """
         Validate security configuration of a GPU instance.
 
@@ -412,7 +412,7 @@ class AuditLogger:
     def log_event(
         self,
         event_type: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
         user: str = "system",
         severity: str = "info",
     ):
@@ -462,7 +462,7 @@ class AuditLogger:
             ip = s.getsockname()[0]
             s.close()
             return ip
-        except (socket.error, OSError) as e:
+        except OSError as e:
             logger.warning(f"Failed to get IP address: {e}")
             return "unknown"
 
@@ -480,7 +480,7 @@ class RateLimiter:
             config: Security configuration
         """
         self.config = config
-        self.operation_history: List[Dict[str, Any]] = []
+        self.operation_history: list[dict[str, Any]] = []
 
     def check_rate_limit(self, operation: str, user: str = "system") -> bool:
         """
@@ -545,7 +545,7 @@ audit_logger = AuditLogger()
 rate_limiter = RateLimiter(security_config)
 
 
-def validate_gpu_security() -> Dict[str, Any]:
+def validate_gpu_security() -> dict[str, Any]:
     """
     Validate overall GPU system security.
 

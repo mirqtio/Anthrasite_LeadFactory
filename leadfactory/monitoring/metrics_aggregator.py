@@ -43,8 +43,8 @@ class AggregatedMetric:
     conversion_rate: float
     refund_count: int
     refund_amount_cents: int
-    audit_type_breakdown: Dict[str, Dict[str, Union[int, float]]]
-    geographic_breakdown: Dict[str, Dict[str, Union[int, float]]]
+    audit_type_breakdown: dict[str, dict[str, Union[int, float]]]
+    geographic_breakdown: dict[str, dict[str, Union[int, float]]]
 
 
 class MetricsAggregator:
@@ -130,7 +130,7 @@ class MetricsAggregator:
         stripe_fee_cents: int,
         audit_type: str,
         currency: str = "usd",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Record a raw purchase metric.
 
@@ -184,7 +184,7 @@ class MetricsAggregator:
         customer_email: Optional[str] = None,
         audit_type: Optional[str] = None,
         referrer: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ):
         """Record a conversion funnel event.
 
@@ -220,7 +220,7 @@ class MetricsAggregator:
         period: AggregationPeriod,
         start_time: Optional[datetime] = None,
         end_time: Optional[datetime] = None,
-    ) -> List[AggregatedMetric]:
+    ) -> list[AggregatedMetric]:
         """Aggregate purchase metrics for a specific time period.
 
         Args:
@@ -359,7 +359,7 @@ class MetricsAggregator:
     def _add_conversion_rates(
         self,
         conn: sqlite3.Connection,
-        period_data: Dict[str, Any],
+        period_data: dict[str, Any],
         period_format: str,
         start_time: datetime,
         end_time: datetime,
@@ -401,7 +401,7 @@ class MetricsAggregator:
             else:
                 data["conversion_rate"] = 0.0
 
-    def store_aggregated_metrics(self, metrics: List[AggregatedMetric]):
+    def store_aggregated_metrics(self, metrics: list[AggregatedMetric]):
         """Store aggregated metrics in the database.
 
         Args:
@@ -440,7 +440,7 @@ class MetricsAggregator:
 
     def get_aggregated_metrics(
         self, period: AggregationPeriod, limit: int = 100
-    ) -> List[AggregatedMetric]:
+    ) -> list[AggregatedMetric]:
         """Retrieve stored aggregated metrics.
 
         Args:
@@ -525,7 +525,7 @@ class MetricsAggregator:
             f"Cleaned up {deleted_count} old purchase records and {deleted_events} conversion events"
         )
 
-    def get_metrics_summary(self) -> Dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, Any]:
         """Get a summary of current metrics storage status.
 
         Returns:

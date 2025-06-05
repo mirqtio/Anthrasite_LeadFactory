@@ -589,7 +589,7 @@ class TestPDFOptimization:
             mock_optimize.return_value = "/fake/optimized.jpg"
 
             element = {"path": "/fake/image.jpg", "width": 2000, "height": 1500}
-            result = pdf_generator_optimized._create_image(element)
+            pdf_generator_optimized._create_image(element)
 
             mock_optimize.assert_called_once_with("/fake/image.jpg")
 

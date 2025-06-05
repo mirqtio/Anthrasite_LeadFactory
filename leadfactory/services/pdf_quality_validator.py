@@ -86,21 +86,21 @@ class PDFQualityReport:
     page_count: int
     validation_timestamp: datetime
     overall_score: float  # 0-100
-    issues: List[ValidationIssue]
-    metadata: Dict[str, Any]
-    security_info: Dict[str, Any]
-    optimization_suggestions: List[str]
+    issues: list[ValidationIssue]
+    metadata: dict[str, Any]
+    security_info: dict[str, Any]
+    optimization_suggestions: list[str]
     is_valid: bool
 
     def get_issues_by_severity(
         self, severity: ValidationSeverity
-    ) -> List[ValidationIssue]:
+    ) -> list[ValidationIssue]:
         """Get all issues of a specific severity."""
         return [issue for issue in self.issues if issue.severity == severity]
 
     def get_issues_by_category(
         self, category: ValidationCategory
-    ) -> List[ValidationIssue]:
+    ) -> list[ValidationIssue]:
         """Get all issues of a specific category."""
         return [issue for issue in self.issues if issue.category == category]
 
@@ -110,7 +110,7 @@ class PDFQualityReport:
             issue.severity == ValidationSeverity.CRITICAL for issue in self.issues
         )
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get a summary of the validation results."""
         severity_counts = {}
         category_counts = {}
@@ -149,7 +149,7 @@ class PDFQualityValidator:
     Provides validation for PDF structure, content, security, and optimization.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         """Initialize the PDF quality validator."""
         self.config = config or {}
         self.max_file_size_mb = self.config.get("max_file_size_mb", 50)
@@ -326,7 +326,7 @@ class PDFQualityValidator:
                 file_path if "file_path" in locals() else None, issues
             )
 
-    def _validate_page(self, page, page_number: int) -> List[ValidationIssue]:
+    def _validate_page(self, page, page_number: int) -> list[ValidationIssue]:
         """Validate a single PDF page."""
         issues = []
 
@@ -386,7 +386,7 @@ class PDFQualityValidator:
 
         return issues
 
-    def _validate_content(self, pdf_bytes: bytes) -> List[ValidationIssue]:
+    def _validate_content(self, pdf_bytes: bytes) -> list[ValidationIssue]:
         """Validate PDF content."""
         issues = []
 
@@ -423,8 +423,8 @@ class PDFQualityValidator:
         return issues
 
     def _validate_security(
-        self, pdf_bytes: bytes, security_info: Dict[str, Any]
-    ) -> List[ValidationIssue]:
+        self, pdf_bytes: bytes, security_info: dict[str, Any]
+    ) -> list[ValidationIssue]:
         """Validate PDF security features."""
         issues = []
 
@@ -456,7 +456,7 @@ class PDFQualityValidator:
 
     def _validate_optimization(
         self, pdf_bytes: bytes, file_size: int
-    ) -> Tuple[List[ValidationIssue], List[str]]:
+    ) -> tuple[list[ValidationIssue], list[str]]:
         """Validate PDF optimization."""
         issues = []
         suggestions = []
@@ -501,7 +501,7 @@ class PDFQualityValidator:
 
         return issues, suggestions
 
-    def _validate_accessibility(self, pdf_bytes: bytes) -> List[ValidationIssue]:
+    def _validate_accessibility(self, pdf_bytes: bytes) -> list[ValidationIssue]:
         """Validate PDF accessibility features."""
         issues = []
 
@@ -530,7 +530,7 @@ class PDFQualityValidator:
         return issues
 
     def _calculate_quality_score(
-        self, issues: List[ValidationIssue], file_size: int, page_count: int
+        self, issues: list[ValidationIssue], file_size: int, page_count: int
     ) -> float:
         """Calculate overall quality score (0-100)."""
         base_score = 100.0
@@ -556,7 +556,7 @@ class PDFQualityValidator:
         return max(0.0, min(100.0, base_score))
 
     def _create_failed_report(
-        self, file_path: Optional[str], issues: List[ValidationIssue]
+        self, file_path: Optional[str], issues: list[ValidationIssue]
     ) -> PDFQualityReport:
         """Create a report for a failed validation."""
         return PDFQualityReport(
@@ -593,11 +593,7 @@ class PDFQualityValidator:
 
             # Check for basic structure
             required_elements = [b"/Type", b"/Root"]
-            for element in required_elements:
-                if element not in pdf_data:
-                    return False
-
-            return True
+            return all(element in pdf_data for element in required_elements)
 
         except Exception:
             return False
@@ -614,7 +610,7 @@ class PDFQualityValidator:
         """
         return hashlib.sha256(pdf_data).hexdigest()
 
-    def compare_pdfs(self, pdf1_data: bytes, pdf2_data: bytes) -> Dict[str, Any]:
+    def compare_pdfs(self, pdf1_data: bytes, pdf2_data: bytes) -> dict[str, Any]:
         """
         Compare two PDFs for differences.
 
@@ -655,7 +651,7 @@ class PDFQualityValidator:
 
 
 def validate_pdf_file(
-    file_path: Union[str, Path], config: Optional[Dict[str, Any]] = None
+    file_path: Union[str, Path], config: Optional[dict[str, Any]] = None
 ) -> PDFQualityReport:
     """
     Convenience function to validate a PDF file.
@@ -672,7 +668,7 @@ def validate_pdf_file(
 
 
 def validate_pdf_bytes(
-    pdf_data: bytes, config: Optional[Dict[str, Any]] = None
+    pdf_data: bytes, config: Optional[dict[str, Any]] = None
 ) -> PDFQualityReport:
     """
     Convenience function to validate PDF data.

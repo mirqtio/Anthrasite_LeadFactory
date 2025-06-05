@@ -236,11 +236,11 @@ class TestStorageFactory:
         mock_instance = MagicMock(spec=StorageInterface)
         mock_postgres_class.return_value = mock_instance
 
-        storage1 = get_storage_instance(storage_type="POSTGRES")
+        get_storage_instance(storage_type="POSTGRES")
         reset_storage_instance()
-        storage2 = get_storage_instance(storage_type="Postgres")
+        get_storage_instance(storage_type="Postgres")
         reset_storage_instance()
-        storage3 = get_storage_instance(storage_type="PoStGrEs")
+        get_storage_instance(storage_type="PoStGrEs")
 
         assert mock_postgres_class.call_count == 3
 
@@ -251,6 +251,6 @@ class TestStorageFactory:
         mock_instance = MagicMock(spec=StorageInterface)
         mock_postgres_class.return_value = mock_instance
 
-        storage = get_storage_instance(storage_type="postgres")
+        get_storage_instance(storage_type="postgres")
 
         mock_logger.info.assert_called_once_with("Created postgres storage instance")

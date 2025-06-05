@@ -50,7 +50,7 @@ class WorkflowStep(BaseModel):
     trigger: WorkflowTrigger = Field(..., description="Trigger condition")
     delay_hours: int = Field(..., description="Delay before execution in hours")
     template_name: str = Field(..., description="Email template to use")
-    conditions: Dict = Field(default_factory=dict, description="Additional conditions")
+    conditions: dict = Field(default_factory=dict, description="Additional conditions")
     max_attempts: int = Field(default=1, description="Maximum execution attempts")
 
 
@@ -71,7 +71,7 @@ class WorkflowExecution(BaseModel):
     started_at: Optional[datetime] = Field(None, description="Start timestamp")
     completed_at: Optional[datetime] = Field(None, description="Completion timestamp")
     current_step: Optional[str] = Field(None, description="Current step ID")
-    metadata: Dict = Field(default_factory=dict, description="Workflow metadata")
+    metadata: dict = Field(default_factory=dict, description="Workflow metadata")
 
 
 class WorkflowStepExecution(BaseModel):
@@ -106,7 +106,7 @@ class EmailWorkflowEngine:
             "agency_conversion": self._get_agency_conversion_workflow(),
         }
 
-    def _get_report_delivery_workflow(self) -> List[WorkflowStep]:
+    def _get_report_delivery_workflow(self) -> list[WorkflowStep]:
         """Get the report delivery workflow steps."""
         return [
             WorkflowStep(
@@ -134,7 +134,7 @@ class EmailWorkflowEngine:
             ),
         ]
 
-    def _get_agency_conversion_workflow(self) -> List[WorkflowStep]:
+    def _get_agency_conversion_workflow(self) -> list[WorkflowStep]:
         """Get the agency conversion workflow steps."""
         return [
             WorkflowStep(
@@ -164,7 +164,7 @@ class EmailWorkflowEngine:
         user_email: str,
         user_name: str,
         report_title: str,
-        metadata: Optional[Dict] = None,
+        metadata: Optional[dict] = None,
     ) -> str:
         """
         Start a new workflow execution.
@@ -279,7 +279,7 @@ class EmailWorkflowEngine:
             logger.error(f"Failed to process pending steps: {str(e)}")
             return 0
 
-    async def _execute_workflow_step(self, step_data: Dict) -> None:
+    async def _execute_workflow_step(self, step_data: dict) -> None:
         """Execute a single workflow step."""
         step_execution_id = step_data["step_execution_id"]
         execution_id = step_data["execution_id"]
@@ -341,7 +341,7 @@ class EmailWorkflowEngine:
             raise
 
     async def _check_step_conditions(
-        self, step_data: Dict, step_config: WorkflowStep
+        self, step_data: dict, step_config: WorkflowStep
     ) -> bool:
         """Check if step conditions are met."""
         try:
@@ -414,7 +414,7 @@ class EmailWorkflowEngine:
             logger.error(f"Failed to check agency connection: {str(e)}")
             return False
 
-    async def _create_personalization(self, step_data: Dict) -> EmailPersonalization:
+    async def _create_personalization(self, step_data: dict) -> EmailPersonalization:
         """Create email personalization from step data."""
         metadata = step_data.get("metadata", {})
 

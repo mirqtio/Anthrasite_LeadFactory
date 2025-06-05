@@ -28,8 +28,7 @@ try:
     from leadfactory.storage.postgres_storage import PostgresStorage
 
     IMPORTS_AVAILABLE = True
-except ImportError as e:
-    print(f"Storage imports not available: {e}")
+except ImportError:
     IMPORTS_AVAILABLE = False
 
     # Mock classes for when imports are not available

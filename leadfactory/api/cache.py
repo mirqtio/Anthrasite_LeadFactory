@@ -62,7 +62,7 @@ class LogsAPICache:
         """
         self.max_entries = max_entries
         self.default_ttl = default_ttl
-        self.cache: Dict[str, CacheEntry] = {}
+        self.cache: dict[str, CacheEntry] = {}
         self.lock = Lock()
 
         # Statistics
@@ -101,7 +101,7 @@ class LogsAPICache:
 
     def _cleanup_expired(self):
         """Remove expired entries from cache."""
-        current_time = datetime.utcnow()
+        datetime.utcnow()
         expired_keys = []
 
         for key, entry in self.cache.items():
@@ -171,7 +171,7 @@ class LogsAPICache:
         offset: int = 0,
         sort_by: str = "timestamp",
         sort_order: str = "desc",
-    ) -> Optional[Tuple[List[Dict[str, Any]], int]]:
+    ) -> Optional[tuple[list[dict[str, Any]], int]]:
         """Get cached logs query result."""
         cache_key = self._generate_cache_key(
             "logs_query",
@@ -190,7 +190,7 @@ class LogsAPICache:
 
     def set_logs_with_filters(
         self,
-        result: Tuple[List[Dict[str, Any]], int],
+        result: tuple[list[dict[str, Any]], int],
         business_id: Optional[int] = None,
         log_type: Optional[str] = None,
         start_date: Optional[datetime] = None,
@@ -224,24 +224,24 @@ class LogsAPICache:
 
         self.set(cache_key, result, ttl)
 
-    def get_log_statistics(self) -> Optional[Dict[str, Any]]:
+    def get_log_statistics(self) -> Optional[dict[str, Any]]:
         """Get cached log statistics."""
         return self.get("log_statistics")
 
     def set_log_statistics(
-        self, stats: Dict[str, Any], ttl: Optional[int] = None
+        self, stats: dict[str, Any], ttl: Optional[int] = None
     ) -> None:
         """Cache log statistics."""
         # Statistics change less frequently, cache for longer
         ttl = ttl or 600  # 10 minutes
         self.set("log_statistics", stats, ttl)
 
-    def get_businesses_with_logs(self) -> Optional[List[Dict[str, Any]]]:
+    def get_businesses_with_logs(self) -> Optional[list[dict[str, Any]]]:
         """Get cached businesses with logs."""
         return self.get("businesses_with_logs")
 
     def set_businesses_with_logs(
-        self, businesses: List[Dict[str, Any]], ttl: Optional[int] = None
+        self, businesses: list[dict[str, Any]], ttl: Optional[int] = None
     ) -> None:
         """Cache businesses with logs."""
         ttl = ttl or 900  # 15 minutes
@@ -250,7 +250,7 @@ class LogsAPICache:
     def invalidate_pattern(self, pattern: str):
         """Invalidate cache entries matching a pattern."""
         with self.lock:
-            keys_to_delete = [key for key in self.cache.keys() if pattern in key]
+            keys_to_delete = [key for key in self.cache if pattern in key]
             for key in keys_to_delete:
                 del self.cache[key]
 
@@ -259,7 +259,7 @@ class LogsAPICache:
                     f"Invalidated {len(keys_to_delete)} cache entries matching pattern: {pattern}"
                 )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         with self.lock:
             total_requests = self.stats["hits"] + self.stats["misses"]
@@ -297,7 +297,7 @@ def clear_cache():
     cache.clear()
 
 
-def get_cache_stats() -> Dict[str, Any]:
+def get_cache_stats() -> dict[str, Any]:
     """Get global cache statistics."""
     cache = get_cache()
     return cache.get_stats()

@@ -106,7 +106,7 @@ class RuleConverter:
             audit_multipliers=audit_multipliers,
         )
 
-    def _create_common_templates(self) -> Dict[str, RuleTemplate]:
+    def _create_common_templates(self) -> dict[str, RuleTemplate]:
         """Create common rule templates based on legacy patterns."""
         return {
             "tech_modernization": RuleTemplate(
@@ -132,7 +132,7 @@ class RuleConverter:
         }
 
     def _convert_legacy_rule(
-        self, legacy_rule, templates: Dict[str, RuleTemplate]
+        self, legacy_rule, templates: dict[str, RuleTemplate]
     ) -> Optional[AuditRule]:
         """Convert a single legacy rule to simplified format."""
         try:
@@ -279,7 +279,7 @@ class RuleConverter:
 
     def _simplified_config_to_dict(
         self, config: SimplifiedScoringConfig
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Convert simplified config object to dictionary for YAML output."""
         result = {
             "settings": {
@@ -327,7 +327,7 @@ class RuleConverter:
 
         return result
 
-    def _audit_rule_to_dict(self, rule: AuditRule) -> Dict[str, Any]:
+    def _audit_rule_to_dict(self, rule: AuditRule) -> dict[str, Any]:
         """Convert AuditRule to dictionary."""
         rule_dict = {"name": rule.name, "when": self._condition_to_dict(rule.when)}
 
@@ -344,7 +344,7 @@ class RuleConverter:
 
         return rule_dict
 
-    def _condition_to_dict(self, condition: SimpleCondition) -> Dict[str, Any]:
+    def _condition_to_dict(self, condition: SimpleCondition) -> dict[str, Any]:
         """Convert SimpleCondition to dictionary."""
         result = {}
 

@@ -231,7 +231,7 @@ class SendGridWarmupMetricsCollector:
             f"Recorded integration event for IP {ip_address}: {event_type} with {system}"
         )
 
-    def collect_all_metrics(self) -> Dict[str, Any]:
+    def collect_all_metrics(self) -> dict[str, Any]:
         """Collect comprehensive warmup metrics for monitoring and reporting."""
         try:
             if not self.warmup_scheduler:

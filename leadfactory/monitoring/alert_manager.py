@@ -60,7 +60,7 @@ class AlertRule:
     comparison_period: Optional[AggregationPeriod] = None
     enabled: bool = True
     cooldown_minutes: int = 60
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Validate alert rule configuration."""
@@ -78,7 +78,7 @@ class Alert:
     current_value: Union[float, int]
     threshold_value: Union[float, int]
     timestamp: datetime
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     resolved: bool = False
     resolved_at: Optional[datetime] = None
 
@@ -86,7 +86,7 @@ class Alert:
 class NotificationChannel:
     """Base class for notification channels."""
 
-    def __init__(self, name: str, config: Dict[str, Any]):
+    def __init__(self, name: str, config: dict[str, Any]):
         self.name = name
         self.config = config
         self.logger = get_logger(f"{__name__}.{name}")
@@ -319,11 +319,11 @@ class AlertManager:
         self.metrics_aggregator = metrics_aggregator or MetricsAggregator()
         self.logger = get_logger(f"{__name__}.AlertManager")
 
-        self.alert_rules: Dict[str, AlertRule] = {}
-        self.notification_channels: Dict[str, NotificationChannel] = {}
-        self.active_alerts: Dict[str, Alert] = {}
-        self.alert_history: List[Alert] = []
-        self.last_check_times: Dict[str, datetime] = {}
+        self.alert_rules: dict[str, AlertRule] = {}
+        self.notification_channels: dict[str, NotificationChannel] = {}
+        self.active_alerts: dict[str, Alert] = {}
+        self.alert_history: list[Alert] = []
+        self.last_check_times: dict[str, datetime] = {}
 
         self._setup_default_rules()
 
@@ -581,7 +581,7 @@ class AlertManager:
             except Exception as e:
                 self.logger.error(f"Error sending alert via {channel_name}: {e}")
 
-    def get_alert_status(self) -> Dict[str, Any]:
+    def get_alert_status(self) -> dict[str, Any]:
         """Get current alert system status.
 
         Returns:
@@ -611,7 +611,7 @@ class AlertManager:
             ),
         }
 
-    def test_notifications(self) -> Dict[str, bool]:
+    def test_notifications(self) -> dict[str, bool]:
         """Test all notification channels.
 
         Returns:

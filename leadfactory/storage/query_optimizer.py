@@ -35,35 +35,34 @@ class QueryOptimizer:
             conn.close()
 
     def analyze_query(
-        self, query: str, params: Optional[Tuple] = None
-    ) -> Dict[str, Any]:
+        self, query: str, params: Optional[tuple] = None
+    ) -> dict[str, Any]:
         """Analyze query performance using EXPLAIN ANALYZE."""
-        with self.connection() as conn:
-            with conn.cursor() as cursor:
-                # Get query plan
-                explain_query = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {query}"
-                cursor.execute(explain_query, params)
-                plan = cursor.fetchone()[0][0]
+        with self.connection() as conn, conn.cursor() as cursor:
+            # Get query plan
+            explain_query = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {query}"
+            cursor.execute(explain_query, params)
+            plan = cursor.fetchone()[0][0]
 
-                # Extract key metrics
-                metrics = {
-                    "total_time": plan.get("Execution Time", 0),
-                    "planning_time": plan.get("Planning Time", 0),
-                    "shared_buffers_hit": 0,
-                    "shared_buffers_read": 0,
-                    "rows_returned": 0,
-                    "plan": plan,
-                }
+            # Extract key metrics
+            metrics = {
+                "total_time": plan.get("Execution Time", 0),
+                "planning_time": plan.get("Planning Time", 0),
+                "shared_buffers_hit": 0,
+                "shared_buffers_read": 0,
+                "rows_returned": 0,
+                "plan": plan,
+            }
 
-                # Parse buffer information
-                if "Shared Hit Blocks" in plan:
-                    metrics["shared_buffers_hit"] = plan["Shared Hit Blocks"]
-                if "Shared Read Blocks" in plan:
-                    metrics["shared_buffers_read"] = plan["Shared Read Blocks"]
+            # Parse buffer information
+            if "Shared Hit Blocks" in plan:
+                metrics["shared_buffers_hit"] = plan["Shared Hit Blocks"]
+            if "Shared Read Blocks" in plan:
+                metrics["shared_buffers_read"] = plan["Shared Read Blocks"]
 
-                return metrics
+            return metrics
 
-    def suggest_indexes(self, table_name: str) -> List[Dict[str, Any]]:
+    def suggest_indexes(self, table_name: str) -> list[dict[str, Any]]:
         """Suggest missing indexes based on query patterns."""
         suggestions = []
 
@@ -134,7 +133,7 @@ class QueryOptimizer:
 
         return suggestions
 
-    def optimize_business_queries(self) -> List[Dict[str, str]]:
+    def optimize_business_queries(self) -> list[dict[str, str]]:
         """Provide specific optimizations for business-related queries."""
         optimizations = []
 
@@ -287,7 +286,7 @@ class QueryOptimizer:
         cache["max_time"] = max(cache["max_time"], elapsed_time)
         cache["min_time"] = min(cache["min_time"], elapsed_time)
 
-    def get_performance_report(self) -> Dict[str, Any]:
+    def get_performance_report(self) -> dict[str, Any]:
         """Get performance report for tracked queries."""
         report = {}
 
@@ -309,7 +308,7 @@ class QueryOptimizer:
 
         return report
 
-    def vacuum_analyze_tables(self, tables: Optional[List[str]] = None):
+    def vacuum_analyze_tables(self, tables: Optional[list[str]] = None):
         """Run VACUUM ANALYZE on tables to update statistics."""
         with self.connection() as conn:
             conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
@@ -323,7 +322,7 @@ class QueryOptimizer:
                     logger.info("Running VACUUM ANALYZE on all tables")
                     cursor.execute("VACUUM ANALYZE")
 
-    def get_missing_indexes_report(self) -> List[Dict[str, Any]]:
+    def get_missing_indexes_report(self) -> list[dict[str, Any]]:
         """Generate a report of potentially missing indexes."""
         report = []
 
@@ -372,8 +371,8 @@ class QueryOptimizer:
 
 # Example usage and optimization functions
 def optimize_business_lookup_query(
-    storage, business_data: Dict[str, Any]
-) -> Optional[Dict[str, Any]]:
+    storage, business_data: dict[str, Any]
+) -> Optional[dict[str, Any]]:
     """Optimized business lookup using multiple strategies."""
     optimizer = QueryOptimizer(storage.connection_string)
 
@@ -436,16 +435,15 @@ def create_optimized_indexes(connection_string: str):
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_businesses_unprocessed ON businesses(id) WHERE processed = false",
     ]
 
-    with optimizer.connection() as conn:
-        with conn.cursor() as cursor:
-            for index_sql in indexes:
-                try:
-                    logger.info(f"Creating index: {index_sql[:50]}...")
-                    cursor.execute(index_sql)
-                    conn.commit()
-                except psycopg2.Error as e:
-                    logger.warning(f"Index creation failed (may already exist): {e}")
-                    conn.rollback()
+    with optimizer.connection() as conn, conn.cursor() as cursor:
+        for index_sql in indexes:
+            try:
+                logger.info(f"Creating index: {index_sql[:50]}...")
+                cursor.execute(index_sql)
+                conn.commit()
+            except psycopg2.Error as e:
+                logger.warning(f"Index creation failed (may already exist): {e}")
+                conn.rollback()
 
     # Update statistics
     optimizer.vacuum_analyze_tables(["businesses", "processing_status", "emails"])
@@ -460,14 +458,10 @@ if __name__ == "__main__":
 
     # Get optimization suggestions
     suggestions = optimizer.optimize_business_queries()
-    for suggestion in suggestions:
-        print(f"\nOptimization: {suggestion['reason']}")
-        print(f"Original: {suggestion['original'][:100]}...")
-        print(f"Optimized: {suggestion['optimized'][:100]}...")
+    for _suggestion in suggestions:
+        pass
 
     # Get missing indexes report
     missing_indexes = optimizer.get_missing_indexes_report()
-    for index in missing_indexes:
-        print(f"\nTable: {index['table']}")
-        print(f"Issue: {index['issue']}")
-        print(f"Recommendation: {index['recommendation']}")
+    for _index in missing_indexes:
+        pass

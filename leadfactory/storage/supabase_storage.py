@@ -55,8 +55,8 @@ class SupabaseStorage:
         file_path: Union[str, Path],
         storage_path: str,
         content_type: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        metadata: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """
         Upload a file to Supabase storage.
 
@@ -95,7 +95,7 @@ class SupabaseStorage:
                 file_options["metadata"] = metadata
 
             # Upload to Supabase
-            result = self.client.storage.from_(self.bucket_name).upload(
+            self.client.storage.from_(self.bucket_name).upload(
                 path=storage_path, file=file_content, file_options=file_options
             )
 
@@ -122,7 +122,7 @@ class SupabaseStorage:
         report_id: str,
         user_id: str,
         purchase_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Upload a PDF report with standardized naming and metadata.
 
@@ -159,7 +159,7 @@ class SupabaseStorage:
 
     def upload_png_image(
         self, png_path: Union[str, Path], image_id: str, category: str = "images"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Upload a PNG image with standardized naming.
 
@@ -226,7 +226,7 @@ class SupabaseStorage:
 
     def generate_secure_report_url(
         self, storage_path: str, expires_in_hours: int = 24
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a secure URL for report access with extended metadata.
 
@@ -250,7 +250,7 @@ class SupabaseStorage:
             "generated_at": datetime.utcnow().isoformat(),
         }
 
-    def list_files(self, prefix: str = "", limit: int = 100) -> List[Dict[str, Any]]:
+    def list_files(self, prefix: str = "", limit: int = 100) -> list[dict[str, Any]]:
         """
         List files in the storage bucket.
 
@@ -287,7 +287,7 @@ class SupabaseStorage:
             Exception: If deletion fails
         """
         try:
-            result = self.client.storage.from_(self.bucket_name).remove([storage_path])
+            self.client.storage.from_(self.bucket_name).remove([storage_path])
 
             logger.info(f"Successfully deleted file: {storage_path}")
             return True
@@ -296,7 +296,7 @@ class SupabaseStorage:
             logger.error(f"Failed to delete file {storage_path}: {e}")
             raise
 
-    def get_file_info(self, storage_path: str) -> Optional[Dict[str, Any]]:
+    def get_file_info(self, storage_path: str) -> Optional[dict[str, Any]]:
         """
         Get information about a file in storage.
 

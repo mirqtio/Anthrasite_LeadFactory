@@ -46,14 +46,13 @@ def test_db():
 @pytest.fixture
 def payment_service(payment_config, test_db):
     """Create payment service with test configuration."""
-    with patch("stripe.api_key"):
-        with patch(
-            "leadfactory.services.payment_service.ReportDeliveryService"
-        ) as mock_report_delivery:
-            service = StripePaymentService(payment_config, "sqlite:///:memory:")
-            service.engine = test_db
-            service.SessionLocal = sessionmaker(bind=test_db)
-            return service
+    with patch("stripe.api_key"), patch(
+        "leadfactory.services.payment_service.ReportDeliveryService"
+    ):
+        service = StripePaymentService(payment_config, "sqlite:///:memory:")
+        service.engine = test_db
+        service.SessionLocal = sessionmaker(bind=test_db)
+        return service
 
 
 class TestStripePaymentService:

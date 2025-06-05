@@ -5,6 +5,7 @@ Tests edge cases including large files, invalid PDFs, network failures,
 and storage quota limitations.
 """
 
+import contextlib
 import os
 import tempfile
 from datetime import datetime, timedelta
@@ -49,10 +50,8 @@ class TestPDFStorageEdgeCases:
     def teardown_method(self):
         """Clean up test files."""
         for temp_file in self.temp_files:
-            try:
+            with contextlib.suppress(FileNotFoundError):
                 os.unlink(temp_file.name)
-            except FileNotFoundError:
-                pass
 
     @pytest.fixture
     def mock_supabase_client(self):
@@ -115,7 +114,7 @@ class TestPDFStorageEdgeCases:
 
     def test_invalid_pdf_format_detection(self, storage, mock_supabase_client):
         """Test detection and handling of invalid PDF format."""
-        invalid_temp_file = self.temp_files[3]  # invalid PDF
+        self.temp_files[3]  # invalid PDF
 
         # Mock validation that would detect invalid format
         with pytest.raises(ValueError, match="Invalid PDF format"):
@@ -290,14 +289,13 @@ class TestPDFStorageEdgeCases:
         # Mock permission denied error when reading file
         with patch(
             "pathlib.Path.open", side_effect=PermissionError("Permission denied")
-        ):
-            with pytest.raises(PermissionError):
-                storage.upload_pdf_report(
-                    pdf_path=valid_temp_file.name,
-                    report_id="permission_report",
-                    user_id="user_permission",
-                    purchase_id="purchase_permission",
-                )
+        ), pytest.raises(PermissionError):
+            storage.upload_pdf_report(
+                pdf_path=valid_temp_file.name,
+                report_id="permission_report",
+                user_id="user_permission",
+                purchase_id="purchase_permission",
+            )
 
     def test_disk_space_exhaustion(self, storage, mock_supabase_client):
         """Test handling when local disk space is exhausted."""

@@ -2,6 +2,7 @@
 Tests for A/B Test Manager core functionality.
 """
 
+import contextlib
 import os
 import tempfile
 from datetime import datetime, timedelta
@@ -17,10 +18,8 @@ def temp_db():
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
     yield db_path
-    try:
+    with contextlib.suppress(FileNotFoundError):
         os.unlink(db_path)
-    except FileNotFoundError:
-        pass
 
 
 @pytest.fixture
@@ -160,7 +159,7 @@ def test_record_conversions(test_manager):
 
     # Assign users and record conversions
     user_id = "test_user"
-    variant_id = test_manager.assign_user_to_variant(user_id, test_id)
+    test_manager.assign_user_to_variant(user_id, test_id)
 
     conversion_id = test_manager.record_conversion(
         test_id=test_id,
@@ -250,7 +249,7 @@ def test_get_active_tests(test_manager):
         variants=email_variants,
     )
 
-    pricing_test_id = test_manager.create_test(
+    test_manager.create_test(
         name="Pricing Test",
         description="Pricing test",
         test_type=TestType.PRICING,

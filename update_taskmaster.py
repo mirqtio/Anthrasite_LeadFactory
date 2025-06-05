@@ -5,14 +5,13 @@ import json
 from datetime import datetime
 
 # Read current tasks
-with open(".taskmaster/tasks/tasks.json", "r") as f:
+with open(".taskmaster/tasks/tasks.json") as f:
     data = json.load(f)
 
 # Update status of completed tasks that are marked as done
 for task in data["tasks"]:
     if task["id"] in [31, 32] and task["status"] == "done":
         task["status"] = "completed"
-        print(f"Updated Task {task['id']} ({task['title']}) to completed status")
 
 # Get the next task ID
 next_id = max(task["id"] for task in data["tasks"]) + 1
@@ -267,16 +266,7 @@ data["metadata"]["total_tasks"] = len(data["tasks"])
 with open(".taskmaster/tasks/tasks.json", "w") as f:
     json.dump(data, f, indent=2)
 
-print(f"TaskMaster updated successfully!")
-print(f"- Updated 2 tasks to completed status")
-print(
-    f"- Added {len(new_tasks)} new tasks (IDs {next_id} to {next_id + len(new_tasks) - 1})"
-)
-print(f"- Total tasks: {len(data['tasks'])}")
 
 # Print summary of new tasks
-print("\nNew tasks added:")
 for task in new_tasks:
-    print(
-        f"  Task {task['id']}: {task['title']} ({task['complexity']} complexity, {task['estimated_hours']}h)"
-    )
+    pass

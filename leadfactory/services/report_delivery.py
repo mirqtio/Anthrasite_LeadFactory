@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+from leadfactory.config.settings import PDF_DELIVERY_MODE
 from leadfactory.email.delivery import EmailDeliveryService
 from leadfactory.email.secure_links import SecureLinkData, SecureLinkGenerator
 from leadfactory.security import (
@@ -24,9 +25,8 @@ from leadfactory.security import (
     get_rate_limiter,
     get_secure_access_validator,
 )
-from leadfactory.storage.supabase_storage import SupabaseStorage
 from leadfactory.services.local_pdf_delivery import LocalPDFDeliveryService
-from leadfactory.config.settings import PDF_DELIVERY_MODE
+from leadfactory.storage.supabase_storage import SupabaseStorage
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ class ReportDeliveryService:
         self.link_generator = link_generator or SecureLinkGenerator()
         self.email_service = email_service or EmailDeliveryService()
         self.default_expiry_hours = link_expiry_hours
-        
+
         # Initialize local delivery service for non-cloud delivery modes
         self.local_delivery = LocalPDFDeliveryService()
         self.delivery_mode = PDF_DELIVERY_MODE
@@ -97,7 +97,7 @@ class ReportDeliveryService:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
         user_role: UserRole = UserRole.CUSTOMER,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """
         Complete workflow: upload PDF, generate secure link, and send email.
         Enhanced with security validation and audit logging.
@@ -155,19 +155,41 @@ class ReportDeliveryService:
             # Step 2: Route to appropriate delivery method based on configuration
             if self.delivery_mode == "email":
                 return self._deliver_via_email_attachment(
-                    pdf_path, report_id, user_id, user_email, business_name, 
-                    purchase_id, expiry_hours, ip_address, user_agent
+                    pdf_path,
+                    report_id,
+                    user_id,
+                    user_email,
+                    business_name,
+                    purchase_id,
+                    expiry_hours,
+                    ip_address,
+                    user_agent,
                 )
             elif self.delivery_mode == "local":
                 return self._deliver_via_local_http(
-                    pdf_path, report_id, user_id, user_email, business_name,
-                    purchase_id, expiry_hours, ip_address, user_agent
+                    pdf_path,
+                    report_id,
+                    user_id,
+                    user_email,
+                    business_name,
+                    purchase_id,
+                    expiry_hours,
+                    ip_address,
+                    user_agent,
                 )
-            
+
             # Default: Cloud delivery via Supabase (original behavior)
             return self._deliver_via_cloud_storage(
-                pdf_path, report_id, user_id, user_email, business_name,
-                purchase_id, expiry_hours, ip_address, user_agent, validation_result
+                pdf_path,
+                report_id,
+                user_id,
+                user_email,
+                business_name,
+                purchase_id,
+                expiry_hours,
+                ip_address,
+                user_agent,
+                validation_result,
             )
 
         except Exception as e:
@@ -195,8 +217,8 @@ class ReportDeliveryService:
         expiry_hours: int,
         ip_address: Optional[str],
         user_agent: Optional[str],
-        validation_result
-    ) -> Dict[str, any]:
+        validation_result,
+    ) -> dict[str, any]:
         """Original cloud storage delivery method (Supabase)."""
         try:
             # Step 2a: Upload PDF to Supabase
@@ -294,20 +316,22 @@ class ReportDeliveryService:
         expiry_hours: int,
         ip_address: Optional[str],
         user_agent: Optional[str],
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """Deliver PDF via email attachment."""
         try:
-            logger.info(f"Delivering report {report_id} via email attachment to {user_email}")
-            
+            logger.info(
+                f"Delivering report {report_id} via email attachment to {user_email}"
+            )
+
             # Use local delivery service for email attachment
             result = self.local_delivery.deliver_via_email_attachment(
                 pdf_path=pdf_path,
                 report_id=report_id,
                 user_email=user_email,
                 business_name=business_name,
-                email_service=self.email_service
+                email_service=self.email_service,
             )
-            
+
             if result.get("success", False):
                 # Log successful delivery
                 self.audit_logger.log_access_granted(
@@ -323,7 +347,7 @@ class ReportDeliveryService:
                         "attachment_size": result.get("attachment_size"),
                     },
                 )
-                
+
                 # Format result to match expected interface
                 return {
                     "status": "delivered",
@@ -340,16 +364,29 @@ class ReportDeliveryService:
             else:
                 # Handle fallback to local HTTP if email attachment fails
                 if result.get("fallback_required", False):
-                    logger.warning(f"Email attachment failed for {report_id}, falling back to local HTTP")
+                    logger.warning(
+                        f"Email attachment failed for {report_id}, falling back to local HTTP"
+                    )
                     return self._deliver_via_local_http(
-                        pdf_path, report_id, user_id, user_email, business_name,
-                        purchase_id, expiry_hours, ip_address, user_agent
+                        pdf_path,
+                        report_id,
+                        user_id,
+                        user_email,
+                        business_name,
+                        purchase_id,
+                        expiry_hours,
+                        ip_address,
+                        user_agent,
                     )
                 else:
-                    raise Exception(f"Email attachment delivery failed: {result.get('error', 'Unknown error')}")
-                    
+                    raise Exception(
+                        f"Email attachment delivery failed: {result.get('error', 'Unknown error')}"
+                    )
+
         except Exception as e:
-            logger.error(f"Email attachment delivery failed for report {report_id}: {e}")
+            logger.error(
+                f"Email attachment delivery failed for report {report_id}: {e}"
+            )
             raise
 
     def _deliver_via_local_http(
@@ -363,11 +400,11 @@ class ReportDeliveryService:
         expiry_hours: int,
         ip_address: Optional[str],
         user_agent: Optional[str],
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """Deliver PDF via local HTTP serving."""
         try:
             logger.info(f"Delivering report {report_id} via local HTTP to {user_email}")
-            
+
             # Use local delivery service for HTTP serving
             result = self.local_delivery.deliver_via_local_http(
                 pdf_path=pdf_path,
@@ -376,9 +413,9 @@ class ReportDeliveryService:
                 user_email=user_email,
                 business_name=business_name,
                 expiry_hours=expiry_hours,
-                email_service=self.email_service
+                email_service=self.email_service,
             )
-            
+
             if result.get("success", False):
                 # Log successful delivery
                 self.audit_logger.log_access_granted(
@@ -394,7 +431,7 @@ class ReportDeliveryService:
                         "download_url": result.get("download_url"),
                     },
                 )
-                
+
                 # Format result to match expected interface
                 return {
                     "status": "delivered",
@@ -412,8 +449,10 @@ class ReportDeliveryService:
                     "security_validated": True,
                 }
             else:
-                raise Exception(f"Local HTTP delivery failed: {result.get('error', 'Unknown error')}")
-                
+                raise Exception(
+                    f"Local HTTP delivery failed: {result.get('error', 'Unknown error')}"
+                )
+
         except Exception as e:
             logger.error(f"Local HTTP delivery failed for report {report_id}: {e}")
             raise
@@ -463,7 +502,7 @@ class ReportDeliveryService:
         secure_token: str,
         signed_url: str,
         expires_at: str,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """
         Send report delivery email to user.
 
@@ -515,7 +554,7 @@ class ReportDeliveryService:
         secure_token: str,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """
         Validate a secure token and return report access information.
         Enhanced with comprehensive security validation.
@@ -633,7 +672,7 @@ class ReportDeliveryService:
         revoked_by: Optional[str] = None,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """
         Revoke access for a specific report token.
 
@@ -679,7 +718,7 @@ class ReportDeliveryService:
             logger.error(f"Failed to revoke access token: {e}")
             return {"success": False, "error": str(e)}
 
-    def get_user_access_stats(self, user_id: str) -> Dict[str, any]:
+    def get_user_access_stats(self, user_id: str) -> dict[str, any]:
         """
         Get access statistics and security info for a user.
 
@@ -707,7 +746,7 @@ class ReportDeliveryService:
             logger.error(f"Failed to get user access stats: {e}")
             return {"error": str(e)}
 
-    def get_delivery_status(self, report_id: str, user_id: str) -> Dict[str, any]:
+    def get_delivery_status(self, report_id: str, user_id: str) -> dict[str, any]:
         """
         Get delivery status for a specific report.
 
@@ -747,7 +786,7 @@ class ReportDeliveryService:
             logger.error(f"Failed to get delivery status for {report_id}: {e}")
             return {"status": "error", "error": str(e)}
 
-    def cleanup_expired_reports(self, days_old: int = 30) -> Dict[str, any]:
+    def cleanup_expired_reports(self, days_old: int = 30) -> dict[str, any]:
         """
         Clean up expired reports from storage.
 

@@ -85,7 +85,7 @@ if meets_audit_threshold(score, threshold=70):
 SELECT b.id, b.name, ps.skip_reason, b.audit_score
 FROM businesses b
 JOIN processing_status ps ON b.id = ps.business_id
-WHERE ps.stage = 'email' 
+WHERE ps.stage = 'email'
   AND ps.status = 'skipped'
   AND ps.skip_reason LIKE '%audit threshold%';
 ```
@@ -96,8 +96,8 @@ WHERE ps.stage = 'email'
 
 1. **Score Distribution**:
 ```sql
-SELECT 
-  CASE 
+SELECT
+  CASE
     WHEN audit_score < 30 THEN '0-29'
     WHEN audit_score < 60 THEN '30-59'
     WHEN audit_score < 80 THEN '60-79'
@@ -112,7 +112,7 @@ ORDER BY score_range;
 
 2. **Email Eligibility Rate**:
 ```sql
-SELECT 
+SELECT
   COUNT(CASE WHEN audit_score >= 60 THEN 1 END) as eligible,
   COUNT(CASE WHEN audit_score < 60 THEN 1 END) as ineligible,
   COUNT(*) as total,
@@ -123,11 +123,11 @@ WHERE audit_score IS NOT NULL;
 
 3. **Skip Reasons Summary**:
 ```sql
-SELECT 
+SELECT
   skip_reason,
   COUNT(*) as skip_count
 FROM processing_status
-WHERE stage = 'email' 
+WHERE stage = 'email'
   AND status = 'skipped'
 GROUP BY skip_reason
 ORDER BY skip_count DESC;

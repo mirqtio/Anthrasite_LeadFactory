@@ -60,7 +60,7 @@ class ConversionEvent:
     timestamp: datetime
     audit_type: Optional[str]
     revenue_cents: Optional[int]
-    properties: Dict[str, Any]
+    properties: dict[str, Any]
     channel: ConversionChannel
     referrer: Optional[str]
     user_agent: Optional[str]
@@ -74,9 +74,9 @@ class ConversionFunnel:
     period_end: datetime
     audit_type: Optional[str]
     channel: Optional[ConversionChannel]
-    funnel_steps: List[Dict[str, Any]]
-    conversion_rates: Dict[str, float]
-    drop_off_points: List[Dict[str, Any]]
+    funnel_steps: list[dict[str, Any]]
+    conversion_rates: dict[str, float]
+    drop_off_points: list[dict[str, Any]]
     total_revenue_cents: int
     average_time_to_conversion: Optional[float]
 
@@ -87,10 +87,10 @@ class AttributionReport:
 
     period_start: datetime
     period_end: datetime
-    channel_performance: Dict[str, Dict[str, Any]]
-    top_converting_channels: List[Dict[str, Any]]
-    revenue_attribution: Dict[str, int]
-    conversion_paths: List[Dict[str, Any]]
+    channel_performance: dict[str, dict[str, Any]]
+    top_converting_channels: list[dict[str, Any]]
+    revenue_attribution: dict[str, int]
+    conversion_paths: list[dict[str, Any]]
 
 
 class ConversionTracker:
@@ -172,7 +172,7 @@ class ConversionTracker:
         event_type: ConversionEventType,
         audit_type: Optional[str] = None,
         revenue_cents: Optional[int] = None,
-        properties: Optional[Dict[str, Any]] = None,
+        properties: Optional[dict[str, Any]] = None,
         channel: ConversionChannel = ConversionChannel.UNKNOWN,
         referrer: Optional[str] = None,
         user_agent: Optional[str] = None,
@@ -603,7 +603,7 @@ class ConversionTracker:
 
     def get_conversion_summary(
         self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get overall conversion summary for a period.
 
         Args:

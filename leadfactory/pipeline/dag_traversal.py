@@ -59,11 +59,11 @@ class StageResult:
 
     stage: PipelineStage
     success: bool
-    data: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
     execution_time: float = 0.0
-    dependencies_met: List[PipelineStage] = field(default_factory=list)
-    dependencies_missing: List[PipelineStage] = field(default_factory=list)
+    dependencies_met: list[PipelineStage] = field(default_factory=list)
+    dependencies_missing: list[PipelineStage] = field(default_factory=list)
 
 
 class PipelineDAG:
@@ -76,10 +76,10 @@ class PipelineDAG:
 
     def __init__(self):
         """Initialize the pipeline DAG with default dependencies."""
-        self.dependencies: Dict[PipelineStage, List[StageDependency]] = defaultdict(
+        self.dependencies: dict[PipelineStage, list[StageDependency]] = defaultdict(
             list
         )
-        self.reverse_dependencies: Dict[PipelineStage, List[StageDependency]] = (
+        self.reverse_dependencies: dict[PipelineStage, list[StageDependency]] = (
             defaultdict(list)
         )
         self._setup_default_dependencies()
@@ -161,20 +161,20 @@ class PipelineDAG:
             if dep.to_stage != to_stage
         ]
 
-    def get_dependencies(self, stage: PipelineStage) -> List[StageDependency]:
+    def get_dependencies(self, stage: PipelineStage) -> list[StageDependency]:
         """Get all dependencies for a given stage."""
         return self.dependencies[stage]
 
-    def get_dependents(self, stage: PipelineStage) -> List[StageDependency]:
+    def get_dependents(self, stage: PipelineStage) -> list[StageDependency]:
         """Get all stages that depend on the given stage."""
         return self.reverse_dependencies[stage]
 
     def topological_sort(
         self,
-        available_stages: Optional[Set[PipelineStage]] = None,
+        available_stages: Optional[set[PipelineStage]] = None,
         node_type: Optional[NodeType] = None,
         budget_cents: Optional[float] = None,
-    ) -> List[PipelineStage]:
+    ) -> list[PipelineStage]:
         """
         Perform topological sorting on the DAG.
 
@@ -239,8 +239,8 @@ class PipelineDAG:
         return result
 
     def _filter_by_capabilities(
-        self, stages: Set[PipelineStage], capabilities: List[str]
-    ) -> Set[PipelineStage]:
+        self, stages: set[PipelineStage], capabilities: list[str]
+    ) -> set[PipelineStage]:
         """Filter stages based on available capabilities."""
         # Map stages to required capabilities based on actual NodeCapability names
         stage_capabilities = {
@@ -291,8 +291,8 @@ class PipelineDAG:
         return filtered_stages
 
     def validate_dependencies(
-        self, completed_stages: Set[PipelineStage], target_stage: PipelineStage
-    ) -> Tuple[bool, List[PipelineStage], List[PipelineStage]]:
+        self, completed_stages: set[PipelineStage], target_stage: PipelineStage
+    ) -> tuple[bool, list[PipelineStage], list[PipelineStage]]:
         """
         Validate if dependencies are met for a target stage.
 
@@ -324,9 +324,7 @@ class PipelineDAG:
                         if (
                             edge.condition == "success"
                             and node_data.get("status") != "success"
-                        ):
-                            continue
-                        elif (
+                        ) or (
                             edge.condition == "failure"
                             and node_data.get("status") != "failure"
                         ):
@@ -338,10 +336,10 @@ class PipelineDAG:
 
     def get_execution_plan(
         self,
-        target_stages: Optional[Set[PipelineStage]] = None,
+        target_stages: Optional[set[PipelineStage]] = None,
         node_type: Optional[NodeType] = None,
         budget_cents: Optional[float] = None,
-    ) -> List[PipelineStage]:
+    ) -> list[PipelineStage]:
         """
         Get an execution plan for the pipeline.
 
@@ -362,7 +360,7 @@ class PipelineDAG:
         logger.info(f"Generated execution plan: {[s.value for s in execution_order]}")
         return execution_order
 
-    def get_stage_info(self, stage: PipelineStage) -> Dict[str, Any]:
+    def get_stage_info(self, stage: PipelineStage) -> dict[str, Any]:
         """Get detailed information about a stage."""
         dependencies = self.get_dependencies(stage)
         dependents = self.get_dependents(stage)
@@ -396,8 +394,8 @@ class PipelineExecutor:
     def __init__(self, dag: Optional[PipelineDAG] = None):
         """Initialize the pipeline executor."""
         self.dag = dag or PipelineDAG()
-        self.completed_stages: Set[PipelineStage] = set()
-        self.stage_results: Dict[PipelineStage, StageResult] = {}
+        self.completed_stages: set[PipelineStage] = set()
+        self.stage_results: dict[PipelineStage, StageResult] = {}
 
     def can_execute_stage(self, stage: PipelineStage) -> bool:
         """Check if a stage can be executed based on its dependencies."""
@@ -432,8 +430,8 @@ class PipelineExecutor:
         logger.error(f"Stage {stage.value} failed: {error}")
 
     def get_next_executable_stages(
-        self, available_stages: Optional[Set[PipelineStage]] = None
-    ) -> List[PipelineStage]:
+        self, available_stages: Optional[set[PipelineStage]] = None
+    ) -> list[PipelineStage]:
         """Get the next stages that can be executed."""
         if available_stages is None:
             available_stages = set(PipelineStage)
@@ -463,18 +461,18 @@ def create_pipeline_dag() -> PipelineDAG:
 
 
 def get_execution_plan(
-    target_stages: Optional[Set[PipelineStage]] = None,
+    target_stages: Optional[set[PipelineStage]] = None,
     node_type: Optional[NodeType] = None,
     budget_cents: Optional[float] = None,
-) -> List[PipelineStage]:
+) -> list[PipelineStage]:
     """Get an execution plan for the pipeline."""
     dag = create_pipeline_dag()
     return dag.get_execution_plan(target_stages, node_type, budget_cents)
 
 
 def validate_stage_dependencies(
-    completed_stages: Set[PipelineStage], target_stage: PipelineStage
-) -> Tuple[bool, List[PipelineStage], List[PipelineStage]]:
+    completed_stages: set[PipelineStage], target_stage: PipelineStage
+) -> tuple[bool, list[PipelineStage], list[PipelineStage]]:
     """Validate dependencies for a target stage."""
     dag = create_pipeline_dag()
     return dag.validate_dependencies(completed_stages, target_stage)

@@ -237,7 +237,7 @@ if "#" in cost_per_email_str:
     cost_per_email_str = cost_per_email_str.split("#")[0].strip()
 COST_PER_EMAIL = float(cost_per_email_str)
 
-# $250 monthly budget  
+# $250 monthly budget
 monthly_budget_str = os.getenv("MONTHLY_BUDGET", "250")
 if "#" in monthly_budget_str:
     monthly_budget_str = monthly_budget_str.split("#")[0].strip()

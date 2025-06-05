@@ -65,7 +65,7 @@ class PipelineLoadTester:
         port: int,
         concurrent_requests: int = 100,
         total_requests: int = 1000,
-        test_payload: Dict[str, Any] = None,
+        test_payload: dict[str, Any] = None,
     ) -> PerformanceMetrics:
         """
         Test load performance of a specific service.
@@ -201,7 +201,7 @@ class PipelineLoadTester:
             async with semaphore:
                 workflow_start = time.time()
                 try:
-                    execution_id = await workflow_manager.start_workflow(
+                    await workflow_manager.start_workflow(
                         "test_workflow",
                         {
                             "zip_codes": ["10002", "98908"],
@@ -272,7 +272,7 @@ class PipelineLoadTester:
 class CapacityValidator:
     """Validates that the system meets 10x capacity targets."""
 
-    def __init__(self, baseline_metrics: Dict[str, PerformanceMetrics] = None):
+    def __init__(self, baseline_metrics: dict[str, PerformanceMetrics] = None):
         """Initialize capacity validator."""
         self.baseline_metrics = baseline_metrics or {}
         self.target_multiplier = 10.0
@@ -281,7 +281,7 @@ class CapacityValidator:
         self,
         current_metrics: PerformanceMetrics,
         baseline_metrics: PerformanceMetrics = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate that current performance meets 10x improvement target.
 
@@ -346,7 +346,7 @@ class CapacityValidator:
         rps_improvement: float,
         response_time_improvement: float,
         error_rate_change: float,
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate recommendations based on performance results."""
         recommendations = []
 
@@ -379,7 +379,7 @@ class CapacityValidator:
 async def run_comprehensive_performance_tests():
     """Run comprehensive performance tests for all services."""
     load_tester = PipelineLoadTester()
-    capacity_validator = CapacityValidator()
+    CapacityValidator()
 
     try:
         await load_tester.start()
@@ -474,9 +474,7 @@ async def main():
     await kafka_manager.start()
 
     try:
-        results = await run_comprehensive_performance_tests()
-        print("Performance testing completed successfully!")
-        print(f"Tested {len(results)} scenarios")
+        await run_comprehensive_performance_tests()
 
     finally:
         await kafka_manager.stop()

@@ -317,7 +317,7 @@ class IPRotationDashboard:
         """
 
     def _generate_status_cards(
-        self, pool_status: List[Dict], dashboard_data: Dict
+        self, pool_status: list[dict], dashboard_data: dict
     ) -> str:
         """Generate status cards section."""
         total_ips = len(pool_status)
@@ -368,7 +368,7 @@ class IPRotationDashboard:
         </div>
         """
 
-    def _generate_pool_table(self, pool_status: List[Dict]) -> str:
+    def _generate_pool_table(self, pool_status: list[dict]) -> str:
         """Generate IP pool status table."""
         if not pool_status:
             return """
@@ -437,7 +437,7 @@ class IPRotationDashboard:
         """
 
     def _generate_alerts_section(
-        self, dashboard_data: Dict, alert_summary: Dict
+        self, dashboard_data: dict, alert_summary: dict
     ) -> str:
         """Generate alerts section."""
         recent_alerts = dashboard_data.get("recent_alerts", [])
@@ -470,7 +470,7 @@ class IPRotationDashboard:
         </div>
         """
 
-    def _generate_charts_section(self, dashboard_data: Dict) -> str:
+    def _generate_charts_section(self, dashboard_data: dict) -> str:
         """Generate charts section."""
         return """
         <div class="section">
@@ -496,7 +496,7 @@ class IPRotationDashboard:
         </div>
         """
 
-    def _generate_circuit_breaker_section(self, dashboard_data: Dict) -> str:
+    def _generate_circuit_breaker_section(self, dashboard_data: dict) -> str:
         """Generate circuit breaker section."""
         cb_status = dashboard_data["circuit_breaker_status"]
         status_class = f"circuit-{cb_status['state']}"
@@ -521,7 +521,7 @@ class IPRotationDashboard:
         </div>
         """
 
-    def _get_dashboard_javascript(self, dashboard_data: Dict) -> str:
+    def _get_dashboard_javascript(self, dashboard_data: dict) -> str:
         """Get JavaScript for dashboard interactivity."""
         alerts_by_severity = dashboard_data["metrics"].get("alerts_by_severity", {})
         alerts_by_type = dashboard_data["metrics"].get("alerts_by_type", {})
@@ -614,7 +614,7 @@ class IPRotationDashboard:
             logger.error(f"Error exporting metrics: {e}")
             return json.dumps({"error": str(e)})
 
-    def get_health_check(self) -> Dict[str, Any]:
+    def get_health_check(self) -> dict[str, Any]:
         """Get system health check data."""
         if not self.rotation_service or not self.alerting_service:
             return {"status": "error", "message": "Services not available"}

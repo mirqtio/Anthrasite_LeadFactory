@@ -36,11 +36,11 @@ class CreateEmailTestRequest(BaseModel):
     name: str = Field(..., description="Test name")
     description: str = Field(..., description="Test description")
     email_template: str = Field(default="report_delivery", description="Email template")
-    subject_variants: List[Dict[str, Any]] = Field(
+    subject_variants: list[dict[str, Any]] = Field(
         ..., description="Subject line variants"
     )
     target_sample_size: int = Field(default=1000, description="Target sample size")
-    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+    metadata: Optional[dict[str, Any]] = Field(None, description="Additional metadata")
 
 
 class CreatePricingTestRequest(BaseModel):
@@ -49,9 +49,9 @@ class CreatePricingTestRequest(BaseModel):
     name: str = Field(..., description="Test name")
     description: str = Field(..., description="Test description")
     audit_type: str = Field(..., description="Audit type (seo, security, etc.)")
-    price_variants: List[Dict[str, Any]] = Field(..., description="Price variants")
+    price_variants: list[dict[str, Any]] = Field(..., description="Price variants")
     target_sample_size: int = Field(default=1000, description="Target sample size")
-    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+    metadata: Optional[dict[str, Any]] = Field(None, description="Additional metadata")
 
 
 class TestStatusUpdate(BaseModel):
@@ -368,7 +368,7 @@ async def record_test_event(
     event_type: str = Query(..., description="Event type"),
     user_id: str = Query(..., description="User identifier"),
     conversion_value: Optional[float] = Query(None, description="Conversion value"),
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: Optional[dict[str, Any]] = None,
     test_manager: ABTestManager = Depends(get_ab_test_manager),
 ):
     """Record a conversion event for an A/B test."""

@@ -6,6 +6,7 @@ automatically scale GPU resources based on personalization workload.
 """
 
 import asyncio
+import contextlib
 import json
 import logging
 import time
@@ -28,7 +29,7 @@ class WorkloadPrediction:
     predicted_tasks: int
     confidence: float
     time_horizon_minutes: int
-    recommended_instances: List[GPUInstanceType]
+    recommended_instances: list[GPUInstanceType]
     estimated_cost: float
 
 
@@ -81,10 +82,8 @@ class PersonalizationOrchestrator:
 
         logger.info("Personalization Orchestrator started")
 
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             await asyncio.gather(monitoring_task, orchestration_task)
-        except asyncio.CancelledError:
-            pass
 
     async def stop(self):
         """Stop the personalization orchestrator."""
@@ -272,7 +271,7 @@ class PersonalizationOrchestrator:
                     )
 
     async def _trigger_personalization_stage(
-        self, execution_id: str, execution_status: Dict[str, Any]
+        self, execution_id: str, execution_status: dict[str, Any]
     ):
         """Trigger personalization stage for a workflow execution."""
         try:
@@ -342,7 +341,7 @@ class PersonalizationOrchestrator:
             f"Throughput={self.metrics['throughput_per_hour']:.1f}/hr"
         )
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get comprehensive orchestration status."""
         return {
             "running": self.running,
@@ -359,7 +358,7 @@ class WorkloadPredictor:
     """Predicts personalization workload based on historical data."""
 
     async def predict_workload(
-        self, history: List[Dict[str, Any]]
+        self, history: list[dict[str, Any]]
     ) -> WorkloadPrediction:
         """Predict future workload based on history."""
         if not history:
@@ -378,12 +377,9 @@ class WorkloadPredictor:
         # Calculate trend
         if len(recent_queues) >= 2:
             queue_trend = (recent_queues[-1] - recent_queues[0]) / len(recent_queues)
-            processing_trend = (recent_processing[-1] - recent_processing[0]) / len(
-                recent_processing
-            )
+            (recent_processing[-1] - recent_processing[0]) / len(recent_processing)
         else:
             queue_trend = 0
-            processing_trend = 0
 
         # Predict queue size in 1 hour
         current_queue = recent_queues[-1] if recent_queues else 0

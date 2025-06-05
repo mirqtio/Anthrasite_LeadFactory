@@ -82,7 +82,7 @@ class TestIPRotationIntegration:
             reason=RotationReason.MANUAL_ROTATION,
         )
 
-        assert rotation_event.success == True
+        assert rotation_event.success
         assert rotation_event.from_ip == "192.168.1.1"
         assert rotation_event.to_ip == "192.168.1.2"
         assert rotation_event.reason == RotationReason.MANUAL_ROTATION
@@ -114,7 +114,7 @@ class TestIPRotationIntegration:
         rotation_event = rotation_service.handle_threshold_breach(breach)
 
         assert rotation_event is not None
-        assert rotation_event.success == True
+        assert rotation_event.success
         assert rotation_event.reason == RotationReason.THRESHOLD_BREACH
         assert rotation_event.breach_details is not None
         assert rotation_event.breach_details["rule_name"] == "test_rule"
@@ -204,7 +204,7 @@ class TestIPRotationIntegration:
             to_subuser="user2",
             reason=RotationReason.MANUAL_ROTATION,
         )
-        assert rotation_event1.success == True
+        assert rotation_event1.success
 
         # Try to rotate back immediately - should fail due to cooldown
         rotation_event2 = rotation_service.execute_rotation(
@@ -214,7 +214,7 @@ class TestIPRotationIntegration:
             to_subuser="user1",
             reason=RotationReason.MANUAL_ROTATION,
         )
-        assert rotation_event2.success == False
+        assert not rotation_event2.success
         assert "cooldown" in rotation_event2.error_message.lower()
 
     def test_rate_limiting_integration(self, rotation_service):

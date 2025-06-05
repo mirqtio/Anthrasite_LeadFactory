@@ -103,8 +103,8 @@ class AlertSummary(BaseModel):
     """Alert summary response model."""
 
     total_alerts: int
-    by_severity: Dict[str, int]
-    by_type: Dict[str, int]
+    by_severity: dict[str, int]
+    by_type: dict[str, int]
     time_period_hours: int
 
 
@@ -167,7 +167,7 @@ async def get_system_status(
         )
 
 
-@router.get("/pool", response_model=List[IPSubuserResponse])
+@router.get("/pool", response_model=list[IPSubuserResponse])
 async def get_ip_pool(
     rotation_service: IPRotationService = Depends(get_rotation_service),
 ):

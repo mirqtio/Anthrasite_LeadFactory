@@ -46,7 +46,7 @@ class ProfitReportingService:
 
         logger.info("Profit reporting service initialized")
 
-    def generate_daily_report(self, date: str) -> Dict[str, Any]:
+    def generate_daily_report(self, date: str) -> dict[str, Any]:
         """Generate daily profit report with enhanced fee breakdowns.
 
         Args:
@@ -201,7 +201,7 @@ class ProfitReportingService:
         )
         return report
 
-    def generate_weekly_report(self, start_date: str) -> Dict[str, Any]:
+    def generate_weekly_report(self, start_date: str) -> dict[str, Any]:
         """Generate weekly profit report with enhanced fee breakdowns.
 
         Args:
@@ -390,7 +390,7 @@ class ProfitReportingService:
         )
         return report
 
-    def generate_monthly_report(self, year: int, month: int) -> Dict[str, Any]:
+    def generate_monthly_report(self, year: int, month: int) -> dict[str, Any]:
         """Generate monthly profit report with enhanced fee breakdowns.
 
         Args:
@@ -596,7 +596,7 @@ class ProfitReportingService:
         )
         return report
 
-    def analyze_trends(self, start_date: str, end_date: str) -> Dict[str, Any]:
+    def analyze_trends(self, start_date: str, end_date: str) -> dict[str, Any]:
         """Analyze trends over a date range.
 
         Args:
@@ -663,7 +663,7 @@ class ProfitReportingService:
             "end_date": end_date,
         }
 
-    def _calculate_trend(self, values: List[float]) -> Dict[str, Any]:
+    def _calculate_trend(self, values: list[float]) -> dict[str, Any]:
         """Calculate trend statistics for a series of values.
 
         Args:
@@ -720,7 +720,7 @@ class ProfitReportingService:
             "change_percent": change_percent,
         }
 
-    def generate_trend_analysis(self, start_date: str, end_date: str) -> Dict[str, Any]:
+    def generate_trend_analysis(self, start_date: str, end_date: str) -> dict[str, Any]:
         """Generate trend analysis report.
 
         Args:
@@ -790,7 +790,7 @@ class ProfitReportingService:
         logger.info(f"Trend analysis generated for {len(time_series)} days")
         return report
 
-    def _generate_insights(self, time_series: List[Dict], summary: Dict) -> List[str]:
+    def _generate_insights(self, time_series: list[dict], summary: dict) -> list[str]:
         """Generate business insights from the data.
 
         Args:
@@ -857,7 +857,7 @@ class ProfitReportingService:
 
         return insights
 
-    def _generate_business_insights(self, report: Dict[str, Any]) -> List[str]:
+    def _generate_business_insights(self, report: dict[str, Any]) -> list[str]:
         """
         Generate business insights from a profit report.
 
@@ -936,7 +936,7 @@ class ProfitReportingService:
 
         return insights
 
-    def export_report_csv(self, report: Dict[str, Any]) -> str:
+    def export_report_csv(self, report: dict[str, Any]) -> str:
         """Export report to CSV format.
 
         Args:
@@ -990,7 +990,7 @@ class ProfitReportingService:
 
         return output.getvalue()
 
-    def export_to_json(self, report: Dict[str, Any], filename: str) -> str:
+    def export_to_json(self, report: dict[str, Any], filename: str) -> str:
         """
         Export report to JSON format.
 
@@ -1009,7 +1009,7 @@ class ProfitReportingService:
         logger.info(f"Report exported to JSON: {filepath}")
         return filepath
 
-    def export_to_csv(self, report: Dict[str, Any], filename: str) -> str:
+    def export_to_csv(self, report: dict[str, Any], filename: str) -> str:
         """
         Export report to CSV format.
 
@@ -1068,7 +1068,7 @@ class ProfitReportingService:
         return filepath
 
     def save_report(
-        self, report: Dict[str, Any], filename: str, format: str = "json"
+        self, report: dict[str, Any], filename: str, format: str = "json"
     ) -> Optional[str]:
         """
         Save report to disk in specified format.

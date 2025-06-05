@@ -567,17 +567,17 @@ def get_businesses_for_email(
         businesses = storage.get_businesses_for_email(
             force=force, business_id=business_id, limit=limit
         )
-        
+
         # Filter businesses based on audit threshold
         filtered_businesses = []
         for business in businesses:
             # Get the business score
-            score = business.get('score', 0)
-            
+            score = business.get("score", 0)
+
             # Check if score meets audit threshold
             from leadfactory.pipeline.score import meets_audit_threshold
             from leadfactory.scoring.simplified_yaml_parser import SimplifiedYamlParser
-            
+
             # Get the current threshold
             try:
                 parser = SimplifiedYamlParser()
@@ -585,7 +585,7 @@ def get_businesses_for_email(
                 threshold = config.settings.audit_threshold
             except:
                 threshold = 60  # Default
-            
+
             if meets_audit_threshold(score):
                 filtered_businesses.append(business)
             else:
@@ -594,18 +594,18 @@ def get_businesses_for_email(
                     f"Skipping business {business.get('id')} ({business.get('name')}) "
                     f"with score {score} below audit threshold"
                 )
-                
+
                 # Track skip reason in database
                 try:
                     storage.update_processing_status(
-                        business_id=business.get('id'),
-                        stage='email',
-                        status='skipped',
-                        skip_reason=skip_reason
+                        business_id=business.get("id"),
+                        stage="email",
+                        status="skipped",
+                        skip_reason=skip_reason,
                     )
                 except Exception as e:
                     logger.warning(f"Failed to track skip reason: {e}")
-        
+
         return filtered_businesses
     except Exception as e:
         logger.exception(f"Error getting businesses for email: {str(e)}")
@@ -749,42 +749,46 @@ async def generate_email_content(business: dict, template: str) -> tuple[str, st
     try:
         # Check if AI content generation is enabled
         use_ai_content = os.getenv("USE_AI_EMAIL_CONTENT", "true").lower() == "true"
-        
+
         if use_ai_content:
             try:
                 # Use AI content generator
-                from leadfactory.email.ai_content_generator import email_content_personalizer
-                
+                from leadfactory.email.ai_content_generator import (
+                    email_content_personalizer,
+                )
+
                 # Get score data if available
                 score_data = None
-                if 'score' in business:
+                if "score" in business:
                     score_data = {
-                        'score': business.get('score', 0),
-                        'performance_score': business.get('performance_score', 50),
-                        'technology_score': business.get('technology_score', 50),
-                        'seo_score': business.get('seo_score', 50),
-                        'mobile_score': business.get('mobile_score', 50)
+                        "score": business.get("score", 0),
+                        "performance_score": business.get("performance_score", 50),
+                        "technology_score": business.get("technology_score", 50),
+                        "seo_score": business.get("seo_score", 50),
+                        "mobile_score": business.get("mobile_score", 50),
                     }
-                
+
                 # Generate personalized content
-                subject, html_content, text_content = await email_content_personalizer.personalize_email_content(
-                    business_data=business,
-                    template=template,
-                    score_data=score_data
+                subject, html_content, text_content = (
+                    await email_content_personalizer.personalize_email_content(
+                        business_data=business, template=template, score_data=score_data
+                    )
                 )
-                
+
                 # Apply standard template replacements
                 html_content = apply_template_replacements(html_content, business)
-                
+
                 return subject, html_content, text_content
-                
+
             except Exception as e:
-                logger.warning(f"AI content generation failed, falling back to standard: {e}")
+                logger.warning(
+                    f"AI content generation failed, falling back to standard: {e}"
+                )
                 # Fall through to standard generation
-        
+
         # Standard email generation (fallback or if AI is disabled)
         return generate_standard_email_content(business, template)
-        
+
     except Exception as e:
         logger.exception(f"Error generating email content: {str(e)}")
         # Return fallback content
@@ -795,13 +799,15 @@ async def generate_email_content(business: dict, template: str) -> tuple[str, st
         )
 
 
-def generate_standard_email_content(business: dict, template: str) -> tuple[str, str, str]:
+def generate_standard_email_content(
+    business: dict, template: str
+) -> tuple[str, str, str]:
     """Generate standard email content without AI.
-    
+
     Args:
         business: Business data.
         template: Email template.
-        
+
     Returns:
         tuple of (subject, html_content, text_content).
     """
@@ -809,9 +815,7 @@ def generate_standard_email_content(business: dict, template: str) -> tuple[str,
     business_name = business["name"]
     contact_name = business.get("contact_name") or "Owner"
     business_type = business.get("business_type") or "business"
-    business_website = (
-        business.get("website") or business.get("url") or "your website"
-    )
+    business_website = business.get("website") or business.get("url") or "your website"
     business_email = business.get("email") or business.get("contact_email") or ""
 
     # Generate subject line
@@ -878,18 +882,20 @@ This email was sent to {business_email}. If you'd prefer not to receive these em
 
 def apply_template_replacements(template: str, business: dict) -> str:
     """Apply standard template variable replacements.
-    
+
     Args:
         template: HTML template with placeholders
         business: Business data dictionary
-        
+
     Returns:
         Template with placeholders replaced
     """
     # Extract business data
     business_name = business.get("name", "Business")
     contact_name = business.get("contact_name") or "Owner"
-    business_type = business.get("business_type") or business.get("vertical") or "business"
+    business_type = (
+        business.get("business_type") or business.get("vertical") or "business"
+    )
     business_website = business.get("website") or business.get("url") or "your website"
     business_email = business.get("email") or business.get("contact_email") or ""
 
@@ -915,7 +921,7 @@ def apply_template_replacements(template: str, business: dict) -> str:
     html_content = template
     for placeholder, value in replacements.items():
         html_content = html_content.replace(placeholder, value)
-    
+
     return html_content
 
 
@@ -958,7 +964,9 @@ async def send_business_email(
             return False
 
         # Generate personalized email content from template
-        subject, html_content, text_content = await generate_email_content(business, template)
+        subject, html_content, text_content = await generate_email_content(
+            business, template
+        )
 
         # Get mockup file path from assets table
         mockup_path = None
@@ -970,7 +978,7 @@ async def send_business_email(
             logger.exception(
                 f"Error getting mockup asset for business {business['id']}: {str(e)}"
             )
-        
+
         # Get screenshot (thumbnail) file path from assets table
         screenshot_path = None
         try:
@@ -1011,7 +1019,7 @@ async def send_business_email(
 
         # Prepare attachments
         attachments = []
-        
+
         # Add screenshot/thumbnail as inline attachment if available
         if screenshot_path and os.path.exists(screenshot_path):
             try:
@@ -1030,11 +1038,15 @@ async def send_business_email(
                     "content_id": "website-thumbnail.png",
                 }
                 attachments.append(screenshot_attachment)
-                logger.info(f"Embedded screenshot thumbnail for business {business['id']}")
+                logger.info(
+                    f"Embedded screenshot thumbnail for business {business['id']}"
+                )
             except Exception as e:
-                logger.warning(f"Failed to read screenshot file {screenshot_path}: {str(e)}")
+                logger.warning(
+                    f"Failed to read screenshot file {screenshot_path}: {str(e)}"
+                )
                 # Screenshot is optional, so we continue
-        
+
         # Add mockup as inline attachment
         if mockup_path and os.path.exists(mockup_path):
             try:
@@ -1305,7 +1317,9 @@ def main() -> int:
             logger.info(f"Processing business {business_id}: {business_name}")
 
             # Send the email
-            success = asyncio.run(send_business_email(business, sender, template, DRY_RUN))
+            success = asyncio.run(
+                send_business_email(business, sender, template, DRY_RUN)
+            )
 
             if success:
                 total_sent += 1

@@ -565,14 +565,14 @@ def step_verify_ip_available_again(context, ip):
             assert is_available, f"IP {ip} should be available again"
             break
     else:
-        assert False, f"IP {ip} not found in pool"
+        raise AssertionError(f"IP {ip} not found in pool")
 
 
 @then("the IP status should be ACTIVE")
 def step_verify_ip_status_active(context):
     """Verify the checked IP status is ACTIVE."""
     if not hasattr(context, "checked_ip"):
-        assert False, "No IP was checked for availability"
+        raise AssertionError("No IP was checked for availability")
 
     for pool in context.rotation_service.ip_pool:
         if pool.ip_address == context.checked_ip:
@@ -581,7 +581,7 @@ def step_verify_ip_status_active(context):
             )
             break
     else:
-        assert False, f"IP {context.checked_ip} not found in pool"
+        raise AssertionError(f"IP {context.checked_ip} not found in pool")
 
 
 @then('the rotation reason should be "{reason}"')

@@ -23,10 +23,10 @@ class ReportSection:
     """Represents a section in an audit report."""
 
     title: str
-    content: Union[str, List[str], Dict[str, Any]]
+    content: Union[str, list[str], dict[str, Any]]
     section_type: str = "text"  # text, table, chart, list
     order: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -37,8 +37,8 @@ class ReportData:
     subtitle: Optional[str] = None
     company_name: str = ""
     report_date: datetime = field(default_factory=datetime.now)
-    sections: List[ReportSection] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    sections: list[ReportSection] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def add_section(self, section: ReportSection) -> None:
         """Add a section to the report."""
@@ -625,7 +625,7 @@ body {
 
         return report
 
-    def get_available_templates(self) -> List[str]:
+    def get_available_templates(self) -> list[str]:
         """Get list of available template files."""
         templates = []
         for file_path in self.template_dir.glob("*.html"):
@@ -635,8 +635,8 @@ body {
 
 # Helper functions for common formatting needs
 def format_financial_data(
-    data: Dict[str, float], currency: str = "USD"
-) -> Dict[str, str]:
+    data: dict[str, float], currency: str = "USD"
+) -> dict[str, str]:
     """Format financial data for display."""
     formatted = {}
     for key, value in data.items():
@@ -648,11 +648,11 @@ def format_financial_data(
 
 
 def create_comparison_table(
-    before: Dict[str, Any],
-    after: Dict[str, Any],
+    before: dict[str, Any],
+    after: dict[str, Any],
     title_before: str = "Before",
     title_after: str = "After",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a comparison table structure."""
     headers = ["Metric", title_before, title_after, "Change"]
     rows = []
@@ -680,8 +680,8 @@ def create_comparison_table(
 
 
 def generate_executive_summary(
-    metrics: Dict[str, Any], recommendations: List[str]
-) -> List[str]:
+    metrics: dict[str, Any], recommendations: list[str]
+) -> list[str]:
     """Generate an executive summary based on metrics and recommendations."""
     summary = [
         f"This report analyzes {len(metrics)} key performance indicators and provides {len(recommendations)} actionable recommendations.",

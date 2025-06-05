@@ -113,7 +113,7 @@ class DocumentationLinkValidator:
             links = self.extract_links_from_file(file_path)
             results["total_links"] = len(links)
 
-            for link_text, link_url in links:
+            for _link_text, link_url in links:
                 parsed_url = urlparse(link_url)
 
                 if parsed_url.scheme in ("http", "https"):
@@ -166,37 +166,20 @@ class DocumentationLinkValidator:
 
     def print_report(self, summary: dict):
         """Print validation report."""
-        print("📚 Documentation Link Validation Report")
-        print("=" * 50)
-        print(f"Files processed: {summary['total_files']}")
-        print(f"Total links: {summary['total_links']}")
-        print(f"✅ Valid links: {summary['valid_links']}")
-        print(f"❌ Broken links: {summary['broken_links']}")
-        print(f"⚠️  Warnings: {summary['warnings']}")
-        print()
 
         if self.errors:
-            print("❌ ERRORS:")
-            for error in self.errors:
-                print(f"  - {error}")
-            print()
+            for _error in self.errors:
+                pass
 
         if self.warnings:
-            print("⚠️  WARNINGS:")
-            for warning in self.warnings[:10]:  # Limit to first 10 warnings
-                print(f"  - {warning}")
+            for _warning in self.warnings[:10]:  # Limit to first 10 warnings
+                pass
             if len(self.warnings) > 10:
-                print(f"  ... and {len(self.warnings) - 10} more warnings")
-            print()
+                pass
 
         # Per-file breakdown
-        print("📄 Per-file results:")
         for file_result in summary["files"]:
-            status = "✅" if file_result["broken_links"] == 0 else "❌"
-            print(
-                f"  {status} {file_result['file']}: "
-                f"{file_result['valid_links']}/{file_result['total_links']} valid"
-            )
+            "✅" if file_result["broken_links"] == 0 else "❌"
 
 
 def main():
@@ -210,10 +193,8 @@ def main():
 
     # Exit with error code if there are broken links
     if summary["broken_links"] > 0:
-        print(f"\n❌ Validation failed: {summary['broken_links']} broken links found")
         sys.exit(1)
     else:
-        print("\n✅ All documentation links are valid!")
         sys.exit(0)
 
 

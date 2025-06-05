@@ -42,7 +42,7 @@ class ProviderConfig:
     priority: int = 1
     max_retries: int = 3
     retry_delay: float = 1.0
-    additional_config: Dict[str, Any] = field(default_factory=dict)
+    additional_config: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -62,7 +62,7 @@ class LLMConfig:
 
     fallback_strategy: FallbackStrategy = FallbackStrategy.SMART_FALLBACK
     max_fallback_attempts: int = 3
-    providers: Dict[str, ProviderConfig] = field(default_factory=dict)
+    providers: dict[str, ProviderConfig] = field(default_factory=dict)
     cost_config: CostConfig = field(default_factory=CostConfig)
     default_temperature: float = 0.7
     default_max_tokens: int = 1000
@@ -180,11 +180,11 @@ class LLMConfig:
 
         return config
 
-    def get_enabled_providers(self) -> List[ProviderConfig]:
+    def get_enabled_providers(self) -> list[ProviderConfig]:
         """Get list of enabled providers."""
         return [provider for provider in self.providers.values() if provider.enabled]
 
-    def get_provider_order(self) -> List[str]:
+    def get_provider_order(self) -> list[str]:
         """Get providers ordered by fallback strategy."""
         enabled_providers = self.get_enabled_providers()
 
@@ -239,7 +239,7 @@ class LLMConfig:
         provider = self.providers[provider_name]
         return (tokens / 1000.0) * provider.cost_per_1k_tokens
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """Validate configuration and return list of issues."""
         issues = []
 

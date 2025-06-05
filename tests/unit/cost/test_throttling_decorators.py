@@ -464,9 +464,8 @@ class TestThrottlingContext(unittest.TestCase):
         with patch(
             "leadfactory.cost.throttling_decorators.apply_throttling_decision",
             return_value=True,
-        ):
-            with ThrottlingContext("openai", "gpt-4o", "chat", 5.0) as decision:
-                self.assertEqual(decision.action, ThrottlingAction.ALLOW)
+        ), ThrottlingContext("openai", "gpt-4o", "chat", 5.0) as decision:
+            self.assertEqual(decision.action, ThrottlingAction.ALLOW)
 
         self.mock_service.should_throttle.assert_called_once_with(
             "openai", "gpt-4o", "chat", 5.0, ThrottlingStrategy.ADAPTIVE
@@ -483,10 +482,9 @@ class TestThrottlingContext(unittest.TestCase):
         with patch(
             "leadfactory.cost.throttling_decorators.apply_throttling_decision",
             return_value=False,
-        ):
-            with self.assertRaises(ThrottlingError):
-                with ThrottlingContext("openai", "gpt-4o", "chat", 5.0):
-                    pass
+        ), self.assertRaises(ThrottlingError):
+            with ThrottlingContext("openai", "gpt-4o", "chat", 5.0):
+                pass
 
         self.mock_service.record_request_start.assert_not_called()
         self.mock_service.record_request_end.assert_not_called()
@@ -500,11 +498,10 @@ class TestThrottlingContext(unittest.TestCase):
         with patch(
             "leadfactory.cost.throttling_decorators.apply_throttling_decision",
             return_value=False,
-        ):
-            with ThrottlingContext(
-                "openai", "gpt-4o", "chat", 5.0, raise_on_throttle=False
-            ) as decision:
-                self.assertEqual(decision.action, ThrottlingAction.REJECT)
+        ), ThrottlingContext(
+            "openai", "gpt-4o", "chat", 5.0, raise_on_throttle=False
+        ) as decision:
+            self.assertEqual(decision.action, ThrottlingAction.REJECT)
 
         self.mock_service.record_request_end.assert_not_called()
 
@@ -513,10 +510,9 @@ class TestThrottlingContext(unittest.TestCase):
         with patch(
             "leadfactory.cost.throttling_decorators.apply_throttling_decision",
             return_value=True,
-        ):
-            with self.assertRaises(ValueError):
-                with ThrottlingContext("openai", "gpt-4o", "chat", 5.0):
-                    raise ValueError("Test error")
+        ), self.assertRaises(ValueError):
+            with ThrottlingContext("openai", "gpt-4o", "chat", 5.0):
+                raise ValueError("Test error")
 
         # Should still record request end
         self.mock_service.record_request_start.assert_called_once()

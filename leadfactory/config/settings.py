@@ -85,9 +85,13 @@ SUPABASE_BUCKET = get_env("SUPABASE_BUCKET", "mockups")
 # ==================
 # PDF delivery mode: "cloud" (Supabase), "local" (local HTTP), "email" (email attachment)
 PDF_DELIVERY_MODE = get_env("PDF_DELIVERY_MODE", "cloud")
-LOCAL_PDF_STORAGE_PATH = get_env("LOCAL_PDF_STORAGE_PATH", str(Path(DATA_DIR) / "pdf_reports"))
+LOCAL_PDF_STORAGE_PATH = get_env(
+    "LOCAL_PDF_STORAGE_PATH", str(Path(DATA_DIR) / "pdf_reports")
+)
 LOCAL_PDF_BASE_URL = get_env("LOCAL_PDF_BASE_URL", "http://localhost:8000/reports")
-PDF_EMAIL_MAX_SIZE_MB = get_int_env("PDF_EMAIL_MAX_SIZE_MB", 20)  # Max size for email attachments
+PDF_EMAIL_MAX_SIZE_MB = get_int_env(
+    "PDF_EMAIL_MAX_SIZE_MB", 20
+)  # Max size for email attachments
 PDF_LOCAL_SERVER_PORT = get_int_env("PDF_LOCAL_SERVER_PORT", 8000)
 PDF_LOCAL_SERVER_HOST = get_env("PDF_LOCAL_SERVER_HOST", "localhost")
 

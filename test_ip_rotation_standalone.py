@@ -42,7 +42,6 @@ from leadfactory.services.threshold_detector import (
 
 def test_ip_pool_management():
     """Test basic IP pool management functionality."""
-    print("Testing IP pool management...")
 
     config = create_default_rotation_config()
     rotation_service = IPRotationService(config)
@@ -62,19 +61,16 @@ def test_ip_pool_management():
 
     # Test removing IP/subuser
     removed = rotation_service.remove_ip_subuser("192.168.1.2", "user2")
-    assert removed == True, "Should successfully remove"
+    assert removed, "Should successfully remove"
     assert len(rotation_service.ip_pool) == 2, "Should have 2 IP/subuser combinations"
 
     # Test removing non-existent
     removed = rotation_service.remove_ip_subuser("192.168.1.99", "user99")
-    assert removed == False, "Should fail to remove non-existent"
-
-    print("✓ IP pool management tests passed")
+    assert not removed, "Should fail to remove non-existent"
 
 
 def test_performance_scoring():
     """Test performance scoring calculation."""
-    print("Testing performance scoring...")
 
     # Create pool entry with some stats
     pool_entry = IPSubuserPool(
@@ -119,12 +115,9 @@ def test_performance_scoring():
         abs(bad_score - expected_bad_score) < 0.01
     ), f"Bad score should be ~{expected_bad_score}, got {bad_score}"
 
-    print("✓ Performance scoring tests passed")
-
 
 def test_alternative_selection():
     """Test selection of best alternatives for rotation."""
-    print("Testing alternative selection...")
 
     config = create_default_rotation_config()
     rotation_service = IPRotationService(config)
@@ -164,12 +157,9 @@ def test_alternative_selection():
     assert best is not None, "Should find best alternative"
     assert best.subuser == "user3", "Should select user3 as best"
 
-    print("✓ Alternative selection tests passed")
-
 
 def test_cooldown_functionality():
     """Test cooldown period functionality."""
-    print("Testing cooldown functionality...")
 
     config = create_default_rotation_config()
     rotation_service = IPRotationService(config)
@@ -179,28 +169,25 @@ def test_cooldown_functionality():
     pool_entry = rotation_service.get_ip_subuser_pool("192.168.1.1", "user1")
 
     # Should be available initially
-    assert pool_entry.is_available() == True, "Should be available initially"
+    assert pool_entry.is_available(), "Should be available initially"
 
     # Put in cooldown
     pool_entry.status = IPSubuserStatus.COOLDOWN
     pool_entry.cooldown_until = datetime.now() + timedelta(hours=1)
 
     # Should not be available during cooldown
-    assert pool_entry.is_available() == False, "Should not be available during cooldown"
+    assert not pool_entry.is_available(), "Should not be available during cooldown"
 
     # Set cooldown in the past and reset status
     pool_entry.cooldown_until = datetime.now() - timedelta(hours=1)
     pool_entry.status = IPSubuserStatus.ACTIVE  # Reset to active
 
     # Should be available after cooldown
-    assert pool_entry.is_available() == True, "Should be available after cooldown"
-
-    print("✓ Cooldown functionality tests passed")
+    assert pool_entry.is_available(), "Should be available after cooldown"
 
 
 def test_rotation_execution():
     """Test rotation execution logic."""
-    print("Testing rotation execution...")
 
     config = create_default_rotation_config()
     config.rotation_delay_seconds = 0  # No delay for testing
@@ -219,7 +206,7 @@ def test_rotation_execution():
         reason=RotationReason.MANUAL_ROTATION,
     )
 
-    assert rotation_event.success == True, "Rotation should succeed"
+    assert rotation_event.success, "Rotation should succeed"
     assert rotation_event.from_ip == "192.168.1.1", "From IP should match"
     assert rotation_event.to_ip == "192.168.1.2", "To IP should match"
     assert (
@@ -238,12 +225,9 @@ def test_rotation_execution():
         len(rotation_service.rotation_history) == 1
     ), "Should have 1 rotation in history"
 
-    print("✓ Rotation execution tests passed")
-
 
 def test_threshold_breach_handling():
     """Test handling of threshold breaches."""
-    print("Testing threshold breach handling...")
 
     # Create services with SQLite for testing
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp_db:
@@ -286,13 +270,11 @@ def test_threshold_breach_handling():
         rotation_event = rotation_service.handle_threshold_breach(breach)
 
         assert rotation_event is not None, "Should execute rotation for breach"
-        assert rotation_event.success == True, "Rotation should succeed"
+        assert rotation_event.success, "Rotation should succeed"
         assert (
             rotation_event.reason == RotationReason.THRESHOLD_BREACH
         ), "Reason should be threshold breach"
         assert rotation_event.breach_details is not None, "Should have breach details"
-
-        print("✓ Threshold breach handling tests passed")
 
     finally:
         # Clean up temp database
@@ -302,7 +284,6 @@ def test_threshold_breach_handling():
 
 def test_rate_limiting():
     """Test rotation rate limiting."""
-    print("Testing rate limiting...")
 
     config = create_default_rotation_config()
     config.max_rotations_per_hour = 2  # Low limit for testing
@@ -323,7 +304,7 @@ def test_rate_limiting():
             to_subuser=f"user{i + 2}",
             reason=RotationReason.MANUAL_ROTATION,
         )
-        assert rotation_event.success == True, f"Rotation {i + 1} should succeed"
+        assert rotation_event.success, f"Rotation {i + 1} should succeed"
 
     # Next rotation should fail due to rate limit
     rotation_event = rotation_service.execute_rotation(
@@ -333,17 +314,14 @@ def test_rate_limiting():
         to_subuser="user3",
         reason=RotationReason.MANUAL_ROTATION,
     )
-    assert rotation_event.success == False, "Should fail due to rate limit"
+    assert not rotation_event.success, "Should fail due to rate limit"
     assert (
         "rate limit" in rotation_event.error_message.lower()
     ), "Error should mention rate limit"
 
-    print("✓ Rate limiting tests passed")
-
 
 def test_pool_status():
     """Test pool status reporting."""
-    print("Testing pool status reporting...")
 
     config = create_default_rotation_config()
     rotation_service = IPRotationService(config)
@@ -370,32 +348,23 @@ def test_pool_status():
     assert status["disabled_count"] == 1, "Should have 1 disabled"
     assert status["available_count"] == 1, "Should have 1 available"
 
-    print("✓ Pool status tests passed")
-
 
 def test_default_configuration():
     """Test default configuration creation."""
-    print("Testing default configuration...")
 
     config = create_default_rotation_config()
 
     assert config.default_cooldown_hours == 4, "Default cooldown should be 4 hours"
     assert config.max_rotations_per_hour == 10, "Default max rotations should be 10"
-    assert config.fallback_enabled == True, "Fallback should be enabled by default"
+    assert config.fallback_enabled, "Fallback should be enabled by default"
     assert (
         config.require_minimum_alternatives == 2
     ), "Should require 2 alternatives by default"
-    assert (
-        config.enable_automatic_rotation == True
-    ), "Automatic rotation should be enabled"
-
-    print("✓ Default configuration tests passed")
+    assert config.enable_automatic_rotation, "Automatic rotation should be enabled"
 
 
 def run_all_tests():
     """Run all standalone tests."""
-    print("Running IP Rotation Service standalone tests...")
-    print("=" * 60)
 
     try:
         test_ip_pool_management()
@@ -408,13 +377,9 @@ def run_all_tests():
         test_pool_status()
         test_default_configuration()
 
-        print("=" * 60)
-        print("✅ All IP rotation tests passed successfully!")
         return True
 
-    except Exception as e:
-        print("=" * 60)
-        print(f"❌ Test failed: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()

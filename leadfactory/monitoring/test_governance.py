@@ -109,10 +109,10 @@ class TestGovernanceManager:
 
     def __init__(self, governance_config_file: str = "test_governance.yml"):
         self.config_file = governance_config_file
-        self.ownership_db: Dict[str, TestOwnershipInfo] = {}
-        self.modification_requests: List[TestModificationRequest] = []
-        self.review_guidelines: List[TestReviewGuideline] = []
-        self.sla_configs: Dict[str, int] = {}
+        self.ownership_db: dict[str, TestOwnershipInfo] = {}
+        self.modification_requests: list[TestModificationRequest] = []
+        self.review_guidelines: list[TestReviewGuideline] = []
+        self.sla_configs: dict[str, int] = {}
 
         self._load_configuration()
         self._setup_default_guidelines()
@@ -266,7 +266,7 @@ class TestGovernanceManager:
 
         logger.info(f"Discovered {len(test_files)} test files with ownership tracking")
 
-    def _find_test_files(self) -> List[str]:
+    def _find_test_files(self) -> list[str]:
         """Find test files in the project."""
         test_files = []
         test_patterns = ["test_*.py", "*_test.py", "test*.py"]
@@ -281,7 +281,7 @@ class TestGovernanceManager:
 
         return [str(f) for f in test_files]
 
-    def _extract_tests_from_file(self, file_path: str) -> List[str]:
+    def _extract_tests_from_file(self, file_path: str) -> list[str]:
         """Extract test function names from a Python test file."""
         test_functions = []
 
@@ -320,7 +320,7 @@ class TestGovernanceManager:
         try:
             stat = os.stat(file_path)
             return datetime.fromtimestamp(stat.st_ctime)
-        except (OSError, IOError) as e:
+        except OSError as e:
             logger.warning(f"Failed to get creation date for {file_path}: {e}")
             return datetime.now()
 
@@ -329,7 +329,7 @@ class TestGovernanceManager:
         try:
             stat = os.stat(file_path)
             return datetime.fromtimestamp(stat.st_mtime)
-        except (OSError, IOError) as e:
+        except OSError as e:
             logger.warning(f"Failed to get modification date for {file_path}: {e}")
             return datetime.now()
 
@@ -460,7 +460,7 @@ class TestGovernanceManager:
         except Exception as e:
             logger.error(f"Error adding skip decorator: {e}")
 
-    def conduct_automated_review(self, test_id: str) -> Dict[str, Any]:
+    def conduct_automated_review(self, test_id: str) -> dict[str, Any]:
         """Conduct automated review of a test against guidelines."""
         ownership_info = self.ownership_db.get(test_id)
         if not ownership_info:
@@ -508,7 +508,7 @@ class TestGovernanceManager:
 
     def _run_automated_check(
         self, guideline: TestReviewGuideline, ownership_info: TestOwnershipInfo
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run an automated check function."""
         check_function = guideline.check_function
 
@@ -523,7 +523,7 @@ class TestGovernanceManager:
         else:
             return {"passed": True, "issue": "Check not implemented"}
 
-    def _check_test_naming(self, ownership_info: TestOwnershipInfo) -> Dict[str, Any]:
+    def _check_test_naming(self, ownership_info: TestOwnershipInfo) -> dict[str, Any]:
         """Check if test follows naming convention."""
         test_name = ownership_info.test_name
 
@@ -540,7 +540,7 @@ class TestGovernanceManager:
 
     def _check_timeout_configuration(
         self, ownership_info: TestOwnershipInfo
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check if test has appropriate timeout configuration."""
         try:
             with open(ownership_info.file_path) as f:
@@ -582,7 +582,7 @@ class TestGovernanceManager:
         except Exception as e:
             return {"passed": False, "issue": f"Error checking file: {e}"}
 
-    def _check_mock_usage(self, ownership_info: TestOwnershipInfo) -> Dict[str, Any]:
+    def _check_mock_usage(self, ownership_info: TestOwnershipInfo) -> dict[str, Any]:
         """Check for proper mock usage in unit tests."""
         try:
             with open(ownership_info.file_path) as f:
@@ -632,7 +632,7 @@ class TestGovernanceManager:
 
     def _check_test_documentation(
         self, ownership_info: TestOwnershipInfo
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check if test has adequate documentation."""
         try:
             with open(ownership_info.file_path) as f:
@@ -690,7 +690,7 @@ class TestGovernanceManager:
         else:
             return "F"
 
-    def generate_sla_report(self) -> Dict[str, Any]:
+    def generate_sla_report(self) -> dict[str, Any]:
         """Generate SLA compliance report."""
         from .test_monitoring import metrics_collector
 
@@ -740,7 +740,7 @@ class TestGovernanceManager:
             },
         }
 
-    def get_governance_dashboard(self) -> Dict[str, Any]:
+    def get_governance_dashboard(self) -> dict[str, Any]:
         """Get governance dashboard data."""
         total_tests = len(self.ownership_db)
         assigned_tests = len(
@@ -837,4 +837,3 @@ if __name__ == "__main__":
 
     # Example: Generate report
     dashboard = governance_manager.get_governance_dashboard()
-    print(json.dumps(dashboard, indent=2))

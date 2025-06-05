@@ -6,7 +6,7 @@ import os
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 from urllib.parse import urlparse
 
 import pytest
@@ -41,7 +41,7 @@ class TestDatabaseBackupService:
             "monitoring": {"track_costs": False},
         }
 
-        with patch.object(DatabaseBackupService, '_load_config', return_value=config):
+        with patch.object(DatabaseBackupService, "_load_config", return_value=config):
             service = DatabaseBackupService()
             return service
 
@@ -107,7 +107,7 @@ class TestDatabaseBackupService:
             assert "user" in db_info
             assert "database" in db_info
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     @patch.dict(os.environ, {"DATABASE_URL": "postgresql://user:pass@localhost:5432/testdb"})
     def test_create_postgresql_backup_success(self, mock_subprocess, backup_service):
         """Test successful PostgreSQL backup creation."""
@@ -118,8 +118,8 @@ class TestDatabaseBackupService:
         backup_file = backup_service.backup_dir / "test_backup.sql"
         backup_file.write_text("-- SQL dump content")
 
-        with patch('pathlib.Path.exists', return_value=True):
-            with patch('pathlib.Path.stat') as mock_stat:
+        with patch("pathlib.Path.exists", return_value=True):
+            with patch("pathlib.Path.stat") as mock_stat:
                 mock_stat.return_value.st_size = 1024
 
                 result = backup_service._create_postgresql_backup(
@@ -147,7 +147,7 @@ class TestDatabaseBackupService:
                 assert "-h" in cmd and "localhost" in cmd
                 assert "-U" in cmd and "user" in cmd
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_create_postgresql_backup_command_failure(self, mock_subprocess, backup_service):
         """Test pg_dump command failure."""
         mock_subprocess.side_effect = subprocess.CalledProcessError(
@@ -168,7 +168,7 @@ class TestDatabaseBackupService:
                 include_schema=True
             )
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_create_postgresql_backup_timeout(self, mock_subprocess, backup_service):
         """Test pg_dump timeout."""
         mock_subprocess.side_effect = subprocess.TimeoutExpired("pg_dump", 3600)
@@ -198,19 +198,18 @@ class TestDatabaseBackupService:
             "file_size": backup_file.stat().st_size,
         }
 
-        with patch('gzip.open', mock_open()) as mock_gzip:
-            with patch('shutil.copyfileobj'):
-                with patch('pathlib.Path.unlink'):
-                    with patch('pathlib.Path.stat') as mock_stat:
-                        mock_stat.return_value.st_size = 512  # Compressed size
+        with patch("gzip.open", mock_open()), patch("shutil.copyfileobj"):
+            with patch("pathlib.Path.unlink"):
+                with patch("pathlib.Path.stat") as mock_stat:
+                    mock_stat.return_value.st_size = 512  # Compressed size
 
-                        result = backup_service._post_process_backup(backup_result)
+                    result = backup_service._post_process_backup(backup_result)
 
-                        assert result["compression"] == "gzip"
-                        assert result["file_size"] == 512
-                        assert result["backup_file"].endswith(".gz")
+                    assert result["compression"] == "gzip"
+                    assert result["file_size"] == 512
+                    assert result["backup_file"].endswith(".gz")
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_upload_via_rsync_success(self, mock_subprocess, backup_service):
         """Test successful rsync upload."""
         mock_subprocess.return_value = MagicMock(returncode=0)
@@ -235,7 +234,7 @@ class TestDatabaseBackupService:
         assert "rsync" in cmd
         assert "-avz" in cmd
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_upload_via_rsync_failure(self, mock_subprocess, backup_service):
         """Test rsync upload failure."""
         mock_subprocess.side_effect = subprocess.CalledProcessError(
@@ -277,8 +276,8 @@ class TestDatabaseBackupService:
     def test_cleanup_old_backups(self, backup_service):
         """Test cleanup of old backup files."""
         # Create test backup files with different timestamps
-        from datetime import timedelta
         import time
+        from datetime import timedelta
 
         old_file = backup_service.backup_dir / "leadfactory_old.sql.gz"
         recent_file = backup_service.backup_dir / "leadfactory_recent.sql.gz"
@@ -342,7 +341,6 @@ class TestConvenienceFunctions:
 
 # Import subprocess for mocking
 import subprocess
-
 
 if __name__ == "__main__":
     pytest.main([__file__])

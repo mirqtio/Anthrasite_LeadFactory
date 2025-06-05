@@ -32,7 +32,7 @@ class DedupeService(BasePipelineService):
             logger.error(f"Failed to import dedupe modules: {e}")
             self._dedupe_available = False
 
-    async def _process_task(self, request: TaskRequest) -> Dict[str, Any]:
+    async def _process_task(self, request: TaskRequest) -> dict[str, Any]:
         """Process deduplication task."""
         dedupe_data = request.metadata or {}
         business_ids = dedupe_data.get("business_ids", [])

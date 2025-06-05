@@ -22,39 +22,27 @@ def test_core_imports():
         )
 
         # Test individual component imports
-        from leadfactory.services.ip_pool_switching_integration import (
-            IPPoolSwitchingService,
-            get_ip_pool_switching_service,
-        )
-
-        print("✅ IP Pool Switching Service imported successfully")
-
         from leadfactory.services.bounce_monitor import (
             BounceEvent,
             BounceRateConfig,
             BounceRateMonitor,
         )
-
-        print("✅ Bounce monitoring components imported successfully")
-
+        from leadfactory.services.ip_pool_switching_integration import (
+            IPPoolSwitchingService,
+            get_ip_pool_switching_service,
+        )
+        from leadfactory.services.ip_rotation import (
+            IPRotationService,
+            create_default_rotation_config,
+        )
         from leadfactory.services.threshold_detector import (
             ThresholdDetector,
             create_default_threshold_config,
         )
 
-        print("✅ Threshold detection components imported successfully")
-
-        from leadfactory.services.ip_rotation import (
-            IPRotationService,
-            create_default_rotation_config,
-        )
-
-        print("✅ IP rotation components imported successfully")
-
         return True
 
-    except ImportError as e:
-        print(f"❌ Import failed: {e}")
+    except ImportError:
         return False
 
 
@@ -71,22 +59,11 @@ def test_bounce_threshold_configuration():
         )
 
         if config.warning_threshold != 0.02:
-            print(
-                f"❌ Warning threshold is {config.warning_threshold}, should be 0.02 (2%)"
-            )
             return False
 
-        if config.critical_threshold != 0.05:
-            print(
-                f"❌ Critical threshold is {config.critical_threshold}, should be 0.05 (5%)"
-            )
-            return False
+        return config.critical_threshold == 0.05
 
-        print("✅ Bounce threshold configuration meets Task 21 requirements (2%)")
-        return True
-
-    except Exception as e:
-        print(f"❌ Threshold configuration test failed: {e}")
+    except Exception:
         return False
 
 
@@ -99,33 +76,23 @@ def test_ip_pool_manager_basic():
 
         # Check that pools are loaded
         if not manager.ip_pools:
-            print("❌ No IP pools loaded")
             return False
 
         # Check for required pools
         required_pools = ["primary", "backup"]
         for pool_name in required_pools:
             if pool_name not in manager.ip_pools:
-                print(f"❌ Required pool '{pool_name}' not found")
                 return False
 
         # Test status reporting
         status = manager.get_status()
         if not isinstance(status, dict):
-            print("❌ Status should return a dictionary")
             return False
 
         required_status_fields = ["running", "current_pool", "total_pools"]
-        for field in required_status_fields:
-            if field not in status:
-                print(f"❌ Missing status field: {field}")
-                return False
+        return all(field in status for field in required_status_fields)
 
-        print("✅ IP Pool Manager basic functionality working")
-        return True
-
-    except Exception as e:
-        print(f"❌ IP Pool Manager test failed: {e}")
+    except Exception:
         return False
 
 
@@ -175,22 +142,14 @@ async def test_bounce_monitoring():
             bounce_rate = monitor.get_bounce_rate("192.168.1.100", "test_subuser")
             expected_rate = 1.0 / 5.0  # 1 bounce out of 5 emails = 20%
 
-            if abs(bounce_rate - expected_rate) > 0.01:
-                print(
-                    f"❌ Bounce rate calculation incorrect: {bounce_rate}, expected ~{expected_rate}"
-                )
-                return False
-
-            print("✅ Bounce monitoring working correctly")
-            return True
+            return not abs(bounce_rate - expected_rate) > 0.01
 
         finally:
             # Clean up temp file
             if os.path.exists(db_path):
                 os.unlink(db_path)
 
-    except Exception as e:
-        print(f"❌ Bounce monitoring test failed: {e}")
+    except Exception:
         return False
 
 
@@ -240,23 +199,13 @@ async def test_threshold_detection():
             # Check for threshold violations
             violations = detector.check_thresholds("192.168.1.200", "threshold_test")
 
-            if not violations:
-                print(
-                    "❌ No threshold violations detected when 3% exceeds 2% threshold"
-                )
-                return False
-
-            print(
-                f"✅ Threshold detection working: {len(violations)} violations detected"
-            )
-            return True
+            return violations
 
         finally:
             if os.path.exists(db_path):
                 os.unlink(db_path)
 
-    except Exception as e:
-        print(f"❌ Threshold detection test failed: {e}")
+    except Exception:
         return False
 
 
@@ -288,24 +237,16 @@ async def test_ip_rotation_service():
         )
 
         if not alternatives:
-            print("❌ No alternatives found when backup should be available")
             return False
 
         # Test selecting best alternative
         best = rotation_service.select_best_alternative("192.168.1.100", "primary")
         if not best:
-            print("❌ No best alternative selected")
             return False
 
-        if best.ip_address != "192.168.1.101" or best.subuser != "backup":
-            print(f"❌ Wrong alternative selected: {best.ip_address}/{best.subuser}")
-            return False
+        return not (best.ip_address != "192.168.1.101" or best.subuser != "backup")
 
-        print("✅ IP rotation service working correctly")
-        return True
-
-    except Exception as e:
-        print(f"❌ IP rotation service test failed: {e}")
+    except Exception:
         return False
 
 
@@ -343,45 +284,31 @@ async def test_integration_service():
 
             # Test service initialization
             if not service.bounce_monitor:
-                print("❌ Bounce monitor not initialized")
                 return False
 
             if not service.threshold_detector:
-                print("❌ Threshold detector not initialized")
                 return False
 
             if not service.rotation_service:
-                print("❌ Rotation service not initialized")
                 return False
 
             # Test bounce threshold configuration
             if service.bounce_config.warning_threshold != 0.02:
-                print(
-                    f"❌ Warning threshold not set to 2%: {service.bounce_config.warning_threshold}"
-                )
                 return False
 
             # Test status reporting
             status = service.get_status()
             if not isinstance(status, dict):
-                print("❌ Status should return dictionary")
                 return False
 
             required_fields = ["service_running", "bounce_monitoring", "rotation_pool"]
-            for field in required_fields:
-                if field not in status:
-                    print(f"❌ Missing status field: {field}")
-                    return False
-
-            print("✅ Integration service working correctly")
-            return True
+            return all(field in status for field in required_fields)
 
         finally:
             if os.path.exists(db_path):
                 os.unlink(db_path)
 
-    except Exception as e:
-        print(f"❌ Integration service test failed: {e}")
+    except Exception:
         return False
 
 
@@ -412,13 +339,12 @@ async def test_end_to_end_workflow():
             test_subuser = "e2e_test"
 
             # Send 25 emails (above minimum sample size)
-            for i in range(25):
+            for _i in range(25):
                 await service.record_sent_email(test_ip, test_subuser)
 
             # Initial bounce rate should be 0
             bounce_rate = service.get_bounce_rate(test_ip, test_subuser)
             if bounce_rate != 0.0:
-                print(f"❌ Initial bounce rate should be 0, got {bounce_rate}")
                 return False
 
             # Record 1 bounce (4% bounce rate - should exceed 2% threshold)
@@ -435,44 +361,24 @@ async def test_end_to_end_workflow():
             expected_rate = 1.0 / 25.0  # 1 bounce out of 25 emails = 4%
 
             if abs(bounce_rate - expected_rate) > 0.01:
-                print(
-                    f"❌ Bounce rate calculation wrong: {bounce_rate}, expected ~{expected_rate}"
-                )
                 return False
 
             # Check status includes the bounce information
             status = service.get_status()
             bounce_stats = status.get("bounce_monitoring", {})
 
-            if bounce_stats.get("warning_threshold") != 0.02:
-                print(
-                    f"❌ Warning threshold not 2%: {bounce_stats.get('warning_threshold')}"
-                )
-                return False
-
-            print("✅ End-to-end workflow functioning correctly")
-            print(f"   Bounce rate: {bounce_rate:.2%} (exceeds 2% threshold)")
-            print(
-                f"   IP/Subuser combinations tracked: {bounce_stats.get('total_ip_subuser_combinations', 0)}"
-            )
-
-            return True
+            return bounce_stats.get("warning_threshold") == 0.02
 
         finally:
             if os.path.exists(db_path):
                 os.unlink(db_path)
 
-    except Exception as e:
-        print(f"❌ End-to-end workflow test failed: {e}")
+    except Exception:
         return False
 
 
 async def main():
     """Run comprehensive Task 21 tests."""
-    print("🔄 Task 21: Automatic IP Pool Switching - Comprehensive Test")
-    print("=" * 70)
-    print("Testing 2% bounce threshold monitoring and automatic pool switching")
-    print()
 
     tests = [
         ("Component Imports", test_core_imports),
@@ -488,8 +394,7 @@ async def main():
     passed = 0
     failed = 0
 
-    for test_name, test_func in tests:
-        print(f"Testing {test_name}...")
+    for _test_name, test_func in tests:
         try:
             if asyncio.iscoroutinefunction(test_func):
                 result = await test_func()
@@ -501,39 +406,12 @@ async def main():
             else:
                 failed += 1
 
-        except Exception as e:
-            print(f"❌ Test {test_name} crashed: {e}")
+        except Exception:
             failed += 1
 
-        print()
-
-    print("=" * 70)
-    print(f"RESULTS: {passed} passed, {failed} failed")
-    print()
-
     if failed == 0:
-        print("🎉 TASK 21 IMPLEMENTATION COMPLETE!")
-        print()
-        print("✅ VERIFIED REQUIREMENTS:")
-        print("   • 2% bounce threshold monitoring implemented")
-        print("   • Automatic IP pool switching on threshold breach")
-        print("   • Bounce rate calculation per IP/subuser combination")
-        print("   • Threshold detection and alerting system")
-        print("   • IP rotation service with fallback pools")
-        print("   • Complete integration service")
-        print("   • End-to-end workflow functioning")
-        print()
-        print("📋 TASK 21 SUBTASKS COMPLETED:")
-        print("   1. ✅ Bounce rate monitoring system")
-        print("   2. ✅ IP pool management module")
-        print("   3. ✅ SendGrid API integration components")
-        print("   4. ✅ Notification system for alerts")
-        print("   5. ✅ Configuration interface")
-        print()
         return 0
     else:
-        print("⚠️  Some tests failed, but core functionality implemented")
-        print("   The system can monitor 2% bounce thresholds and manage IP pools")
         return 1
 
 

@@ -31,7 +31,7 @@ class ScoreService(BasePipelineService):
             logger.error(f"Failed to initialize scoring engine: {e}")
             self._scorer_available = False
 
-    async def _process_task(self, request: TaskRequest) -> Dict[str, Any]:
+    async def _process_task(self, request: TaskRequest) -> dict[str, Any]:
         """Process scoring task."""
         score_data = request.metadata or {}
         business_ids = score_data.get("business_ids", [])
@@ -49,7 +49,7 @@ class ScoreService(BasePipelineService):
                         "employee_count": 25,
                     }
 
-                    score_result = self._scoring_engine.score_business(business_data)
+                    self._scoring_engine.score_business(business_data)
                     scored_count += 1
                 except Exception as e:
                     logger.error(f"Scoring failed for business {business_id}: {e}")

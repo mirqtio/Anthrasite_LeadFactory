@@ -255,7 +255,7 @@ class TestMetricsCollector:
                 reliability_grade=reliability_grade,
             )
 
-    def _calculate_flakiness_score(self, execution_data: List[tuple]) -> float:
+    def _calculate_flakiness_score(self, execution_data: list[tuple]) -> float:
         """Calculate flakiness score based on execution patterns."""
         if len(execution_data) < 5:
             return 0.0  # Not enough data to determine flakiness
@@ -281,7 +281,7 @@ class TestMetricsCollector:
 
         return min(1.0, max(0.0, flakiness_score))
 
-    def _calculate_trend(self, execution_data: List[tuple]) -> str:
+    def _calculate_trend(self, execution_data: list[tuple]) -> str:
         """Calculate trend based on recent vs historical performance."""
         if len(execution_data) < 10:
             return "stable"
@@ -413,7 +413,7 @@ class TestMetricsCollector:
                 health_status="unknown",
             )
 
-    def get_all_test_metrics(self, limit: int = 100) -> List[TestMetrics]:
+    def get_all_test_metrics(self, limit: int = 100) -> list[TestMetrics]:
         """Get metrics for all tests, ordered by reliability grade."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
@@ -455,7 +455,7 @@ class TestMetricsCollector:
 
     def get_problematic_tests(
         self, threshold_pass_rate: float = 0.8, threshold_flakiness: float = 0.3
-    ) -> List[TestMetrics]:
+    ) -> list[TestMetrics]:
         """Get tests that are below reliability thresholds."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
@@ -496,7 +496,7 @@ class TestMetricsCollector:
         with ThreadPoolExecutor(max_workers=5) as executor:
             executor.map(self._update_test_metrics_cache, test_ids)
 
-    def get_dashboard_summary(self) -> Dict[str, Any]:
+    def get_dashboard_summary(self) -> dict[str, Any]:
         """Get summary statistics for the dashboard."""
         with sqlite3.connect(self.db_path) as conn:
             # Overall statistics
@@ -586,7 +586,7 @@ def record_test_result(
     metrics_collector.record_test_execution(execution)
 
 
-def get_test_health_report() -> Dict[str, Any]:
+def get_test_health_report() -> dict[str, Any]:
     """Get a comprehensive test health report."""
     summary = metrics_collector.get_dashboard_summary()
     problematic_tests = metrics_collector.get_problematic_tests()
@@ -618,4 +618,3 @@ if __name__ == "__main__":
 
     # Generate sample report
     report = get_test_health_report()
-    print(json.dumps(report, indent=2, default=str))

@@ -36,7 +36,7 @@ class ReportDeliveryRequest(BaseModel):
         default=True, description="Include direct download link"
     )
     custom_message: Optional[str] = Field(None, description="Custom message to include")
-    metadata: Dict = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict = Field(default_factory=dict, description="Additional metadata")
 
 
 class EmailServiceResponse(BaseModel):
@@ -377,7 +377,7 @@ class EmailReportService:
                 error_details=str(e),
             )
 
-    async def process_email_workflows(self) -> Dict[str, int]:
+    async def process_email_workflows(self) -> dict[str, int]:
         """
         Process all pending email workflows.
 
@@ -411,7 +411,7 @@ class EmailReportService:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         template_name: Optional[str] = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Get email analytics and performance metrics.
 
@@ -438,15 +438,6 @@ class EmailReportService:
             }
             logger.info(f"Workflow analytics: {workflow_analytics}")
             # Add conversion tracking
-            conversion_tracking = {
-                "workflow_id": workflow_id,
-                "tracking_enabled": True,
-                "conversion_events": [
-                    "email_opened",
-                    "link_clicked",
-                    "purchase_completed",
-                ],
-            }
 
             return {
                 "delivery_stats": delivery_stats,
@@ -461,7 +452,7 @@ class EmailReportService:
             logger.error(f"Failed to get email analytics: {str(e)}")
             return {"error": str(e)}
 
-    async def validate_secure_link(self, token: str) -> Dict:
+    async def validate_secure_link(self, token: str) -> dict:
         """
         Validate a secure link token.
 

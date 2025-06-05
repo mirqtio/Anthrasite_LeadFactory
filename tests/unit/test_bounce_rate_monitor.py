@@ -175,7 +175,7 @@ class TestBounceRateMonitor:
         mock_db = Mock()
         mock_db_conn.return_value.__enter__.return_value = mock_db
 
-        monitor = BounceRateMonitor(config=config)
+        BounceRateMonitor(config=config)
 
         # Verify tables were created
         assert mock_db.execute.call_count >= 3  # At least 3 SQL statements

@@ -5,15 +5,16 @@ This module tests the ShardingStrategy, ShardConfig, and ShardRouter classes,
 ensuring proper shard routing and configuration handling.
 """
 
-import pytest
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
+import pytest
+
 from leadfactory.storage.sharding_strategy import (
-    ShardingStrategy,
     ShardConfig,
     ShardingConfig,
-    ShardRouter
+    ShardingStrategy,
+    ShardRouter,
 )
 
 

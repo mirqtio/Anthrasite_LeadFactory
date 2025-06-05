@@ -6,6 +6,7 @@ This module provides a web-based dashboard for monitoring purchase metrics,
 conversion funnels, and business analytics for the LeadFactory audit system.
 """
 
+import contextlib
 import json
 import os
 from datetime import datetime, timedelta
@@ -141,10 +142,8 @@ class PurchaseMetricsDashboard:
 
                 channel = None
                 if channel_str:
-                    try:
+                    with contextlib.suppress(ValueError):
                         channel = ConversionChannel(channel_str)
-                    except ValueError:
-                        pass
 
                 funnel = conversion_tracker.analyze_funnel(
                     start_date, end_date, audit_type, channel

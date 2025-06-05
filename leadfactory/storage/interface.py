@@ -42,8 +42,8 @@ class StorageInterface(ABC):
 
     @abstractmethod
     def execute_query(
-        self, query: str, params: Optional[Tuple] = None, fetch: bool = True
-    ) -> List[Dict[str, Any]]:
+        self, query: str, params: Optional[tuple] = None, fetch: bool = True
+    ) -> list[dict[str, Any]]:
         """
         Execute a SQL query and return results.
 
@@ -58,7 +58,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def execute_transaction(self, queries: List[Tuple[str, Optional[Tuple]]]) -> bool:
+    def execute_transaction(self, queries: list[tuple[str, Optional[tuple]]]) -> bool:
         """
         Execute multiple queries in a transaction.
 
@@ -71,7 +71,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_business_by_id(self, business_id: int) -> Optional[Dict[str, Any]]:
+    def get_business_by_id(self, business_id: int) -> Optional[dict[str, Any]]:
         """
         Get business data by ID.
 
@@ -85,8 +85,8 @@ class StorageInterface(ABC):
 
     @abstractmethod
     def get_businesses_by_criteria(
-        self, criteria: Dict[str, Any], limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        self, criteria: dict[str, Any], limit: Optional[int] = None
+    ) -> list[dict[str, Any]]:
         """
         Get businesses matching specific criteria.
 
@@ -100,7 +100,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def update_business(self, business_id: int, updates: Dict[str, Any]) -> bool:
+    def update_business(self, business_id: int, updates: dict[str, Any]) -> bool:
         """
         Update business record with new data.
 
@@ -114,7 +114,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def insert_business(self, business_data: Dict[str, Any]) -> Optional[int]:
+    def insert_business(self, business_data: dict[str, Any]) -> Optional[int]:
         """
         Insert a new business record.
 
@@ -127,7 +127,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_business_details(self, business_id: int) -> Optional[Dict[str, Any]]:
+    def get_business_details(self, business_id: int) -> Optional[dict[str, Any]]:
         """
         Get detailed business information including JSON responses.
 
@@ -140,7 +140,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_businesses(self, business_ids: List[int]) -> List[Dict[str, Any]]:
+    def get_businesses(self, business_ids: list[int]) -> list[dict[str, Any]]:
         """
         Get multiple businesses by their IDs.
 
@@ -155,7 +155,7 @@ class StorageInterface(ABC):
     @abstractmethod
     def get_processing_status(
         self, business_id: int, stage: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """
         Get processing status for a business at a specific stage.
 
@@ -174,7 +174,7 @@ class StorageInterface(ABC):
         business_id: int,
         stage: str,
         status: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> bool:
         """
         Update processing status for a business at a specific stage.
@@ -192,7 +192,7 @@ class StorageInterface(ABC):
 
     @abstractmethod
     def save_stage_results(
-        self, business_id: int, stage: str, results: Dict[str, Any]
+        self, business_id: int, stage: str, results: dict[str, Any]
     ) -> bool:
         """
         Save results from a pipeline stage.
@@ -210,7 +210,7 @@ class StorageInterface(ABC):
     @abstractmethod
     def get_stage_results(
         self, business_id: int, stage: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """
         Get saved results from a pipeline stage.
 
@@ -269,7 +269,7 @@ class StorageInterface(ABC):
     @abstractmethod
     def get_review_queue_items(
         self, status: Optional[str] = None, limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get review queue items.
 
@@ -300,7 +300,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_review_statistics(self) -> Dict[str, Any]:
+    def get_review_statistics(self) -> dict[str, Any]:
         """
         Get statistics about manual reviews.
 
@@ -313,7 +313,7 @@ class StorageInterface(ABC):
     @abstractmethod
     def get_businesses_needing_screenshots(
         self, limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get businesses that need screenshots taken.
 
@@ -348,7 +348,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_businesses_needing_mockups(self, limit: int = None) -> List[Dict[str, Any]]:
+    def get_businesses_needing_mockups(self, limit: int = None) -> list[dict[str, Any]]:
         """
         Get businesses that need mockups generated.
 
@@ -363,7 +363,7 @@ class StorageInterface(ABC):
     @abstractmethod
     def get_business_asset(
         self, business_id: int, asset_type: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """
         Get asset for a business by type.
 
@@ -383,7 +383,7 @@ class StorageInterface(ABC):
         force: bool = False,
         business_id: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get businesses ready for email sending.
 
@@ -411,7 +411,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def record_email_sent(self, business_id: int, email_data: Dict[str, Any]) -> bool:
+    def record_email_sent(self, business_id: int, email_data: dict[str, Any]) -> bool:
         """
         Record that an email was sent to a business.
 
@@ -425,7 +425,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_email_stats(self) -> Dict[str, Any]:
+    def get_email_stats(self) -> dict[str, Any]:
         """
         Get email sending statistics.
 
@@ -544,7 +544,7 @@ class StorageInterface(ABC):
         self,
         backup_id: str,
         operation_type: str,
-        business_ids: List[int],
+        business_ids: list[int],
         backup_path: str,
         backup_size: int,
         checksum: str,
@@ -566,7 +566,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_backup_metadata(self, backup_id: str) -> Optional[Dict[str, Any]]:
+    def get_backup_metadata(self, backup_id: str) -> Optional[dict[str, Any]]:
         """
         Get backup metadata by backup ID.
 
@@ -600,7 +600,7 @@ class StorageInterface(ABC):
         operation_type: str,
         business1_id: Optional[int],
         business2_id: Optional[int],
-        operation_data: Dict[str, Any],
+        operation_data: dict[str, Any],
         status: str,
         error_message: Optional[str] = None,
         user_id: Optional[str] = None,
@@ -630,7 +630,7 @@ class StorageInterface(ABC):
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         limit: int = 100,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve audit trail entries.
 
@@ -696,7 +696,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_related_business_data(self, business_id: int) -> Dict[str, Any]:
+    def get_related_business_data(self, business_id: int) -> dict[str, Any]:
         """
         Get related data for a business (e.g., responses, metadata).
 
@@ -735,7 +735,7 @@ class StorageInterface(ABC):
         offset: int = 0,
         sort_by: str = "timestamp",
         sort_order: str = "desc",
-    ) -> Tuple[List[Dict[str, Any]], int]:
+    ) -> tuple[list[dict[str, Any]], int]:
         """
         Get logs with filtering, pagination, and search.
 
@@ -756,7 +756,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_log_by_id(self, log_id: int) -> Optional[Dict[str, Any]]:
+    def get_log_by_id(self, log_id: int) -> Optional[dict[str, Any]]:
         """
         Get a single log entry by ID.
 
@@ -769,7 +769,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_log_statistics(self) -> Dict[str, Any]:
+    def get_log_statistics(self) -> dict[str, Any]:
         """
         Get statistical information about logs.
 
@@ -784,7 +784,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_available_log_types(self) -> List[str]:
+    def get_available_log_types(self) -> list[str]:
         """
         Get list of available log types in the database.
 
@@ -794,7 +794,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_businesses_with_logs(self) -> List[Dict[str, Any]]:
+    def get_businesses_with_logs(self) -> list[dict[str, Any]]:
         """
         Get list of businesses that have log entries.
 
@@ -804,7 +804,7 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def get_all_businesses(self) -> List[Dict[str, Any]]:
+    def get_all_businesses(self) -> list[dict[str, Any]]:
         """
         Get all businesses for general purposes.
 

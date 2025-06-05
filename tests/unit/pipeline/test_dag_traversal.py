@@ -60,11 +60,11 @@ except ImportError:
     class StageResult:
         stage: PipelineStage
         success: bool
-        data: Dict = None
+        data: dict = None
         error: Optional[str] = None
         execution_time: float = 0.0
-        dependencies_met: List = None
-        dependencies_missing: List = None
+        dependencies_met: list = None
+        dependencies_missing: list = None
 
         def __post_init__(self):
             if self.data is None:
@@ -145,7 +145,7 @@ except ImportError:
 
         def get_dependents(self, stage):
             dependents = []
-            for target_stage, deps in self.dependencies.items():
+            for _target_stage, deps in self.dependencies.items():
                 for dep in deps:
                     if dep.from_stage == stage:
                         dependents.append(dep)

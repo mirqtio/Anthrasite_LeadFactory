@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 class ScrapeRequest(BaseModel):
     """Scrape request model."""
 
-    zip_codes: List[str]
-    verticals: List[str] = ["hvac", "plumber", "vet"]
+    zip_codes: list[str]
+    verticals: list[str] = ["hvac", "plumber", "vet"]
     limit_per_zip: int = 50
     include_enrichment: bool = False
     priority: int = 5
@@ -30,10 +30,10 @@ class ScrapeResult(BaseModel):
     """Scrape result model."""
 
     businesses_scraped: int
-    zip_codes_processed: List[str]
-    verticals_processed: List[str]
-    processing_stats: Dict[str, Any]
-    business_ids: List[int]
+    zip_codes_processed: list[str]
+    verticals_processed: list[str]
+    processing_stats: dict[str, Any]
+    business_ids: list[int]
 
 
 class ScrapeService(BasePipelineService):
@@ -78,7 +78,7 @@ class ScrapeService(BasePipelineService):
         else:
             self._scraper_available = True
 
-    async def _check_dependencies(self) -> Dict[str, str]:
+    async def _check_dependencies(self) -> dict[str, str]:
         """Check scraper dependencies."""
         dependencies = await super()._check_dependencies()
 
@@ -91,7 +91,7 @@ class ScrapeService(BasePipelineService):
 
         return dependencies
 
-    async def _process_task(self, request: TaskRequest) -> Dict[str, Any]:
+    async def _process_task(self, request: TaskRequest) -> dict[str, Any]:
         """Process a scraping task."""
         # Parse the request data as scrape parameters
         scrape_data = request.metadata or {}

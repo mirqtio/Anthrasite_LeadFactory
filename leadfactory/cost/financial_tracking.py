@@ -153,7 +153,7 @@ class FinancialTracker:
         tax_amount_cents: int = 0,
         currency: str = "usd",
         audit_type: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Record a Stripe payment transaction.
 
@@ -239,7 +239,7 @@ class FinancialTracker:
         refund_amount_cents: int,
         stripe_fee_refund_cents: int = 0,
         reason: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Record a Stripe refund transaction.
 
@@ -389,7 +389,7 @@ class FinancialTracker:
 
     def get_transaction_by_payment_intent(
         self, stripe_payment_intent_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Get transaction by Stripe payment intent ID.
 
         Args:
@@ -421,7 +421,7 @@ class FinancialTracker:
             finally:
                 conn.close()
 
-    def get_daily_summary(self, date: str) -> Optional[Dict[str, Any]]:
+    def get_daily_summary(self, date: str) -> Optional[dict[str, Any]]:
         """Get daily financial summary.
 
         Args:
@@ -451,7 +451,7 @@ class FinancialTracker:
             finally:
                 conn.close()
 
-    def get_monthly_summary(self, year: int, month: int) -> Dict[str, Any]:
+    def get_monthly_summary(self, year: int, month: int) -> dict[str, Any]:
         """Get monthly financial summary.
 
         Args:
@@ -507,7 +507,7 @@ class FinancialTracker:
             finally:
                 conn.close()
 
-    def get_profit_margin_data(self, start_date: str, end_date: str) -> Dict[str, Any]:
+    def get_profit_margin_data(self, start_date: str, end_date: str) -> dict[str, Any]:
         """Get profit margin data for a date range.
 
         Args:
@@ -551,8 +551,8 @@ class FinancialTracker:
             end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
 
             while current_date <= end_date_obj:
-                date_str = current_date.strftime("%Y-%m-%d")
-                daily_cost = cost_tracker.get_daily_cost()  # This gets current day cost
+                current_date.strftime("%Y-%m-%d")
+                cost_tracker.get_daily_cost()  # This gets current day cost
                 # Note: We'd need to modify cost_tracker to get historical daily costs
                 current_date += timedelta(days=1)
 

@@ -50,7 +50,7 @@ class APIConfiguration:
     """Configuration for API usage in pipeline nodes."""
 
     name: str
-    required_env_vars: List[str]
+    required_env_vars: list[str]
     cost_per_request: float  # Cost in cents
     description: str
     enabled_by_default: bool = True
@@ -65,12 +65,12 @@ class NodeCapability:
 
     name: str
     description: str
-    required_apis: List[str]
-    required_inputs: List[str]  # Input data required for this capability
+    required_apis: list[str]
+    required_inputs: list[str]  # Input data required for this capability
     cost_estimate_cents: float
     enabled_by_default: bool = True
     tier: CapabilityTier = CapabilityTier.ESSENTIAL
-    environment_overrides: Optional[Dict[DeploymentEnvironment, bool]] = None
+    environment_overrides: Optional[dict[DeploymentEnvironment, bool]] = None
 
 
 @dataclass
@@ -80,10 +80,10 @@ class NodeConfiguration:
     node_type: NodeType
     name: str
     description: str
-    capabilities: List[NodeCapability]
-    required_inputs: List[str]  # Base inputs required for node to run
-    optional_inputs: List[str]  # Optional inputs that enable additional capabilities
-    output_keys: List[str]  # Keys this node adds to the lead data
+    capabilities: list[NodeCapability]
+    required_inputs: list[str]  # Base inputs required for node to run
+    optional_inputs: list[str]  # Optional inputs that enable additional capabilities
+    output_keys: list[str]  # Keys this node adds to the lead data
 
 
 # API Configurations
@@ -290,11 +290,7 @@ def is_api_available(api_name: str) -> bool:
         return False
 
     api_config = API_CONFIGS[api_name]
-    for env_var in api_config.required_env_vars:
-        if not os.getenv(env_var):
-            return False
-
-    return True
+    return all(os.getenv(env_var) for env_var in api_config.required_env_vars)
 
 
 def get_deployment_environment() -> DeploymentEnvironment:
@@ -348,7 +344,7 @@ def is_capability_enabled_for_environment(
 
 def get_capabilities_by_tier(
     tier: CapabilityTier, node_type: NodeType
-) -> List[NodeCapability]:
+) -> list[NodeCapability]:
     """
     Get capabilities of a specific tier for a node type.
 
@@ -367,7 +363,7 @@ def get_enabled_capabilities(
     node_type: NodeType,
     budget_cents: Optional[float] = None,
     environment: Optional[DeploymentEnvironment] = None,
-) -> List[NodeCapability]:
+) -> list[NodeCapability]:
     """
     Get enabled capabilities for a node based on API availability, budget, and environment.
 
@@ -449,7 +445,7 @@ def get_enabled_capabilities(
     return enabled_capabilities
 
 
-def can_node_run(node_type: NodeType, lead_data: dict) -> tuple[bool, List[str]]:
+def can_node_run(node_type: NodeType, lead_data: dict) -> tuple[bool, list[str]]:
     """
     Check if a node can run with the given lead data.
 
@@ -492,7 +488,7 @@ def estimate_node_cost(
     return sum(cap.cost_estimate_cents for cap in enabled_capabilities)
 
 
-def get_environment_info() -> Dict[str, Union[str, bool, List[str]]]:
+def get_environment_info() -> dict[str, Union[str, bool, list[str]]]:
     """
     Get information about the current environment configuration.
 
@@ -526,7 +522,7 @@ def get_environment_info() -> Dict[str, Union[str, bool, List[str]]]:
     }
 
 
-def validate_environment_configuration() -> Dict[str, Union[bool, List[str]]]:
+def validate_environment_configuration() -> dict[str, Union[bool, list[str]]]:
     """
     Validate the current environment configuration and identify issues.
 

@@ -17,7 +17,7 @@ class LLMError(Exception):
         message: str,
         provider: Optional[str] = None,
         status_code: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ):
         super().__init__(message)
         self.provider = provider
@@ -84,7 +84,7 @@ class LLMProviderError(LLMError):
 class AllProvidersFailedError(LLMError):
     """All configured providers failed."""
 
-    def __init__(self, provider_errors: Dict[str, Exception]):
+    def __init__(self, provider_errors: dict[str, Exception]):
         self.provider_errors = provider_errors
         error_summary = ", ".join(
             [f"{provider}: {str(error)}" for provider, error in provider_errors.items()]

@@ -77,7 +77,7 @@ class E2EPipelineExecutor:
         if not self.env_file.exists():
             raise FileNotFoundError(f".env.e2e file not found at {self.env_file}")
 
-        with open(self.env_file, "r") as f:
+        with open(self.env_file) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
@@ -310,7 +310,7 @@ class E2EPipelineExecutor:
                         message_id = response.headers.get(
                             "X-Message-Id", f"test_msg_{business_id}"
                         )
-                        self.logger.info(f"✅ Email sent successfully (202 response)")
+                        self.logger.info("✅ Email sent successfully (202 response)")
                     else:
                         self.logger.warning(
                             "⚠️  Email sending returned non-202 response"
@@ -473,7 +473,7 @@ class E2EPipelineExecutor:
                         )
                 else:
                     f.write("| Mock APIs | E2E Test | $0.0000 |\n")
-                    f.write(f"\n**Total Cost:** $0.0000\n")
+                    f.write("\n**Total Cost:** $0.0000\n")
 
                 # Test status
                 f.write("\n## Test Status\n\n")
@@ -543,7 +543,7 @@ class E2EPipelineExecutor:
 
             if email_record:
                 email_id, subject, status, sent_at, sendgrid_id = email_record
-                self.logger.info(f"✅ Email delivery verified:")
+                self.logger.info("✅ Email delivery verified:")
                 self.logger.info(f"   - Email ID: {email_id}")
                 self.logger.info(f"   - Subject: {subject}")
                 self.logger.info(f"   - Status: {status}")
@@ -551,7 +551,7 @@ class E2EPipelineExecutor:
                 self.logger.info(f"   - SendGrid ID: {sendgrid_id}")
 
                 # For now, just verify that email record exists with sent status
-                self.logger.info(f"✅ Email sent successfully")
+                self.logger.info("✅ Email sent successfully")
                 conn.close()
                 return True
             else:

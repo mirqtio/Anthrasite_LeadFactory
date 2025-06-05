@@ -22,8 +22,7 @@ try:
     from leadfactory.cli.main import cli
 
     CLI_AVAILABLE = True
-except ImportError as e:
-    print(f"CLI import failed: {e}")
+except ImportError:
     CLI_AVAILABLE = False
     # Create mock CLI for testing
     cli = MagicMock()

@@ -40,7 +40,7 @@ class AccessPermission:
 
     operation: PDFOperation
     resource_type: str = "pdf_report"
-    conditions: Optional[Dict] = None
+    conditions: Optional[dict] = None
 
     def __post_init__(self):
         if self.conditions is None:
@@ -53,7 +53,7 @@ class UserContext:
 
     user_id: str
     role: UserRole
-    permissions: List[AccessPermission]
+    permissions: list[AccessPermission]
     session_id: Optional[str] = None
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
@@ -69,12 +69,12 @@ class AccessControlService:
     def __init__(self):
         """Initialize the access control service."""
         self._role_permissions = self._initialize_role_permissions()
-        self._user_sessions: Dict[str, UserContext] = {}
-        self._revoked_tokens: Set[str] = set()
+        self._user_sessions: dict[str, UserContext] = {}
+        self._revoked_tokens: set[str] = set()
 
         logger.info("Access control service initialized")
 
-    def _initialize_role_permissions(self) -> Dict[UserRole, List[AccessPermission]]:
+    def _initialize_role_permissions(self) -> dict[UserRole, list[AccessPermission]]:
         """Initialize default role-based permissions."""
         return {
             UserRole.ADMIN: [
@@ -110,7 +110,7 @@ class AccessControlService:
         operation: PDFOperation,
         resource_id: str,
         resource_owner_id: Optional[str] = None,
-        additional_context: Optional[Dict] = None,
+        additional_context: Optional[dict] = None,
     ) -> bool:
         """
         Check if a user has permission to perform an operation.
@@ -182,11 +182,11 @@ class AccessControlService:
 
     def _check_conditions(
         self,
-        conditions: Dict,
+        conditions: dict,
         user_context: UserContext,
         resource_id: str,
         resource_owner_id: Optional[str],
-        additional_context: Dict,
+        additional_context: dict,
     ) -> bool:
         """Check if permission conditions are met."""
         if not conditions:
@@ -244,7 +244,7 @@ class AccessControlService:
         """Check if a token has been revoked."""
         return token in self._revoked_tokens
 
-    def get_user_permissions(self, role: UserRole) -> List[AccessPermission]:
+    def get_user_permissions(self, role: UserRole) -> list[AccessPermission]:
         """Get permissions for a specific role."""
         return self._role_permissions.get(role, [])
 

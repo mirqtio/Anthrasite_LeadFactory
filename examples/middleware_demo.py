@@ -12,6 +12,8 @@ from typing import Optional
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import contextlib
+
 from leadfactory.middleware import (
     BudgetGuardMiddleware,
     BudgetMiddlewareOptions,
@@ -29,11 +31,9 @@ logger = logging.getLogger(__name__)
 
 def demo_basic_middleware():
     """Demonstrate basic middleware creation and usage."""
-    print("\n=== Basic Middleware Demo ===")
 
     # Create basic middleware with default configuration
     middleware = create_budget_middleware()
-    print(f"✅ Created middleware: {type(middleware).__name__}")
 
     # Simulate a request
     class MockRequest:
@@ -51,16 +51,15 @@ def demo_basic_middleware():
     try:
         result = middleware.process_request(request)
         if result is None:
-            print("✅ Request allowed by middleware")
+            pass
         else:
-            print(f"❌ Request blocked: {result}")
-    except Exception as e:
-        print(f"⚠️  Middleware error: {e}")
+            pass
+    except Exception:
+        pass
 
 
 def demo_custom_configuration():
     """Demonstrate middleware with custom configuration."""
-    print("\n=== Custom Configuration Demo ===")
 
     # Custom extractors
     def extract_user_id(request):
@@ -102,7 +101,6 @@ def demo_custom_configuration():
     )
 
     middleware = create_budget_middleware(config)
-    print(f"✅ Created custom middleware: {type(middleware).__name__}")
 
     # Test with different requests
     requests = [
@@ -122,67 +120,38 @@ def demo_custom_configuration():
 
         request = MockRequest(req_data["path"], req_data["headers"])
 
-        try:
-            result = middleware.process_request(request)
-            status = "allowed" if result is None else f"blocked ({result})"
-            print(f"  📝 {request.path} -> {status}")
-        except Exception as e:
-            print(f"  ⚠️  {request.path} -> error: {e}")
+        with contextlib.suppress(Exception):
+            middleware.process_request(request)
 
 
 def demo_fastapi_integration():
     """Demonstrate FastAPI integration."""
-    print("\n=== FastAPI Integration Demo ===")
 
     try:
         # Create FastAPI middleware
-        middleware_func = create_fastapi_budget_middleware()
-        print("✅ Created FastAPI middleware function")
+        create_fastapi_budget_middleware()
 
         # Show how it would be used
-        print("📝 Usage example:")
-        print("   from fastapi import FastAPI")
-        print("   from leadfactory.middleware import create_fastapi_budget_middleware")
-        print("   ")
-        print("   app = FastAPI()")
-        print("   app.middleware('http')(create_fastapi_budget_middleware())")
-        print("   ")
-        print("   @app.post('/api/chat')")
-        print("   async def chat_endpoint():")
-        print("       return {'message': 'Hello from protected endpoint!'}")
 
-    except Exception as e:
-        print(f"⚠️  FastAPI demo error: {e}")
+    except Exception:
+        pass
 
 
 def demo_flask_integration():
     """Demonstrate Flask integration."""
-    print("\n=== Flask Integration Demo ===")
 
     try:
         # Create Flask middleware
-        middleware_func = create_flask_budget_middleware()
-        print("✅ Created Flask middleware function")
+        create_flask_budget_middleware()
 
         # Show how it would be used
-        print("📝 Usage example:")
-        print("   from flask import Flask")
-        print("   from leadfactory.middleware import create_flask_budget_middleware")
-        print("   ")
-        print("   app = Flask(__name__)")
-        print("   app.before_request(create_flask_budget_middleware())")
-        print("   ")
-        print("   @app.route('/api/chat', methods=['POST'])")
-        print("   def chat_endpoint():")
-        print("       return {'message': 'Hello from protected endpoint!'}")
 
-    except Exception as e:
-        print(f"⚠️  Flask demo error: {e}")
+    except Exception:
+        pass
 
 
 def demo_environment_configuration():
     """Demonstrate environment-based configuration."""
-    print("\n=== Environment Configuration Demo ===")
 
     # Set some environment variables for demo
     env_vars = {
@@ -203,24 +172,15 @@ def demo_environment_configuration():
     try:
         # Create middleware that loads from environment
         config = MiddlewareConfig.from_env()
-        middleware = create_budget_middleware(config)
+        create_budget_middleware(config)
 
-        print("✅ Created middleware from environment configuration")
-        print("📝 Environment variables used:")
         for key, value in env_vars.items():
-            print(f"   {key}={value}")
+            pass
 
         # Show the loaded configuration
-        print("📝 Loaded configuration:")
-        print(f"   Budget monitoring: {config.budget_options.enable_budget_monitoring}")
-        print(f"   Throttling: {config.budget_options.enable_throttling}")
-        print(f"   Excluded paths: {config.budget_options.exclude_paths}")
-        print(f"   Cache TTL: {config.budget_options.cache_ttl_seconds}s")
-        print(f"   Fail open: {config.budget_options.fail_open}")
-        print(f"   Log level: {config.log_level}")
 
-    except Exception as e:
-        print(f"⚠️  Environment config demo error: {e}")
+    except Exception:
+        pass
 
     finally:
         # Restore original environment
@@ -233,8 +193,6 @@ def demo_environment_configuration():
 
 def main():
     """Run all middleware demos."""
-    print("🚀 LeadFactory Budget Guard Middleware Demo")
-    print("=" * 50)
 
     try:
         demo_basic_middleware()
@@ -243,14 +201,7 @@ def main():
         demo_flask_integration()
         demo_environment_configuration()
 
-        print("\n✅ All demos completed successfully!")
-        print("\n📚 For more information, see:")
-        print("   - docs/middleware/README.md")
-        print("   - leadfactory/middleware/")
-        print("   - tests/unit/middleware/")
-
-    except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()

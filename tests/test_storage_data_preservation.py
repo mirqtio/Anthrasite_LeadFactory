@@ -97,7 +97,7 @@ class TestStorageDataPreservation(unittest.TestCase):
         """Test retrieving backup metadata."""
         # Setup
         backup_id = "backup_123"
-        expected_metadata = {
+        {
             "backup_id": backup_id,
             "operation_type": "merge",
             "business_ids": [1, 2, 3],
@@ -232,7 +232,7 @@ class TestStorageDataPreservation(unittest.TestCase):
         """Test retrieving audit trail."""
         # Setup
         business_id = 1
-        expected_trail = [
+        [
             {
                 "operation_type": "merge",
                 "business1_id": 1,
@@ -320,11 +320,6 @@ class TestStorageDataPreservation(unittest.TestCase):
         """Test retrieving related business data."""
         # Setup
         business_ids = [1, 2, 3]
-        expected_data = [
-            {"id": 1, "name": "Business 1", "phone": "123-456-7890"},
-            {"id": 2, "name": "Business 2", "phone": "234-567-8901"},
-            {"id": 3, "name": "Business 3", "phone": "345-678-9012"},
-        ]
 
         # Mock cursor to return business data
         self.mock_cursor.fetchall.return_value = [

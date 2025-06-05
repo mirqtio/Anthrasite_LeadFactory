@@ -50,8 +50,8 @@ class ABTestConfig:
     target_sample_size: int
     significance_threshold: float
     minimum_effect_size: float
-    variants: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    variants: list[dict[str, Any]]
+    metadata: dict[str, Any]
     created_at: datetime
     updated_at: datetime
 
@@ -64,7 +64,7 @@ class TestAssignment:
     test_id: str
     variant_id: str
     assigned_at: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -78,7 +78,7 @@ class TestConversion:
     conversion_type: str
     conversion_value: Optional[float]
     timestamp: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class ABTestManager:
@@ -156,13 +156,13 @@ class ABTestManager:
         name: str,
         description: str,
         test_type: TestType,
-        variants: List[Dict[str, Any]],
+        variants: list[dict[str, Any]],
         target_sample_size: int = 1000,
         significance_threshold: float = 0.05,
         minimum_effect_size: float = 0.1,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Create a new A/B test.
 
@@ -236,7 +236,7 @@ class ABTestManager:
         self.logger.info(f"Created A/B test: {test_id} ({name})")
         return test_id
 
-    def _validate_variants(self, variants: List[Dict[str, Any]], test_type: TestType):
+    def _validate_variants(self, variants: list[dict[str, Any]], test_type: TestType):
         """Validate test variants based on test type."""
         if not variants or len(variants) < 2:
             raise ValueError("Test must have at least 2 variants")
@@ -335,7 +335,7 @@ class ABTestManager:
         return True
 
     def assign_user_to_variant(
-        self, user_id: str, test_id: str, metadata: Optional[Dict[str, Any]] = None
+        self, user_id: str, test_id: str, metadata: Optional[dict[str, Any]] = None
     ) -> str:
         """Assign a user to a test variant.
 
@@ -396,7 +396,7 @@ class ABTestManager:
         return variant_id
 
     def _assign_variant(
-        self, user_id: str, test_id: str, variants: List[Dict[str, Any]]
+        self, user_id: str, test_id: str, variants: list[dict[str, Any]]
     ) -> str:
         """Assign a variant using consistent hashing for stability."""
         # Create a hash based on user_id and test_id for consistency
@@ -424,7 +424,7 @@ class ABTestManager:
         user_id: str,
         conversion_type: str,
         conversion_value: Optional[float] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Record a conversion event for an A/B test.
 
@@ -522,7 +522,7 @@ class ABTestManager:
 
     def get_active_tests(
         self, test_type: Optional[TestType] = None
-    ) -> List[ABTestConfig]:
+    ) -> list[ABTestConfig]:
         """Get all active A/B tests.
 
         Args:
@@ -583,7 +583,7 @@ class ABTestManager:
 
             return tests
 
-    def get_test_results(self, test_id: str) -> Dict[str, Any]:
+    def get_test_results(self, test_id: str) -> dict[str, Any]:
         """Get comprehensive results for an A/B test.
 
         Args:

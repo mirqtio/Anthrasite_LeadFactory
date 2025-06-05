@@ -2,6 +2,7 @@
 Tests for Email A/B Testing functionality.
 """
 
+import contextlib
 import os
 import tempfile
 from datetime import datetime
@@ -19,10 +20,8 @@ def temp_db():
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
     yield db_path
-    try:
+    with contextlib.suppress(FileNotFoundError):
         os.unlink(db_path)
-    except FileNotFoundError:
-        pass
 
 
 @pytest.fixture

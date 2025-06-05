@@ -113,7 +113,7 @@ class UnifiedScoringEngine:
             )
         return "legacy"
 
-    def _is_simplified_format(self, content: Dict[str, Any]) -> bool:
+    def _is_simplified_format(self, content: dict[str, Any]) -> bool:
         """Check if content matches simplified format."""
         # Simplified format has these key indicators
         simplified_indicators = [
@@ -130,7 +130,7 @@ class UnifiedScoringEngine:
         # Check for any simplified-specific keys
         return any(key in content for key in simplified_indicators)
 
-    def _is_legacy_format(self, content: Dict[str, Any]) -> bool:
+    def _is_legacy_format(self, content: dict[str, Any]) -> bool:
         """Check if content matches legacy format."""
         # Legacy format has rules and multipliers as top-level keys
         return "rules" in content and isinstance(content["rules"], list)
@@ -154,7 +154,7 @@ class UnifiedScoringEngine:
         self.multipliers = self.legacy_parser.get_enabled_multipliers()
         self.settings = self.legacy_parser.get_settings()
 
-    def _convert_simplified_rules(self) -> List[Any]:
+    def _convert_simplified_rules(self) -> list[Any]:
         """Convert simplified rules to unified format for the evaluator."""
         unified_rules = []
 
@@ -170,7 +170,7 @@ class UnifiedScoringEngine:
 
         return unified_rules
 
-    def _convert_simplified_multipliers(self) -> List[Any]:
+    def _convert_simplified_multipliers(self) -> list[Any]:
         """Convert simplified multipliers to unified format."""
         unified_multipliers = []
 
@@ -220,7 +220,7 @@ class UnifiedScoringEngine:
             }
         )
 
-    def _create_rule_object(self, rule_dict: Dict[str, Any]) -> Any:
+    def _create_rule_object(self, rule_dict: dict[str, Any]) -> Any:
         """Create a rule object that matches the expected interface."""
 
         # Create a simple object with the required attributes
@@ -237,7 +237,7 @@ class UnifiedScoringEngine:
 
         return UnifiedRule(rule_dict)
 
-    def _create_multiplier_object(self, mult_dict: Dict[str, Any]) -> Any:
+    def _create_multiplier_object(self, mult_dict: dict[str, Any]) -> Any:
         """Create a multiplier object that matches the expected interface."""
 
         class UnifiedMultiplier:
@@ -252,7 +252,7 @@ class UnifiedScoringEngine:
 
         return UnifiedMultiplier(mult_dict)
 
-    def _create_condition_object(self, condition_dict: Dict[str, Any]) -> Any:
+    def _create_condition_object(self, condition_dict: dict[str, Any]) -> Any:
         """Create a condition object with dynamic attributes."""
 
         class UnifiedCondition:
@@ -263,7 +263,7 @@ class UnifiedScoringEngine:
 
         return UnifiedCondition(condition_dict)
 
-    def score_business(self, business_data: Dict[str, Any]) -> Dict[str, Any]:
+    def score_business(self, business_data: dict[str, Any]) -> dict[str, Any]:
         """
         Score a business using the loaded rules.
 
@@ -377,7 +377,7 @@ class UnifiedScoringEngine:
         else:
             return "low"
 
-    def get_format_info(self) -> Dict[str, Any]:
+    def get_format_info(self) -> dict[str, Any]:
         """Get information about the currently loaded format."""
         return {
             "format_type": self.format_type,

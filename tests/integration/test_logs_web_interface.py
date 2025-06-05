@@ -744,7 +744,7 @@ class TestLogsWebInterfaceIntegration:
         # 1. Get initial statistics
         stats_response = client.get("/api/logs/stats")
         stats_data = json.loads(stats_response.data)
-        initial_total = stats_data["total_logs"]
+        stats_data["total_logs"]
 
         # 2. Browse logs with pagination
         page1_response = client.get("/api/logs?limit=10&offset=0")

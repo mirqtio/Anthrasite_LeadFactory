@@ -186,7 +186,7 @@ class TestLLMClient:
         assert "anthropic" in status
         assert "ollama" in status
 
-        for provider_name, provider_status in status.items():
+        for _provider_name, provider_status in status.items():
             assert "enabled" in provider_status
             assert "available" in provider_status
             assert "model" in provider_status

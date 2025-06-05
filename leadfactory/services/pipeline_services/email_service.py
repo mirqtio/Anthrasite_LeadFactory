@@ -30,7 +30,7 @@ class EmailService(BasePipelineService):
             logger.error(f"Failed to import email modules: {e}")
             self._email_available = False
 
-    async def _process_task(self, request: TaskRequest) -> Dict[str, Any]:
+    async def _process_task(self, request: TaskRequest) -> dict[str, Any]:
         """Process email delivery task."""
         email_data = request.metadata or {}
         business_ids = email_data.get("business_ids", [])

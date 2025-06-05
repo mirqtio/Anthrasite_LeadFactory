@@ -135,7 +135,7 @@ class TestIPRotationAlertingIntegration:
                 to_subuser="user3",
                 reason=RotationReason.MANUAL_ROTATION,
             )
-            assert False, "Expected ValueError to be raised"
+            raise AssertionError("Expected ValueError to be raised")
         except ValueError:
             pass  # Expected
 
@@ -220,10 +220,10 @@ class TestIPRotationAlertingIntegration:
                 pool_entry.status = IPSubuserStatus.COOLDOWN
                 pool_entry.cooldown_until = datetime.now() + timedelta(hours=1)
 
-        initial_alert_count = len(self.alerting_service.alert_history)
+        len(self.alerting_service.alert_history)
 
         # Try to handle threshold breach multiple times to trigger failures
-        for i in range(self.rotation_config.max_consecutive_failures + 1):
+        for _i in range(self.rotation_config.max_consecutive_failures + 1):
             try:
                 self.rotation_service.handle_threshold_breach(mock_breach)
             except Exception:
@@ -251,7 +251,7 @@ class TestIPRotationAlertingIntegration:
         """Test circuit breaker integration with rotation service."""
         # Trigger multiple system errors to open circuit breaker
         failure_threshold = self.alerting_service.circuit_breaker.failure_threshold
-        for i in range(failure_threshold):
+        for _i in range(failure_threshold):
             self.alerting_service.record_system_error("Test error")
 
         # Circuit breaker should be open

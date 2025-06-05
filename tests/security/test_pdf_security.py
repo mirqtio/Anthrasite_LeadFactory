@@ -110,7 +110,7 @@ class TestPDFSecurity:
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / "metadata_test.pdf"
 
-            pdf_bytes = self.pdf_generator.generate_from_report_data(
+            self.pdf_generator.generate_from_report_data(
                 report_data=report_data, output_path=str(output_path)
             )
 
@@ -190,7 +190,7 @@ class TestPDFSecurity:
         ]
 
         for malicious_path in malicious_paths:
-            with tempfile.TemporaryDirectory() as temp_dir:
+            with tempfile.TemporaryDirectory():
                 # Try to use malicious path as output path
                 try:
                     report_data = ReportData(
@@ -198,7 +198,7 @@ class TestPDFSecurity:
                     )
 
                     # Should either sanitize the path or raise an appropriate error
-                    pdf_bytes = self.pdf_generator.generate_from_report_data(
+                    self.pdf_generator.generate_from_report_data(
                         report_data=report_data, output_path=malicious_path
                     )
 
@@ -232,7 +232,7 @@ class TestPDFSecurity:
 
             # Should handle large content gracefully without crashing
             try:
-                pdf_bytes = self.pdf_generator.generate_from_report_data(
+                self.pdf_generator.generate_from_report_data(
                     report_data=report_data, output_path=str(output_path)
                 )
 
@@ -278,7 +278,7 @@ class TestPDFSecurity:
                 )
 
                 # Should not execute template code
-                pdf_bytes = self.pdf_generator.generate_from_report_data(
+                self.pdf_generator.generate_from_report_data(
                     report_data=report_data, output_path=str(output_path)
                 )
 
@@ -310,7 +310,7 @@ class TestPDFSecurity:
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / "structure_test.pdf"
 
-            pdf_bytes = self.pdf_generator.generate_from_report_data(
+            self.pdf_generator.generate_from_report_data(
                 report_data=report_data, output_path=str(output_path)
             )
 

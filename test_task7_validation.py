@@ -23,10 +23,8 @@ def test_basic_imports():
             upload_business_mockup,
         )
 
-        print("✅ All imports successful")
         return True
-    except Exception as e:
-        print(f"❌ Import failed: {e}")
+    except Exception:
         return False
 
 
@@ -43,7 +41,6 @@ def test_dataclass_creation():
         assert result.success is True
         assert result.business_id == 123
         assert result.error_message is None
-        print("✅ MockupUploadResult creation successful")
 
         # Test MockupImageMetadata
         metadata = MockupImageMetadata(
@@ -58,12 +55,10 @@ def test_dataclass_creation():
         assert metadata.business_id == 123
         assert metadata.mockup_type == "homepage"
         assert metadata.quality_score == 0.8
-        print("✅ MockupImageMetadata creation successful")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Dataclass creation failed: {e}")
+    except Exception:
         return False
 
 
@@ -76,26 +71,21 @@ def test_uploader_initialization():
             patch(
                 "leadfactory.services.mockup_png_uploader.SupabaseStorage"
             ) as mock_supabase,
-            patch(
-                "leadfactory.services.mockup_png_uploader.get_storage"
-            ) as mock_storage,
+            patch("leadfactory.services.mockup_png_uploader.get_storage"),
         ):
             # Test default bucket
             uploader = MockupPNGUploader()
             mock_supabase.assert_called_with("mockups")
             assert uploader.max_retries == 3
             assert uploader.retry_delay_base == 1.0
-            print("✅ Default uploader initialization successful")
 
             # Test custom bucket
-            uploader_custom = MockupPNGUploader("custom-bucket")
+            MockupPNGUploader("custom-bucket")
             mock_supabase.assert_called_with("custom-bucket")
-            print("✅ Custom bucket uploader initialization successful")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Uploader initialization failed: {e}")
+    except Exception:
         return False
 
 
@@ -117,17 +107,14 @@ def test_validation_methods():
             # Test invalid business ID
             result = uploader._validate_input(Path("test.png"), -1)
             assert "Invalid business_id" in result
-            print("✅ Invalid business ID validation successful")
 
             # Test file not found
             result = uploader._validate_input(Path("nonexistent.png"), 123)
             assert "File not found" in result
-            print("✅ File not found validation successful")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Validation methods test failed: {e}")
+    except Exception:
         return False
 
 
@@ -154,15 +141,13 @@ def test_file_hash_calculation():
 
                 assert hash1 == hash2  # Same file should produce same hash
                 assert len(hash1) == 64  # SHA-256 produces 64-character hex string
-                print("✅ File hash calculation successful")
 
                 return True
 
             finally:
                 test_path.unlink(missing_ok=True)
 
-    except Exception as e:
-        print(f"❌ File hash calculation test failed: {e}")
+    except Exception:
         return False
 
 
@@ -186,7 +171,6 @@ def test_convenience_functions():
             result = upload_business_mockup("test.png", 123, "homepage")
             assert result.success is True
             assert result.business_id == 123
-            print("✅ Upload convenience function successful")
 
             # Test cleanup convenience function
             mock_uploader.cleanup_orphaned_images.return_value = {
@@ -199,12 +183,10 @@ def test_convenience_functions():
             cleanup_stats = cleanup_orphaned_mockups(max_age_hours=24)
             assert cleanup_stats["files_checked"] == 5
             assert cleanup_stats["files_deleted"] == 2
-            print("✅ Cleanup convenience function successful")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Convenience functions test failed: {e}")
+    except Exception:
         return False
 
 
@@ -230,7 +212,6 @@ def test_url_generation_methods():
 
             url = uploader._generate_cdn_url("test/path.png", expires_hours=24)
             assert url == "https://example.com/secure-url"
-            print("✅ CDN URL generation successful")
 
             # Test fallback URL generation
             mock_supabase.generate_secure_report_url.side_effect = Exception(
@@ -240,18 +221,15 @@ def test_url_generation_methods():
 
             url = uploader._generate_cdn_url("test/path.png", expires_hours=24)
             assert url == "https://fallback.com/url"
-            print("✅ CDN URL fallback successful")
 
         return True
 
-    except Exception as e:
-        print(f"❌ URL generation methods test failed: {e}")
+    except Exception:
         return False
 
 
 def run_all_tests():
     """Run all validation tests."""
-    print("🚀 Starting Task 7 validation tests...\n")
 
     tests = [
         ("Basic Imports", test_basic_imports),
@@ -266,30 +244,16 @@ def run_all_tests():
     passed = 0
     total = len(tests)
 
-    for test_name, test_func in tests:
-        print(f"\n📋 Running: {test_name}")
+    for _test_name, test_func in tests:
         try:
             if test_func():
                 passed += 1
             else:
-                print(f"❌ {test_name} failed")
-        except Exception as e:
-            print(f"❌ {test_name} failed with exception: {e}")
+                pass
+        except Exception:
+            pass
 
-    print(f"\n📊 Test Results: {passed}/{total} tests passed")
-
-    if passed == total:
-        print("🎉 All Task 7 validation tests passed!")
-        print("\n✅ MockupPNGUploader implementation is working correctly")
-        print("✅ All required functionality has been implemented")
-        print("✅ Error handling and retry logic are in place")
-        print("✅ CDN URL generation with fallback is working")
-        print("✅ Business linking and asset tracking are implemented")
-        print("✅ Orphaned image cleanup functionality is ready")
-        return True
-    else:
-        print(f"❌ {total - passed} tests failed")
-        return False
+    return passed == total
 
 
 if __name__ == "__main__":

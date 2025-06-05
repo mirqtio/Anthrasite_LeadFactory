@@ -61,7 +61,7 @@ class Alert:
     severity: AlertSeverity
     message: str
     timestamp: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
     alert_id: str = ""
 
     def __post_init__(self):
@@ -79,10 +79,10 @@ class AlertingConfig:
     smtp_username: str = ""
     smtp_password: str = ""
     smtp_use_tls: bool = True
-    admin_emails: List[str] = None
+    admin_emails: list[str] = None
 
     # Webhook settings
-    webhook_urls: List[str] = None
+    webhook_urls: list[str] = None
     webhook_timeout: int = 10
 
     # Slack settings
@@ -149,7 +149,7 @@ class CircuitBreaker:
         # half-open state
         return True
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get circuit breaker status."""
         return {
             "state": self.state,
@@ -166,8 +166,8 @@ class IPRotationAlerting:
 
     def __init__(self, config: AlertingConfig = None):
         self.config = config or AlertingConfig()
-        self.alert_history: List[Alert] = []
-        self.alert_counts: Dict[str, int] = {}
+        self.alert_history: list[Alert] = []
+        self.alert_counts: dict[str, int] = {}
         self.last_alert_window = datetime.now()
         self.circuit_breaker = CircuitBreaker()
 
@@ -188,7 +188,7 @@ class IPRotationAlerting:
         alert_type: AlertType,
         severity: AlertSeverity,
         message: str,
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ) -> bool:
         """Send an alert through configured channels."""
         if metadata is None:
@@ -444,7 +444,7 @@ class IPRotationAlerting:
             metadata={},
         )
 
-    def record_system_error(self, error: str, context: Dict[str, Any] = None):
+    def record_system_error(self, error: str, context: dict[str, Any] = None):
         """Record a system error."""
         self.circuit_breaker.record_failure()
 
@@ -455,7 +455,7 @@ class IPRotationAlerting:
             metadata={"error": error, "context": context or {}},
         )
 
-    def get_dashboard_data(self) -> Dict[str, Any]:
+    def get_dashboard_data(self) -> dict[str, Any]:
         """Get data for dashboard visualization."""
         recent_alerts = [
             asdict(alert) for alert in self.alert_history[-50:]  # Last 50 alerts
@@ -489,7 +489,7 @@ class IPRotationAlerting:
 
         return removed_count
 
-    def get_alert_summary(self, hours: int = 24) -> Dict[str, Any]:
+    def get_alert_summary(self, hours: int = 24) -> dict[str, Any]:
         """Get alert summary for the specified time period."""
         cutoff_time = datetime.now() - timedelta(hours=hours)
         recent_alerts = [

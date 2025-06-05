@@ -23,7 +23,7 @@ class GPUAlertManager:
     Manages alerts for GPU auto-scaling system.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         """
         Initialize the alert manager.
 
@@ -31,8 +31,8 @@ class GPUAlertManager:
             config: Configuration dictionary for alerting
         """
         self.config = config or {}
-        self.alert_history: List[Dict[str, Any]] = []
-        self.alert_cooldowns: Dict[str, datetime] = {}
+        self.alert_history: list[dict[str, Any]] = []
+        self.alert_cooldowns: dict[str, datetime] = {}
 
         # Alert thresholds
         self.thresholds = {
@@ -56,7 +56,7 @@ class GPUAlertManager:
 
     def check_budget_alerts(
         self, current_spend: float, daily_budget: float
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Check for budget-related alerts.
 
@@ -106,7 +106,7 @@ class GPUAlertManager:
 
         return alerts
 
-    def check_queue_alerts(self, queue_metrics: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def check_queue_alerts(self, queue_metrics: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Check for queue-related alerts.
 
@@ -158,8 +158,8 @@ class GPUAlertManager:
         return alerts
 
     def check_instance_alerts(
-        self, gpu_manager_status: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, gpu_manager_status: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Check for instance-related alerts.
 
@@ -201,7 +201,7 @@ class GPUAlertManager:
 
     def check_cost_alerts(
         self, current_hourly_cost: float, average_hourly_cost: float
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Check for cost spike alerts.
 
@@ -252,12 +252,9 @@ class GPUAlertManager:
         cooldown_minutes = self.cooldown_periods.get(alert_type, 60)
         cooldown_period = timedelta(minutes=cooldown_minutes)
 
-        if datetime.utcnow() - last_sent >= cooldown_period:
-            return True
+        return datetime.utcnow() - last_sent >= cooldown_period
 
-        return False
-
-    async def send_alert(self, alert: Dict[str, Any]) -> bool:
+    async def send_alert(self, alert: dict[str, Any]) -> bool:
         """
         Send an alert via configured channels.
 
@@ -300,7 +297,7 @@ class GPUAlertManager:
             logger.error(f"Failed to send alert: {e}")
             return False
 
-    async def _send_email_alert(self, alert: Dict[str, Any]) -> bool:
+    async def _send_email_alert(self, alert: dict[str, Any]) -> bool:
         """Send alert via email."""
         try:
             email_config = self.config.get("email_alerts", {})
@@ -311,7 +308,7 @@ class GPUAlertManager:
             # Create email content
             subject = f"GPU Alert: {alert['type'].replace('_', ' ').title()}"
 
-            body = f"""
+            f"""
 GPU Alert Notification
 
 Type: {alert["type"]}
@@ -335,7 +332,7 @@ LeadFactory GPU Auto-Scaling System
             logger.error(f"Failed to send email alert: {e}")
             return False
 
-    async def _send_slack_alert(self, alert: Dict[str, Any]) -> bool:
+    async def _send_slack_alert(self, alert: dict[str, Any]) -> bool:
         """Send alert via Slack webhook."""
         try:
             # Would implement Slack webhook integration here
@@ -346,7 +343,7 @@ LeadFactory GPU Auto-Scaling System
             logger.error(f"Failed to send Slack alert: {e}")
             return False
 
-    def get_alert_summary(self, hours: int = 24) -> Dict[str, Any]:
+    def get_alert_summary(self, hours: int = 24) -> dict[str, Any]:
         """
         Get summary of alerts from the last N hours.
 
@@ -390,7 +387,7 @@ LeadFactory GPU Auto-Scaling System
 gpu_alert_manager = GPUAlertManager()
 
 
-async def check_all_gpu_alerts(gpu_manager) -> List[Dict[str, Any]]:
+async def check_all_gpu_alerts(gpu_manager) -> list[dict[str, Any]]:
     """
     Check all GPU-related alerts and send notifications.
 

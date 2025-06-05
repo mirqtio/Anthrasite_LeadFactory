@@ -61,9 +61,9 @@ class DedicatedIP:
     daily_volume: int = 0
     bounce_rate: float = 0.0
     spam_rate: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "ip_address": self.ip_address,
@@ -84,7 +84,7 @@ class DedicatedIP:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DedicatedIP":
+    def from_dict(cls, data: dict[str, Any]) -> "DedicatedIP":
         """Create from dictionary."""
         return cls(
             ip_address=data["ip_address"],
@@ -114,11 +114,11 @@ class IPPool:
     """Represents a SendGrid IP pool."""
 
     name: str
-    ips: List[str] = field(default_factory=list)
+    ips: list[str] = field(default_factory=list)
     created_at: Optional[datetime] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "name": self.name,
@@ -128,7 +128,7 @@ class IPPool:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "IPPool":
+    def from_dict(cls, data: dict[str, Any]) -> "IPPool":
         """Create from dictionary."""
         return cls(
             name=data["name"],
@@ -245,7 +245,7 @@ class SendGridIPProvisioner:
             conn.commit()
 
     def _log_event(
-        self, ip_address: Optional[str], event_type: str, event_data: Dict[str, Any]
+        self, ip_address: Optional[str], event_type: str, event_data: dict[str, Any]
     ):
         """Log an IP-related event."""
         with self._get_db_connection() as conn:
@@ -264,7 +264,7 @@ class SendGridIPProvisioner:
 
     def provision_dedicated_ip(
         self, pool_name: Optional[str] = None
-    ) -> Tuple[bool, str, Optional[DedicatedIP]]:
+    ) -> tuple[bool, str, Optional[DedicatedIP]]:
         """
         Provision a new dedicated IP.
 
@@ -410,7 +410,7 @@ class SendGridIPProvisioner:
 
     def list_dedicated_ips(
         self, status: Optional[IPStatus] = None, pool_name: Optional[str] = None
-    ) -> List[DedicatedIP]:
+    ) -> list[DedicatedIP]:
         """List dedicated IPs with optional filtering."""
         with self._get_db_connection() as conn:
             query = "SELECT * FROM dedicated_ips WHERE 1=1"
@@ -457,8 +457,8 @@ class SendGridIPProvisioner:
             return ips
 
     def create_ip_pool(
-        self, pool_name: str, ips: Optional[List[str]] = None
-    ) -> Tuple[bool, str]:
+        self, pool_name: str, ips: Optional[list[str]] = None
+    ) -> tuple[bool, str]:
         """
         Create a new IP pool.
 
@@ -539,7 +539,7 @@ class SendGridIPProvisioner:
             )
             conn.commit()
 
-    def add_ip_to_pool(self, ip_address: str, pool_name: str) -> Tuple[bool, str]:
+    def add_ip_to_pool(self, ip_address: str, pool_name: str) -> tuple[bool, str]:
         """
         Add an IP to a pool.
 
@@ -623,7 +623,7 @@ class SendGridIPProvisioner:
                 )
             return None
 
-    def list_ip_pools(self) -> List[IPPool]:
+    def list_ip_pools(self) -> list[IPPool]:
         """List all IP pools."""
         with self._get_db_connection() as conn:
             rows = conn.execute(
@@ -647,7 +647,7 @@ class SendGridIPProvisioner:
 
             return pools
 
-    def check_ip_health(self, ip_address: str) -> Tuple[IPHealthStatus, Dict[str, Any]]:
+    def check_ip_health(self, ip_address: str) -> tuple[IPHealthStatus, dict[str, Any]]:
         """
         Check the health of a dedicated IP.
 
@@ -696,7 +696,7 @@ class SendGridIPProvisioner:
 
             # Real SendGrid API calls for health metrics
             # Get IP reputation
-            rep_response = self.client.client.ips._(ip_address).get()
+            self.client.client.ips._(ip_address).get()
 
             # Get bounce and spam rates (would need additional API calls)
             # This is a simplified implementation
@@ -736,7 +736,7 @@ class SendGridIPProvisioner:
             self._log_event(ip_address, "health_check_error", {"error": error_msg})
             return IPHealthStatus.UNKNOWN, {"error": error_msg}
 
-    def get_ip_status_summary(self) -> Dict[str, Any]:
+    def get_ip_status_summary(self) -> dict[str, Any]:
         """Get a summary of all IP statuses."""
         ips = self.list_dedicated_ips()
 
@@ -764,7 +764,7 @@ class SendGridIPProvisioner:
             )
 
         # Count by pool
-        pools = set(ip.pool_name for ip in ips)
+        pools = {ip.pool_name for ip in ips}
         for pool in pools:
             summary["by_pool"][pool] = len([ip for ip in ips if ip.pool_name == pool])
 
@@ -790,7 +790,7 @@ class SendGridIPProvisioner:
 
         return summary
 
-    def run_health_checks(self) -> Dict[str, Any]:
+    def run_health_checks(self) -> dict[str, Any]:
         """Run health checks on all active IPs."""
         active_ips = self.list_dedicated_ips(status=IPStatus.ACTIVE)
         results = {
@@ -842,19 +842,19 @@ def get_ip_provisioner(
 
 def provision_dedicated_ip(
     pool_name: Optional[str] = None,
-) -> Tuple[bool, str, Optional[DedicatedIP]]:
+) -> tuple[bool, str, Optional[DedicatedIP]]:
     """Convenience function to provision a dedicated IP."""
     provisioner = get_ip_provisioner()
     return provisioner.provision_dedicated_ip(pool_name)
 
 
-def check_ip_health(ip_address: str) -> Tuple[IPHealthStatus, Dict[str, Any]]:
+def check_ip_health(ip_address: str) -> tuple[IPHealthStatus, dict[str, Any]]:
     """Convenience function to check IP health."""
     provisioner = get_ip_provisioner()
     return provisioner.check_ip_health(ip_address)
 
 
-def get_ip_status_summary() -> Dict[str, Any]:
+def get_ip_status_summary() -> dict[str, Any]:
     """Convenience function to get IP status summary."""
     provisioner = get_ip_provisioner()
     return provisioner.get_ip_status_summary()

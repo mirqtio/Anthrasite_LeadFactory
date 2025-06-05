@@ -38,7 +38,7 @@ class AlertRule:
     severity: str  # "low", "medium", "high", "critical"
     enabled: bool = True
     cooldown_minutes: int = 60  # Minimum time between similar alerts
-    notification_channels: List[str] = None  # ["email", "slack", "webhook"]
+    notification_channels: list[str] = None  # ["email", "slack", "webhook"]
 
     def __post_init__(self):
         if self.notification_channels is None:
@@ -56,7 +56,7 @@ class Alert:
     test_suite: str
     severity: str
     message: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
     triggered_at: datetime
     acknowledged: bool = False
     resolved: bool = False
@@ -68,7 +68,7 @@ class NotificationChannel:
     """Base configuration for notification channels."""
 
     channel_type: str
-    config: Dict[str, Any]
+    config: dict[str, Any]
     enabled: bool = True
 
 
@@ -77,11 +77,11 @@ class AlertManager:
 
     def __init__(self, config_file: str = "alert_config.json"):
         self.config_file = config_file
-        self.alert_rules: Dict[str, AlertRule] = {}
-        self.notification_channels: Dict[str, NotificationChannel] = {}
-        self.active_alerts: List[Alert] = []
-        self.alert_history: List[Alert] = []
-        self.last_alert_times: Dict[str, datetime] = {}
+        self.alert_rules: dict[str, AlertRule] = {}
+        self.notification_channels: dict[str, NotificationChannel] = {}
+        self.active_alerts: list[Alert] = []
+        self.alert_history: list[Alert] = []
+        self.last_alert_times: dict[str, datetime] = {}
         self._lock = threading.Lock()
 
         self._load_configuration()
@@ -517,7 +517,7 @@ class AlertManager:
                     logger.info(f"Alert {alert_id} resolved by {resolved_by}")
                     break
 
-    def get_active_alerts(self, severity: Optional[str] = None) -> List[Alert]:
+    def get_active_alerts(self, severity: Optional[str] = None) -> list[Alert]:
         """Get list of active alerts, optionally filtered by severity."""
         with self._lock:
             alerts = self.active_alerts.copy()
@@ -527,7 +527,7 @@ class AlertManager:
 
         return sorted(alerts, key=lambda x: x.triggered_at, reverse=True)
 
-    def get_alert_summary(self) -> Dict[str, Any]:
+    def get_alert_summary(self) -> dict[str, Any]:
         """Get summary of alert status."""
         with self._lock:
             active_alerts = self.active_alerts.copy()

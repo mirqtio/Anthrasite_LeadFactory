@@ -346,11 +346,10 @@ class TestEdgeCasesAndErrorHandling:
             "GOOGLE_API_KEY": "test_key",
         }
 
-        with patch.dict(os.environ, env_vars):
-            with patch(
-                "psycopg2.connect", side_effect=Exception("Invalid connection string")
-            ):
-                result = validator.validate()
+        with patch.dict(os.environ, env_vars), patch(
+            "psycopg2.connect", side_effect=Exception("Invalid connection string")
+        ):
+            result = validator.validate()
 
         # Should have database connection issues
         db_issues = [

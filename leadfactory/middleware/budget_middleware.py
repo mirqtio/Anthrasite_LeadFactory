@@ -38,8 +38,8 @@ class BudgetGuardMiddleware:
         self.cost_tracker = CostTracker()
 
         # Decision cache for performance
-        self._decision_cache: Dict[str, tuple] = {}
-        self._cache_timestamps: Dict[str, float] = {}
+        self._decision_cache: dict[str, tuple] = {}
+        self._cache_timestamps: dict[str, float] = {}
 
         logger.info(f"BudgetGuardMiddleware initialized for {config.framework.value}")
 
@@ -56,15 +56,14 @@ class BudgetGuardMiddleware:
             return False
 
         # Check include-only paths if specified
-        if opts.include_only_paths:
-            if not any(
+        return not (
+            opts.include_only_paths
+            and not any(
                 path.startswith(included) for included in opts.include_only_paths
-            ):
-                return False
+            )
+        )
 
-        return True
-
-    def _extract_request_info(self, request: Any) -> Dict[str, Any]:
+    def _extract_request_info(self, request: Any) -> dict[str, Any]:
         """Extract relevant information from the request."""
         opts = self.config.budget_options
 
@@ -119,7 +118,7 @@ class BudgetGuardMiddleware:
 
         return info
 
-    def _get_cache_key(self, request_info: Dict[str, Any]) -> str:
+    def _get_cache_key(self, request_info: dict[str, Any]) -> str:
         """Generate cache key for throttling decisions."""
         return f"{request_info['user_id']}:{request_info['model']}:{request_info['operation']}"
 
@@ -143,7 +142,7 @@ class BudgetGuardMiddleware:
             self._cache_timestamps[cache_key] = time.time()
 
     def _make_throttling_decision(
-        self, request_info: Dict[str, Any]
+        self, request_info: dict[str, Any]
     ) -> tuple[ThrottlingDecision, float]:
         """Make a throttling decision for the request."""
         cache_key = self._get_cache_key(request_info)
@@ -188,7 +187,7 @@ class BudgetGuardMiddleware:
                 return ThrottlingDecision.REJECT, request_info["estimated_cost"]
 
     def _send_alert_if_needed(
-        self, decision: ThrottlingDecision, request_info: Dict[str, Any]
+        self, decision: ThrottlingDecision, request_info: dict[str, Any]
     ) -> None:
         """Send alert if throttling decision warrants it."""
         if not self.config.budget_options.enable_alerting:
@@ -231,7 +230,7 @@ class BudgetGuardMiddleware:
     def _create_response(
         self,
         decision: ThrottlingDecision,
-        request_info: Dict[str, Any],
+        request_info: dict[str, Any],
         framework: FrameworkType,
     ) -> Any:
         """Create appropriate response based on framework and decision."""

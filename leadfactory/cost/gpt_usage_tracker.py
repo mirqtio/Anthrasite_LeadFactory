@@ -116,9 +116,9 @@ class GPTUsageTracker:
         request_duration: Optional[float] = None,
         success: bool = True,
         error_message: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
         batch_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Track a GPT API usage event.
 
@@ -231,7 +231,7 @@ class GPTUsageTracker:
         end_time: Optional[datetime] = None,
         model: Optional[str] = None,
         batch_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get usage statistics for a specified time period.
 
@@ -359,7 +359,7 @@ class GPTUsageTracker:
             "hourly_usage": hourly_usage,
         }
 
-    def get_current_usage(self, period_hours: int = 1) -> Dict[str, Any]:
+    def get_current_usage(self, period_hours: int = 1) -> dict[str, Any]:
         """
         Get current usage statistics for the specified period.
 

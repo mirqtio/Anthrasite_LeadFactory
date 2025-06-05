@@ -30,7 +30,7 @@ class MockupService(BasePipelineService):
             logger.error(f"Failed to initialize mockup generator: {e}")
             self._mockup_available = False
 
-    async def _process_task(self, request: TaskRequest) -> Dict[str, Any]:
+    async def _process_task(self, request: TaskRequest) -> dict[str, Any]:
         """Process mockup generation task."""
         mockup_data = request.metadata or {}
         business_ids = mockup_data.get("business_ids", [])

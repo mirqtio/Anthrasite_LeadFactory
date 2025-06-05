@@ -7,6 +7,7 @@ on bounce threshold, providing a unified interface for the complete functionalit
 """
 
 import asyncio
+import contextlib
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
@@ -123,10 +124,8 @@ class IPPoolSwitchingService:
 
         if self.monitoring_task:
             self.monitoring_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self.monitoring_task
-            except asyncio.CancelledError:
-                pass
 
         # Stop IP pool manager if running
         if self.ip_pool_manager.running:
@@ -315,7 +314,7 @@ class IPPoolSwitchingService:
         except Exception as e:
             logger.error(f"Error recording sent email: {e}")
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get comprehensive status of the IP pool switching service."""
         try:
             bounce_stats = self.bounce_monitor.get_all_stats()
@@ -359,7 +358,7 @@ class IPPoolSwitchingService:
 
     def get_available_alternatives(
         self, exclude_ip: str = None, exclude_subuser: str = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get available IP/subuser alternatives for rotation."""
         try:
             alternatives = self.rotation_service.get_available_alternatives(
@@ -386,7 +385,7 @@ class IPPoolSwitchingService:
 
     async def force_rotation(
         self, from_ip: str, from_subuser: str, to_ip: str = None, to_subuser: str = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Force a manual rotation between IP/subuser combinations.
 
@@ -507,20 +506,17 @@ async def example_usage():
         )
 
         # Check status
-        status = service.get_status()
-        print(f"Service Status: {status}")
+        service.get_status()
 
         # Get alternatives
-        alternatives = service.get_available_alternatives(
+        service.get_available_alternatives(
             exclude_ip="198.51.100.1", exclude_subuser="primary_marketing"
         )
-        print(f"Available alternatives: {len(alternatives)}")
 
         # Force a manual rotation if needed
-        rotation_result = await service.force_rotation(
+        await service.force_rotation(
             from_ip="198.51.100.1", from_subuser="primary_marketing"
         )
-        print(f"Manual rotation result: {rotation_result}")
 
     finally:
         # Stop service

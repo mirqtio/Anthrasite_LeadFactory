@@ -36,7 +36,7 @@ class PostgresStorage(StorageInterface):
     a clean, abstracted interface for database operations.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         """
         Initialize PostgreSQL storage.
 
@@ -59,8 +59,8 @@ class PostgresStorage(StorageInterface):
             yield cursor
 
     def execute_query(
-        self, query: str, params: Optional[Tuple] = None, fetch: bool = True
-    ) -> List[Dict[str, Any]]:
+        self, query: str, params: Optional[tuple] = None, fetch: bool = True
+    ) -> list[dict[str, Any]]:
         """Execute a SQL query and return results."""
         try:
             results = execute_query(query, params, fetch)
@@ -79,7 +79,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Query execution failed: {e}")
             return []
 
-    def execute_transaction(self, queries: List[Tuple[str, Optional[Tuple]]]) -> bool:
+    def execute_transaction(self, queries: list[tuple[str, Optional[tuple]]]) -> bool:
         """Execute multiple queries in a transaction."""
         try:
             return execute_transaction(queries)
@@ -87,7 +87,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Transaction execution failed: {e}")
             return False
 
-    def get_business_by_id(self, business_id: int) -> Optional[Dict[str, Any]]:
+    def get_business_by_id(self, business_id: int) -> Optional[dict[str, Any]]:
         """Get business data by ID."""
         try:
             with self.cursor() as cursor:
@@ -113,8 +113,8 @@ class PostgresStorage(StorageInterface):
             return None
 
     def get_businesses_by_criteria(
-        self, criteria: Dict[str, Any], limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        self, criteria: dict[str, Any], limit: Optional[int] = None
+    ) -> list[dict[str, Any]]:
         """Get businesses matching specific criteria."""
         try:
             # Build WHERE clause from criteria
@@ -157,7 +157,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to get businesses by criteria {criteria}: {e}")
             return []
 
-    def update_business(self, business_id: int, updates: Dict[str, Any]) -> bool:
+    def update_business(self, business_id: int, updates: dict[str, Any]) -> bool:
         """Update business record with new data."""
         try:
             if not updates:
@@ -187,7 +187,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to update business {business_id}: {e}")
             return False
 
-    def insert_business(self, business_data: Dict[str, Any]) -> Optional[int]:
+    def insert_business(self, business_data: dict[str, Any]) -> Optional[int]:
         """Insert a new business record."""
         try:
             if not business_data:
@@ -213,7 +213,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to insert business: {e}")
             return None
 
-    def get_business_details(self, business_id: int) -> Optional[Dict[str, Any]]:
+    def get_business_details(self, business_id: int) -> Optional[dict[str, Any]]:
         """Get detailed business information including JSON responses."""
         try:
             query = """
@@ -228,7 +228,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Error getting business details for {business_id}: {e}")
             return None
 
-    def get_businesses(self, business_ids: List[int]) -> List[Dict[str, Any]]:
+    def get_businesses(self, business_ids: list[int]) -> list[dict[str, Any]]:
         """Get multiple businesses by their IDs."""
         try:
             if not business_ids:
@@ -260,7 +260,7 @@ class PostgresStorage(StorageInterface):
 
     def get_processing_status(
         self, business_id: int, stage: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Get processing status for a business at a specific stage."""
         try:
             with self.cursor() as cursor:
@@ -295,7 +295,7 @@ class PostgresStorage(StorageInterface):
         business_id: int,
         stage: str,
         status: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
         skip_reason: Optional[str] = None,
     ) -> bool:
         """Update processing status for a business at a specific stage."""
@@ -325,7 +325,7 @@ class PostgresStorage(StorageInterface):
             return False
 
     def save_stage_results(
-        self, business_id: int, stage: str, results: Dict[str, Any]
+        self, business_id: int, stage: str, results: dict[str, Any]
     ) -> bool:
         """Save results from a pipeline stage."""
         try:
@@ -351,7 +351,7 @@ class PostgresStorage(StorageInterface):
 
     def get_stage_results(
         self, business_id: int, stage: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Get saved results from a pipeline stage."""
         try:
             with self.cursor() as cursor:
@@ -393,7 +393,7 @@ class PostgresStorage(StorageInterface):
 
     def get_business_by_source_id(
         self, source_id: str, source: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Get business by source ID and source."""
         try:
             with self.cursor() as cursor:
@@ -419,7 +419,7 @@ class PostgresStorage(StorageInterface):
             )
             return None
 
-    def get_business_by_website(self, website: str) -> Optional[Dict[str, Any]]:
+    def get_business_by_website(self, website: str) -> Optional[dict[str, Any]]:
         """Get business by website."""
         try:
             with self.cursor() as cursor:
@@ -443,7 +443,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to get business by website {website}: {e}")
             return None
 
-    def get_business_by_phone(self, phone: str) -> Optional[Dict[str, Any]]:
+    def get_business_by_phone(self, phone: str) -> Optional[dict[str, Any]]:
         """Get business by phone number."""
         try:
             with self.cursor() as cursor:
@@ -469,7 +469,7 @@ class PostgresStorage(StorageInterface):
 
     def get_business_by_name_and_zip(
         self, name: str, zip_code: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Get business by name and ZIP code."""
         try:
             with self.cursor() as cursor:
@@ -506,8 +506,8 @@ class PostgresStorage(StorageInterface):
         website: Optional[str] = None,
         source: Optional[str] = None,
         source_id: Optional[str] = None,
-        yelp_response_json: Optional[Dict] = None,
-        google_response_json: Optional[Dict] = None,
+        yelp_response_json: Optional[dict] = None,
+        google_response_json: Optional[dict] = None,
     ) -> Optional[int]:
         """Create a new business record."""
         try:
@@ -555,7 +555,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to create business {name}: {e}")
             return None
 
-    def get_business(self, business_id: int) -> Optional[Dict[str, Any]]:
+    def get_business(self, business_id: int) -> Optional[dict[str, Any]]:
         """Get business by ID (alias for get_business_by_id)."""
         return self.get_business_by_id(business_id)
 
@@ -613,7 +613,7 @@ class PostgresStorage(StorageInterface):
 
     def get_review_queue_items(
         self, status: str = None, limit: int = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get review queue items."""
         try:
             with self.cursor() as cursor:
@@ -663,7 +663,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to update review status: {e}")
             return False
 
-    def get_review_statistics(self) -> Dict[str, Any]:
+    def get_review_statistics(self) -> dict[str, Any]:
         """Get statistics about manual reviews."""
         try:
             with self.cursor() as cursor:
@@ -729,7 +729,7 @@ class PostgresStorage(StorageInterface):
     # Asset Management Methods
     def get_businesses_needing_screenshots(
         self, limit: int = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get businesses that need screenshots taken."""
         try:
             with self.cursor() as cursor:
@@ -783,7 +783,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to create asset: {e}")
             return False
 
-    def get_businesses_needing_mockups(self, limit: int = None) -> List[Dict[str, Any]]:
+    def get_businesses_needing_mockups(self, limit: int = None) -> list[dict[str, Any]]:
         """Get businesses that need mockups generated."""
         try:
             with self.cursor() as cursor:
@@ -822,7 +822,7 @@ class PostgresStorage(StorageInterface):
 
     def get_business_asset(
         self, business_id: int, asset_type: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Get an asset for a business by type."""
         try:
             with self.cursor() as cursor:
@@ -853,14 +853,14 @@ class PostgresStorage(StorageInterface):
         force: bool = False,
         business_id: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get businesses ready for email sending."""
         try:
             with self.cursor() as cursor:
                 # Build the query - join with assets table to get mockup URLs and stage_results for score
                 query = """
                 SELECT b.id, b.name, b.email, b.phone, b.address, b.city, b.state, b.zip,
-                       b.website, a.url as mockup_url, '' as contact_name, 
+                       b.website, a.url as mockup_url, '' as contact_name,
                        COALESCE((sr.results->>'score')::int, 0) as score, '' as notes
                 FROM businesses b
                 LEFT JOIN emails e ON b.id = e.business_id
@@ -913,7 +913,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Error checking unsubscribe status: {e}")
             return False
 
-    def record_email_sent(self, business_id: int, email_data: Dict[str, Any]) -> bool:
+    def record_email_sent(self, business_id: int, email_data: dict[str, Any]) -> bool:
         """Record that an email was sent to a business."""
         try:
             with self.cursor() as cursor:
@@ -934,7 +934,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Error recording email sent: {e}")
             return False
 
-    def get_email_stats(self) -> Dict[str, Any]:
+    def get_email_stats(self) -> dict[str, Any]:
         """Get email sending statistics."""
         try:
             with self.cursor() as cursor:
@@ -1111,7 +1111,7 @@ class PostgresStorage(StorageInterface):
         self,
         backup_id: str,
         operation_type: str,
-        business_ids: List[int],
+        business_ids: list[int],
         backup_path: str,
         backup_size: int,
         checksum: str,
@@ -1139,7 +1139,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to record backup metadata: {e}")
             return False
 
-    def get_backup_metadata(self, backup_id: str) -> Optional[Dict[str, Any]]:
+    def get_backup_metadata(self, backup_id: str) -> Optional[dict[str, Any]]:
         """Get backup metadata by backup ID."""
         try:
             with self.cursor() as cursor:
@@ -1188,7 +1188,7 @@ class PostgresStorage(StorageInterface):
         operation_type: str,
         business1_id: Optional[int],
         business2_id: Optional[int],
-        operation_data: Dict[str, Any],
+        operation_data: dict[str, Any],
         status: str,
         error_message: Optional[str] = None,
         user_id: Optional[str] = None,
@@ -1227,7 +1227,7 @@ class PostgresStorage(StorageInterface):
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         limit: int = 100,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Retrieve audit trail entries."""
         query = "SELECT * FROM dedupe_audit_log WHERE 1=1"
         params = []
@@ -1344,7 +1344,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Failed to create audit tables: {e}")
             return False
 
-    def get_related_business_data(self, business_id: int) -> Dict[str, Any]:
+    def get_related_business_data(self, business_id: int) -> dict[str, Any]:
         """Get related data for a business (e.g., responses, metadata)."""
         related_data = {}
 
@@ -1369,12 +1369,11 @@ class PostgresStorage(StorageInterface):
     def merge_businesses(self, primary_id: int, secondary_id: int) -> bool:
         """Merge two business records, keeping primary and removing secondary."""
         try:
-            with self.connection() as conn:
-                with conn.cursor() as cursor:
-                    # This would be a complex operation involving multiple tables
-                    # For now, just a placeholder
-                    logger.warning("merge_businesses not fully implemented")
-                    return False
+            with self.connection() as conn, conn.cursor():
+                # This would be a complex operation involving multiple tables
+                # For now, just a placeholder
+                logger.warning("merge_businesses not fully implemented")
+                return False
         except Exception as e:
             logger.error(
                 f"Failed to merge businesses {primary_id} and {secondary_id}: {e}"
@@ -1393,13 +1392,12 @@ class PostgresStorage(StorageInterface):
         offset: int = 0,
         sort_by: str = "timestamp",
         sort_order: str = "desc",
-    ) -> Tuple[List[Dict[str, Any]], int]:
+    ) -> tuple[list[dict[str, Any]], int]:
         """Get logs with filtering, pagination, and search."""
         try:
             with self.cursor() as cursor:
                 # Build base query to union LLM logs and HTML storage
                 base_queries = []
-                params = []
 
                 # Query LLM logs
                 if not log_type or log_type == "llm":
@@ -1522,7 +1520,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Error fetching logs with filters: {e}")
             return [], 0
 
-    def get_log_by_id(self, log_id: int) -> Optional[Dict[str, Any]]:
+    def get_log_by_id(self, log_id: int) -> Optional[dict[str, Any]]:
         """Get a single log entry by ID."""
         try:
             with self.cursor() as cursor:
@@ -1607,7 +1605,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Error fetching log by ID {log_id}: {e}")
             return None
 
-    def get_log_statistics(self) -> Dict[str, Any]:
+    def get_log_statistics(self) -> dict[str, Any]:
         """Get statistical information about logs."""
         try:
             with self.cursor() as cursor:
@@ -1706,11 +1704,11 @@ class PostgresStorage(StorageInterface):
                 "storage_usage": {},
             }
 
-    def get_available_log_types(self) -> List[str]:
+    def get_available_log_types(self) -> list[str]:
         """Get list of available log types in the database."""
         return ["llm", "raw_html"]
 
-    def get_businesses_with_logs(self) -> List[Dict[str, Any]]:
+    def get_businesses_with_logs(self) -> list[dict[str, Any]]:
         """Get list of businesses that have log entries."""
         try:
             with self.cursor() as cursor:
@@ -1734,7 +1732,7 @@ class PostgresStorage(StorageInterface):
             logger.error(f"Error getting businesses with logs: {e}")
             return []
 
-    def get_all_businesses(self) -> List[Dict[str, Any]]:
+    def get_all_businesses(self) -> list[dict[str, Any]]:
         """Get all businesses for general purposes."""
         try:
             with self.cursor() as cursor:

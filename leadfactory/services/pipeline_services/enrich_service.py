@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class EnrichRequest(BaseModel):
     """Enrichment request model."""
 
-    business_ids: List[int]
+    business_ids: list[int]
     tier_level: int = 1  # 1=basic, 2=screenshots, 3=full audit
     include_tech_stack: bool = True
     include_performance: bool = True
@@ -31,8 +31,8 @@ class EnrichResult(BaseModel):
     """Enrichment result model."""
 
     businesses_enriched: int
-    enrichment_stats: Dict[str, Any]
-    failed_business_ids: List[int]
+    enrichment_stats: dict[str, Any]
+    failed_business_ids: list[int]
     processing_time_per_business: float
 
 
@@ -79,7 +79,7 @@ class EnrichService(BasePipelineService):
         else:
             self._enricher_available = True
 
-    async def _check_dependencies(self) -> Dict[str, str]:
+    async def _check_dependencies(self) -> dict[str, str]:
         """Check enrichment dependencies."""
         dependencies = await super()._check_dependencies()
 
@@ -97,7 +97,7 @@ class EnrichService(BasePipelineService):
 
         return dependencies
 
-    async def _process_task(self, request: TaskRequest) -> Dict[str, Any]:
+    async def _process_task(self, request: TaskRequest) -> dict[str, Any]:
         """Process an enrichment task."""
         # Parse the request data
         enrich_data = request.metadata or {}
@@ -168,7 +168,7 @@ class EnrichService(BasePipelineService):
         return result
 
     async def _enrich_single_business(
-        self, business_id: int, tier_level: int, stats: Dict[str, Any]
+        self, business_id: int, tier_level: int, stats: dict[str, Any]
     ) -> bool:
         """Enrich a single business with the specified tier level."""
         try:

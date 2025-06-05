@@ -1,17 +1,18 @@
 """Integration tests for parsing and storing city/state."""
 
 import json
-import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
-from leadfactory.utils.e2e_db_connector import db_connection, execute_query
+import pytest
+
 from leadfactory.pipeline.scrape import save_business
 from leadfactory.storage.factory import get_storage
+from leadfactory.utils.e2e_db_connector import db_connection, execute_query
 
 
 class TestParseCityStateIntegration:
     """Integration tests for city/state parsing and storage."""
-    
+
     @pytest.fixture
     def setup_test_vertical(self):
         """Set up a test vertical in the database."""
@@ -21,7 +22,7 @@ class TestParseCityStateIntegration:
             cursor.execute("DELETE FROM businesses WHERE name LIKE 'City State Test%'")
             cursor.execute("DELETE FROM verticals WHERE name = 'Test Vertical'")
             conn.commit()
-            
+
             # Insert test vertical
             cursor.execute("""
                 INSERT INTO verticals (name, yelp_alias, google_alias, priority)
@@ -30,9 +31,9 @@ class TestParseCityStateIntegration:
             """)
             vertical_id = cursor.fetchone()[0]
             conn.commit()
-            
+
             yield vertical_id
-            
+
             # Cleanup
             cursor.execute("DELETE FROM businesses WHERE name LIKE 'City State Test%'")
             cursor.execute("DELETE FROM verticals WHERE id = %s", (vertical_id,))
@@ -54,9 +55,9 @@ class TestParseCityStateIntegration:
             source="yelp",
             source_id="test-yelp-123"
         )
-        
+
         assert business_id is not None
-        
+
         # Verify the data was saved correctly
         with db_connection() as conn:
             cursor = conn.cursor()
@@ -65,10 +66,10 @@ class TestParseCityStateIntegration:
                 FROM businesses
                 WHERE id = %s
             """, (business_id,))
-            
+
             result = cursor.fetchone()
             assert result is not None
-            
+
             name, address, city, state, zip_code, website, email, phone, source = result
             assert name == "City State Test Business"
             assert address == "123 Test Street"
@@ -105,7 +106,7 @@ class TestParseCityStateIntegration:
                 "zip_code": "60601"
             }
         ]
-        
+
         saved_ids = []
         for biz in businesses:
             business_id = save_business(
@@ -118,11 +119,11 @@ class TestParseCityStateIntegration:
                 source="manual"
             )
             saved_ids.append(business_id)
-        
+
         # Verify all were saved
         assert all(id is not None for id in saved_ids)
         assert len(saved_ids) == 3
-        
+
         # Query and verify
         results = execute_query("""
             SELECT name, city, state
@@ -130,14 +131,14 @@ class TestParseCityStateIntegration:
             WHERE name LIKE 'City State Test%'
             ORDER BY name
         """)
-        
+
         assert len(results) == 3
-        assert results[0]['city'] == "Chicago"
-        assert results[0]['state'] == "IL"
-        assert results[1]['city'] == "New York"
-        assert results[1]['state'] == "NY"
-        assert results[2]['city'] == "San Francisco"
-        assert results[2]['state'] == "CA"
+        assert results[0]["city"] == "Chicago"
+        assert results[0]["state"] == "IL"
+        assert results[1]["city"] == "New York"
+        assert results[1]["state"] == "NY"
+        assert results[2]["city"] == "San Francisco"
+        assert results[2]["state"] == "CA"
 
     def test_deduplication_preserves_city_state(self, setup_test_vertical):
         """Test that deduplication preserves city/state information."""
@@ -153,7 +154,7 @@ class TestParseCityStateIntegration:
             source="yelp",
             source_id="dedupe-123"
         )
-        
+
         # Try to save duplicate with same website but different source
         business_id2 = save_business(
             name="City State Dedupe Test",
@@ -166,20 +167,20 @@ class TestParseCityStateIntegration:
             source="google",
             source_id="google-dedupe-456"
         )
-        
+
         # Should return same business ID (deduped)
         assert business_id1 == business_id2
-        
+
         # Verify city/state are still correct
         result = execute_query(
             "SELECT city, state, source FROM businesses WHERE id = %s",
             (business_id1,)
         )[0]
-        
-        assert result['city'] == "San Francisco"
-        assert result['state'] == "CA"
+
+        assert result["city"] == "San Francisco"
+        assert result["state"] == "CA"
         # Source should be combined
-        assert "yelp" in result['source'] or "google" in result['source']
+        assert "yelp" in result["source"] or "google" in result["source"]
 
     def test_empty_city_state_handling(self, setup_test_vertical):
         """Test handling of empty city/state values."""
@@ -192,23 +193,23 @@ class TestParseCityStateIntegration:
             category="Test Vertical",
             source="manual"
         )
-        
+
         assert business_id is not None
-        
+
         result = execute_query(
             "SELECT city, state FROM businesses WHERE id = %s",
             (business_id,)
         )[0]
-        
+
         # Empty strings should be stored as empty, not NULL
-        assert result['city'] == ""
-        assert result['state'] == ""
+        assert result["city"] == ""
+        assert result["state"] == ""
 
     def test_query_businesses_by_city(self, setup_test_vertical):
         """Test querying businesses by city."""
         # Save businesses in different cities
         cities = ["San Francisco", "San Francisco", "Los Angeles", "Los Angeles", "San Diego"]
-        
+
         for i, city in enumerate(cities):
             save_business(
                 name=f"City State Query Test {i}",
@@ -219,23 +220,23 @@ class TestParseCityStateIntegration:
                 category="Test Vertical",
                 source="test"
             )
-        
+
         # Query businesses in San Francisco
         sf_businesses = execute_query("""
             SELECT COUNT(*) as count
             FROM businesses
             WHERE city = 'San Francisco'
             AND name LIKE 'City State Query Test%'
-        """)[0]['count']
-        
+        """)[0]["count"]
+
         assert sf_businesses == 2
-        
+
         # Query businesses by state
         ca_businesses = execute_query("""
             SELECT COUNT(*) as count
             FROM businesses
             WHERE state = 'CA'
             AND name LIKE 'City State Query Test%'
-        """)[0]['count']
-        
+        """)[0]["count"]
+
         assert ca_businesses == 5

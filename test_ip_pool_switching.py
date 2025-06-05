@@ -20,10 +20,8 @@ def test_ip_pool_manager_import():
             IPPoolStatus,
         )
 
-        print("✅ IP Pool Manager components imported successfully")
         return True
-    except ImportError as e:
-        print(f"❌ IP Pool Manager import failed: {e}")
+    except ImportError:
         return False
 
 
@@ -36,26 +34,22 @@ def test_ip_pool_configuration():
 
         # Check that pools are loaded
         if not manager.ip_pools:
-            print("❌ No IP pools loaded")
             return False
 
         # Check for required pools
         required_pools = ["primary", "backup"]
         for pool_name in required_pools:
             if pool_name not in manager.ip_pools:
-                print(f"❌ Required pool '{pool_name}' not found")
                 return False
 
         # Check bounce threshold configuration
         bounce_threshold = manager.thresholds.get("bounce_rate_warning", 0)
         if bounce_threshold != 0.02:  # 2% as per Task 21
-            print(f"⚠️  Bounce threshold is {bounce_threshold}, expected 0.02 (2%)")
+            pass
 
-        print("✅ IP pool configuration validated")
         return True
 
-    except Exception as e:
-        print(f"❌ IP pool configuration test failed: {e}")
+    except Exception:
         return False
 
 
@@ -99,17 +93,9 @@ def test_bounce_rate_monitoring():
         )
 
         # Check that events were recorded
-        if len(manager.bounce_events) < 3:
-            print(
-                f"❌ Expected at least 3 bounce events, got {len(manager.bounce_events)}"
-            )
-            return False
+        return not len(manager.bounce_events) < 3
 
-        print("✅ Bounce rate monitoring implemented")
-        return True
-
-    except Exception as e:
-        print(f"❌ Bounce rate monitoring test failed: {e}")
+    except Exception:
         return False
 
 
@@ -130,24 +116,20 @@ def test_pool_switching_logic():
 
             # Check if pool was quarantined
             if primary_pool.status != IPPoolStatus.QUARANTINED:
-                print(
-                    f"⚠️  Primary pool not quarantined with high bounce rate. Status: {primary_pool.status}"
-                )
+                pass
             else:
-                print("✅ High bounce rate correctly triggers quarantine")
+                pass
 
         # Test best pool selection
         best_pool = asyncio.run(manager._select_best_pool())
         if not best_pool:
-            print("⚠️  No best pool selected")
+            pass
         else:
-            print(f"✅ Best pool selection works: {best_pool}")
+            pass
 
-        print("✅ Pool switching logic implemented")
         return True
 
-    except Exception as e:
-        print(f"❌ Pool switching logic test failed: {e}")
+    except Exception:
         return False
 
 
@@ -161,9 +143,7 @@ def test_threshold_configuration():
         # Check 2% bounce rate threshold (Task 21 requirement)
         bounce_warning = manager.thresholds.get("bounce_rate_warning", 0)
         if bounce_warning != 0.02:
-            print(
-                f"⚠️  Bounce rate warning threshold is {bounce_warning}, should be 0.02 (2%)"
-            )
+            pass
 
         # Check other required thresholds
         required_thresholds = {
@@ -175,19 +155,14 @@ def test_threshold_configuration():
         for threshold_name, expected_value in required_thresholds.items():
             actual_value = manager.thresholds.get(threshold_name)
             if actual_value is None:
-                print(f"❌ Missing threshold: {threshold_name}")
                 return False
 
             if actual_value != expected_value:
-                print(
-                    f"⚠️  {threshold_name} is {actual_value}, expected {expected_value}"
-                )
+                pass
 
-        print("✅ Threshold configuration validated")
         return True
 
-    except Exception as e:
-        print(f"❌ Threshold configuration test failed: {e}")
+    except Exception:
         return False
 
 
@@ -211,24 +186,20 @@ def test_monitoring_workflow():
 
         for field in required_status_fields:
             if field not in status:
-                print(f"❌ Missing status field: {field}")
                 return False
 
         # Test pool details
         pool_details = manager.get_pool_details()
         if not pool_details:
-            print("❌ No pool details available")
             return False
 
         # Check that current pool is set
         if not manager.current_pool_id:
-            print("⚠️  No current pool ID set")
+            pass
 
-        print("✅ Monitoring workflow implemented")
         return True
 
-    except Exception as e:
-        print(f"❌ Monitoring workflow test failed: {e}")
+    except Exception:
         return False
 
 
@@ -242,22 +213,19 @@ def test_sendgrid_integration():
         # Check SendGrid client initialization
         # (will be None in test environment without API key)
         if hasattr(manager, "sendgrid_client"):
-            print("✅ SendGrid client integration present")
+            pass
         else:
-            print("⚠️  SendGrid client not found")
+            pass
 
         # Test pool update method exists
         if hasattr(manager, "_update_sendgrid_pool"):
-            print("✅ SendGrid pool update method implemented")
+            pass
         else:
-            print("❌ SendGrid pool update method missing")
             return False
 
-        print("✅ SendGrid integration components present")
         return True
 
-    except Exception as e:
-        print(f"❌ SendGrid integration test failed: {e}")
+    except Exception:
         return False
 
 
@@ -276,23 +244,14 @@ def test_alert_system():
             "_send_critical_alert",
         ]
 
-        for method_name in alert_methods:
-            if not hasattr(manager, method_name):
-                print(f"❌ Missing alert method: {method_name}")
-                return False
+        return all(hasattr(manager, method_name) for method_name in alert_methods)
 
-        print("✅ Alert system implemented")
-        return True
-
-    except Exception as e:
-        print(f"❌ Alert system test failed: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run all Task 21 validation tests."""
-    print("🔄 Task 21: Automatic IP Pool Switching Implementation Test")
-    print("=" * 70)
 
     tests = [
         test_ip_pool_manager_import,
@@ -314,26 +273,12 @@ def main():
                 passed += 1
             else:
                 failed += 1
-        except Exception as e:
-            print(f"❌ Test {test.__name__} crashed: {e}")
+        except Exception:
             failed += 1
-        print()
-
-    print("=" * 70)
-    print(f"Results: {passed} passed, {failed} failed")
 
     if failed == 0:
-        print("🎉 Task 21: Automatic IP Pool Switching COMPLETE!")
-        print("✅ 2% bounce threshold monitoring implemented")
-        print("✅ Automatic pool switching logic working")
-        print("✅ SendGrid integration components present")
-        print("✅ Alert system for critical events implemented")
-        print("✅ Pool quarantine and restoration working")
         return 0
     else:
-        print(
-            "⚠️  Some components need attention, but core functionality is implemented"
-        )
         return 1
 
 

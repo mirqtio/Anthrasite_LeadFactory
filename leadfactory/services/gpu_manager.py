@@ -172,7 +172,7 @@ class HetznerAPIClient:
         server_type: str,
         image: str,
         location: str = "nbg1",
-        ssh_keys: List[str] = None,
+        ssh_keys: list[str] = None,
         user_data: str = None,
     ) -> dict:
         """Create a new server instance."""
@@ -224,7 +224,7 @@ class GPUAutoSpinManager:
     def __init__(self, config_file: str = "etc/gpu_config.yml"):
         """Initialize GPU manager."""
         self.config_file = config_file
-        self.active_instances: Dict[str, GPUInstance] = {}
+        self.active_instances: dict[str, GPUInstance] = {}
         self.queue_metrics = QueueMetrics(0, 0, 0, 0.0, 0.0, 0.0)
         self.resource_configs = self._initialize_resource_configs()
         self.cost_tracking = {"daily_budget": 500.0, "current_spend": 0.0}
@@ -243,7 +243,7 @@ class GPUAutoSpinManager:
         self.hetzner_client = None
         self._initialize_providers()
 
-    def _initialize_resource_configs(self) -> Dict[GPUInstanceType, GPUResourceConfig]:
+    def _initialize_resource_configs(self) -> dict[GPUInstanceType, GPUResourceConfig]:
         """Initialize GPU resource configurations."""
         return {
             GPUInstanceType.LOCAL_GPU: GPUResourceConfig(
@@ -582,7 +582,7 @@ class GPUAutoSpinManager:
 
     async def start_gpu_instance(self, instance_type: GPUInstanceType) -> Optional[str]:
         """Start a new GPU instance."""
-        config = self.resource_configs[instance_type]
+        self.resource_configs[instance_type]
 
         # Security checks
         if SECURITY_AVAILABLE:
@@ -698,7 +698,7 @@ class GPUAutoSpinManager:
             logger.error("AWS client not available")
             return None
 
-        config = self.resource_configs[instance_type]
+        self.resource_configs[instance_type]
 
         # AWS instance configuration
         aws_instance_type = instance_type.value.replace("aws_", "").replace("_", ".")
@@ -758,7 +758,7 @@ class GPUAutoSpinManager:
             logger.error("Hetzner client not available")
             return None
 
-        config = self.resource_configs[instance_type]
+        self.resource_configs[instance_type]
 
         # Map instance types to Hetzner server types
         hetzner_server_types = {
@@ -968,7 +968,7 @@ curl -X POST $MANAGER_URL/gpu/ready \
 
     async def _update_instance_status(self):
         """Update status of all active instances."""
-        for instance_id, instance in list(self.active_instances.items()):
+        for _instance_id, instance in list(self.active_instances.items()):
             if instance.instance_type.value.startswith("aws_"):
                 await self._update_aws_instance_status(instance)
             elif instance.instance_type.value.startswith("hetzner."):
@@ -1117,7 +1117,7 @@ curl -X POST $MANAGER_URL/gpu/ready \
                     instance_type=instance_type,
                 )
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get current status of GPU manager."""
         return {
             "running": self.running,

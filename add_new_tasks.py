@@ -137,8 +137,6 @@ def add_new_tasks():
     with open("tasks/tasks.json", "w") as f:
         json.dump(data, f, indent=2)
 
-    print("Added tasks 33 and 34 successfully!")
-
 
 if __name__ == "__main__":
     add_new_tasks()

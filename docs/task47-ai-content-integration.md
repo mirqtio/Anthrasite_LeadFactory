@@ -64,7 +64,7 @@ Subject: Premium HVAC Services: 24/7 online booking system for emergency repairs
 
 Hello Mike,
 
-As Austin's premier HVAC service provider, your website should reflect the 
+As Austin's premier HVAC service provider, your website should reflect the
 quality and professionalism you bring to every job.
 
 Here's what we can do for your business:
@@ -74,7 +74,7 @@ Here's what we can do for your business:
 - Live chat for instant customer support
 - Energy savings calculator to demonstrate your expertise
 
-Let's transform your website into a powerful tool for attracting more HVAC 
+Let's transform your website into a powerful tool for attracting more HVAC
 customers in Austin. Schedule your free website audit today!
 ```
 
@@ -84,7 +84,7 @@ Subject: Free Website Mockup for Premium HVAC Services
 
 Hello Mike,
 
-I noticed your website at premiumhvac.com and wanted to reach out with some 
+I noticed your website at premiumhvac.com and wanted to reach out with some
 ideas for improvement.
 
 Here's what we're suggesting:
@@ -94,7 +94,7 @@ Here's what we're suggesting:
 - Professional branding that builds trust with potential clients
 - Fast loading speeds for better user experience
 
-I'd love to discuss these ideas with you. Would you be available for a 
+I'd love to discuss these ideas with you. Would you be available for a
 quick 15-minute call this week?
 ```
 

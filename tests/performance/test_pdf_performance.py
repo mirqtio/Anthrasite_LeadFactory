@@ -126,7 +126,7 @@ class TestPDFPerformance:
             with tempfile.TemporaryDirectory() as temp_dir:
                 output_path = Path(temp_dir) / f"memory_test_{i}.pdf"
 
-                pdf_bytes = self.pdf_generator.generate_report_from_template(
+                self.pdf_generator.generate_report_from_template(
                     report_data=report_data,
                     template_name="audit_report.html",
                     output_path=str(output_path),
@@ -199,7 +199,7 @@ class TestPDFPerformance:
             futures = [executor.submit(generate_pdf, i) for i in range(num_threads)]
             results = [future.result() for future in as_completed(futures)]
 
-        total_time = time.time() - start_time
+        time.time() - start_time
 
         # Verify all threads succeeded
         assert len(results) == num_threads

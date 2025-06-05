@@ -45,16 +45,16 @@ class FieldSelection:
         default=None, description="Comma-separated list of fields to exclude"
     )
 
-    def get_fields_set(self) -> Optional[Set[str]]:
+    def get_fields_set(self) -> Optional[set[str]]:
         """Get set of fields to include."""
         if self.fields:
-            return set(field.strip() for field in self.fields.split(","))
+            return {field.strip() for field in self.fields.split(",")}
         return None
 
-    def get_exclude_set(self) -> Optional[Set[str]]:
+    def get_exclude_set(self) -> Optional[set[str]]:
         """Get set of fields to exclude."""
         if self.exclude:
-            return set(field.strip() for field in self.exclude.split(","))
+            return {field.strip() for field in self.exclude.split(",")}
         return None
 
 
@@ -68,10 +68,10 @@ class ResponseOptimizer:
 
     def filter_fields(
         self,
-        data: Union[Dict, List[Dict]],
-        fields: Optional[Set[str]] = None,
-        exclude: Optional[Set[str]] = None,
-    ) -> Union[Dict, List[Dict]]:
+        data: Union[dict, list[dict]],
+        fields: Optional[set[str]] = None,
+        exclude: Optional[set[str]] = None,
+    ) -> Union[dict, list[dict]]:
         """Filter response fields based on selection criteria."""
         if isinstance(data, list):
             return [self._filter_dict(item, fields, exclude) for item in data]
@@ -80,10 +80,10 @@ class ResponseOptimizer:
 
     def _filter_dict(
         self,
-        data: Dict[str, Any],
-        fields: Optional[Set[str]] = None,
-        exclude: Optional[Set[str]] = None,
-    ) -> Dict[str, Any]:
+        data: dict[str, Any],
+        fields: Optional[set[str]] = None,
+        exclude: Optional[set[str]] = None,
+    ) -> dict[str, Any]:
         """Filter a single dictionary."""
         if not fields and not exclude:
             return data
@@ -126,11 +126,11 @@ class ResponseOptimizer:
 
     def paginate_response(
         self,
-        items: List[Any],
+        items: list[Any],
         total: int,
         pagination: PaginationParams,
         request: Request,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create paginated response with metadata."""
         if pagination.use_cursor:
             # Cursor-based pagination
@@ -192,7 +192,7 @@ class ResponseOptimizer:
         cursor_json = json.dumps(cursor_data, separators=(",", ":"))
         return base64.urlsafe_b64encode(cursor_json.encode()).decode()
 
-    def _build_query_string(self, params: Dict[str, Any]) -> str:
+    def _build_query_string(self, params: dict[str, Any]) -> str:
         """Build query string from parameters."""
         from urllib.parse import urlencode
 
@@ -208,10 +208,7 @@ class ResponseOptimizer:
             return None
 
         # Check if content is large enough to compress
-        if isinstance(content, str):
-            content_bytes = content.encode("utf-8")
-        else:
-            content_bytes = content
+        content_bytes = content.encode("utf-8") if isinstance(content, str) else content
 
         if len(content_bytes) < self.compression_threshold:
             return None
@@ -238,7 +235,7 @@ class ResponseOptimizer:
         data: Any,
         request: Request,
         status_code: int = 200,
-        headers: Optional[Dict[str, str]] = None,
+        headers: Optional[dict[str, str]] = None,
     ) -> Response:
         """Create an optimized response with compression and caching headers."""
         # Convert data to JSON
@@ -388,7 +385,7 @@ async def get_business_count(filters: dict) -> int:
     return 100
 
 
-async def get_businesses(filters: dict, limit: int, offset: int) -> List[dict]:
+async def get_businesses(filters: dict, limit: int, offset: int) -> list[dict]:
     """Get businesses with pagination."""
     # Implementation would query database
     return [

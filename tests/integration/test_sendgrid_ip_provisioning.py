@@ -96,7 +96,7 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         # Provision IPs for each pool
         provisioned_ips = []
         for pool_name in pools:
-            for i in range(2):  # 2 IPs per pool
+            for _i in range(2):  # 2 IPs per pool
                 success, _, ip = self.provisioner.provision_dedicated_ip(pool_name)
                 self.assertTrue(success)
                 self.assertIsNotNone(ip)
@@ -127,7 +127,7 @@ class TestSendGridIPProvisioningIntegration(unittest.TestCase):
         """Test IP health monitoring workflow."""
         # Provision test IPs
         test_ips = []
-        for i in range(3):
+        for _i in range(3):
             success, _, ip = self.provisioner.provision_dedicated_ip("health-test-pool")
             self.assertTrue(success)
             test_ips.append(ip)

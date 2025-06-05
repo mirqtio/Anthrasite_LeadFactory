@@ -42,13 +42,16 @@ try:
     from leadfactory.utils.logging import get_logger
 except ImportError:
     # Fallback for when module is imported in test context
-    print("Warning: leadfactory modules not available, using fallback imports")
     NodeType = None
-    is_api_available = lambda x: False
-    get_enabled_capabilities = lambda x: []
-    get_logger = lambda x: logging.getLogger(x)
+    def is_api_available(x):
+        return False
+    def get_enabled_capabilities(x):
+        return []
+    def get_logger(x):
+        return logging.getLogger(x)
     db_connection = None
-    track_api_cost = lambda *args, **kwargs: None
+    def track_api_cost(*args, **kwargs):
+        return None
 
 # Load environment variables
 load_dotenv()
@@ -562,12 +565,12 @@ def enrich_business(business: dict) -> bool:
     performance_data, perf_error = pagespeed_analyzer.analyze_website(website)
     if perf_error:
         logger.warning(f"Error analyzing performance for {website}: {perf_error}")
-    
+
     # Task 41: Skip modern sites with high performance scores
     # Check if site has performance score >= 90 and is mobile responsive
     performance_score = performance_data.get("performance_score", 0)
     accessibility_score = performance_data.get("accessibility_score", 0)
-    
+
     # Consider a site "modern" if it has high performance and good accessibility (proxy for mobile responsiveness)
     if performance_score >= 90 and accessibility_score >= 80:
         logger.info(
@@ -577,7 +580,7 @@ def enrich_business(business: dict) -> bool:
         # Mark business as processed without further enrichment or email
         mark_business_as_processed(business_id, skip_reason="modern_site")
         return True
-    
+
     # Tier-specific enrichment
     screenshot_url = None
     semrush_data = None

@@ -114,44 +114,56 @@ def generate_business_screenshot(business: dict) -> bool:
     # If API failed or no key provided, try local screenshot capture
     if not screenshot_success:
         logger.info("Attempting local screenshot capture using Playwright")
-        
+
         try:
-            from .screenshot_local import capture_screenshot_sync, is_playwright_available
-            
+            from .screenshot_local import (
+                capture_screenshot_sync,
+                is_playwright_available,
+            )
+
             # Check if Playwright is available
             if not is_playwright_available():
-                logger.warning("Playwright not available. Install with: pip install playwright && playwright install chromium")
+                logger.warning(
+                    "Playwright not available. Install with: pip install playwright && playwright install chromium"
+                )
                 # For now, create a placeholder image in test environments
-                if os.getenv("E2E_MODE") == "true" or os.getenv("PRODUCTION_TEST_MODE") == "true":
+                if (
+                    os.getenv("E2E_MODE") == "true"
+                    or os.getenv("PRODUCTION_TEST_MODE") == "true"
+                ):
                     logger.info("Creating placeholder screenshot for test environment")
                     # Create a simple placeholder PNG
                     from PIL import Image, ImageDraw, ImageFont
-                    
+
                     # Create a simple image with text
-                    img = Image.new('RGB', (1280, 800), color='#f0f0f0')
+                    img = Image.new("RGB", (1280, 800), color="#f0f0f0")
                     draw = ImageDraw.Draw(img)
-                    
+
                     # Add text
                     text = f"Screenshot Placeholder\n{business_name}\n{website}"
                     try:
                         # Try to use a nice font, fall back to default if not available
-                        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 36)
+                        font = ImageFont.truetype(
+                            "/System/Library/Fonts/Helvetica.ttc", 36
+                        )
                     except:
                         font = ImageFont.load_default()
-                    
+
                     # Calculate text position
                     bbox = draw.textbbox((0, 0), text, font=font)
                     text_width = bbox[2] - bbox[0]
                     text_height = bbox[3] - bbox[1]
                     position = ((1280 - text_width) // 2, (800 - text_height) // 2)
-                    
-                    draw.text(position, text, fill='#333333', font=font)
-                    img.save(screenshot_path, 'PNG')
-                    
+
+                    draw.text(position, text, fill="#333333", font=font)
+                    img.save(screenshot_path, "PNG")
+
                     logger.info(f"Created placeholder screenshot at {screenshot_path}")
                     screenshot_success = True
                 else:
-                    raise Exception("Playwright not available for local screenshot capture")
+                    raise Exception(
+                        "Playwright not available for local screenshot capture"
+                    )
             else:
                 # Use Playwright for local screenshot
                 screenshot_success = capture_screenshot_sync(
@@ -160,23 +172,31 @@ def generate_business_screenshot(business: dict) -> bool:
                     viewport_width=1280,
                     viewport_height=800,
                     full_page=False,
-                    timeout=30000
+                    timeout=30000,
                 )
-                
+
                 if screenshot_success:
-                    logger.info(f"Local screenshot captured successfully at {screenshot_path}")
+                    logger.info(
+                        f"Local screenshot captured successfully at {screenshot_path}"
+                    )
                 else:
                     raise Exception("Local screenshot capture failed")
-                    
+
         except ImportError as e:
             logger.error(f"Failed to import screenshot_local module: {e}")
-            if not (os.getenv("E2E_MODE") == "true" or os.getenv("PRODUCTION_TEST_MODE") == "true"):
+            if not (
+                os.getenv("E2E_MODE") == "true"
+                or os.getenv("PRODUCTION_TEST_MODE") == "true"
+            ):
                 raise Exception("No screenshot method available")
         except Exception as e:
             logger.error(f"Local screenshot capture failed: {e}")
-            if not (os.getenv("E2E_MODE") == "true" or os.getenv("PRODUCTION_TEST_MODE") == "true"):
+            if not (
+                os.getenv("E2E_MODE") == "true"
+                or os.getenv("PRODUCTION_TEST_MODE") == "true"
+            ):
                 raise Exception(f"Screenshot generation failed: {e}")
-    
+
     if not screenshot_success:
         logger.error("All screenshot methods failed")
         raise Exception("Failed to generate screenshot")

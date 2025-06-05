@@ -451,7 +451,7 @@ class TestWarmupIntegration(unittest.TestCase):
         current_date = date.today()
 
         # Simulate 14 days total (7 stages × 2 days each)
-        for day in range(14):
+        for _day in range(14):
             # Update current date in the scheduler's context
             progress = self.scheduler.get_warmup_progress(self.test_ip)
 

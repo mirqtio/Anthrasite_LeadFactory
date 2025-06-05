@@ -39,22 +39,21 @@ class TestDatabaseFailureScenarios:
         with patch.dict(
             os.environ,
             {"DATABASE_URL": "postgresql://timeout:test@slow-host:5432/test"},
-        ):
-            with patch("psycopg2.connect") as mock_connect:
-                import psycopg2
+        ), patch("psycopg2.connect") as mock_connect:
+            import psycopg2
 
-                mock_connect.side_effect = psycopg2.OperationalError(
-                    "connection timeout"
-                )
+            mock_connect.side_effect = psycopg2.OperationalError(
+                "connection timeout"
+            )
 
-                issues = rule.validate({})
+            issues = rule.validate({})
 
-                assert len(issues) == 1
-                assert (
-                    issues[0].error_code
-                    == ValidationErrorCode.DATABASE_CONNECTION_FAILED
-                )
-                assert "timeout" in issues[0].message.lower()
+            assert len(issues) == 1
+            assert (
+                issues[0].error_code
+                == ValidationErrorCode.DATABASE_CONNECTION_FAILED
+            )
+            assert "timeout" in issues[0].message.lower()
 
     def test_database_authentication_failure(self):
         """Test database authentication failure scenarios."""
@@ -63,22 +62,21 @@ class TestDatabaseFailureScenarios:
         with patch.dict(
             os.environ,
             {"DATABASE_URL": "postgresql://baduser:badpass@localhost:5432/test"},
-        ):
-            with patch("psycopg2.connect") as mock_connect:
-                import psycopg2
+        ), patch("psycopg2.connect") as mock_connect:
+            import psycopg2
 
-                mock_connect.side_effect = psycopg2.OperationalError(
-                    "authentication failed"
-                )
+            mock_connect.side_effect = psycopg2.OperationalError(
+                "authentication failed"
+            )
 
-                issues = rule.validate({})
+            issues = rule.validate({})
 
-                assert len(issues) == 1
-                assert (
-                    issues[0].error_code
-                    == ValidationErrorCode.DATABASE_CONNECTION_FAILED
-                )
-                assert "authentication" in issues[0].message.lower()
+            assert len(issues) == 1
+            assert (
+                issues[0].error_code
+                == ValidationErrorCode.DATABASE_CONNECTION_FAILED
+            )
+            assert "authentication" in issues[0].message.lower()
 
     def test_database_not_found(self):
         """Test database not found scenarios."""
@@ -87,22 +85,21 @@ class TestDatabaseFailureScenarios:
         with patch.dict(
             os.environ,
             {"DATABASE_URL": "postgresql://user:pass@localhost:5432/nonexistent"},
-        ):
-            with patch("psycopg2.connect") as mock_connect:
-                import psycopg2
+        ), patch("psycopg2.connect") as mock_connect:
+            import psycopg2
 
-                mock_connect.side_effect = psycopg2.OperationalError(
-                    "database does not exist"
-                )
+            mock_connect.side_effect = psycopg2.OperationalError(
+                "database does not exist"
+            )
 
-                issues = rule.validate({})
+            issues = rule.validate({})
 
-                assert len(issues) == 1
-                assert (
-                    issues[0].error_code
-                    == ValidationErrorCode.DATABASE_CONNECTION_FAILED
-                )
-                assert "does not exist" in issues[0].message.lower()
+            assert len(issues) == 1
+            assert (
+                issues[0].error_code
+                == ValidationErrorCode.DATABASE_CONNECTION_FAILED
+            )
+            assert "does not exist" in issues[0].message.lower()
 
 
 class TestNetworkFailureScenarios:

@@ -214,13 +214,12 @@ def cleanup(days, confirm):
 
         total_size_mb = sum(b["size_mb"] for b in old_backups)
 
-        if not confirm:
-            if not click.confirm(
-                f"⚠️  This will remove {len(old_backups)} backup(s) "
-                f"older than {days} days ({total_size_mb:.2f} MB). Continue?"
-            ):
-                click.echo("Cleanup cancelled.")
-                return
+        if not confirm and not click.confirm(
+            f"⚠️  This will remove {len(old_backups)} backup(s) "
+            f"older than {days} days ({total_size_mb:.2f} MB). Continue?"
+        ):
+            click.echo("Cleanup cancelled.")
+            return
 
         # Perform cleanup by updating retention and calling internal method
         original_retention = db_backup_service.retention_days

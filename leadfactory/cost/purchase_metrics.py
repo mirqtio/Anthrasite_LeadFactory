@@ -61,7 +61,7 @@ class PurchaseMetricsTracker:
         stripe_fee_cents: int,
         audit_type: str,
         currency: str = "usd",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Record a successful purchase and update metrics.
 
@@ -125,7 +125,7 @@ class PurchaseMetricsTracker:
         refund_amount_cents: int,
         reason: str,
         currency: str = "usd",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Record a refund and update metrics.
 
@@ -264,7 +264,7 @@ class PurchaseMetricsTracker:
         except Exception as e:
             logger.debug(f"Could not update monthly metrics: {e}")
 
-    def get_conversion_metrics(self, audit_type: str = "all") -> Dict[str, Any]:
+    def get_conversion_metrics(self, audit_type: str = "all") -> dict[str, Any]:
         """Get conversion funnel metrics for audit sales.
 
         Args:
@@ -383,7 +383,7 @@ class PurchaseMetricsTracker:
             )
             return 0.0
 
-    def get_purchase_analytics_summary(self) -> Dict[str, Any]:
+    def get_purchase_analytics_summary(self) -> dict[str, Any]:
         """Get comprehensive purchase analytics summary.
 
         Returns:

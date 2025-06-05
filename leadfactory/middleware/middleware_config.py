@@ -29,11 +29,11 @@ class BudgetMiddlewareOptions:
     enable_alerting: bool = True
 
     # Request filtering
-    exclude_paths: List[str] = field(
+    exclude_paths: list[str] = field(
         default_factory=lambda: ["/health", "/metrics", "/status"]
     )
-    include_only_paths: Optional[List[str]] = None
-    exclude_methods: List[str] = field(default_factory=lambda: ["OPTIONS"])
+    include_only_paths: Optional[list[str]] = None
+    exclude_methods: list[str] = field(default_factory=lambda: ["OPTIONS"])
 
     # Performance options
     async_processing: bool = True
@@ -171,7 +171,7 @@ class MiddlewareConfig:
 
         return config
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert configuration to dictionary."""
         return {
             "framework": self.framework.value,

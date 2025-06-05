@@ -37,7 +37,7 @@ class LogEntry:
     log_type: str  # 'html', 'llm', 'raw_html', 'enrichment'
     content: str
     timestamp: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
     file_path: Optional[str] = None
     file_size: Optional[int] = None
 
@@ -390,7 +390,7 @@ class LogsAPI:
             logger.warning(f"Invalid datetime format: {date_str}")
             return None
 
-    def _fetch_logs(self, filters: LogSearchFilters) -> tuple[List[LogEntry], int]:
+    def _fetch_logs(self, filters: LogSearchFilters) -> tuple[list[LogEntry], int]:
         """Fetch logs from storage based on filters with caching."""
         try:
             # Check cache first
@@ -497,14 +497,14 @@ class LogsAPI:
             logger.error(f"Error fetching log {log_id}: {e}")
             return None
 
-    def _search_logs(self, filters: LogSearchFilters) -> tuple[List[LogEntry], int]:
+    def _search_logs(self, filters: LogSearchFilters) -> tuple[list[LogEntry], int]:
         """Perform full-text search across log content."""
         # This delegates to the same method as _fetch_logs since search is handled by filters
         return self._fetch_logs(filters)
 
     def _format_log_entry(
         self, log: LogEntry, include_full_content: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Format log entry for API response."""
         formatted = {
             "id": log.id,
@@ -529,7 +529,7 @@ class LogsAPI:
 
         return formatted
 
-    def _export_csv(self, logs: List[LogEntry], include_content: bool) -> Response:
+    def _export_csv(self, logs: list[LogEntry], include_content: bool) -> Response:
         """Export logs as CSV."""
         output = io.StringIO()
 
@@ -572,7 +572,7 @@ class LogsAPI:
             },
         )
 
-    def _export_json(self, logs: List[LogEntry], include_content: bool) -> Response:
+    def _export_json(self, logs: list[LogEntry], include_content: bool) -> Response:
         """Export logs as JSON."""
         export_data = {
             "export_timestamp": datetime.utcnow().isoformat(),
@@ -591,7 +591,7 @@ class LogsAPI:
             },
         )
 
-    def _export_xlsx(self, logs: List[LogEntry], include_content: bool) -> Response:
+    def _export_xlsx(self, logs: list[LogEntry], include_content: bool) -> Response:
         """Export logs as Excel file."""
         try:
             import openpyxl
@@ -813,7 +813,7 @@ class LogsAPI:
             logger.error(f"Error streaming logs export: {e}")
             return jsonify({"error": "Internal server error"}), 500
 
-    def _calculate_log_stats(self) -> Dict[str, Any]:
+    def _calculate_log_stats(self) -> dict[str, Any]:
         """Calculate statistical information about logs with caching."""
         try:
             # Check cache first
@@ -846,7 +846,7 @@ class LogsAPI:
             logger.error(f"Error calculating log stats: {e}")
             return {}
 
-    def _get_available_log_types(self) -> List[str]:
+    def _get_available_log_types(self) -> list[str]:
         """Get list of available log types."""
         try:
             if hasattr(self.storage, "get_available_log_types"):
@@ -859,7 +859,7 @@ class LogsAPI:
             logger.error(f"Error getting log types: {e}")
             return []
 
-    def _get_businesses_with_logs(self) -> List[Dict[str, Any]]:
+    def _get_businesses_with_logs(self) -> list[dict[str, Any]]:
         """Get list of businesses that have logs."""
         try:
             if hasattr(self.storage, "get_businesses_with_logs"):
@@ -931,7 +931,7 @@ def create_logs_app() -> Flask:
     app.config["JSON_SORT_KEYS"] = False
 
     # Initialize API
-    logs_api = LogsAPI(app)
+    LogsAPI(app)
 
     @app.route("/api/health")
     def health_check():

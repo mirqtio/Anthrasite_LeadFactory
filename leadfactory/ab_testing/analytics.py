@@ -44,7 +44,7 @@ class TestPerformanceMetric:
     conversion_rate: float
     revenue: float
     revenue_per_visitor: float
-    confidence_interval: Tuple[float, float]
+    confidence_interval: tuple[float, float]
     is_winner: bool
     significance_level: float
 
@@ -81,7 +81,7 @@ class ABTestAnalytics:
         self.statistical_engine = statistical_engine or statistical_engine
         self.logger = get_logger(f"{__name__}.ABTestAnalytics")
 
-    def generate_test_report(self, test_id: str) -> Dict[str, Any]:
+    def generate_test_report(self, test_id: str) -> dict[str, Any]:
         """Generate comprehensive test performance report.
 
         Args:
@@ -136,7 +136,7 @@ class ABTestAnalytics:
 
             # Calculate revenue
             revenue = 0
-            for conv_type, conv_data in results["conversions"].items():
+            for _conv_type, conv_data in results["conversions"].items():
                 revenue += conv_data.get("total_value", 0)
 
             # Calculate conversion rate
@@ -256,9 +256,9 @@ class ABTestAnalytics:
     def _generate_insights(
         self,
         test_id: str,
-        performance_metrics: List[TestPerformanceMetric],
+        performance_metrics: list[TestPerformanceMetric],
         statistical_result: Optional[Any],
-    ) -> List[TestInsight]:
+    ) -> list[TestInsight]:
         """Generate automated insights from test performance."""
         insights = []
 
@@ -364,9 +364,9 @@ class ABTestAnalytics:
     def _calculate_test_health(
         self,
         test_config: Any,
-        test_results: Dict[str, Any],
+        test_results: dict[str, Any],
         statistical_result: Optional[Any],
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculate test health metrics."""
         total_assignments = test_results["total_assignments"]
         target_sample_size = test_config.target_sample_size
@@ -418,7 +418,7 @@ class ABTestAnalytics:
 
     def get_portfolio_overview(
         self, test_type: Optional[TestType] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get overview of all A/B tests in portfolio.
 
         Args:
@@ -488,7 +488,7 @@ class ABTestAnalytics:
             "generated_at": datetime.utcnow().isoformat(),
         }
 
-    def _group_insights_by_type(self, insights: List[Dict[str, Any]]) -> Dict[str, int]:
+    def _group_insights_by_type(self, insights: list[dict[str, Any]]) -> dict[str, int]:
         """Group insights by type for summary."""
         grouped = {}
         for insight in insights:
@@ -515,7 +515,7 @@ class ABTestAnalytics:
         else:
             raise ValueError(f"Unsupported format: {format_type}")
 
-    def _convert_to_csv(self, report: Dict[str, Any]) -> str:
+    def _convert_to_csv(self, report: dict[str, Any]) -> str:
         """Convert test report to CSV format."""
         lines = []
 
@@ -539,7 +539,7 @@ class ABTestAnalytics:
         period: ReportPeriod = ReportPeriod.WEEKLY,
         test_type: Optional[TestType] = None,
         days_back: int = 90,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get historical trends for A/B testing performance.
 
         Args:

@@ -87,12 +87,11 @@ class TestDatabaseConnectionRule:
 
         with patch.dict(
             os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"}
+        ), patch(
+            "builtins.__import__",
+            side_effect=ImportError("No module named 'psycopg2'"),
         ):
-            with patch(
-                "builtins.__import__",
-                side_effect=ImportError("No module named 'psycopg2'"),
-            ):
-                issues = rule.validate({})
+            issues = rule.validate({})
 
         assert len(issues) == 1
         assert issues[0].error_code == ValidationErrorCode.MODULE_IMPORT_FAILED

@@ -20,7 +20,7 @@ _storage_instance: Optional[StorageInterface] = None
 
 def get_storage_instance(
     storage_type: Optional[str] = None,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[dict[str, Any]] = None,
     force_new: bool = False,
 ) -> StorageInterface:
     """
@@ -76,7 +76,7 @@ def reset_storage_instance():
 
 
 def configure_storage(
-    storage_type: str, config: Optional[Dict[str, Any]] = None
+    storage_type: str, config: Optional[dict[str, Any]] = None
 ) -> StorageInterface:
     """
     Configure and return a new storage instance.
@@ -102,7 +102,7 @@ def get_storage() -> StorageInterface:
     return get_storage_instance()
 
 
-def get_postgres_storage(config: Optional[Dict[str, Any]] = None) -> PostgresStorage:
+def get_postgres_storage(config: Optional[dict[str, Any]] = None) -> PostgresStorage:
     """Get a PostgreSQL storage instance."""
     return PostgresStorage(config)
 

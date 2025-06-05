@@ -33,8 +33,8 @@ class GitHubIssue:
     issue_number: int
     title: str
     body: str
-    labels: List[str]
-    assignees: List[str]
+    labels: list[str]
+    assignees: list[str]
     state: str
     created_at: datetime
     test_id: str
@@ -46,10 +46,10 @@ class PullRequestCheck:
 
     pr_number: int
     commit_sha: str
-    affected_tests: List[str]
-    unstable_tests: List[str]
+    affected_tests: list[str]
+    unstable_tests: list[str]
     risk_assessment: str  # "low", "medium", "high"
-    recommendations: List[str]
+    recommendations: list[str]
     check_status: str  # "pending", "success", "failure"
 
 
@@ -282,7 +282,7 @@ class GitHubIntegration:
 
         return pr_check
 
-    def _get_pr_changed_files(self, pr_number: int) -> List[str]:
+    def _get_pr_changed_files(self, pr_number: int) -> list[str]:
         """Get list of files changed in a pull request."""
         try:
             url = f"{self.base_url}/repos/{self.repo_owner}/{self.repo_name}/pulls/{pr_number}/files"
@@ -296,7 +296,7 @@ class GitHubIntegration:
             logger.error(f"Error getting PR changed files: {e}")
             return []
 
-    def _identify_affected_tests(self, changed_files: List[str]) -> List[str]:
+    def _identify_affected_tests(self, changed_files: list[str]) -> list[str]:
         """Identify tests that might be affected by file changes."""
         affected_tests = []
 
@@ -324,10 +324,10 @@ class GitHubIntegration:
 
     def _generate_pr_recommendations(
         self,
-        affected_tests: List[str],
-        unstable_tests: List[str],
-        risk_factors: List[str],
-    ) -> List[str]:
+        affected_tests: list[str],
+        unstable_tests: list[str],
+        risk_factors: list[str],
+    ) -> list[str]:
         """Generate recommendations for PR based on test analysis."""
         recommendations = []
 
@@ -404,7 +404,7 @@ class IDEIntegration:
         self.cache_refresh_interval = 300  # 5 minutes
         self.last_cache_refresh = datetime.min
 
-    def get_test_health_info(self, file_path: str) -> Dict[str, Any]:
+    def get_test_health_info(self, file_path: str) -> dict[str, Any]:
         """Get test health information for a file."""
         self._refresh_cache_if_needed()
 
@@ -471,7 +471,7 @@ class IDEIntegration:
         self.last_cache_refresh = datetime.now()
         logger.info(f"Refreshed IDE metrics cache with {len(self.metrics_cache)} tests")
 
-    def _find_tests_in_file(self, file_path: str) -> List[str]:
+    def _find_tests_in_file(self, file_path: str) -> list[str]:
         """Find test IDs for tests in a file."""
         test_ids = []
 
@@ -494,7 +494,7 @@ class IDEIntegration:
 class WorkflowIntegrationManager:
     """Main manager for development workflow integration."""
 
-    def __init__(self, github_config: Optional[Dict[str, str]] = None):
+    def __init__(self, github_config: Optional[dict[str, str]] = None):
         self.github_integration = None
         self.ide_integration = IDEIntegration()
         self.auto_issue_creation = True
@@ -544,11 +544,11 @@ class WorkflowIntegrationManager:
 
         return self.github_integration.check_pull_request_tests(pr_number, commit_sha)
 
-    def get_test_health_for_file(self, file_path: str) -> Dict[str, Any]:
+    def get_test_health_for_file(self, file_path: str) -> dict[str, Any]:
         """Get test health information for IDE integration."""
         return self.ide_integration.get_test_health_info(file_path)
 
-    def generate_code_review_report(self, pr_number: int) -> Dict[str, Any]:
+    def generate_code_review_report(self, pr_number: int) -> dict[str, Any]:
         """Generate test health report for code review."""
         if not self.github_integration:
             return {"error": "GitHub integration not configured"}
@@ -645,4 +645,3 @@ if __name__ == "__main__":
 
     # Example: Check test health for a file
     test_health = workflow_manager.get_test_health_for_file("tests/test_example.py")
-    print(json.dumps(test_health, indent=2))

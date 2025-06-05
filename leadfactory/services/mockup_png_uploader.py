@@ -307,7 +307,7 @@ class MockupPNGUploader:
         business_id: int,
         mockup_type: str,
         metadata: MockupImageMetadata,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Upload with exponential backoff retry logic."""
         last_error = None
 
@@ -330,7 +330,7 @@ class MockupPNGUploader:
                 }
 
                 # Attempt upload
-                upload_result = self.supabase_storage.upload_file(
+                self.supabase_storage.upload_file(
                     file_path=image_path,
                     storage_path=storage_path,
                     content_type="image/png",
@@ -442,7 +442,7 @@ class MockupPNGUploader:
             logger.error(f"Failed to cleanup orphaned file {storage_path}: {e}")
             return False
 
-    def cleanup_orphaned_images(self, max_age_hours: int = 24) -> Dict[str, Any]:
+    def cleanup_orphaned_images(self, max_age_hours: int = 24) -> dict[str, Any]:
         """
         Clean up orphaned mockup images that aren't linked to any business.
 
@@ -522,7 +522,7 @@ class MockupPNGUploader:
             # In case of error, assume it's linked to avoid accidental deletion
             return True
 
-    def get_business_mockups(self, business_id: int) -> List[Dict[str, Any]]:
+    def get_business_mockups(self, business_id: int) -> list[dict[str, Any]]:
         """Get all mockup images for a specific business."""
         try:
             assets = self.storage.get_business_assets(business_id, asset_type="mockup")
@@ -576,7 +576,7 @@ def upload_business_mockup(
     return mockup_uploader.upload_mockup_png(png_path, business_id, mockup_type)
 
 
-def cleanup_orphaned_mockups(max_age_hours: int = 24) -> Dict[str, Any]:
+def cleanup_orphaned_mockups(max_age_hours: int = 24) -> dict[str, Any]:
     """
     Convenience function to clean up orphaned mockup images.
 
@@ -601,8 +601,6 @@ if __name__ == "__main__":
         test_image.save(tmp_file.name, "PNG")
 
         # Test upload (this would require valid business_id and Supabase config)
-        print(f"Test image created at: {tmp_file.name}")
-        print("To test upload, call: upload_business_mockup(png_path, business_id)")
 
         # Clean up test file
         Path(tmp_file.name).unlink()

@@ -52,7 +52,7 @@ class WarmupConfiguration:
     """Configuration for warm-up schedule and safety thresholds."""
 
     # Stage schedule with daily limits and durations
-    stage_schedule: Dict[int, Dict[str, Any]] = None
+    stage_schedule: dict[int, dict[str, Any]] = None
 
     # Safety thresholds
     bounce_rate_threshold: float = 0.05  # 5% bounce rate threshold
@@ -367,7 +367,7 @@ class SendGridWarmupScheduler:
         stage_config = self.config.stage_schedule.get(progress.current_stage, {})
         return stage_config.get("daily_limit", 0)
 
-    def can_send_email(self, ip_address: str, email_count: int) -> Tuple[bool, str]:
+    def can_send_email(self, ip_address: str, email_count: int) -> tuple[bool, str]:
         """
         Check if sending emails is allowed under current warm-up limits.
 
@@ -605,7 +605,7 @@ class SendGridWarmupScheduler:
         self.logger.info(f"Resumed warm-up for IP {ip_address}")
         return True
 
-    def get_warmup_status_summary(self, ip_address: str) -> Dict[str, Any]:
+    def get_warmup_status_summary(self, ip_address: str) -> dict[str, Any]:
         """
         Get comprehensive status summary for an IP address.
 
@@ -703,7 +703,7 @@ class SendGridWarmupScheduler:
             raise
 
     def _log_event(
-        self, ip_address: str, event_type: str, event_data: Dict[str, Any]
+        self, ip_address: str, event_type: str, event_data: dict[str, Any]
     ) -> None:
         """Log an event to the audit trail."""
         try:
@@ -767,7 +767,7 @@ def get_warmup_scheduler(db_path: Optional[str] = None) -> SendGridWarmupSchedul
 
 def check_warmup_limits(
     ip_address: str, email_count: int, db_path: Optional[str] = None
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """
     Check if sending emails is allowed under warm-up limits.
 

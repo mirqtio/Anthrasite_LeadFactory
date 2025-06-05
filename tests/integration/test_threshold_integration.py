@@ -69,13 +69,13 @@ class TestThresholdBounceIntegration:
         subuser = "test_user"
 
         # Record some sent emails
-        for i in range(20):
+        for _i in range(20):
             self.bounce_monitor.record_sent_email(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
 
         # Record some bounces (30% bounce rate)
-        for i in range(6):
+        for _i in range(6):
             self.bounce_monitor.record_bounce_event(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
@@ -104,7 +104,7 @@ class TestThresholdBounceIntegration:
         subuser = "good_user"
 
         # Record emails with low bounce rate (2%)
-        for i in range(50):
+        for _i in range(50):
             self.bounce_monitor.record_sent_email(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
@@ -126,13 +126,13 @@ class TestThresholdBounceIntegration:
         subuser = "low_volume_user"
 
         # Record only a few emails (below minimum sample size)
-        for i in range(5):
+        for _i in range(5):
             self.bounce_monitor.record_sent_email(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
 
         # High bounce rate but low volume
-        for i in range(3):
+        for _i in range(3):
             self.bounce_monitor.record_bounce_event(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
@@ -153,12 +153,12 @@ class TestThresholdBounceIntegration:
 
         # Record data for all combinations
         for ip, subuser, sent_count, bounce_count in test_data:
-            for i in range(sent_count):
+            for _i in range(sent_count):
                 self.bounce_monitor.record_sent_email(
                     ip_address=ip, subuser=subuser, timestamp=datetime.now()
                 )
 
-            for i in range(bounce_count):
+            for _i in range(bounce_count):
                 self.bounce_monitor.record_bounce_event(
                     ip_address=ip, subuser=subuser, timestamp=datetime.now()
                 )
@@ -214,12 +214,12 @@ class TestThresholdBounceIntegration:
             expected_breach_count,
         ) in test_scenarios:
             # Record data
-            for i in range(sent_count):
+            for _i in range(sent_count):
                 self.bounce_monitor.record_sent_email(
                     ip_address=ip, subuser=subuser, timestamp=datetime.now()
                 )
 
-            for i in range(bounce_count):
+            for _i in range(bounce_count):
                 self.bounce_monitor.record_bounce_event(
                     ip_address=ip, subuser=subuser, timestamp=datetime.now()
                 )
@@ -256,12 +256,12 @@ class TestThresholdBounceIntegration:
         subuser = "test_user"
 
         # Record data that will trigger breaches
-        for i in range(20):
+        for _i in range(20):
             self.bounce_monitor.record_sent_email(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
 
-        for i in range(3):  # 15% bounce rate
+        for _i in range(3):  # 15% bounce rate
             self.bounce_monitor.record_bounce_event(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
@@ -286,12 +286,12 @@ class TestThresholdBounceIntegration:
         subuser = "test_user"
 
         # First batch of data
-        for i in range(15):
+        for _i in range(15):
             self.bounce_monitor.record_sent_email(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
 
-        for i in range(2):  # 13.3% bounce rate
+        for _i in range(2):  # 13.3% bounce rate
             self.bounce_monitor.record_bounce_event(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
@@ -302,7 +302,7 @@ class TestThresholdBounceIntegration:
         assert len(self.threshold_detector.breach_history) == 2
 
         # Add more data (lower overall bounce rate)
-        for i in range(35):  # Total: 50 sent
+        for _i in range(35):  # Total: 50 sent
             self.bounce_monitor.record_sent_email(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
@@ -328,12 +328,12 @@ class TestThresholdBounceIntegration:
         subuser = "test_user"
 
         # Record data with moderate bounce rate (7%)
-        for i in range(100):
+        for _i in range(100):
             self.bounce_monitor.record_sent_email(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
 
-        for i in range(7):
+        for _i in range(7):
             self.bounce_monitor.record_bounce_event(
                 ip_address=ip_address, subuser=subuser, timestamp=datetime.now()
             )
@@ -392,7 +392,7 @@ class TestThresholdBounceIntegration:
 
         # Check thresholds while data is being added
         all_breaches = []
-        for i in range(5):
+        for _i in range(5):
             breaches = self.threshold_detector.check_thresholds(ip_address, subuser)
             all_breaches.extend(breaches)
             time.sleep(0.02)

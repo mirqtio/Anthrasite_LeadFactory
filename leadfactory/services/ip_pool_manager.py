@@ -43,7 +43,7 @@ class IPPool:
 
     pool_id: str
     pool_name: str
-    ip_addresses: List[str]
+    ip_addresses: list[str]
     status: IPPoolStatus
     bounce_rate: float = 0.0
     spam_rate: float = 0.0
@@ -97,10 +97,10 @@ class IPPoolManager:
     def __init__(self, config_file: str = "etc/ip_pool_config.yml"):
         """Initialize IP pool manager."""
         self.config_file = config_file
-        self.ip_pools: Dict[str, IPPool] = {}
-        self.bounce_events: List[BounceEvent] = []
+        self.ip_pools: dict[str, IPPool] = {}
+        self.bounce_events: list[BounceEvent] = []
         self.current_pool_id: Optional[str] = None
-        self.backup_pools: List[str] = []
+        self.backup_pools: list[str] = []
 
         # Thresholds and configuration
         self.thresholds = {
@@ -325,7 +325,7 @@ class IPPoolManager:
         if best_pool_id and best_pool_id != current_pool_id:
             # Perform the switch
             old_pool = self.ip_pools.get(current_pool_id)
-            new_pool = self.ip_pools[best_pool_id]
+            self.ip_pools[best_pool_id]
 
             self.current_pool_id = best_pool_id
 
@@ -445,7 +445,7 @@ class IPPoolManager:
         try:
             # Fetch delivery statistics from SendGrid
             # This would use actual SendGrid stats API
-            for pool_id, pool in self.ip_pools.items():
+            for _pool_id, pool in self.ip_pools.items():
                 # Mock metrics update
                 pool.daily_volume = pool.daily_volume + 100  # Simulate volume growth
 
@@ -541,7 +541,7 @@ class IPPoolManager:
             return self.ip_pools.get(self.current_pool_id)
         return None
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get comprehensive status of IP pool manager."""
         current_pool = self.get_current_pool()
 
@@ -576,7 +576,7 @@ class IPPoolManager:
             "thresholds": self.thresholds,
         }
 
-    def get_pool_details(self) -> Dict[str, Dict[str, Any]]:
+    def get_pool_details(self) -> dict[str, dict[str, Any]]:
         """Get detailed information about all pools."""
         return {
             pool_id: {
@@ -623,8 +623,7 @@ async def main():
         await asyncio.sleep(30)
 
         # Print status
-        status = ip_pool_manager.get_status()
-        print(f"IP Pool Manager Status: {json.dumps(status, indent=2)}")
+        ip_pool_manager.get_status()
 
         monitoring_task.cancel()
 

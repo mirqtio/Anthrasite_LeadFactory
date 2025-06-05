@@ -54,7 +54,7 @@ class TestMockupPNGUploaderUnit:
             ) as mock_supabase,
             patch(
                 "leadfactory.services.mockup_png_uploader.get_storage"
-            ) as mock_storage,
+            ),
         ):
             # Test default bucket
             uploader = MockupPNGUploader()
@@ -64,7 +64,7 @@ class TestMockupPNGUploaderUnit:
             assert uploader.max_file_size == 10 * 1024 * 1024
 
             # Test custom bucket
-            uploader_custom = MockupPNGUploader("custom-bucket")
+            MockupPNGUploader("custom-bucket")
             mock_supabase.assert_called_with("custom-bucket")
 
     def test_validate_input_success(self, uploader, test_image_path):
@@ -449,14 +449,12 @@ class TestMockupImageMetadata:
 
 if __name__ == "__main__":
     # Run simple validation tests
-    print("Running MockupPNGUploader unit tests...")
 
     # Test dataclass creation
     try:
         result = MockupUploadResult(success=True, business_id=123)
         assert result.success is True
         assert result.business_id == 123
-        print("✅ MockupUploadResult creation successful")
 
         metadata = MockupImageMetadata(
             business_id=123,
@@ -467,9 +465,7 @@ if __name__ == "__main__":
             file_size_bytes=1024,
         )
         assert metadata.business_id == 123
-        print("✅ MockupImageMetadata creation successful")
 
-        print("✅ All unit test validations passed")
 
-    except Exception as e:
-        print(f"❌ Unit test validation failed: {e}")
+    except Exception:
+        pass

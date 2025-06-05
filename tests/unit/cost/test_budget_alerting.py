@@ -102,7 +102,7 @@ class TestAlertRateLimiter(unittest.TestCase):
         alert_key = "test_alert"
 
         # Should allow first 3 alerts
-        for i in range(3):
+        for _i in range(3):
             self.assertTrue(self.rate_limiter.should_send_alert(alert_key))
 
         # Should block 4th alert
@@ -113,7 +113,7 @@ class TestAlertRateLimiter(unittest.TestCase):
         alert_key = "test_alert"
 
         # Fill up the rate limit
-        for i in range(3):
+        for _i in range(3):
             self.assertTrue(self.rate_limiter.should_send_alert(alert_key))
 
         # Should be blocked
@@ -243,10 +243,10 @@ class TestAlertAggregator(unittest.TestCase):
 
         self.assertEqual(len(flushed), 2)  # Two different aggregation keys
         self.assertTrue(
-            any("threshold_warning:openai:all" in key for key in flushed.keys())
+            any("threshold_warning:openai:all" in key for key in flushed)
         )
         self.assertTrue(
-            any("budget_exceeded:semrush:all" in key for key in flushed.keys())
+            any("budget_exceeded:semrush:all" in key for key in flushed)
         )
 
 

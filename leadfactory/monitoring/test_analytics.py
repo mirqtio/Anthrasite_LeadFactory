@@ -45,7 +45,7 @@ class PredictionResult:
     test_suite: str
     instability_probability: float
     risk_level: str  # "low", "medium", "high", "critical"
-    contributing_factors: List[str]
+    contributing_factors: list[str]
     confidence: float
     prediction_date: datetime
 
@@ -55,10 +55,10 @@ class CorrelationAnalysis:
     """Result of correlation analysis between code changes and test failures."""
 
     analysis_id: str
-    time_period: Tuple[datetime, datetime]
+    time_period: tuple[datetime, datetime]
     commit_hash: str
-    files_changed: List[str]
-    affected_tests: List[str]
+    files_changed: list[str]
+    affected_tests: list[str]
     correlation_strength: float  # 0.0 to 1.0
     failure_pattern: str
     analysis_date: datetime
@@ -70,12 +70,12 @@ class TrendAnalysis:
 
     test_id: str
     test_name: str
-    analysis_period: Tuple[datetime, datetime]
+    analysis_period: tuple[datetime, datetime]
     trend_direction: str  # "improving", "stable", "degrading", "volatile"
     trend_strength: float  # 0.0 to 1.0
-    seasonal_patterns: List[str]
-    anomalies_detected: List[datetime]
-    forecast_next_week: Dict[str, float]
+    seasonal_patterns: list[str]
+    anomalies_detected: list[datetime]
+    forecast_next_week: dict[str, float]
 
 
 class TestAnalyticsEngine:
@@ -83,8 +83,8 @@ class TestAnalyticsEngine:
 
     def __init__(self, db_path: str = "test_analytics.db"):
         self.db_path = db_path
-        self.prediction_models: Dict[str, Any] = {}
-        self.anomaly_detectors: Dict[str, Any] = {}
+        self.prediction_models: dict[str, Any] = {}
+        self.anomaly_detectors: dict[str, Any] = {}
         self.scaler = StandardScaler() if SKLEARN_AVAILABLE else None
         self._lock = threading.Lock()
 
@@ -206,7 +206,7 @@ class TestAnalyticsEngine:
         except Exception as e:
             logger.error(f"Error training models: {e}")
 
-    def _prepare_training_data(self) -> List[Dict[str, Any]]:
+    def _prepare_training_data(self) -> list[dict[str, Any]]:
         """Prepare training data from historical test executions."""
         # Get test executions from the monitoring database
         with sqlite3.connect(metrics_collector.db_path) as conn:
@@ -237,15 +237,15 @@ class TestAnalyticsEngine:
             )
 
         training_data = []
-        for test_id, executions in test_groups.items():
+        for _test_id, executions in test_groups.items():
             if len(executions) >= 10:  # Minimum executions for meaningful analysis
                 training_data.extend(self._create_training_samples(executions))
 
         return training_data
 
     def _create_training_samples(
-        self, executions: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, executions: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Create training samples from test execution history."""
         samples = []
 
@@ -301,8 +301,8 @@ class TestAnalyticsEngine:
         return samples
 
     def _create_feature_matrix(
-        self, training_data: List[Dict[str, Any]]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        self, training_data: list[dict[str, Any]]
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Create feature matrix and target vector for machine learning."""
         if not training_data:
             return np.array([]), np.array([])
@@ -446,7 +446,7 @@ class TestAnalyticsEngine:
 
     def _extract_prediction_features(
         self, test_metrics: TestMetrics
-    ) -> Optional[List[float]]:
+    ) -> Optional[list[float]]:
         """Extract features for prediction from test metrics."""
         try:
             features = [
@@ -465,8 +465,8 @@ class TestAnalyticsEngine:
             return None
 
     def _identify_contributing_factors(
-        self, test_metrics: TestMetrics, model: Any, features: List[float]
-    ) -> List[str]:
+        self, test_metrics: TestMetrics, model: Any, features: list[float]
+    ) -> list[str]:
         """Identify factors contributing to instability prediction."""
         contributing_factors = []
 
@@ -515,7 +515,7 @@ class TestAnalyticsEngine:
         return contributing_factors
 
     def analyze_code_change_correlation(
-        self, commit_hash: str, files_changed: List[str]
+        self, commit_hash: str, files_changed: list[str]
     ) -> CorrelationAnalysis:
         """Analyze correlation between code changes and test failures."""
         analysis_id = f"corr_{commit_hash}_{int(datetime.now().timestamp())}"
@@ -630,8 +630,8 @@ class TestAnalyticsEngine:
         return analysis
 
     def _calculate_daily_metrics(
-        self, executions: List[Tuple]
-    ) -> Dict[str, Dict[str, float]]:
+        self, executions: list[tuple]
+    ) -> dict[str, dict[str, float]]:
         """Calculate daily aggregated metrics from executions."""
         daily_data = defaultdict(list)
 
@@ -663,8 +663,8 @@ class TestAnalyticsEngine:
         return daily_metrics
 
     def _calculate_trend(
-        self, daily_metrics: Dict[str, Dict[str, float]]
-    ) -> Tuple[str, float]:
+        self, daily_metrics: dict[str, dict[str, float]]
+    ) -> tuple[str, float]:
         """Calculate trend direction and strength."""
         if len(daily_metrics) < 7:
             return "stable", 0.0
@@ -699,8 +699,8 @@ class TestAnalyticsEngine:
         return direction, strength
 
     def _detect_seasonal_patterns(
-        self, daily_metrics: Dict[str, Dict[str, float]]
-    ) -> List[str]:
+        self, daily_metrics: dict[str, dict[str, float]]
+    ) -> list[str]:
         """Detect seasonal patterns in test performance."""
         patterns = []
 
@@ -734,8 +734,8 @@ class TestAnalyticsEngine:
         return patterns
 
     def _detect_anomalies(
-        self, daily_metrics: Dict[str, Dict[str, float]]
-    ) -> List[datetime]:
+        self, daily_metrics: dict[str, dict[str, float]]
+    ) -> list[datetime]:
         """Detect anomalous days in test performance."""
         anomalies = []
 
@@ -756,8 +756,8 @@ class TestAnalyticsEngine:
         return sorted(anomalies)
 
     def _generate_forecast(
-        self, daily_metrics: Dict[str, Dict[str, float]]
-    ) -> Dict[str, float]:
+        self, daily_metrics: dict[str, dict[str, float]]
+    ) -> dict[str, float]:
         """Generate simple forecast for next week."""
         if len(daily_metrics) < 7:
             return {"pass_rate": 0.8, "confidence": 0.3}
@@ -860,7 +860,7 @@ class TestAnalyticsEngine:
                 ),
             )
 
-    def generate_weekly_report(self) -> Dict[str, Any]:
+    def generate_weekly_report(self) -> dict[str, Any]:
         """Generate comprehensive weekly test analytics report."""
         end_date = datetime.now()
         start_date = end_date - timedelta(days=7)
@@ -951,8 +951,8 @@ class TestAnalyticsEngine:
         return report
 
     def _generate_recommendations(
-        self, high_risk_predictions: List[Dict], trend_results: List[Tuple]
-    ) -> List[str]:
+        self, high_risk_predictions: list[dict], trend_results: list[tuple]
+    ) -> list[str]:
         """Generate actionable recommendations based on analysis."""
         recommendations = []
 
@@ -998,7 +998,7 @@ def predict_instability(test_id: str) -> Optional[PredictionResult]:
     return analytics_engine.predict_test_instability(test_id)
 
 
-def generate_weekly_analytics_report() -> Dict[str, Any]:
+def generate_weekly_analytics_report() -> dict[str, Any]:
     """Generate weekly analytics report."""
     return analytics_engine.generate_weekly_report()
 
@@ -1009,4 +1009,3 @@ if __name__ == "__main__":
 
     # Generate sample report
     report = generate_weekly_analytics_report()
-    print(json.dumps(report, indent=2, default=str))

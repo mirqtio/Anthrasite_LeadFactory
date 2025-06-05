@@ -243,12 +243,12 @@ class TestEndToEndScenarios:
         # Test audit production
         with patch.dict(os.environ, {"DEPLOYMENT_ENVIRONMENT": "production_audit"}):
             audit_caps = get_enabled_capabilities(NodeType.ENRICH)
-            audit_cost = estimate_node_cost(NodeType.ENRICH)
+            estimate_node_cost(NodeType.ENRICH)
 
         # Test general production
         with patch.dict(os.environ, {"DEPLOYMENT_ENVIRONMENT": "production_general"}):
             general_caps = get_enabled_capabilities(NodeType.ENRICH)
-            general_cost = estimate_node_cost(NodeType.ENRICH)
+            estimate_node_cost(NodeType.ENRICH)
 
         audit_names = [cap.name for cap in audit_caps]
         general_names = [cap.name for cap in general_caps]

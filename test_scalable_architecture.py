@@ -13,7 +13,6 @@ import yaml
 
 def test_containerization():
     """Test Docker containerization implementation."""
-    print("Testing containerization...")
 
     # Check for Docker files
     docker_files = [
@@ -33,7 +32,6 @@ def test_containerization():
             missing_files.append(file_path)
 
     if missing_files:
-        print(f"❌ Missing Docker files: {missing_files}")
         return False
 
     # Check docker-compose for scalable services
@@ -54,20 +52,16 @@ def test_containerization():
 
         for service in expected_services:
             if service not in services:
-                print(f"❌ Missing service in docker-compose: {service}")
                 return False
 
-    except Exception as e:
-        print(f"❌ Error reading docker-compose.scalable.yml: {e}")
+    except Exception:
         return False
 
-    print("✅ Containerization implemented correctly")
     return True
 
 
 def test_kubernetes():
     """Test Kubernetes orchestration implementation."""
-    print("Testing Kubernetes orchestration...")
 
     k8s_files = [
         "k8s/namespace.yaml",
@@ -85,7 +79,6 @@ def test_kubernetes():
             missing_files.append(file_path)
 
     if missing_files:
-        print(f"❌ Missing Kubernetes files: {missing_files}")
         return False
 
     # Check for scalability configurations
@@ -103,18 +96,16 @@ def test_kubernetes():
                     break
 
         if not has_scaling_config:
-            print("⚠️  Warning: No scaling configuration found in K8s deployments")
+            pass
 
-    except Exception as e:
-        print(f"⚠️  Warning: Error reading K8s config: {e}")
+    except Exception:
+        pass
 
-    print("✅ Kubernetes orchestration implemented")
     return True
 
 
 def test_database_optimization():
     """Test database sharding and optimization."""
-    print("Testing database optimization...")
 
     # Check for sharding implementation
     sharding_files = [
@@ -128,7 +119,6 @@ def test_database_optimization():
             missing_files.append(file_path)
 
     if missing_files:
-        print(f"❌ Missing database optimization files: {missing_files}")
         return False
 
     # Check sharding implementation
@@ -137,29 +127,23 @@ def test_database_optimization():
             content = f.read()
 
         if "class ShardedPostgresStorage" not in content:
-            print("❌ ShardedPostgresStorage class not found")
             return False
 
         if "shard" not in content.lower():
-            print("❌ Sharding logic not implemented")
             return False
 
-    except Exception as e:
-        print(f"❌ Error reading sharding implementation: {e}")
+    except Exception:
         return False
 
-    print("✅ Database optimization implemented")
     return True
 
 
 def test_microservices():
     """Test microservices architecture."""
-    print("Testing microservices architecture...")
 
     # Check for pipeline services
     services_dir = "leadfactory/services/pipeline_services"
     if not os.path.exists(services_dir):
-        print(f"❌ Pipeline services directory not found: {services_dir}")
         return False
 
     expected_services = [
@@ -180,7 +164,6 @@ def test_microservices():
             missing_services.append(service)
 
     if missing_services:
-        print(f"❌ Missing microservices: {missing_services}")
         return False
 
     # Check for service orchestration
@@ -190,25 +173,20 @@ def test_microservices():
             content = f.read()
 
         if "class" not in content or "orchestrator" not in content.lower():
-            print("❌ Service orchestrator not properly implemented")
             return False
 
-    except Exception as e:
-        print(f"❌ Error reading orchestrator: {e}")
+    except Exception:
         return False
 
-    print("✅ Microservices architecture implemented")
     return True
 
 
 def test_monitoring():
     """Test monitoring and observability."""
-    print("Testing monitoring and observability...")
 
     # Check for metrics implementation
     metrics_file = "leadfactory/utils/metrics.py"
     if not os.path.exists(metrics_file):
-        print(f"❌ Metrics file not found: {metrics_file}")
         return False
 
     try:
@@ -230,26 +208,23 @@ def test_monitoring():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"⚠️  Warning: Missing monitoring components: {missing_components}")
+            pass
 
-    except Exception as e:
-        print(f"❌ Error reading metrics file: {e}")
+    except Exception:
         return False
 
     # Check for GPU configuration (Task 22 integration)
     gpu_config = "etc/gpu_config.yml"
     if os.path.exists(gpu_config):
-        print("✅ GPU burst capability configuration found")
+        pass
     else:
-        print("⚠️  Warning: GPU configuration not found")
+        pass
 
-    print("✅ Monitoring and observability implemented")
     return True
 
 
 def test_performance_framework():
     """Test performance testing framework."""
-    print("Testing performance testing framework...")
 
     performance_files = [
         "scripts/performance/load_test.py",
@@ -262,7 +237,7 @@ def test_performance_framework():
             missing_files.append(file_path)
 
     if missing_files:
-        print(f"⚠️  Warning: Missing performance test files: {missing_files}")
+        pass
 
     # Check for load testing implementation
     load_test_file = "scripts/performance/load_test.py"
@@ -272,20 +247,17 @@ def test_performance_framework():
                 content = f.read()
 
             if "load" in content.lower() and "test" in content.lower():
-                print("✅ Load testing framework found")
+                pass
             else:
-                print("⚠️  Warning: Load testing logic not implemented")
-        except Exception as e:
-            print(f"⚠️  Warning: Error reading load test file: {e}")
+                pass
+        except Exception:
+            pass
 
-    print("✅ Performance testing framework implemented")
     return True
 
 
 def main():
     """Run all scalable architecture tests."""
-    print("🚀 Task 13: Scalable Architecture Implementation Test")
-    print("=" * 60)
 
     tests = [
         test_containerization,
@@ -305,23 +277,12 @@ def main():
                 passed += 1
             else:
                 failed += 1
-        except Exception as e:
-            print(f"❌ Test {test.__name__} crashed: {e}")
+        except Exception:
             failed += 1
-        print()
-
-    print("=" * 60)
-    print(f"Results: {passed} passed, {failed} failed")
 
     if failed == 0:
-        print("🎉 Task 13: Scalable Architecture Implementation COMPLETE!")
-        print("✅ All components implemented and validated")
-        print("✅ System ready for 10x capacity scaling")
-        print("✅ GPU burst capability integrated")
-        print("✅ 3x t3.medium Puppeteer containers supported")
         return 0
     else:
-        print("⚠️  Some components need attention, but architecture is largely complete")
         return 1
 
 

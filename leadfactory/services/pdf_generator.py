@@ -79,7 +79,7 @@ class SecurityConfig:
     enable_encryption: bool = False
     user_password: Optional[str] = None
     owner_password: Optional[str] = None
-    permissions: List[PDFPermissions] = None
+    permissions: list[PDFPermissions] = None
     watermark: Optional[WatermarkConfig] = None
 
     def __post_init__(self):
@@ -137,7 +137,7 @@ class PDFConfiguration:
     def __init__(
         self,
         page_size: tuple = letter,
-        margins: Dict[str, float] = None,
+        margins: dict[str, float] = None,
         orientation: str = "portrait",
         compression: bool = True,
         optimization_config: Optional[OptimizationConfig] = None,
@@ -342,7 +342,7 @@ class PDFGenerator:
 
     def generate_document(
         self,
-        content: List[Dict[str, Any]],
+        content: list[dict[str, Any]],
         output_path: Optional[str] = None,
         return_bytes: bool = False,
     ) -> Union[str, bytes, None]:
@@ -457,7 +457,7 @@ class PDFGenerator:
             logger.error(f"PDF generation failed: {e}")
             raise PDFGenerationError(f"Failed to generate PDF: {e}")
 
-    def _build_story(self, content: List[Dict[str, Any]]) -> List:
+    def _build_story(self, content: list[dict[str, Any]]) -> list:
         """
         Build a ReportLab story from structured content.
 
@@ -530,7 +530,7 @@ class PDFGenerator:
 
         return story
 
-    def _create_table(self, element: Dict[str, Any]) -> Optional[Table]:
+    def _create_table(self, element: dict[str, Any]) -> Optional[Table]:
         """Create a formatted table from element data."""
         data = element.get("data", [])
         if not data:
@@ -563,7 +563,7 @@ class PDFGenerator:
 
         return table
 
-    def _create_image(self, element: Dict[str, Any]) -> Optional[Image]:
+    def _create_image(self, element: dict[str, Any]) -> Optional[Image]:
         """Create an image from element data."""
         image_path = element.get("path")
         image_data = element.get("data")
@@ -686,8 +686,8 @@ class PDFGenerator:
 
     def generate_audit_report(
         self,
-        business_data: Dict[str, Any],
-        audit_results: Dict[str, Any],
+        business_data: dict[str, Any],
+        audit_results: dict[str, Any],
         output_path: Optional[str] = None,
         return_bytes: bool = False,
     ) -> Union[str, bytes, None]:
@@ -720,8 +720,8 @@ class PDFGenerator:
             raise PDFGenerationError(f"Failed to generate audit report: {str(e)}")
 
     def _build_audit_report_content(
-        self, business_data: Dict[str, Any], audit_results: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, business_data: dict[str, Any], audit_results: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Build content structure for audit report."""
         content = []
 
@@ -774,8 +774,8 @@ class PDFGenerator:
         return content
 
     def _build_business_info_table(
-        self, business_data: Dict[str, Any]
-    ) -> List[List[str]]:
+        self, business_data: dict[str, Any]
+    ) -> list[list[str]]:
         """Build business information table data."""
         table_data = [["Field", "Value"]]  # Header row
 
@@ -909,7 +909,7 @@ class PDFGenerator:
 
     def _convert_html_to_pdf_content(
         self, html_content: str, report_data
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Convert HTML content and report data to PDF content structure.
 
@@ -1139,7 +1139,7 @@ class PDFGenerator:
             logger.warning(f"Image optimization failed: {e}")
             return image_path
 
-    def _monitor_file_size(self, file_path: str) -> Dict[str, Any]:
+    def _monitor_file_size(self, file_path: str) -> dict[str, Any]:
         """
         Monitor and report PDF file size metrics.
 
@@ -1226,8 +1226,8 @@ class PDFGenerator:
 
 # Convenience functions for common use cases
 def create_audit_report_pdf(
-    business_data: Dict[str, Any],
-    audit_results: Dict[str, Any],
+    business_data: dict[str, Any],
+    audit_results: dict[str, Any],
     output_path: Optional[str] = None,
     config: Optional[PDFConfiguration] = None,
 ) -> Union[str, bytes]:
@@ -1250,7 +1250,7 @@ def create_audit_report_pdf(
 
 
 def create_simple_pdf(
-    content: List[Dict[str, Any]],
+    content: list[dict[str, Any]],
     output_path: Optional[str] = None,
     config: Optional[PDFConfiguration] = None,
 ) -> Union[str, bytes]:
@@ -1272,12 +1272,12 @@ def create_simple_pdf(
 
 
 def create_optimized_pdf(
-    content: List[Dict[str, Any]],
+    content: list[dict[str, Any]],
     output_path: Optional[str] = None,
     compression_level: CompressionLevel = CompressionLevel.HIGH,
     image_quality: ImageQuality = ImageQuality.MEDIUM,
     target_size_mb: Optional[float] = None,
-) -> Union[str, bytes, Dict[str, Any]]:
+) -> Union[str, bytes, dict[str, Any]]:
     """
     Convenience function to create a highly optimized PDF.
 
@@ -1317,7 +1317,7 @@ def create_optimized_pdf(
     return result
 
 
-def get_optimization_recommendations(file_path: str) -> Dict[str, Any]:
+def get_optimization_recommendations(file_path: str) -> dict[str, Any]:
     """
     Analyze a PDF file and provide optimization recommendations.
 

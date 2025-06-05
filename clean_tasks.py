@@ -14,7 +14,7 @@ def clean_tasks():
     with open("tasks/tasks.json") as f:
         data = json.load(f)
 
-    original_count = len(data["tasks"])
+    len(data["tasks"])
 
     # Filter out auto-generated maintenance tasks
     cleaned_tasks = []
@@ -50,12 +50,6 @@ def clean_tasks():
     # Write the cleaned version
     with open("tasks/tasks.json", "w") as f:
         json.dump(data, f, indent=2)
-
-    print("Cleaned tasks.json:")
-    print(f"- Original tasks: {original_count}")
-    print(f"- Cleaned tasks: {len(cleaned_tasks)}")
-    print(f"- Removed: {original_count - len(cleaned_tasks)}")
-    print(f"- Backup saved to: {backup_path}")
 
     # Remove old task files
     for i in range(1, 274):

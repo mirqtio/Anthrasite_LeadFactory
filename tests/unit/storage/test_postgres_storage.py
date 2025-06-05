@@ -9,7 +9,7 @@ import json
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
-from unittest.mock import MagicMock, Mock, patch, call, mock_open
+from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pytest
 
@@ -169,7 +169,7 @@ class TestPostgresStorage:
 
     def test_get_business_by_id(self):
         """Test getting business by ID."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -193,7 +193,7 @@ class TestPostgresStorage:
 
     def test_get_business_by_id_not_found(self):
         """Test getting business by ID when not found."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -206,7 +206,7 @@ class TestPostgresStorage:
 
     def test_get_businesses_by_criteria(self):
         """Test getting businesses by criteria."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -232,7 +232,7 @@ class TestPostgresStorage:
 
     def test_update_business(self):
         """Test updating business record."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -253,7 +253,7 @@ class TestPostgresStorage:
 
     def test_insert_business(self):
         """Test inserting new business record."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -276,7 +276,7 @@ class TestPostgresStorage:
 
     def test_get_business_details(self):
         """Test getting detailed business information."""
-        with patch.object(self.storage, 'execute_query') as mock_execute_query:
+        with patch.object(self.storage, "execute_query") as mock_execute_query:
             mock_execute_query.return_value = [{
                 "id": 1,
                 "name": "Test Business",
@@ -293,7 +293,7 @@ class TestPostgresStorage:
 
     def test_get_businesses(self):
         """Test getting multiple businesses by IDs."""
-        with patch.object(self.storage, 'execute_query') as mock_execute_query:
+        with patch.object(self.storage, "execute_query") as mock_execute_query:
             mock_execute_query.return_value = [
                 {"id": 1, "name": "Business 1"},
                 {"id": 3, "name": "Business 3"}
@@ -326,7 +326,7 @@ class TestPostgresStorage:
 
     def test_processing_status_operations(self):
         """Test processing status operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -355,7 +355,7 @@ class TestPostgresStorage:
 
     def test_stage_results_operations(self):
         """Test stage results operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -379,7 +379,7 @@ class TestPostgresStorage:
 
     def test_business_lookup_methods(self):
         """Test various business lookup methods."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -407,7 +407,7 @@ class TestPostgresStorage:
 
     def test_error_handling(self):
         """Test error handling in various methods."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             # Make cursor raise an exception
             mock_cursor_cm.side_effect = Exception("Database error")
 
@@ -423,7 +423,7 @@ class TestPostgresStorage:
 
     def test_review_queue_operations(self):
         """Test review queue operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -459,7 +459,7 @@ class TestPostgresStorage:
 
     def test_review_statistics(self):
         """Test get_review_statistics method."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -482,7 +482,7 @@ class TestPostgresStorage:
 
     def test_asset_management_operations(self):
         """Test asset management operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -519,7 +519,7 @@ class TestPostgresStorage:
 
     def test_email_operations(self):
         """Test email-related operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -567,7 +567,7 @@ class TestPostgresStorage:
 
     def test_email_logging_operations(self):
         """Test email logging operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -597,7 +597,7 @@ class TestPostgresStorage:
 
     def test_email_stats(self):
         """Test get_email_stats method."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -626,13 +626,13 @@ class TestPostgresStorage:
             assert result == "Test content"
 
         # Test error handling
-        with patch("builtins.open", side_effect=IOError("File not found")):
+        with patch("builtins.open", side_effect=OSError("File not found")):
             with pytest.raises(IOError):
                 self.storage.read_text("/nonexistent/file.txt")
 
     def test_data_preservation_operations(self):
         """Test data preservation and audit operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -669,7 +669,7 @@ class TestPostgresStorage:
 
     def test_audit_trail_operations(self):
         """Test audit trail operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -699,7 +699,7 @@ class TestPostgresStorage:
 
     def test_savepoint_operations(self):
         """Test database savepoint operations."""
-        with patch.object(self.storage, 'connection') as mock_connection_cm:
+        with patch.object(self.storage, "connection") as mock_connection_cm:
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
             mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
@@ -724,7 +724,7 @@ class TestPostgresStorage:
 
     def test_ensure_audit_tables(self):
         """Test ensure_audit_tables method."""
-        with patch.object(self.storage, 'connection') as mock_connection_cm:
+        with patch.object(self.storage, "connection") as mock_connection_cm:
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
             mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
@@ -741,7 +741,7 @@ class TestPostgresStorage:
 
     def test_log_management_operations(self):
         """Test log management operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -778,7 +778,7 @@ class TestPostgresStorage:
 
     def test_log_statistics(self):
         """Test get_log_statistics method."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -810,7 +810,7 @@ class TestPostgresStorage:
 
     def test_get_businesses_with_logs(self):
         """Test get_businesses_with_logs method."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -829,7 +829,7 @@ class TestPostgresStorage:
 
     def test_get_all_businesses(self):
         """Test get_all_businesses method."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -854,7 +854,7 @@ class TestPostgresStorage:
 
     def test_vertical_operations(self):
         """Test vertical-related operations."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)
@@ -876,7 +876,7 @@ class TestPostgresStorage:
 
     def test_create_business(self):
         """Test create_business method."""
-        with patch.object(self.storage, 'cursor') as mock_cursor_cm:
+        with patch.object(self.storage, "cursor") as mock_cursor_cm:
             mock_cursor = MagicMock()
             mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
             mock_cursor.__exit__ = MagicMock(return_value=None)

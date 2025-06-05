@@ -5,6 +5,7 @@ Handles Stripe checkout integration, payment intents, and webhook processing
 for direct-to-SMB audit sales.
 """
 
+import contextlib
 import json
 import logging
 import os
@@ -122,8 +123,8 @@ class StripePaymentService:
         customer_name: str,
         audit_type: str,
         amount: int,  # Amount in cents
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        metadata: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Create a Stripe checkout session for audit purchase."""
         try:
             # Create payment intent first
@@ -202,7 +203,7 @@ class StripePaymentService:
             logger.error(f"Error creating checkout session: {str(e)}")
             raise
 
-    def handle_webhook(self, payload: str, signature: str) -> Dict[str, Any]:
+    def handle_webhook(self, payload: str, signature: str) -> dict[str, Any]:
         """Handle Stripe webhook events."""
         try:
             event = stripe.Webhook.construct_event(
@@ -233,8 +234,8 @@ class StripePaymentService:
             raise
 
     def _handle_payment_succeeded(
-        self, payment_intent: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, payment_intent: dict[str, Any]
+    ) -> dict[str, Any]:
         """Handle successful payment."""
         payment_intent_id = payment_intent["id"]
 
@@ -300,10 +301,8 @@ class StripePaymentService:
                         # Extract tax information (if available)
                         tax_amount_cents = 0
                         if "metadata" in charge and "tax_amount" in charge["metadata"]:
-                            try:
+                            with contextlib.suppress(ValueError, TypeError):
                                 tax_amount_cents = int(charge["metadata"]["tax_amount"])
-                            except (ValueError, TypeError):
-                                pass
 
                         # Record purchase in metrics and financial tracking system
                         purchase_metrics_tracker.record_purchase(
@@ -356,7 +355,7 @@ class StripePaymentService:
                 )
                 return {"status": "not_found", "payment_intent_id": payment_intent_id}
 
-    def _handle_payment_failed(self, payment_intent: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_payment_failed(self, payment_intent: dict[str, Any]) -> dict[str, Any]:
         """Handle failed payment."""
         payment_intent_id = payment_intent["id"]
 
@@ -386,7 +385,7 @@ class StripePaymentService:
                 )
                 return {"status": "not_found", "payment_intent_id": payment_intent_id}
 
-    def _handle_checkout_completed(self, session: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_checkout_completed(self, session: dict[str, Any]) -> dict[str, Any]:
         """Handle completed checkout session."""
         session_id = session["id"]
         payment_intent_id = session.get("payment_intent")
@@ -408,9 +407,9 @@ class StripePaymentService:
 
         return {"status": "completed", "session_id": session_id}
 
-    def _handle_chargeback_created(self, dispute: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_chargeback_created(self, dispute: dict[str, Any]) -> dict[str, Any]:
         """Handle chargeback created."""
-        charge_id = dispute["charge"]
+        dispute["charge"]
         payment_intent_id = dispute["payment_intent"]
 
         logger.info(f"Chargeback created for payment intent: {payment_intent_id}")
@@ -440,7 +439,7 @@ class StripePaymentService:
                 )
                 return {"status": "not_found", "payment_intent_id": payment_intent_id}
 
-    def _handle_refund_created(self, refund: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_refund_created(self, refund: dict[str, Any]) -> dict[str, Any]:
         """Handle refund created."""
         charge_id = refund["charge"]
         payment_intent_id = refund["payment_intent"]
@@ -598,36 +597,37 @@ class StripePaymentService:
             Path to the generated PDF file
         """
         import asyncio
-        
+
         try:
             # Import the real audit report generator
             from leadfactory.services.audit_report_generator import AuditReportGenerator
-            
+
             # Create a temporary PDF file
             temp_dir = tempfile.mkdtemp()
             pdf_path = os.path.join(temp_dir, f"{report_id}.pdf")
-            
+
             # Extract business name from payment data
             business_name = payment.customer_name or "Unknown Business"
-            
+
             # For businesses, we might need to extract the actual business name
             # from the payment metadata if it's stored there
             if payment.payment_metadata:
                 try:
                     metadata = json.loads(payment.payment_metadata)
-                    if metadata.get('business_name'):
-                        business_name = metadata['business_name']
+                    if metadata.get("business_name"):
+                        business_name = metadata["business_name"]
                 except json.JSONDecodeError:
                     pass
-            
+
             # Generate the comprehensive audit report
             generator = AuditReportGenerator()
-            
+
             # Run the async report generation
             loop = asyncio.get_event_loop()
             if loop.is_running():
                 # If we're already in an async context, create a new thread
                 import concurrent.futures
+
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     future = executor.submit(
                         asyncio.run,
@@ -636,8 +636,8 @@ class StripePaymentService:
                             customer_email=payment.customer_email,
                             report_id=report_id,
                             output_path=pdf_path,
-                            return_bytes=False
-                        )
+                            return_bytes=False,
+                        ),
                     )
                     result_path = future.result(timeout=60)  # 60 second timeout
             else:
@@ -648,127 +648,138 @@ class StripePaymentService:
                         customer_email=payment.customer_email,
                         report_id=report_id,
                         output_path=pdf_path,
-                        return_bytes=False
+                        return_bytes=False,
                     )
                 )
-            
+
             logger.info(f"Generated comprehensive audit PDF report: {result_path}")
             return result_path
-            
+
         except Exception as e:
             logger.error(f"Failed to generate comprehensive audit report: {e}")
             logger.info("Falling back to basic report generation")
-            
+
             # Fallback to a basic report if the comprehensive generation fails
             return self._generate_fallback_pdf(payment, report_id)
-    
+
     def _generate_fallback_pdf(self, payment: Payment, report_id: str) -> str:
         """
         Generate a fallback PDF report when the comprehensive generator fails.
-        
+
         Args:
             payment: Payment record with audit details
             report_id: Unique identifier for the report
-            
+
         Returns:
             Path to the generated PDF file
         """
         import os
+
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas
-        
+
         # Create a temporary PDF file
         temp_dir = tempfile.mkdtemp()
         pdf_path = os.path.join(temp_dir, f"{report_id}.pdf")
-        
+
         # Generate a basic but professional PDF report
         c = canvas.Canvas(pdf_path, pagesize=letter)
         width, height = letter
-        
+
         # Header
         c.setFont("Helvetica-Bold", 18)
         c.drawString(50, height - 50, "Website Audit Report")
-        
+
         c.setFont("Helvetica-Bold", 14)
         c.drawString(50, height - 80, f"Business: {payment.customer_name or 'N/A'}")
-        
+
         # Report details
         c.setFont("Helvetica", 12)
         c.drawString(50, height - 110, f"Report ID: {report_id}")
         c.drawString(50, height - 130, f"Customer: {payment.customer_email}")
-        c.drawString(50, height - 150, f"Generated: {datetime.utcnow().strftime('%B %d, %Y')}")
+        c.drawString(
+            50, height - 150, f"Generated: {datetime.utcnow().strftime('%B %d, %Y')}"
+        )
         c.drawString(50, height - 170, f"Report Type: {payment.audit_type}")
-        
+
         # Executive Summary
         y_pos = height - 220
         c.setFont("Helvetica-Bold", 14)
         c.drawString(50, y_pos, "Executive Summary")
         y_pos -= 25
-        
+
         c.setFont("Helvetica", 11)
         summary_text = [
             "This comprehensive website audit has been completed for your business.",
             "Our analysis covers key areas including performance, SEO, and user experience.",
             "The recommendations provided will help improve your online presence and",
-            "drive better results for your digital marketing efforts."
+            "drive better results for your digital marketing efforts.",
         ]
-        
+
         for line in summary_text:
             c.drawString(50, y_pos, line)
             y_pos -= 18
-        
+
         # Key Areas Analyzed
         y_pos -= 20
         c.setFont("Helvetica-Bold", 14)
         c.drawString(50, y_pos, "Areas Analyzed")
         y_pos -= 25
-        
+
         areas = [
             "Website Performance & Loading Speed",
             "Search Engine Optimization (SEO)",
             "Mobile Responsiveness",
             "User Experience & Navigation",
             "Technical Infrastructure",
-            "Content Quality & Structure"
+            "Content Quality & Structure",
         ]
-        
+
         c.setFont("Helvetica", 11)
         for area in areas:
             c.drawString(70, y_pos, f"• {area}")
             y_pos -= 18
-        
+
         # General Recommendations
         y_pos -= 20
         c.setFont("Helvetica-Bold", 14)
         c.drawString(50, y_pos, "Key Recommendations")
         y_pos -= 25
-        
+
         recommendations = [
             "Optimize images and assets to improve page loading speed",
             "Implement responsive design for better mobile experience",
             "Update meta descriptions and title tags for better SEO",
             "Improve site navigation and user experience flow",
             "Ensure SSL certificate and security best practices",
-            "Regular content updates and performance monitoring"
+            "Regular content updates and performance monitoring",
         ]
-        
+
         c.setFont("Helvetica", 11)
         for rec in recommendations:
             c.drawString(70, y_pos, f"• {rec}")
             y_pos -= 18
-        
+
         # Footer
         y_pos = 100
         c.setFont("Helvetica", 10)
-        c.drawString(50, y_pos, "This report was generated by Anthrasite Digital's automated audit system.")
-        c.drawString(50, y_pos - 15, "For questions or additional analysis, please contact our support team.")
-        
+        c.drawString(
+            50,
+            y_pos,
+            "This report was generated by Anthrasite Digital's automated audit system.",
+        )
+        c.drawString(
+            50,
+            y_pos - 15,
+            "For questions or additional analysis, please contact our support team.",
+        )
+
         c.save()
-        
+
         logger.info(f"Generated fallback PDF report: {pdf_path}")
         return pdf_path
 
-    def get_payment_status(self, payment_id: str) -> Optional[Dict[str, Any]]:
+    def get_payment_status(self, payment_id: str) -> Optional[dict[str, Any]]:
         """Get payment status by ID."""
         with self.SessionLocal() as db:
             payment = db.query(Payment).filter(Payment.id == payment_id).first()
@@ -787,7 +798,7 @@ class StripePaymentService:
                 }
             return None
 
-    def get_payments_by_email(self, email: str) -> list[Dict[str, Any]]:
+    def get_payments_by_email(self, email: str) -> list[dict[str, Any]]:
         """Get all payments for a customer email."""
         with self.SessionLocal() as db:
             payments = db.query(Payment).filter(Payment.customer_email == email).all()
@@ -807,7 +818,7 @@ class StripePaymentService:
 
     def refund_payment(
         self, payment_id: str, amount: Optional[int] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Refund a payment."""
         with self.SessionLocal() as db:
             payment = db.query(Payment).filter(Payment.id == payment_id).first()

@@ -61,9 +61,6 @@ class TestCapabilitySelectionPerformance:
             f"Average environment detection too slow: {avg_time:.6f}s"
         )
 
-        print("Environment detection performance:")
-        print(f"  Average: {avg_time * 1000:.3f}ms")
-        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
     @patch("leadfactory.config.node_config.is_api_available")
     def test_capability_selection_performance(self, mock_api_available):
@@ -107,11 +104,8 @@ class TestCapabilitySelectionPerformance:
                 f"Average capability selection too slow in {env.value}: {data['avg_time']:.6f}s"
             )
 
-        print("Capability selection performance:")
         for env, data in performance_data.items():
-            print(
-                f"  {env.value}: avg={data['avg_time'] * 1000:.3f}ms, max={data['max_time'] * 1000:.3f}ms"
-            )
+            pass
 
     @patch("leadfactory.config.node_config.is_api_available")
     def test_cost_estimation_performance(self, mock_api_available):
@@ -143,9 +137,6 @@ class TestCapabilitySelectionPerformance:
         assert max_time < 0.005, f"Cost estimation too slow: {max_time:.6f}s"
         assert avg_time < 0.002, f"Average cost estimation too slow: {avg_time:.6f}s"
 
-        print("Cost estimation performance:")
-        print(f"  Average: {avg_time * 1000:.3f}ms")
-        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
 
 class TestDAGTraversalPerformance:
@@ -182,9 +173,6 @@ class TestDAGTraversalPerformance:
         assert max_time < 0.02, f"DAG execution plan too slow: {max_time:.6f}s"
         assert avg_time < 0.01, f"Average DAG execution plan too slow: {avg_time:.6f}s"
 
-        print("DAG execution plan performance:")
-        print(f"  Average: {avg_time * 1000:.3f}ms")
-        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
     @patch("leadfactory.config.node_config.is_api_available")
     def test_dag_topological_sort_performance(self, mock_api_available):
@@ -216,9 +204,6 @@ class TestDAGTraversalPerformance:
             f"Average DAG topological sort too slow: {avg_time:.6f}s"
         )
 
-        print("DAG topological sort performance:")
-        print(f"  Average: {avg_time * 1000:.3f}ms")
-        print(f"  Maximum: {max_time * 1000:.3f}ms")
 
 
 class TestMemoryUsage:
@@ -269,9 +254,6 @@ class TestMemoryUsage:
             f"Excessive memory usage: {object_increase} new objects created"
         )
 
-        print("Memory usage test:")
-        print(f"  Objects created: {object_increase}")
-        print(f"  Configurations cached: {len(capabilities_cache)}")
 
 
 class TestScalabilityBenchmarks:
@@ -307,10 +289,6 @@ class TestScalabilityBenchmarks:
             f"Large scale evaluation too slow: {time_per_evaluation:.6f}s per evaluation"
         )
 
-        print("Large scale capability evaluation:")
-        print(f"  Total operations: {batch_size * len(node_types) * 2}")
-        print(f"  Total time: {total_time:.3f}s")
-        print(f"  Time per evaluation: {time_per_evaluation * 1000:.3f}ms")
 
     @patch("leadfactory.config.node_config.is_api_available")
     def test_concurrent_environment_access(self, mock_api_available):
@@ -359,7 +337,7 @@ class TestScalabilityBenchmarks:
             thread.join()
 
         end_time = time.perf_counter()
-        total_time = end_time - start_time
+        end_time - start_time
 
         # Collect results
         all_times = []
@@ -378,12 +356,6 @@ class TestScalabilityBenchmarks:
             f"Concurrent access maximum too slow: {max_operation_time:.6f}s"
         )
 
-        print("Concurrent environment access:")
-        print(f"  Threads: {thread_count}")
-        print(f"  Operations per thread: {operations_per_thread}")
-        print(f"  Total time: {total_time:.3f}s")
-        print(f"  Average operation time: {avg_operation_time * 1000:.3f}ms")
-        print(f"  Maximum operation time: {max_operation_time * 1000:.3f}ms")
 
 
 if __name__ == "__main__":

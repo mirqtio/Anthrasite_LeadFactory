@@ -205,20 +205,20 @@ class TestAlertManager:
     def test_evaluate_condition(self, alert_manager):
         """Test condition evaluation logic."""
         # Test different condition types
-        assert alert_manager._evaluate_condition(10, "> 5", 5) == True
-        assert alert_manager._evaluate_condition(3, "> 5", 5) == False
+        assert alert_manager._evaluate_condition(10, "> 5", 5)
+        assert not alert_manager._evaluate_condition(3, "> 5", 5)
 
-        assert alert_manager._evaluate_condition(3, "< 5", 5) == True
-        assert alert_manager._evaluate_condition(7, "< 5", 5) == False
+        assert alert_manager._evaluate_condition(3, "< 5", 5)
+        assert not alert_manager._evaluate_condition(7, "< 5", 5)
 
-        assert alert_manager._evaluate_condition(5, "= 5", 5) == True
-        assert alert_manager._evaluate_condition(4, "= 5", 5) == False
+        assert alert_manager._evaluate_condition(5, "= 5", 5)
+        assert not alert_manager._evaluate_condition(4, "= 5", 5)
 
-        assert alert_manager._evaluate_condition(5, ">= 5", 5) == True
-        assert alert_manager._evaluate_condition(4, ">= 5", 5) == False
+        assert alert_manager._evaluate_condition(5, ">= 5", 5)
+        assert not alert_manager._evaluate_condition(4, ">= 5", 5)
 
-        assert alert_manager._evaluate_condition(5, "<= 5", 5) == True
-        assert alert_manager._evaluate_condition(6, "<= 5", 5) == False
+        assert alert_manager._evaluate_condition(5, "<= 5", 5)
+        assert not alert_manager._evaluate_condition(6, "<= 5", 5)
 
     def test_extract_metric_value(self, alert_manager):
         """Test metric value extraction."""
@@ -300,7 +300,7 @@ class TestAlertRule:
         assert rule.name == "test_rule"
         assert rule.severity == AlertSeverity.HIGH
         assert rule.threshold_value == 100
-        assert rule.enabled == True
+        assert rule.enabled
         assert rule.cooldown_minutes == 30
         assert "test" in rule.tags
 
@@ -344,7 +344,7 @@ class TestAlert:
         assert alert.threshold_value == 100
         assert alert.timestamp == timestamp
         assert alert.metadata["test"] == "value"
-        assert alert.resolved == False
+        assert not alert.resolved
         assert alert.resolved_at is None
 
 
@@ -394,7 +394,7 @@ class TestEmailNotificationChannel:
 
         result = channel.send_alert(alert)
 
-        assert result == True
+        assert result
         mock_server.starttls.assert_called_once()
         mock_server.login.assert_called_once_with("test@example.com", "password")
         mock_server.send_message.assert_called_once()
@@ -418,7 +418,7 @@ class TestEmailNotificationChannel:
         )
 
         result = channel.send_alert(alert)
-        assert result == False
+        assert not result
 
 
 class TestSlackNotificationChannel:
@@ -456,7 +456,7 @@ class TestSlackNotificationChannel:
 
         result = channel.send_alert(alert)
 
-        assert result == True
+        assert result
         mock_post.assert_called_once()
 
         # Verify request payload
@@ -480,7 +480,7 @@ class TestSlackNotificationChannel:
         )
 
         result = channel.send_alert(alert)
-        assert result == False
+        assert not result
 
 
 class TestWebhookNotificationChannel:
@@ -512,7 +512,7 @@ class TestWebhookNotificationChannel:
 
         result = channel.send_alert(alert)
 
-        assert result == True
+        assert result
         mock_post.assert_called_once()
 
         # Verify request details

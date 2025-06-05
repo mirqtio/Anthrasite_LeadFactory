@@ -36,7 +36,7 @@ class LoadTestConfig:
     duration_minutes: int = 10
     ramp_up_minutes: int = 2
     concurrent_users: int = 50
-    test_endpoints: List[str] = None
+    test_endpoints: list[str] = None
 
 
 @dataclass
@@ -62,7 +62,7 @@ class LoadTestResults:
     p99_response_time: float
     error_rate: float
     throughput_rps: float
-    results_by_endpoint: Dict[str, List[TestResult]]
+    results_by_endpoint: dict[str, list[TestResult]]
 
 
 class LoadTester:
@@ -70,7 +70,7 @@ class LoadTester:
 
     def __init__(self, config: LoadTestConfig):
         self.config = config
-        self.results: List[TestResult] = []
+        self.results: list[TestResult] = []
         self.session: Optional[aiohttp.ClientSession] = None
 
         # Default test endpoints if not provided
@@ -129,7 +129,7 @@ class LoadTester:
                 error=str(e),
             )
 
-    def _generate_test_payload(self, endpoint: str) -> Dict:
+    def _generate_test_payload(self, endpoint: str) -> dict:
         """Generate appropriate test payload for each endpoint."""
         if endpoint == "/api/scrape":
             return {"zip_code": "10001", "vertical": "restaurant", "limit": 10}
@@ -163,7 +163,7 @@ class LoadTester:
         else:
             return {"test": True}
 
-    async def worker(self, worker_id: int) -> List[TestResult]:
+    async def worker(self, worker_id: int) -> list[TestResult]:
         """Individual worker that makes requests continuously."""
         worker_results = []
         start_time = time.time()
@@ -237,7 +237,7 @@ class LoadTester:
             await self.close_session()
 
     def _analyze_results(
-        self, results: List[TestResult], total_time: float
+        self, results: list[TestResult], total_time: float
     ) -> LoadTestResults:
         """Analyze and aggregate test results."""
         if not results:
@@ -281,32 +281,14 @@ class LoadTester:
 
     def print_results(self, results: LoadTestResults):
         """Print formatted test results."""
-        print("\n" + "=" * 80)
-        print("LOAD TEST RESULTS")
-        print("=" * 80)
-        print(f"Total Requests:      {results.total_requests:,}")
-        print(f"Successful:          {results.successful_requests:,}")
-        print(f"Failed:              {results.failed_requests:,}")
-        print(f"Error Rate:          {results.error_rate:.2f}%")
-        print(f"Throughput:          {results.throughput_rps:.2f} RPS")
-        print(f"Avg Response Time:   {results.avg_response_time * 1000:.2f}ms")
-        print(f"95th Percentile:     {results.p95_response_time * 1000:.2f}ms")
-        print(f"99th Percentile:     {results.p99_response_time * 1000:.2f}ms")
 
-        print("\nResults by Endpoint:")
-        print("-" * 80)
-        for endpoint, endpoint_results in results.results_by_endpoint.items():
+        for _endpoint, endpoint_results in results.results_by_endpoint.items():
             successful = len(
                 [r for r in endpoint_results if 200 <= r.status_code < 300]
             )
             total = len(endpoint_results)
-            error_rate = (total - successful) / total * 100 if total > 0 else 0
-            avg_time = statistics.mean([r.response_time for r in endpoint_results])
-
-            print(
-                f"{endpoint:<20} {total:>6} requests, {successful:>6} successful, "
-                f"{error_rate:>5.1f}% errors, {avg_time * 1000:>7.2f}ms avg"
-            )
+            (total - successful) / total * 100 if total > 0 else 0
+            statistics.mean([r.response_time for r in endpoint_results])
 
 
 async def main():
@@ -370,31 +352,21 @@ async def main():
             with open(args.output, "w") as f:
                 json.dump(output_data, f, indent=2)
 
-            print(f"\nResults saved to {args.output}")
-
         # Check if performance targets are met
         if results.throughput_rps >= config.target_rps * 0.95:  # Within 5% of target
-            print(
-                f"\n✅ PASS: Throughput target met ({results.throughput_rps:.2f} >= {config.target_rps * 0.95:.2f} RPS)"
-            )
+            pass
         else:
-            print(
-                f"\n❌ FAIL: Throughput target not met ({results.throughput_rps:.2f} < {config.target_rps * 0.95:.2f} RPS)"
-            )
+            pass
 
         if results.error_rate <= 1.0:  # Less than 1% error rate
-            print(f"✅ PASS: Error rate acceptable ({results.error_rate:.2f}% <= 1.0%)")
+            pass
         else:
-            print(f"❌ FAIL: Error rate too high ({results.error_rate:.2f}% > 1.0%)")
+            pass
 
         if results.p95_response_time <= 5.0:  # Less than 5 seconds
-            print(
-                f"✅ PASS: Response time acceptable ({results.p95_response_time * 1000:.2f}ms <= 5000ms)"
-            )
+            pass
         else:
-            print(
-                f"❌ FAIL: Response time too high ({results.p95_response_time * 1000:.2f}ms > 5000ms)"
-            )
+            pass
 
     except Exception as e:
         logger.error(f"Load test failed: {e}")

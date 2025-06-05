@@ -5,6 +5,7 @@ This module provides automated database backup functionality with support for mu
 storage backends, encryption, compression, and monitoring integration.
 """
 
+import contextlib
 import gzip
 import os
 import shutil
@@ -59,7 +60,7 @@ class DatabaseBackupService:
             f"Database backup service initialized (backup_dir: {self.backup_dir})"
         )
 
-    def _load_config(self, config_path: Optional[str]) -> Dict:
+    def _load_config(self, config_path: Optional[str]) -> dict:
         """Load backup configuration from file or environment."""
         # Default configuration
         config = {
@@ -98,7 +99,7 @@ class DatabaseBackupService:
         # Load from config file if provided
         if config_path and Path(config_path).exists():
             try:
-                with open(config_path, "r") as f:
+                with open(config_path) as f:
                     file_config = yaml.safe_load(f)
                     config.update(file_config.get("backup", {}))
                 logger.info(f"Loaded configuration from {config_path}")
@@ -107,7 +108,7 @@ class DatabaseBackupService:
 
         return config
 
-    def get_database_connection_info(self) -> Dict[str, str]:
+    def get_database_connection_info(self) -> dict[str, str]:
         """Extract database connection information from DATABASE_URL."""
         database_url = os.environ.get("DATABASE_URL")
         if not database_url:
@@ -132,7 +133,7 @@ class DatabaseBackupService:
         backup_name: Optional[str] = None,
         include_data: bool = True,
         include_schema: bool = True,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """
         Create a database backup.
 
@@ -197,11 +198,11 @@ class DatabaseBackupService:
 
     def _create_postgresql_backup(
         self,
-        db_info: Dict[str, str],
+        db_info: dict[str, str],
         backup_name: str,
         include_data: bool,
         include_schema: bool,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """Create PostgreSQL backup using pg_dump."""
         backup_file = self.backup_dir / f"{backup_name}.sql"
 
@@ -274,7 +275,7 @@ class DatabaseBackupService:
             if "PGPASSWORD" in env:
                 del env["PGPASSWORD"]
 
-    def _post_process_backup(self, backup_result: Dict[str, any]) -> Dict[str, any]:
+    def _post_process_backup(self, backup_result: dict[str, any]) -> dict[str, any]:
         """Post-process backup with compression and encryption."""
         backup_file = Path(backup_result["backup_file"])
         processed_file = backup_file
@@ -311,8 +312,8 @@ class DatabaseBackupService:
         return backup_result
 
     def _upload_to_remote_storage(
-        self, backup_result: Dict[str, any]
-    ) -> Dict[str, any]:
+        self, backup_result: dict[str, any]
+    ) -> dict[str, any]:
         """Upload backup to remote storage."""
         remote_config = self.config["remote_storage"]["config"]
         storage_type = self.config["remote_storage"]["type"]
@@ -326,8 +327,8 @@ class DatabaseBackupService:
             return {"remote_upload": False}
 
     def _upload_via_rsync(
-        self, backup_result: Dict[str, any], config: Dict
-    ) -> Dict[str, any]:
+        self, backup_result: dict[str, any], config: dict
+    ) -> dict[str, any]:
         """Upload backup via rsync."""
         host = config.get("host")
         user = config.get("user")
@@ -378,13 +379,13 @@ class DatabaseBackupService:
             }
 
     def _upload_via_s3(
-        self, backup_result: Dict[str, any], config: Dict
-    ) -> Dict[str, any]:
+        self, backup_result: dict[str, any], config: dict
+    ) -> dict[str, any]:
         """Upload backup via AWS S3 (placeholder for future implementation)."""
         logger.warning("S3 upload is not yet implemented")
         return {"remote_upload": False, "remote_error": "S3 upload not implemented"}
 
-    def _update_metrics(self, backup_result: Dict[str, any], start_time: datetime):
+    def _update_metrics(self, backup_result: dict[str, any], start_time: datetime):
         """Update backup metrics and track costs."""
         duration = (datetime.now() - start_time).total_seconds()
 
@@ -414,7 +415,7 @@ class DatabaseBackupService:
 
             logger.debug(f"Tracked backup cost: ${backup_cost:.4f}")
 
-    def _send_backup_notification(self, backup_result: Dict[str, any], success: bool):
+    def _send_backup_notification(self, backup_result: dict[str, any], success: bool):
         """Send backup notification via configured channels."""
         # This is a placeholder for notification implementation
         # In a real implementation, you would integrate with email and Slack
@@ -459,7 +460,7 @@ class DatabaseBackupService:
                 f"Cleaned up {removed_count} old backups, freed {freed_mb:.2f} MB"
             )
 
-    def list_backups(self) -> List[Dict[str, any]]:
+    def list_backups(self) -> list[dict[str, any]]:
         """List all available backups."""
         backups = []
 
@@ -481,7 +482,7 @@ class DatabaseBackupService:
 
     def restore_backup(
         self, backup_name: str, target_database: Optional[str] = None
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """
         Restore a database from backup.
 
@@ -566,12 +567,10 @@ class DatabaseBackupService:
         finally:
             # Clean up temporary file if created
             if backup_file.suffix == ".gz" and "sql_file" in locals():
-                try:
+                with contextlib.suppress(BaseException):
                     os.unlink(sql_file)
-                except BaseException:
-                    pass
 
-    def get_backup_status(self) -> Dict[str, any]:
+    def get_backup_status(self) -> dict[str, any]:
         """Get current backup service status and metrics."""
         backups = self.list_backups()
 
@@ -595,7 +594,7 @@ class DatabaseBackupService:
 db_backup_service = DatabaseBackupService()
 
 
-def create_nightly_backup() -> Dict[str, any]:
+def create_nightly_backup() -> dict[str, any]:
     """
     Convenience function for creating nightly backups.
 
@@ -605,7 +604,7 @@ def create_nightly_backup() -> Dict[str, any]:
     return db_backup_service.create_backup()
 
 
-def get_backup_service_status() -> Dict[str, any]:
+def get_backup_service_status() -> dict[str, any]:
     """
     Convenience function for getting backup service status.
 

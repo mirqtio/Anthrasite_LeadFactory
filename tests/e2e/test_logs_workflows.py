@@ -185,7 +185,6 @@ class TestLogsWebInterfaceE2E:
                 cursor = conn.cursor()
 
                 # Build query with filters
-                where_conditions = []
                 params = []
 
                 business_id = kwargs.get("business_id")
@@ -531,7 +530,6 @@ class TestLogsWebInterfaceE2E:
 
         # Click export button
         export_button = driver.find_element(By.ID, "export-button")
-        original_window = driver.current_window_handle
 
         # Note: In headless mode, file downloads may not work as expected
         # This test mainly verifies the export button functionality
@@ -700,7 +698,7 @@ class TestLogsWebInterfaceE2E:
         # First verify API is working
         response = requests.get(f"{test_server}/api/logs?limit=5")
         assert response.status_code == 200
-        api_data = response.json()
+        response.json()
 
         # Now test that frontend displays this data
         driver.get(f"{test_server}/logs")
@@ -725,7 +723,6 @@ class TestLogsWebInterfaceE2E:
 
         # Get initial filtered count
         filtered_count_element = driver.find_element(By.ID, "filtered-logs")
-        initial_count = filtered_count_element.text
 
         # Apply a filter
         log_type_select = Select(driver.find_element(By.ID, "log-type-filter"))
@@ -737,7 +734,6 @@ class TestLogsWebInterfaceE2E:
         time.sleep(2)
 
         # Check that filtered count updated
-        new_count = filtered_count_element.text
         # The count might be different when filtered
         assert filtered_count_element.is_displayed()
 
@@ -762,7 +758,7 @@ class TestLogsWebInterfaceE2E:
 
         # 4. Verify filtering worked
         filtered_rows = logs_table.find_elements(By.TAG_NAME, "tr")[1:]
-        filtered_count = len(filtered_rows)
+        len(filtered_rows)
         # Filtered results should be different from initial
 
         # 5. Search for specific content

@@ -2,10 +2,11 @@
 
 import json
 from datetime import datetime, timedelta
-from pytest_bdd import given, when, then, parsers
 
-from leadfactory.utils.e2e_db_connector import db_connection, execute_query
+from pytest_bdd import given, parsers, then, when
+
 from leadfactory.pipeline.scrape import save_business
+from leadfactory.utils.e2e_db_connector import db_connection, execute_query
 
 
 @given("the JSON retention policy is set to 90 days")
@@ -21,7 +22,7 @@ def save_business_with_yelp_json(test_data):
     business_id = save_business(
         name="Yelp JSON Test Business",
         address="123 Yelp St",
-        city="San Francisco", 
+        city="San Francisco",
         state="CA",
         zip_code="94105",
         category="Restaurant",
@@ -38,7 +39,7 @@ def save_business_with_google_json(test_data):
         name="Google JSON Test Business",
         address="456 Google Ave",
         city="Mountain View",
-        state="CA", 
+        state="CA",
         zip_code="94043",
         category="Restaurant",
         source="google",
@@ -71,7 +72,7 @@ def check_retention_date_value(test_data):
             )
             retention_date = result[0]["json_retention_expires_at"]
             expected_date = datetime.now() + timedelta(days=90)
-            
+
             # Allow 1 hour tolerance
             diff_seconds = abs((retention_date - expected_date).total_seconds())
             assert diff_seconds < 3600
@@ -81,23 +82,23 @@ def check_retention_date_value(test_data):
 def create_businesses_with_json(table, test_data):
     """Create businesses with specified JSON data."""
     test_data["test_businesses"] = []
-    
+
     for row in table:
         # Parse table row
         name = row.get("name", "Test Business")
         json_type = row.get("json_type", "both")
         days_old = int(row.get("days_old", 0))
-        
+
         # Create appropriate JSON data
         yelp_json = None
         google_json = None
-        
+
         if json_type in ["yelp", "both"]:
             yelp_json = {"id": f"yelp-{name}", "name": name}
-        
+
         if json_type in ["google", "both"]:
             google_json = {"place_id": f"ChIJ{name}", "name": name}
-        
+
         # Save business
         business_id = save_business(
             name=name,
@@ -110,21 +111,21 @@ def create_businesses_with_json(table, test_data):
             yelp_response_json=yelp_json,
             google_response_json=google_json
         )
-        
+
         # Update retention date if needed
         if days_old > 90:
             with db_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     f"""
-                    UPDATE businesses 
+                    UPDATE businesses
                     SET json_retention_expires_at = CURRENT_TIMESTAMP - INTERVAL '{days_old - 90} days'
                     WHERE id = %s
                     """,
                     (business_id,)
                 )
                 conn.commit()
-        
+
         test_data["test_businesses"].append({
             "id": business_id,
             "name": name,
@@ -141,7 +142,7 @@ def check_expired_json(test_data):
         WHERE json_retention_expires_at < CURRENT_TIMESTAMP
         AND (yelp_response_json IS NOT NULL OR google_response_json IS NOT NULL)
     """)
-    
+
     test_data["expired_businesses"] = result
 
 
@@ -185,7 +186,7 @@ def expire_json_retention(test_data):
         cursor = conn.cursor()
         cursor.execute(
             """
-            UPDATE businesses 
+            UPDATE businesses
             SET json_retention_expires_at = CURRENT_TIMESTAMP - INTERVAL '1 day'
             WHERE id = %s
             """,
@@ -212,7 +213,7 @@ def verify_no_json(name):
         """,
         (name,)
     )
-    
+
     assert len(result) == 1
     assert result[0]["yelp_response_json"] is None
     assert result[0]["google_response_json"] is None
@@ -229,10 +230,10 @@ def verify_other_fields_intact(test_data):
         """,
         (test_data["complete_business_id"],)
     )
-    
+
     assert len(result) == 1
     business = result[0]
-    
+
     # Verify all fields are still populated
     assert business["name"] is not None
     assert business["address"] is not None
@@ -248,7 +249,7 @@ def verify_other_fields_intact(test_data):
 def create_expired_businesses(count, test_data):
     """Create multiple businesses with expired JSON."""
     test_data["expired_ids"] = []
-    
+
     for i in range(count):
         business_id = save_business(
             name=f"Expired Business {i}",
@@ -260,20 +261,20 @@ def create_expired_businesses(count, test_data):
             source="test",
             yelp_response_json={"id": f"expired-{i}"}
         )
-        
+
         # Set to expired
         with db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 """
-                UPDATE businesses 
+                UPDATE businesses
                 SET json_retention_expires_at = CURRENT_TIMESTAMP - INTERVAL '1 day'
                 WHERE id = %s
                 """,
                 (business_id,)
             )
             conn.commit()
-        
+
         test_data["expired_ids"].append(business_id)
 
 
@@ -302,7 +303,7 @@ def verify_no_removal(test_data):
         """,
         (test_data["expired_ids"],)
     )
-    
+
     assert result[0]["count"] == len(test_data["expired_ids"])
 
 
@@ -310,18 +311,18 @@ def verify_no_removal(test_data):
 def cleanup_test_businesses(test_data):
     """Clean up test businesses after scenarios."""
     ids_to_delete = []
-    
+
     # Collect all test business IDs
     for key in ["yelp_business_id", "google_business_id", "complete_business_id"]:
         if key in test_data:
             ids_to_delete.append(test_data[key])
-    
+
     if "test_businesses" in test_data:
         ids_to_delete.extend([b["id"] for b in test_data["test_businesses"]])
-    
+
     if "expired_ids" in test_data:
         ids_to_delete.extend(test_data["expired_ids"])
-    
+
     # Delete test data
     if ids_to_delete:
         with db_connection() as conn:

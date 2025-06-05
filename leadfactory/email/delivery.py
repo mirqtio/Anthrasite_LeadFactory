@@ -56,7 +56,7 @@ class EmailEvent(BaseModel):
     user_agent: Optional[str] = Field(None, description="User agent")
     ip_address: Optional[str] = Field(None, description="IP address")
     url: Optional[str] = Field(None, description="Clicked URL")
-    metadata: Dict = Field(default_factory=dict, description="Additional event data")
+    metadata: dict = Field(default_factory=dict, description="Additional event data")
 
 
 class EmailDeliveryRecord(BaseModel):
@@ -77,7 +77,7 @@ class EmailDeliveryRecord(BaseModel):
     bounce_reason: Optional[str] = Field(
         None, description="Bounce reason if applicable"
     )
-    metadata: Dict = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict = Field(default_factory=dict, description="Additional metadata")
     retry_count: int = Field(default=0, description="Number of retry attempts")
     max_retries: int = Field(default=3, description="Maximum retry attempts")
 
@@ -96,7 +96,7 @@ class EmailDeliveryService:
         template: EmailTemplate,
         personalization: EmailPersonalization,
         email_id: Optional[str] = None,
-        metadata: Optional[Dict] = None,
+        metadata: Optional[dict] = None,
     ) -> str:
         """
         Send an email using the configured template and personalization.
@@ -162,35 +162,36 @@ class EmailDeliveryService:
         to_email: str,
         subject: str,
         content: str,
-        attachments: Optional[List[Dict]] = None,
+        attachments: Optional[list[dict]] = None,
         email_id: Optional[str] = None,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """
         Send a simple email with optional attachments.
-        
+
         Args:
             to_email: Recipient email address
             subject: Email subject
             content: Email body content (plain text)
             attachments: List of attachment dicts with 'content', 'filename', 'content_type'
             email_id: Optional custom email ID
-            
+
         Returns:
             Dict with success status and message ID
         """
         email_id = email_id or str(uuid4())
-        
+
         try:
             # Create basic email
             from_email = Email("reports@anthrasite.com", "Anthrasite Reports")
             to = Email(to_email)
             content_obj = Content("text/plain", content)
-            
+
             mail = Mail(from_email, to, subject, content_obj)
-            
+
             # Add attachments if provided
             if attachments:
                 import base64
+
                 for attachment_data in attachments:
                     attachment = Attachment()
                     # Encode content as base64 if it's bytes
@@ -200,29 +201,31 @@ class EmailDeliveryService:
                     else:
                         attachment.content = content
                     attachment.filename = attachment_data["filename"]
-                    attachment.type = attachment_data.get("content_type", "application/pdf")
+                    attachment.type = attachment_data.get(
+                        "content_type", "application/pdf"
+                    )
                     attachment.disposition = "attachment"
                     mail.add_attachment(attachment)
-            
+
             # Configure tracking
             tracking = TrackingSettings()
             tracking.click_tracking = ClickTracking(True, True)
             tracking.open_tracking = OpenTracking(True)
             tracking.subscription_tracking = SubscriptionTracking(False)
             mail.tracking_settings = tracking
-            
+
             # Send email
             response = self.client.send(mail)
-            
+
             logger.info(f"Email sent successfully to {to_email}, ID: {email_id}")
-            
+
             return {
                 "success": True,
                 "message_id": email_id,
                 "email_id": email_id,
                 "status_code": response.status_code,
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}: {e}")
             return {
@@ -324,7 +327,7 @@ class EmailDeliveryService:
         except Exception as e:
             logger.error(f"Failed to store delivery record: {str(e)}")
 
-    async def handle_webhook_event(self, event_data: Dict) -> None:
+    async def handle_webhook_event(self, event_data: dict) -> None:
         """
         Handle SendGrid webhook events for tracking.
 
@@ -427,7 +430,7 @@ class EmailDeliveryService:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         template_name: Optional[str] = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Get email delivery statistics.
 

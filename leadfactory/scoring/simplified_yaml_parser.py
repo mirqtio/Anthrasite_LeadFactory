@@ -39,10 +39,10 @@ class SimpleCondition(BaseModel):
     """Simplified condition model for easier rule definition."""
 
     # Technology conditions
-    technology: Optional[Union[str, List[str]]] = None
+    technology: Optional[Union[str, list[str]]] = None
     version: Optional[str] = None  # e.g., "<3.0.0", ">2.5", ">=1.0"
-    missing_any: Optional[List[str]] = None
-    has_any: Optional[List[str]] = None
+    missing_any: Optional[list[str]] = None
+    has_any: Optional[list[str]] = None
 
     # Performance conditions
     performance_score: Optional[str] = None  # e.g., "<50", ">80"
@@ -51,14 +51,14 @@ class SimpleCondition(BaseModel):
     fid: Optional[str] = None  # First Input Delay, e.g., ">100ms"
 
     # Business conditions
-    business_type: Optional[Union[str, List[str]]] = None
-    location: Optional[Union[str, List[str]]] = None
-    indicators: Optional[List[str]] = None
+    business_type: Optional[Union[str, list[str]]] = None
+    location: Optional[Union[str, list[str]]] = None
+    indicators: Optional[list[str]] = None
 
     # Composite conditions
-    all: Optional[List[Dict[str, Any]]] = None
-    any: Optional[List[Dict[str, Any]]] = None
-    none: Optional[List[Dict[str, Any]]] = None
+    all: Optional[list[dict[str, Any]]] = None
+    any: Optional[list[dict[str, Any]]] = None
+    none: Optional[list[dict[str, Any]]] = None
 
 
 class AuditRule(BaseModel):
@@ -97,10 +97,10 @@ class SimplifiedScoringConfig(BaseModel):
     """Complete configuration for simplified scoring rules."""
 
     settings: AuditSettings
-    templates: Optional[Dict[str, RuleTemplate]] = {}
-    audit_opportunities: List[AuditRule] = []
-    exclusions: Optional[List[AuditRule]] = []
-    audit_multipliers: Optional[List[AuditMultiplier]] = []
+    templates: Optional[dict[str, RuleTemplate]] = {}
+    audit_opportunities: list[AuditRule] = []
+    exclusions: Optional[list[AuditRule]] = []
+    audit_multipliers: Optional[list[AuditMultiplier]] = []
 
 
 class SimplifiedYamlParser:
@@ -185,7 +185,7 @@ class SimplifiedYamlParser:
                     if rule.audit_category is None:
                         rule.audit_category = template.audit_category
 
-    def get_audit_opportunities(self) -> List[AuditRule]:
+    def get_audit_opportunities(self) -> list[AuditRule]:
         """Get all enabled audit opportunity rules."""
         if not self.config:
             raise RuntimeError(
@@ -208,7 +208,7 @@ class SimplifiedYamlParser:
 
         return enabled_rules
 
-    def get_exclusions(self) -> List[AuditRule]:
+    def get_exclusions(self) -> list[AuditRule]:
         """Get all enabled exclusion rules."""
         if not self.config:
             raise RuntimeError(
@@ -217,7 +217,7 @@ class SimplifiedYamlParser:
 
         return [rule for rule in (self.config.exclusions or []) if rule.enabled]
 
-    def get_audit_multipliers(self) -> List[AuditMultiplier]:
+    def get_audit_multipliers(self) -> list[AuditMultiplier]:
         """Get all enabled audit multipliers."""
         if not self.config:
             raise RuntimeError(
@@ -235,7 +235,7 @@ class SimplifiedYamlParser:
 
         return self.config.settings
 
-    def convert_to_legacy_format(self) -> Dict[str, Any]:
+    def convert_to_legacy_format(self) -> dict[str, Any]:
         """Convert simplified format to legacy format for backward compatibility."""
         if not self.config:
             raise RuntimeError(
@@ -273,7 +273,7 @@ class SimplifiedYamlParser:
 
         return legacy_config
 
-    def _convert_rule_to_legacy(self, rule: AuditRule) -> Optional[Dict[str, Any]]:
+    def _convert_rule_to_legacy(self, rule: AuditRule) -> Optional[dict[str, Any]]:
         """Convert a simplified rule to legacy format."""
         try:
             legacy_rule = {
@@ -289,7 +289,7 @@ class SimplifiedYamlParser:
 
     def _convert_condition_to_legacy(
         self, condition: SimpleCondition
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Convert simplified condition to legacy condition format."""
         legacy_condition = {}
 
@@ -340,7 +340,7 @@ class SimplifiedYamlParser:
 
     def _convert_multiplier_to_legacy(
         self, mult: AuditMultiplier
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Convert simplified multiplier to legacy format."""
         try:
             legacy_mult = {
@@ -356,7 +356,7 @@ class SimplifiedYamlParser:
             )
             return None
 
-    def _parse_comparison(self, comparison: str) -> Dict[str, Any]:
+    def _parse_comparison(self, comparison: str) -> dict[str, Any]:
         """Parse comparison strings like '<50', '>2.5s', '>=1.0'."""
         comparison = comparison.strip()
 

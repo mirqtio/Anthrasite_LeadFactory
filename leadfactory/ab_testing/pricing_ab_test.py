@@ -42,7 +42,7 @@ class PriceVariant:
     original_price: Optional[int] = None  # Original price before discount
     display_format: Optional[str] = None  # How to display the price
     payment_terms: Optional[str] = None  # Payment terms description
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[dict[str, Any]] = None
 
 
 class PricingABTest:
@@ -62,9 +62,9 @@ class PricingABTest:
         name: str,
         description: str,
         audit_type: str,
-        price_variants: List[Dict[str, Any]],
+        price_variants: list[dict[str, Any]],
         target_sample_size: int = 1000,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Create a price point A/B test.
 
@@ -142,9 +142,9 @@ class PricingABTest:
         description: str,
         audit_type: str,
         base_price: int,
-        discount_variants: List[Dict[str, Any]],
+        discount_variants: list[dict[str, Any]],
         target_sample_size: int = 1000,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Create a discount offer A/B test.
 
@@ -218,9 +218,9 @@ class PricingABTest:
         self,
         name: str,
         description: str,
-        bundle_variants: List[Dict[str, Any]],
+        bundle_variants: list[dict[str, Any]],
         target_sample_size: int = 1000,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """Create a bundle pricing A/B test.
 
@@ -275,7 +275,7 @@ class PricingABTest:
 
     def get_price_for_user(
         self, user_id: str, audit_type: str, test_id: Optional[str] = None
-    ) -> Tuple[str, Dict[str, Any]]:
+    ) -> tuple[str, dict[str, Any]]:
         """Get the pricing variant assigned to a user.
 
         Args:
@@ -330,7 +330,7 @@ class PricingABTest:
         self.logger.debug(f"Assigned user {user_id} to pricing variant {variant_id}")
         return variant_id, variant_config
 
-    def format_price_display(self, pricing_config: Dict[str, Any]) -> Dict[str, str]:
+    def format_price_display(self, pricing_config: dict[str, Any]) -> dict[str, str]:
         """Format price for display based on variant configuration.
 
         Args:
@@ -388,7 +388,7 @@ class PricingABTest:
         user_id: str,
         event_type: str,
         conversion_value: Optional[float] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ):
         """Record a pricing-related event for A/B testing.
 
@@ -411,7 +411,7 @@ class PricingABTest:
             f"Recorded pricing event {event_type} for user {user_id} in test {test_id}"
         )
 
-    def get_pricing_test_performance(self, test_id: str) -> Dict[str, Any]:
+    def get_pricing_test_performance(self, test_id: str) -> dict[str, Any]:
         """Get detailed performance metrics for a pricing A/B test.
 
         Args:
@@ -488,7 +488,7 @@ class PricingABTest:
 
     def get_winning_price(
         self, test_id: str, confidence_threshold: float = 0.95
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Determine the winning price variant based on statistical significance.
 
         Args:

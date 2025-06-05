@@ -6,6 +6,7 @@ for the scalable pipeline architecture.
 """
 
 import asyncio
+import contextlib
 import json
 import logging
 from dataclasses import asdict, dataclass
@@ -25,7 +26,7 @@ class PipelineStage:
 
     name: str
     service_name: str
-    dependencies: List[str]
+    dependencies: list[str]
     timeout_seconds: int = 300
     retry_attempts: int = 3
     required: bool = True
@@ -37,7 +38,7 @@ class WorkflowDefinition:
 
     name: str
     version: str
-    stages: List[PipelineStage]
+    stages: list[PipelineStage]
     global_timeout_seconds: int = 3600
     parallel_execution: bool = False
 
@@ -118,9 +119,9 @@ class PipelineOrchestrator:
     async def execute_workflow(
         self,
         workflow_name: str = "default",
-        input_data: Dict[str, Any] = None,
+        input_data: dict[str, Any] = None,
         execution_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute a complete pipeline workflow.
 
@@ -179,8 +180,8 @@ class PipelineOrchestrator:
             asyncio.create_task(self._cleanup_execution(execution_id, delay=3600))
 
     async def _execute_stages_sequential(
-        self, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, context: dict[str, Any]
+    ) -> dict[str, Any]:
         """Execute workflow stages sequentially."""
         workflow = context["workflow"]
         results = {}
@@ -223,9 +224,9 @@ class PipelineOrchestrator:
     async def _execute_stage(
         self,
         stage: PipelineStage,
-        context: Dict[str, Any],
-        previous_results: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        context: dict[str, Any],
+        previous_results: dict[str, Any],
+    ) -> dict[str, Any]:
         """Execute a single pipeline stage."""
         service_info = self.registry.get_service(stage.service_name)
         if not service_info:
@@ -282,15 +283,15 @@ class PipelineOrchestrator:
             del self.active_executions[execution_id]
             logger.debug(f"Cleaned up execution {execution_id}")
 
-    def get_execution_status(self, execution_id: str) -> Optional[Dict[str, Any]]:
+    def get_execution_status(self, execution_id: str) -> Optional[dict[str, Any]]:
         """Get the status of a workflow execution."""
         return self.active_executions.get(execution_id)
 
-    def list_active_executions(self) -> List[str]:
+    def list_active_executions(self) -> list[str]:
         """List all active workflow executions."""
         return list(self.active_executions.keys())
 
-    async def health_check_services(self) -> Dict[str, Dict[str, Any]]:
+    async def health_check_services(self) -> dict[str, dict[str, Any]]:
         """Check health of all registered services."""
         health_status = {}
 
@@ -337,8 +338,8 @@ async def main():
     orchestrator.registry.register_service("email", "localhost", 8006)
 
     # Execute workflow
-    try:
-        result = await orchestrator.execute_workflow(
+    with contextlib.suppress(Exception):
+        await orchestrator.execute_workflow(
             "default",
             {
                 "zip_codes": ["10002", "98908"],
@@ -346,12 +347,6 @@ async def main():
                 "tier_level": 2,
             },
         )
-
-        print("Workflow completed successfully:")
-        print(json.dumps(result, indent=2, default=str))
-
-    except Exception as e:
-        print(f"Workflow failed: {e}")
 
 
 if __name__ == "__main__":

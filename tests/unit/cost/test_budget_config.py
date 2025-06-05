@@ -134,7 +134,7 @@ class TestBudgetConfiguration:
 
     def test_database_initialization(self):
         """Test database table creation."""
-        config = BudgetConfiguration(db_path=self.db_path)
+        BudgetConfiguration(db_path=self.db_path)
 
         # Check that tables were created
         with sqlite3.connect(self.db_path) as conn:

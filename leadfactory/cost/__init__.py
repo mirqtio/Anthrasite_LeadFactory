@@ -27,11 +27,11 @@ from leadfactory.cost.cost_tracking import cost_tracker, track_cost
 
 # Import per-service cost caps
 from leadfactory.cost.per_service_cost_caps import (
+    ServiceStatus,
     can_execute_service_operation,
     get_cost_caps_summary,
     get_service_cost_status,
     per_service_cost_caps,
-    ServiceStatus,
 )
 from leadfactory.cost.service_cost_decorators import (
     ServiceCostCapExceeded,

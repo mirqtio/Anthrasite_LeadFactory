@@ -438,7 +438,7 @@ class TestBounceMonitorIntegration:
 
         # Test threshold checking performance
         start_time = time.time()
-        violations = monitor.check_thresholds()
+        monitor.check_thresholds()
         threshold_check_time = time.time() - start_time
 
         assert threshold_check_time < 1.0

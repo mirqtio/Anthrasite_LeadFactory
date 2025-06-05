@@ -37,15 +37,6 @@ class TestGPUPipelineIntegration:
     async def test_gpu_queue_integration(self, unified_node, mock_storage):
         """Test integration between unified node and GPU queue."""
         # Mock business data that requires GPU processing
-        business_data = {
-            "id": 123,
-            "name": "Tech Startup Inc",
-            "website": "https://techstartup.com",
-            "description": "A cutting-edge technology company",
-            "contact_email": "contact@techstartup.com",
-            "industry": "technology",
-            "screenshot_url": "https://example.com/screenshot.png",
-        }
 
         # Mock storage responses
         mock_storage.execute_query.return_value = [{"id": 1}]  # Queue task ID
@@ -209,7 +200,7 @@ class TestGPUAlertIntegration:
     def test_alert_cooldown_integration(self):
         """Test alert cooldown prevents spam."""
         # Send first alert
-        alert = {
+        {
             "type": "budget_warning",
             "severity": "warning",
             "message": "Test alert",
@@ -277,11 +268,11 @@ class TestGPUSecurityIntegration:
         from leadfactory.services.gpu_security import rate_limiter
 
         # First few provisions should be allowed
-        for i in range(5):
+        for _i in range(5):
             assert rate_limiter.check_rate_limit("instance_provision")
 
         # Should eventually hit rate limit
-        for i in range(10):
+        for _i in range(10):
             rate_limiter.check_rate_limit("instance_provision")
 
         # Should be blocked after hitting limit
@@ -334,7 +325,7 @@ class TestGPUMetricsIntegration:
             }
 
             # Start instance
-            instance_id = await gpu_manager.start_gpu_instance(
+            await gpu_manager.start_gpu_instance(
                 GPUInstanceType.HETZNER_GTX1080
             )
 

@@ -1,14 +1,15 @@
 """Test parsing and storing city/state for businesses."""
 
 import json
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-
-import sys
 import os
+import sys
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from bin.scrape import process_yelp_business, process_google_place
+from bin.scrape import process_google_place, process_yelp_business
 
 
 class TestParseCityState:
@@ -17,7 +18,7 @@ class TestParseCityState:
     @pytest.fixture
     def mock_save_business(self):
         """Mock save_business function."""
-        with patch('bin.scrape.save_business') as mock:
+        with patch("bin.scrape.save_business") as mock:
             mock.return_value = 123
             yield mock
 
@@ -91,14 +92,14 @@ class TestParseCityState:
         """Test that process_yelp_business correctly extracts city and state."""
         # Process the business
         result = process_yelp_business(yelp_business_data, "Restaurant")
-        
+
         # Should return the business ID
         assert result == 123
-        
+
         # Check that save_business was called with correct parameters
         mock_save_business.assert_called_once()
         call_args = mock_save_business.call_args[1]
-        
+
         # Verify city and state were extracted
         assert call_args["name"] == "Test Business LLC"
         assert call_args["address"] == "123 Main Street, Suite 100"
@@ -120,34 +121,34 @@ class TestParseCityState:
                 "zip_code": "90001"
             }
         }
-        
+
         result = process_yelp_business(business_data, "Service")
-        
+
         assert result == 123
         call_args = mock_save_business.call_args[1]
         assert call_args["address"] == "789 Oak Ave"  # No Suite/address2
         assert call_args["city"] == "Los Angeles"
         assert call_args["state"] == "CA"
 
-    @patch('bin.scrape.GooglePlacesAPI')
+    @patch("bin.scrape.GooglePlacesAPI")
     def test_process_google_place_extracts_city_state(self, mock_google_api_class, mock_save_business, google_place_data):
         """Test that process_google_place correctly extracts city and state from components."""
         # Mock the API
         mock_api = Mock()
         mock_api.get_place_details.return_value = (google_place_data, None)
         mock_google_api_class.return_value = mock_api
-        
+
         # Process the place
         place = {"place_id": "ChIJtest123", "name": "Google Test Business"}
         result = process_google_place(place, "Restaurant", mock_api)
-        
+
         # Should return the business ID
         assert result == 123
-        
+
         # Check that save_business was called with correct parameters
         mock_save_business.assert_called_once()
         call_args = mock_save_business.call_args[1]
-        
+
         # Verify city and state were extracted from address components
         assert call_args["name"] == "Google Test Business"
         assert call_args["address"] == "456 Market Street"
@@ -157,7 +158,7 @@ class TestParseCityState:
         assert call_args["source"] == "google"
         assert call_args["source_id"] == "ChIJtest123"
 
-    @patch('bin.scrape.GooglePlacesAPI')
+    @patch("bin.scrape.GooglePlacesAPI")
     def test_process_google_place_fallback_to_formatted_address(self, mock_google_api_class, mock_save_business):
         """Test fallback when address components are missing."""
         # Mock place data without address components
@@ -167,17 +168,17 @@ class TestParseCityState:
             "formatted_address": "1000 Broadway, New York, NY 10001, USA",
             "address_components": []  # Empty components
         }
-        
+
         mock_api = Mock()
         mock_api.get_place_details.return_value = (place_data, None)
         mock_google_api_class.return_value = mock_api
-        
+
         place = {"place_id": "ChIJtest789"}
         result = process_google_place(place, "Store", mock_api)
-        
+
         assert result == 123
         call_args = mock_save_business.call_args[1]
-        
+
         # Should use formatted address as fallback
         assert call_args["address"] == "1000 Broadway, New York, NY 10001, USA"
         assert call_args["city"] == ""  # Not extracted
@@ -193,9 +194,9 @@ class TestParseCityState:
                 # Missing city, state, zip
             }
         }
-        
+
         result = process_yelp_business(business_data, "Unknown")
-        
+
         assert result == 123
         call_args = mock_save_business.call_args[1]
         assert call_args["address"] == "Unknown Street"
@@ -203,15 +204,15 @@ class TestParseCityState:
         assert call_args["state"] == ""
         assert call_args["zip_code"] == ""
 
-    @patch('bin.scrape.extract_email_from_website')
+    @patch("bin.scrape.extract_email_from_website")
     def test_city_state_preserved_through_pipeline(self, mock_extract_email, mock_save_business, yelp_business_data):
         """Test that city/state data flows through the entire processing pipeline."""
         mock_extract_email.return_value = "info@testbusiness.com"
-        
+
         result = process_yelp_business(yelp_business_data, "Restaurant")
-        
+
         assert result == 123
-        
+
         # Verify complete data preservation
         call_args = mock_save_business.call_args[1]
         assert call_args["city"] == "San Francisco"

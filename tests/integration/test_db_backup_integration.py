@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from leadfactory.services.db_backup_service import DatabaseBackupService, BackupError
+from leadfactory.services.db_backup_service import BackupError, DatabaseBackupService
 
 
 class TestDatabaseBackupIntegration:
@@ -37,7 +37,7 @@ class TestDatabaseBackupIntegration:
             }
         }
 
-        with patch.object(DatabaseBackupService, '_load_config', return_value=config):
+        with patch.object(DatabaseBackupService, "_load_config", return_value=config):
             service = DatabaseBackupService()
             return service
 
@@ -48,7 +48,7 @@ class TestDatabaseBackupIntegration:
             "DATABASE_URL": "postgresql://test:test@localhost:5432/test_db"
         }):
             # Mock pg_dump subprocess call
-            with patch('subprocess.run') as mock_subprocess:
+            with patch("subprocess.run") as mock_subprocess:
                 mock_subprocess.return_value.returncode = 0
                 mock_subprocess.return_value.stderr = ""
 
@@ -56,20 +56,20 @@ class TestDatabaseBackupIntegration:
                 backup_file = backup_service.backup_dir / "test_backup.sql"
                 backup_file.write_text("-- Test backup content\nSELECT 1;")
 
-                with patch('pathlib.Path.exists', return_value=True):
-                    with patch('pathlib.Path.stat') as mock_stat:
+                with patch("pathlib.Path.exists", return_value=True):
+                    with patch("pathlib.Path.stat") as mock_stat:
                         mock_stat.return_value.st_size = len("-- Test backup content\nSELECT 1;")
 
                         # Mock gzip compression
-                        with patch('gzip.open'):
-                            with patch('shutil.copyfileobj'):
+                        with patch("gzip.open"):
+                            with patch("shutil.copyfileobj"):
                                 # Mock compressed file
                                 compressed_file = backup_service.backup_dir / "test_backup.sql.gz"
                                 compressed_file.write_bytes(b"compressed content")
 
-                                with patch('pathlib.Path.unlink'):  # Mock removing original file
+                                with patch("pathlib.Path.unlink"):  # Mock removing original file
                                     # Mock cleanup to avoid directory issues
-                                    with patch.object(backup_service, '_cleanup_old_backups'):
+                                    with patch.object(backup_service, "_cleanup_old_backups"):
                                         result = backup_service.create_backup("test_backup")
 
                                     assert result["backup_name"] == "test_backup"
@@ -85,9 +85,9 @@ class TestDatabaseBackupIntegration:
         with patch.dict(os.environ, {
             "DATABASE_URL": "postgresql://test:test@localhost:5432/test_db"
         }):
-            with patch('leadfactory.services.db_backup_service.cost_tracker') as mock_tracker:
+            with patch("leadfactory.services.db_backup_service.cost_tracker") as mock_tracker:
                 # Mock successful backup creation
-                with patch.object(backup_service, '_create_postgresql_backup') as mock_create:
+                with patch.object(backup_service, "_create_postgresql_backup") as mock_create:
                     mock_create.return_value = {
                         "backup_name": "cost_test",
                         "backup_file": "/tmp/test.sql",
@@ -100,10 +100,10 @@ class TestDatabaseBackupIntegration:
                         "encrypted": False,
                     }
 
-                    with patch.object(backup_service, '_post_process_backup') as mock_process:
+                    with patch.object(backup_service, "_post_process_backup") as mock_process:
                         mock_process.return_value = mock_create.return_value
 
-                        result = backup_service.create_backup("cost_test")
+                        backup_service.create_backup("cost_test")
 
                         # Verify cost was tracked
                         mock_tracker.add_cost.assert_called_once()
@@ -205,7 +205,7 @@ class TestDatabaseBackupIntegration:
             "DATABASE_URL": "postgresql://test:test@nonexistent:5432/test_db"
         }):
             # Mock pg_dump failure
-            with patch('subprocess.run') as mock_subprocess:
+            with patch("subprocess.run") as mock_subprocess:
                 mock_subprocess.side_effect = subprocess.CalledProcessError(
                     1, "pg_dump", stderr="Connection refused"
                 )
@@ -222,7 +222,7 @@ class TestDatabaseBackupIntegration:
                 # Verify successful backups counter wasn't incremented
                 assert backup_service.metrics["backups_completed"] == 0
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_restore_integration(self, mock_subprocess, backup_service):
         """Test backup restore functionality integration."""
         # Create a test backup file
@@ -231,7 +231,7 @@ class TestDatabaseBackupIntegration:
         # Mock compressed backup content
         import gzip
         test_sql = "CREATE TABLE test (id INTEGER); INSERT INTO test VALUES (1);"
-        with gzip.open(backup_file, 'wt') as f:
+        with gzip.open(backup_file, "wt") as f:
             f.write(test_sql)
 
         # Mock successful psql execution
@@ -294,7 +294,6 @@ backup:
 
 # Import required modules for mocking
 import subprocess
-
 
 if __name__ == "__main__":
     pytest.main([__file__])

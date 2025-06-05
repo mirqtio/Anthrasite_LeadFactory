@@ -83,8 +83,8 @@ class EmailTemplateEngine:
         self,
         template_name: str,
         personalization: EmailPersonalization,
-        cta_buttons: Optional[List[CTAButton]] = None,
-        additional_context: Optional[Dict] = None,
+        cta_buttons: Optional[list[CTAButton]] = None,
+        additional_context: Optional[dict] = None,
     ) -> EmailTemplate:
         """
         Render an email template with personalization data.
@@ -135,7 +135,7 @@ class EmailTemplateEngine:
         except Exception as e:
             raise ValueError(f"Failed to render template {template_name}: {str(e)}")
 
-    def _extract_subject(self, template_name: str, context: Dict) -> str:
+    def _extract_subject(self, template_name: str, context: dict) -> str:
         """Extract subject line from template or generate default."""
         try:
             subject_template = self.env.get_template(f"{template_name}_subject.txt")

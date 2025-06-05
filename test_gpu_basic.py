@@ -19,18 +19,12 @@ def test_gpu_manager_imports():
             GPUInstance,
             GPUInstanceType,
             GPUResourceConfig,
+            HetznerAPIClient,
             QueueMetrics,
         )
 
-        print("✓ GPU manager dataclasses import successfully")
-
-        from leadfactory.services.gpu_manager import HetznerAPIClient
-
-        print("✓ Hetzner API client imports successfully")
-
         return True
-    except ImportError as e:
-        print(f"✗ GPU manager import failed: {e}")
+    except ImportError:
         return False
 
 
@@ -43,10 +37,8 @@ def test_gpu_security_imports():
             SecurityConfig,
         )
 
-        print("✓ GPU security components import successfully")
         return True
-    except ImportError as e:
-        print(f"✗ GPU security import failed: {e}")
+    except ImportError:
         return False
 
 
@@ -55,10 +47,8 @@ def test_gpu_alerting_imports():
     try:
         from leadfactory.services.gpu_alerting import GPUAlertManager
 
-        print("✓ GPU alerting imports successfully")
         return True
-    except ImportError as e:
-        print(f"✗ GPU alerting import failed: {e}")
+    except ImportError:
         return False
 
 
@@ -69,7 +59,6 @@ def test_basic_functionality():
 
         # Test enum
         assert GPUInstanceType.HETZNER_GTX1080.value == "hetzner.gtx1080"
-        print("✓ GPU instance types work correctly")
 
         # Test resource config
         config = GPUResourceConfig(
@@ -81,11 +70,9 @@ def test_basic_functionality():
             cuda_cores=2560,
         )
         assert config.cost_per_hour == 0.35
-        print("✓ GPU resource config works correctly")
 
         return True
-    except Exception as e:
-        print(f"✗ Basic functionality test failed: {e}")
+    except Exception:
         return False
 
 
@@ -103,11 +90,9 @@ def test_security_functionality():
 
         retrieved = cred_manager.get_credential("test", "token")
         assert retrieved == "test123"
-        print("✓ Credential manager works correctly")
 
         return True
-    except Exception as e:
-        print(f"✗ Security functionality test failed: {e}")
+    except Exception:
         return False
 
 
@@ -123,17 +108,14 @@ def test_alerting_functionality():
         alerts = alert_manager.check_budget_alerts(90.0, 100.0)  # 90% of budget
         assert len(alerts) > 0
         assert alerts[0]["type"] == "budget_warning"
-        print("✓ Alert manager works correctly")
 
         return True
-    except Exception as e:
-        print(f"✗ Alerting functionality test failed: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run all basic tests."""
-    print("Running basic GPU system tests...\n")
 
     tests = [
         test_gpu_manager_imports,
@@ -153,18 +135,12 @@ def main():
                 passed += 1
             else:
                 failed += 1
-        except Exception as e:
-            print(f"✗ Test {test.__name__} crashed: {e}")
+        except Exception:
             failed += 1
-        print()
-
-    print(f"Results: {passed} passed, {failed} failed")
 
     if failed == 0:
-        print("🎉 All basic tests passed! GPU system is ready.")
         return 0
     else:
-        print("❌ Some tests failed. Check the issues above.")
         return 1
 
 

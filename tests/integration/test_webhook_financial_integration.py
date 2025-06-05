@@ -67,10 +67,10 @@ class TestWebhookFinancialIntegration(unittest.TestCase):
         self.mock_session_local.return_value = context_manager
 
         # Create payment service with proper mocking
-        with patch("leadfactory.services.payment_service.stripe") as mock_stripe:
+        with patch("leadfactory.services.payment_service.stripe"):
             with patch(
                 "leadfactory.services.payment_service.create_engine"
-            ) as mock_create_engine:
+            ):
                 with patch(
                     "leadfactory.services.payment_service.sessionmaker"
                 ) as mock_sessionmaker:
@@ -79,7 +79,7 @@ class TestWebhookFinancialIntegration(unittest.TestCase):
                     with patch(
                         "leadfactory.services.payment_service.financial_tracker",
                         return_value=self.financial_tracker,
-                    ) as mock_financial_tracker:
+                    ):
                         self.payment_service = StripePaymentService(
                             self.mock_config, database_url="sqlite:///test.db"
                         )

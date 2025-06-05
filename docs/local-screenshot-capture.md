@@ -57,7 +57,7 @@ python -m playwright install-deps chromium
 1. If `SCREENSHOT_ONE_KEY` is set:
    - Uses ScreenshotOne API
    - Falls back to Playwright if API fails
-   
+
 2. If no API key:
    - Uses Playwright if available
    - Uses placeholders in test modes
@@ -122,7 +122,7 @@ success = capture_screenshot_sync(
 - 1,000 screenshots/month:
   - API: $10.00
   - Local: $0.00
-  
+
 - 10,000 screenshots/month:
   - API: $100.00
   - Local: $0.00

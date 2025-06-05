@@ -24,7 +24,6 @@ sys.path.insert(0, "/Users/charlieirwin/Documents/GitHub/Anthrasite_LeadFactory"
 
 def test_monitoring_dashboard():
     """Test Subtask 1: Advanced Monitoring Dashboard."""
-    print("Testing Subtask 1: Advanced Monitoring Dashboard...")
 
     try:
         from leadfactory.monitoring.test_monitoring import (
@@ -63,23 +62,19 @@ def test_monitoring_dashboard():
         assert summary["total_tests"] > 0, "Should have recorded tests"
 
         # Test problematic tests detection
-        problematic_tests = collector.get_problematic_tests()
+        collector.get_problematic_tests()
         # Should detect the failed test
-
-        print("✅ Advanced Monitoring Dashboard working correctly")
 
         # Cleanup
         os.unlink(db_path)
         return True
 
-    except Exception as e:
-        print(f"❌ Advanced Monitoring Dashboard test failed: {e}")
+    except Exception:
         return False
 
 
 def test_alerting_system():
     """Test Subtask 2: Alerting and Notification System."""
-    print("Testing Subtask 2: Alerting and Notification System...")
 
     try:
         from leadfactory.monitoring.test_alerting import AlertManager, AlertRule
@@ -120,17 +115,14 @@ def test_alerting_system():
         ), "Summary should include active alerts count"
         assert summary["active_alerts_count"] > 0, "Should have active alerts"
 
-        print("✅ Alerting and Notification System working correctly")
         return True
 
-    except Exception as e:
-        print(f"❌ Alerting and Notification System test failed: {e}")
+    except Exception:
         return False
 
 
 def test_governance_framework():
     """Test Subtask 3: Test Governance Framework."""
-    print("Testing Subtask 3: Test Governance Framework...")
 
     try:
         from leadfactory.monitoring.test_governance import (
@@ -178,20 +170,16 @@ def test_governance_framework():
             "assignment_rate" in dashboard
         ), "Dashboard should include assignment_rate"
 
-        print("✅ Test Governance Framework working correctly")
-
         # Cleanup
         os.unlink(config_path)
         return True
 
-    except Exception as e:
-        print(f"❌ Test Governance Framework test failed: {e}")
+    except Exception:
         return False
 
 
 def test_analytics_system():
     """Test Subtask 4: Long-term Analytics and Prediction System."""
-    print("Testing Subtask 4: Long-term Analytics and Prediction System...")
 
     try:
         from leadfactory.monitoring.test_analytics import TestAnalyticsEngine
@@ -204,7 +192,7 @@ def test_analytics_system():
         analytics = TestAnalyticsEngine(db_path)
 
         # Test instability prediction
-        test_metrics = TestMetrics(
+        TestMetrics(
             test_id="analytics_test",
             test_name="test_analytics_function",
             test_suite="analytics_tests",
@@ -217,7 +205,7 @@ def test_analytics_system():
             reliability_grade="D",
         )
 
-        prediction = analytics.predict_test_instability("analytics_test")
+        analytics.predict_test_instability("analytics_test")
         # Prediction might be None if using simple method, which is fine
 
         # Test correlation analysis
@@ -238,20 +226,16 @@ def test_analytics_system():
         assert "summary" in report, "Report should include summary"
         assert "recommendations" in report, "Report should include recommendations"
 
-        print("✅ Long-term Analytics and Prediction System working correctly")
-
         # Cleanup
         os.unlink(db_path)
         return True
 
-    except Exception as e:
-        print(f"❌ Long-term Analytics and Prediction System test failed: {e}")
+    except Exception:
         return False
 
 
 def test_workflow_integration():
     """Test Subtask 5: Development Workflow Integration."""
-    print("Testing Subtask 5: Development Workflow Integration...")
 
     try:
         from leadfactory.monitoring.workflow_integration import (
@@ -260,7 +244,7 @@ def test_workflow_integration():
         )
 
         # Test workflow manager without GitHub config (should work in limited mode)
-        workflow_manager = WorkflowIntegrationManager()
+        WorkflowIntegrationManager()
 
         # Test IDE integration
         ide_integration = IDEIntegration()
@@ -283,20 +267,16 @@ def test_another_example():
         assert "status" in health_info, "Health info should include status"
         assert "tests" in health_info, "Health info should include tests list"
 
-        print("✅ Development Workflow Integration working correctly")
-
         # Cleanup
         os.unlink(test_file_path)
         return True
 
-    except Exception as e:
-        print(f"❌ Development Workflow Integration test failed: {e}")
+    except Exception:
         return False
 
 
 def test_web_dashboard():
     """Test the web dashboard functionality."""
-    print("Testing Web Dashboard...")
 
     try:
         from leadfactory.monitoring.test_dashboard import app
@@ -307,20 +287,17 @@ def test_web_dashboard():
         # Test API endpoints (basic structure)
         with app.test_client() as client:
             # Test summary endpoint
-            response = client.get("/api/summary")
+            client.get("/api/summary")
             # Should return some response (might be error if no data, but structure should work)
 
-        print("✅ Web Dashboard structure working correctly")
         return True
 
-    except Exception as e:
-        print(f"❌ Web Dashboard test failed: {e}")
+    except Exception:
         return False
 
 
 def test_file_structure():
     """Test that all required files are present and importable."""
-    print("Testing file structure and imports...")
 
     required_files = [
         "leadfactory/monitoring/test_monitoring.py",
@@ -337,7 +314,6 @@ def test_file_structure():
             missing_files.append(file_path)
 
     if missing_files:
-        print(f"❌ Missing required files: {missing_files}")
         return False
 
     # Test imports
@@ -349,17 +325,14 @@ def test_file_structure():
         import leadfactory.monitoring.test_monitoring
         import leadfactory.monitoring.workflow_integration
 
-        print("✅ All required files present and importable")
         return True
 
-    except ImportError as e:
-        print(f"❌ Import error: {e}")
+    except ImportError:
         return False
 
 
 def test_integration():
     """Test integration between components."""
-    print("Testing component integration...")
 
     try:
         # Test that components can work together
@@ -376,20 +349,14 @@ def test_integration():
         # This should create data that other components can process
         # (Full integration would require more setup, but basic structure should work)
 
-        print("✅ Component integration working correctly")
         return True
 
-    except Exception as e:
-        print(f"❌ Component integration test failed: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run all Task 14 tests."""
-    print(
-        "🔄 Task 14: CI Pipeline Test Monitoring and Governance Framework - Comprehensive Test"
-    )
-    print("=" * 80)
 
     tests = [
         test_file_structure,
@@ -411,41 +378,12 @@ def main():
                 passed += 1
             else:
                 failed += 1
-        except Exception as e:
-            print(f"❌ Test {test.__name__} crashed: {e}")
+        except Exception:
             failed += 1
-        print()
-
-    print("=" * 80)
-    print(f"Results: {passed} passed, {failed} failed")
 
     if failed == 0:
-        print(
-            "🎉 Task 14: CI Pipeline Test Monitoring and Governance Framework COMPLETE!"
-        )
-        print("✅ All 5 subtasks implemented and tested successfully:")
-        print("  1. ✅ Advanced Monitoring Dashboard")
-        print("  2. ✅ Alerting and Notification System")
-        print("  3. ✅ Test Governance Framework")
-        print("  4. ✅ Long-term Analytics and Prediction System")
-        print("  5. ✅ Development Workflow Integration")
-        print()
-        print("📊 Features implemented:")
-        print("  • Real-time test metrics collection and analysis")
-        print("  • Interactive web dashboard for test health visualization")
-        print("  • Intelligent alerting with configurable thresholds")
-        print("  • Comprehensive test ownership and governance model")
-        print("  • Machine learning-based instability prediction")
-        print("  • GitHub integration for automated issue creation")
-        print("  • IDE integration for real-time test health feedback")
-        print("  • Automated code review checks for pull requests")
-        print("  • Weekly analytics reports with actionable insights")
-        print("  • SLA tracking and compliance monitoring")
         return 0
     else:
-        print(
-            f"⚠️  {failed} components need attention, but framework is largely complete"
-        )
         return 1
 
 

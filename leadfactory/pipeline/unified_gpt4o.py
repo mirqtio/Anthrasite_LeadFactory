@@ -27,7 +27,7 @@ class UnifiedGPT4ONode:
     nodes into a single, optimized endpoint that leverages GPT-4o for both tasks.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         """
         Initialize the unified GPT-4o node.
 
@@ -54,7 +54,7 @@ class UnifiedGPT4ONode:
             "video_rendering",
         ]
 
-    def validate_inputs(self, business_data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_inputs(self, business_data: dict[str, Any]) -> dict[str, Any]:
         """
         Validate that all required inputs are available for unified generation.
 
@@ -119,7 +119,7 @@ class UnifiedGPT4ONode:
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return bool(re.match(pattern, email))
 
-    def construct_unified_prompt(self, business_data: Dict[str, Any]) -> str:
+    def construct_unified_prompt(self, business_data: dict[str, Any]) -> str:
         """
         Construct an optimized prompt for unified mockup and email generation.
 
@@ -140,7 +140,7 @@ class UnifiedGPT4ONode:
 
         # Include enrichment data if available
         enrichment_data = business_data.get("enrichment_data", {})
-        screenshot_url = business_data.get("screenshot_url", "")
+        business_data.get("screenshot_url", "")
 
         prompt = f"""
 You are an expert business analyst and creative designer tasked with generating both a website mockup concept and a personalized outreach email for a business.
@@ -229,7 +229,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 
         return prompt.strip()
 
-    def _format_enrichment_data(self, enrichment_data: Dict[str, Any]) -> str:
+    def _format_enrichment_data(self, enrichment_data: dict[str, Any]) -> str:
         """Format enrichment data for inclusion in the prompt."""
         if not enrichment_data:
             return "No additional enrichment data available."
@@ -251,7 +251,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 
         return datetime.utcnow().isoformat() + "Z"
 
-    def generate_unified_content(self, business_data: Dict[str, Any]) -> Dict[str, Any]:
+    def generate_unified_content(self, business_data: dict[str, Any]) -> dict[str, Any]:
         """
         Generate both mockup concept and email content using GPT-4o.
 
@@ -340,8 +340,8 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
             }
 
     def _generate_mock_response(
-        self, business_data: Dict[str, Any], prompt: str, validation: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, business_data: dict[str, Any], prompt: str, validation: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generate a mock response as fallback."""
         logger.info("Using mock response as fallback")
 
@@ -426,7 +426,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
             "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
         }
 
-    def _generate_email_html(self, business_data: Dict[str, Any]) -> str:
+    def _generate_email_html(self, business_data: dict[str, Any]) -> str:
         """Generate HTML email content."""
         business_name = business_data.get("name", "your business")
         industry = business_data.get("industry", "industry")
@@ -469,7 +469,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 """
         return html_template.strip()
 
-    def _requires_gpu_processing(self, business_data: Dict[str, Any]) -> bool:
+    def _requires_gpu_processing(self, business_data: dict[str, Any]) -> bool:
         """
         Determine if this business requires GPU processing.
 
@@ -498,7 +498,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
         self,
         business_id: int,
         task_type: str,
-        task_data: Dict[str, Any],
+        task_data: dict[str, Any],
         gpu_required: bool = False,
     ) -> Optional[int]:
         """
@@ -602,7 +602,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
             logger.error(f"Error updating queue task status: {e}")
             return False
 
-    def save_unified_results(self, business_id: int, content: Dict[str, Any]) -> bool:
+    def save_unified_results(self, business_id: int, content: dict[str, Any]) -> bool:
         """
         Save the unified generation results to the database.
 
@@ -675,7 +675,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
             )
             return False
 
-    def process_business(self, business_id: int) -> Dict[str, Any]:
+    def process_business(self, business_id: int) -> dict[str, Any]:
         """
         Process a single business through the unified GPT-4o node.
 
@@ -745,7 +745,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 
             return {"success": False, "error": str(e)}
 
-    def _fetch_business_data(self, business_id: int) -> Optional[Dict[str, Any]]:
+    def _fetch_business_data(self, business_id: int) -> Optional[dict[str, Any]]:
         """Fetch business data from the database."""
         try:
             storage = get_storage()
@@ -803,7 +803,7 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 
 def get_businesses_needing_unified_processing(
     limit: Optional[int] = None,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Get businesses that need unified GPT-4o processing.
 
@@ -842,7 +842,7 @@ def get_businesses_needing_unified_processing(
         return []
 
 
-def process_all_businesses_unified(limit: Optional[int] = None) -> Dict[str, Any]:
+def process_all_businesses_unified(limit: Optional[int] = None) -> dict[str, Any]:
     """
     Process all businesses through the unified GPT-4o node.
 
@@ -889,7 +889,7 @@ def process_all_businesses_unified(limit: Optional[int] = None) -> Dict[str, Any
 
 
 # Convenience functions for backward compatibility
-def generate_unified_content_for_business(business_id: int) -> Dict[str, Any]:
+def generate_unified_content_for_business(business_id: int) -> dict[str, Any]:
     """
     Generate unified content for a single business.
 
@@ -903,7 +903,7 @@ def generate_unified_content_for_business(business_id: int) -> Dict[str, Any]:
     return node.process_business(business_id)
 
 
-def validate_unified_dependencies(business_id: int) -> Dict[str, Any]:
+def validate_unified_dependencies(business_id: int) -> dict[str, Any]:
     """
     Validate dependencies for unified processing.
 

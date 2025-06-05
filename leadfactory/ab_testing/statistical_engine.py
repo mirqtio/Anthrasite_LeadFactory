@@ -36,7 +36,7 @@ class StatisticalResult:
     power: float
     required_sample_size: Optional[int]
     winner: Optional[str]
-    metadata: Dict
+    metadata: dict
 
 
 class StatisticalEngine:
@@ -124,7 +124,7 @@ class StatisticalEngine:
         return z_scores[closest_p]
 
     def test_proportions(
-        self, variant_data: List[Dict[str, int]], alpha: float = 0.05
+        self, variant_data: list[dict[str, int]], alpha: float = 0.05
     ) -> StatisticalResult:
         """Perform statistical test for conversion rate differences.
 
@@ -145,7 +145,7 @@ class StatisticalEngine:
             return self._chi_square_test(variant_data, alpha)
 
     def _two_proportion_z_test(
-        self, variant_a: Dict[str, int], variant_b: Dict[str, int], alpha: float
+        self, variant_a: dict[str, int], variant_b: dict[str, int], alpha: float
     ) -> StatisticalResult:
         """Perform two-proportion z-test."""
         # Extract data
@@ -207,7 +207,7 @@ class StatisticalEngine:
         )
 
     def _chi_square_test(
-        self, variant_data: List[Dict[str, int]], alpha: float
+        self, variant_data: list[dict[str, int]], alpha: float
     ) -> StatisticalResult:
         """Perform chi-square test for multiple proportions."""
         # Simplified chi-square implementation
@@ -329,10 +329,10 @@ class StatisticalEngine:
 
     def bayesian_analysis(
         self,
-        variant_data: List[Dict[str, int]],
+        variant_data: list[dict[str, int]],
         prior_alpha: float = 1.0,
         prior_beta: float = 1.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Perform Bayesian analysis for conversion rates.
 
         Args:
@@ -395,7 +395,7 @@ class StatisticalEngine:
         test_result: StatisticalResult,
         minimum_sample_size: int = 100,
         minimum_runtime_days: int = 7,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Determine overall test conclusion and recommendations.
 
         Args:

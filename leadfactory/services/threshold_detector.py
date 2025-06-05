@@ -56,12 +56,12 @@ class ThresholdRule:
     description: str = ""
 
     # Volume-based thresholds
-    volume_ranges: Optional[Dict[str, float]] = (
+    volume_ranges: Optional[dict[str, float]] = (
         None  # e.g., {"0-1000": 0.05, "1000-10000": 0.03}
     )
 
     # Domain-based thresholds
-    domain_patterns: Optional[Dict[str, float]] = (
+    domain_patterns: Optional[dict[str, float]] = (
         None  # e.g., {"gmail.com": 0.02, "yahoo.com": 0.03}
     )
 
@@ -92,7 +92,7 @@ class ThresholdBreach:
 class ThresholdConfig:
     """Complete threshold configuration."""
 
-    rules: List[ThresholdRule] = field(default_factory=list)
+    rules: list[ThresholdRule] = field(default_factory=list)
     global_enabled: bool = True
     default_minimum_sample_size: int = 100
     default_time_window_hours: int = 24
@@ -109,7 +109,7 @@ class ThresholdConfig:
                 return rule
         return None
 
-    def get_enabled_rules(self) -> List[ThresholdRule]:
+    def get_enabled_rules(self) -> list[ThresholdRule]:
         """Get all enabled threshold rules."""
         if not self.global_enabled:
             return []
@@ -131,9 +131,9 @@ class ThresholdDetector:
         """
         self.config = config
         self.bounce_monitor = bounce_monitor
-        self.breach_history: List[ThresholdBreach] = []
-        self.notification_callbacks: List[Callable[[ThresholdBreach], None]] = []
-        self.last_notification_times: Dict[Tuple[str, str, str], datetime] = (
+        self.breach_history: list[ThresholdBreach] = []
+        self.notification_callbacks: list[Callable[[ThresholdBreach], None]] = []
+        self.last_notification_times: dict[tuple[str, str, str], datetime] = (
             {}
         )  # (ip, subuser, rule) -> time
 
@@ -145,7 +145,7 @@ class ThresholdDetector:
         """Add a callback function to be called when thresholds are breached."""
         self.notification_callbacks.append(callback)
 
-    def check_thresholds(self, ip_address: str, subuser: str) -> List[ThresholdBreach]:
+    def check_thresholds(self, ip_address: str, subuser: str) -> list[ThresholdBreach]:
         """
         Check all enabled threshold rules for a specific IP/subuser combination.
 
@@ -177,7 +177,7 @@ class ThresholdDetector:
 
         return breaches
 
-    def check_all_thresholds(self) -> List[ThresholdBreach]:
+    def check_all_thresholds(self) -> list[ThresholdBreach]:
         """
         Check thresholds for all IP/subuser combinations.
 
@@ -381,7 +381,7 @@ class ThresholdDetector:
         subuser: Optional[str] = None,
         severity: Optional[ThresholdSeverity] = None,
         hours_back: Optional[int] = None,
-    ) -> List[ThresholdBreach]:
+    ) -> list[ThresholdBreach]:
         """
         Get breach history with optional filtering.
 
@@ -415,7 +415,7 @@ class ThresholdDetector:
 
         return filtered_breaches
 
-    def get_current_violations(self) -> List[ThresholdBreach]:
+    def get_current_violations(self) -> list[ThresholdBreach]:
         """
         Get current threshold violations (recent breaches that may still be active).
 

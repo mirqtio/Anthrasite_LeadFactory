@@ -61,14 +61,14 @@ class EmailBatch:
 
     batch_id: str
     ip_address: str
-    emails: List[Dict[str, Any]]
+    emails: list[dict[str, Any]]
     priority: QueuePriority
     created_at: datetime
     scheduled_for: Optional[datetime] = None
     attempts: int = 0
     max_attempts: int = 3
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for storage."""
         return {
             "batch_id": self.batch_id,
@@ -84,7 +84,7 @@ class EmailBatch:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "EmailBatch":
+    def from_dict(cls, data: dict[str, Any]) -> "EmailBatch":
         """Create from dictionary."""
         return cls(
             batch_id=data["batch_id"],
@@ -111,14 +111,14 @@ class SendMetrics:
     total_sent: int = 0
     total_queued: int = 0
     total_failed: int = 0
-    hourly_counts: Dict[int, int] = None  # Hour -> count mapping
+    hourly_counts: dict[int, int] = None  # Hour -> count mapping
     last_send_time: Optional[datetime] = None
 
     def __post_init__(self):
         if self.hourly_counts is None:
             self.hourly_counts = {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for storage."""
         return {
             "date": self.date.isoformat(),
@@ -133,7 +133,7 @@ class SendMetrics:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SendMetrics":
+    def from_dict(cls, data: dict[str, Any]) -> "SendMetrics":
         """Create from dictionary."""
         # Convert string keys back to integers for hourly_counts
         hourly_counts = data.get("hourly_counts", {})
@@ -287,7 +287,7 @@ class SendGridThrottler:
         self,
         event_type: str,
         ip_address: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        details: Optional[dict[str, Any]] = None,
     ):
         """Log throttling events for audit trail."""
         try:
@@ -408,7 +408,7 @@ class SendGridThrottler:
         except Exception as e:
             logger.error(f"Failed to store metrics: {e}")
 
-    def can_send_now(self, ip_address: str, email_count: int = 1) -> Tuple[bool, str]:
+    def can_send_now(self, ip_address: str, email_count: int = 1) -> tuple[bool, str]:
         """
         Check if emails can be sent now based on throttling rules.
 
@@ -492,7 +492,7 @@ class SendGridThrottler:
 
             # Store batch in database
             with self._get_db_connection() as conn:
-                batch_data = batch.to_dict()
+                batch.to_dict()
                 conn.execute(
                     """
                     INSERT INTO email_batches
@@ -723,7 +723,7 @@ class SendGridThrottler:
         self._log_event("throttling_resumed", None, {"reason": reason})
         logger.info(f"Throttling resumed: {reason}")
 
-    def get_throttle_status(self) -> Dict[str, Any]:
+    def get_throttle_status(self) -> dict[str, Any]:
         """Get current throttling system status."""
         total_queued = sum(q.qsize() for q in self.queues.values())
 
@@ -737,7 +737,7 @@ class SendGridThrottler:
             "config": asdict(self.config),
         }
 
-    def get_ip_status_summary(self, ip_address: str) -> Dict[str, Any]:
+    def get_ip_status_summary(self, ip_address: str) -> dict[str, Any]:
         """Get comprehensive status summary for an IP."""
         daily_limit = self.get_daily_limit(ip_address)
         metrics = self.get_current_metrics(ip_address)
@@ -774,7 +774,7 @@ def get_throttler(
 def create_email_batch(
     batch_id: str,
     ip_address: str,
-    emails: List[Dict[str, Any]],
+    emails: list[dict[str, Any]],
     priority: QueuePriority = QueuePriority.NORMAL,
 ) -> EmailBatch:
     """Create an email batch for queuing."""
@@ -789,7 +789,7 @@ def create_email_batch(
 
 def check_send_capacity(
     ip_address: str, email_count: int = 1, throttler: Optional[SendGridThrottler] = None
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """Check if emails can be sent for an IP address."""
     if throttler is None:
         throttler = get_throttler()

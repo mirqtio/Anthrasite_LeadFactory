@@ -264,11 +264,11 @@ def save_business_score(business_id: int, score: int) -> bool:
 def meets_audit_threshold(score: int, threshold: Optional[int] = None) -> bool:
     """
     Check if a business score meets the audit threshold.
-    
+
     Args:
         score: The business score
         threshold: Optional custom threshold, defaults to config value
-        
+
     Returns:
         True if score meets or exceeds threshold, False otherwise
     """
@@ -277,6 +277,7 @@ def meets_audit_threshold(score: int, threshold: Optional[int] = None) -> bool:
         try:
             # Try to use the simplified YAML parser for the audit threshold
             from leadfactory.scoring.simplified_yaml_parser import SimplifiedYamlParser
+
             parser = SimplifiedYamlParser()
             config = parser.load_and_validate()
             threshold = config.settings.audit_threshold
@@ -286,25 +287,29 @@ def meets_audit_threshold(score: int, threshold: Optional[int] = None) -> bool:
                 engine = ScoringEngine()
                 engine.load_rules()
                 # Check if config has the right structure
-                if hasattr(engine.config, 'settings') and hasattr(engine.config.settings, 'high_score_threshold'):
+                if hasattr(engine.config, "settings") and hasattr(
+                    engine.config.settings, "high_score_threshold"
+                ):
                     threshold = engine.config.settings.high_score_threshold
                 else:
                     threshold = 60
             except Exception as e:
-                logger.warning(f"Failed to load audit threshold from config, using default: {e}")
+                logger.warning(
+                    f"Failed to load audit threshold from config, using default: {e}"
+                )
                 threshold = 60
-    
+
     meets_threshold = score >= threshold
-    
+
     logger.info(
         f"Score {score} {'meets' if meets_threshold else 'does not meet'} audit threshold {threshold}",
         extra={
             "score": score,
             "threshold": threshold,
-            "meets_threshold": meets_threshold
-        }
+            "meets_threshold": meets_threshold,
+        },
     )
-    
+
     return meets_threshold
 
 

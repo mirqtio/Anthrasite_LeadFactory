@@ -147,7 +147,7 @@ class TestUnifiedGPT4ONode:
                 assert node.llm_client is not None
             else:
                 # Mock implementation
-                assert hasattr(node, 'llm_client')
+                assert hasattr(node, "llm_client")
 
     def test_validate_inputs_success(self):
         """Test input validation with valid data."""

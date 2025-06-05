@@ -137,12 +137,12 @@ class LLMClient:
 
     def chat_completion(
         self,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         model: Optional[str] = None,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a chat completion using the best available provider.
 
@@ -240,12 +240,12 @@ class LLMClient:
     def _make_request(
         self,
         provider_name: str,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         model: Optional[str],
         temperature: float,
         max_tokens: int,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Make a request to a specific provider."""
         provider_config = self.config.providers[provider_name]
         actual_model = model or provider_config.default_model
@@ -394,7 +394,7 @@ class LLMClient:
             },
         }
 
-    def _estimate_tokens(self, messages: List[Dict[str, str]], max_tokens: int) -> int:
+    def _estimate_tokens(self, messages: list[dict[str, str]], max_tokens: int) -> int:
         """Estimate token count for messages."""
         # Simple estimation: ~4 characters per token
         total_chars = sum(len(msg.get("content", "")) for msg in messages)
@@ -427,7 +427,7 @@ class LLMClient:
                 provider_name,
             )
 
-    def _track_usage(self, provider_name: str, usage: Dict[str, int]):
+    def _track_usage(self, provider_name: str, usage: dict[str, int]):
         """Track usage and costs."""
         if not self.config.cost_config.cost_tracking_enabled:
             return
@@ -458,11 +458,11 @@ class LLMClient:
             cache_str.encode(), usedforsecurity=False
         ).hexdigest()  # nosec B324
 
-    def get_available_providers(self) -> List[str]:
+    def get_available_providers(self) -> list[str]:
         """Get list of available providers."""
         return list(self._provider_clients.keys())
 
-    def get_provider_status(self) -> Dict[str, Dict[str, Any]]:
+    def get_provider_status(self) -> dict[str, dict[str, Any]]:
         """Get status information for all providers."""
         status = {}
 

@@ -545,9 +545,7 @@ class BounceRateMonitor:
                         block_bounces,
                     ) = result
                 else:
-                    total_sent = total_bounced = hard_bounces = soft_bounces = (
-                        block_bounces
-                    ) = 0
+                    total_sent = 0
 
                 # Calculate new bounce counts from recent events
                 cutoff_time = datetime.now() - timedelta(
@@ -679,7 +677,7 @@ class BounceRateMonitor:
             logger.error(f"Error fetching IP/subuser stats: {e}")
             return None
 
-    def get_all_stats(self) -> List[IPSubuserStats]:
+    def get_all_stats(self) -> list[IPSubuserStats]:
         """
         Get statistics for all IP/subuser combinations.
 
@@ -699,7 +697,7 @@ class BounceRateMonitor:
             logger.error(f"Error fetching all stats: {e}")
             return []
 
-    def get_threshold_violations(self) -> List[IPSubuserStats]:
+    def get_threshold_violations(self) -> list[IPSubuserStats]:
         """
         Get all IP/subuser combinations that exceed warning thresholds.
 
@@ -719,7 +717,7 @@ class BounceRateMonitor:
             logger.error(f"Error fetching threshold violations: {e}")
             return []
 
-    def check_thresholds(self) -> Dict[str, List[IPSubuserStats]]:
+    def check_thresholds(self) -> dict[str, list[IPSubuserStats]]:
         """
         Check all IP/subuser combinations against thresholds.
 
@@ -1156,7 +1154,7 @@ def create_bounce_monitor_tables(db_path: Optional[str] = None) -> None:
     Args:
         db_path: Path to the database file
     """
-    monitor = BounceRateMonitor(BounceRateConfig(), db_path=db_path)
+    BounceRateMonitor(BounceRateConfig(), db_path=db_path)
     logger.info("Bounce rate monitoring tables created successfully")
 
 
@@ -1187,8 +1185,6 @@ if __name__ == "__main__":
 
     # Check bounce rate
     bounce_rate = monitor.get_bounce_rate("192.168.1.100", "marketing")
-    print(f"Bounce rate: {bounce_rate:.2%}")
 
     # Check threshold violations
     violations = monitor.check_thresholds()
-    print(f"Threshold violations: {violations}")

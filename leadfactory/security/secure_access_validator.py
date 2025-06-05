@@ -31,7 +31,7 @@ class ValidationResult:
     valid: bool
     error_message: Optional[str] = None
     user_context: Optional[UserContext] = None
-    rate_limit_info: Optional[Dict] = None
+    rate_limit_info: Optional[dict] = None
 
 
 @dataclass
@@ -58,7 +58,7 @@ class SecureAccessValidator:
         self.link_generator = SecureLinkGenerator()
 
         # Track revoked access tokens
-        self._revoked_access_tokens: Dict[str, datetime] = {}
+        self._revoked_access_tokens: dict[str, datetime] = {}
 
         logger.info("Secure access validator initialized")
 
@@ -211,7 +211,7 @@ class SecureAccessValidator:
         expiry_hours: int = 720,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    ) -> tuple[bool, Optional[str], Optional[str]]:
         """
         Generate a secure URL after validating permissions.
 
@@ -375,7 +375,7 @@ class SecureAccessValidator:
         # In production, add specific resource validation logic
         return True
 
-    def get_access_stats(self, user_id: str) -> Dict:
+    def get_access_stats(self, user_id: str) -> dict:
         """Get access statistics for a user."""
         return {
             "rate_limits": self.rate_limiter.get_user_stats(user_id),

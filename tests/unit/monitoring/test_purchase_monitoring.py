@@ -119,8 +119,8 @@ class TestPurchaseMonitor:
         )
 
         assert monitor.update_interval == 300
-        assert monitor.enable_realtime_alerts == True
-        assert monitor.is_running == False
+        assert monitor.enable_realtime_alerts
+        assert not monitor.is_running
         assert monitor.last_update is None
 
     def test_get_dashboard_data(self, purchase_monitor):
@@ -218,7 +218,7 @@ class TestPurchaseMonitor:
         assert "alert_manager_status" in status
         assert "metrics_summary" in status
 
-        assert status["is_running"] == False  # Not started yet
+        assert not status["is_running"]  # Not started yet
         assert status["update_interval_seconds"] == 60
 
     def test_trigger_manual_update(self, purchase_monitor):
@@ -239,11 +239,11 @@ class TestPurchaseMonitor:
         """Test starting and stopping the monitoring process."""
         # Start monitoring
         await purchase_monitor.start_monitoring()
-        assert purchase_monitor.is_running == True
+        assert purchase_monitor.is_running
 
         # Stop monitoring
         await purchase_monitor.stop_monitoring()
-        assert purchase_monitor.is_running == False
+        assert not purchase_monitor.is_running
 
     @pytest.mark.asyncio
     async def test_monitoring_loop_error_handling(self, purchase_monitor):
@@ -263,7 +263,7 @@ class TestPurchaseMonitor:
         await purchase_monitor.stop_monitoring()
 
         # Should still be able to stop without error
-        assert purchase_monitor.is_running == False
+        assert not purchase_monitor.is_running
 
 
 class TestDashboardIntegration:

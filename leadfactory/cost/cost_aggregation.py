@@ -169,7 +169,7 @@ class CostAggregationService:
             logger.warning("Financial tracker not available")
             self.financial_tracker = None
 
-    def aggregate_daily_data(self, date: str) -> Dict[str, Any]:
+    def aggregate_daily_data(self, date: str) -> dict[str, Any]:
         """Aggregate cost and revenue data for a specific date.
 
         Args:
@@ -242,7 +242,7 @@ class CostAggregationService:
 
         return aggregated_data
 
-    def _get_daily_financial_data(self, date: str) -> Dict[str, Any]:
+    def _get_daily_financial_data(self, date: str) -> dict[str, Any]:
         """Get daily financial data from financial tracker.
 
         Args:
@@ -273,7 +273,7 @@ class CostAggregationService:
 
         return {}
 
-    def _get_daily_cost_data(self, date: str) -> Dict[str, Any]:
+    def _get_daily_cost_data(self, date: str) -> dict[str, Any]:
         """Get daily cost data from cost tracker.
 
         Args:
@@ -295,7 +295,7 @@ class CostAggregationService:
 
         return {}
 
-    def _query_cost_tracker_database(self, date: str) -> Dict[str, Any]:
+    def _query_cost_tracker_database(self, date: str) -> dict[str, Any]:
         """Query cost tracker database directly for historical data.
 
         Args:
@@ -358,7 +358,7 @@ class CostAggregationService:
             logger.error(f"Error querying cost tracker database for {date}: {e}")
             return {}
 
-    def _store_daily_aggregation(self, data: Dict[str, Any]) -> None:
+    def _store_daily_aggregation(self, data: dict[str, Any]) -> None:
         """Store daily aggregation data in database.
 
         Args:
@@ -408,7 +408,7 @@ class CostAggregationService:
             finally:
                 conn.close()
 
-    def aggregate_monthly_data(self, year: int, month: int) -> Dict[str, Any]:
+    def aggregate_monthly_data(self, year: int, month: int) -> dict[str, Any]:
         """Aggregate cost and revenue data for a specific month.
 
         Args:
@@ -528,7 +528,7 @@ class CostAggregationService:
 
         return {}
 
-    def _store_monthly_aggregation(self, data: Dict[str, Any]) -> None:
+    def _store_monthly_aggregation(self, data: dict[str, Any]) -> None:
         """Store monthly aggregation data in database.
 
         Args:
@@ -537,7 +537,7 @@ class CostAggregationService:
         with self._lock:
             self._store_monthly_aggregation_unlocked(data)
 
-    def _store_monthly_aggregation_unlocked(self, data: Dict[str, Any]) -> None:
+    def _store_monthly_aggregation_unlocked(self, data: dict[str, Any]) -> None:
         """Store monthly aggregation data in database without acquiring lock.
 
         Args:
@@ -588,7 +588,7 @@ class CostAggregationService:
         finally:
             conn.close()
 
-    def get_daily_summary(self, date: str) -> Optional[Dict[str, Any]]:
+    def get_daily_summary(self, date: str) -> Optional[dict[str, Any]]:
         """Get daily cost and revenue summary.
 
         Args:
@@ -618,7 +618,7 @@ class CostAggregationService:
             finally:
                 conn.close()
 
-    def get_monthly_summary(self, year: int, month: int) -> Optional[Dict[str, Any]]:
+    def get_monthly_summary(self, year: int, month: int) -> Optional[dict[str, Any]]:
         """Get monthly cost and revenue summary.
 
         Args:
@@ -651,7 +651,7 @@ class CostAggregationService:
 
     def get_grafana_dashboard_data(
         self, start_date: str, end_date: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get data formatted for Grafana dashboard.
 
         Args:

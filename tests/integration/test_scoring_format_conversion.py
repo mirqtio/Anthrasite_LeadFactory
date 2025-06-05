@@ -152,7 +152,7 @@ class TestScoringFormatConversion(unittest.TestCase):
 
         # Load original legacy rules
         legacy_parser = ScoringRulesParser(str(self.current_rules_path))
-        legacy_config = legacy_parser.load_and_validate()
+        legacy_parser.load_and_validate()
 
         # Convert to simplified
         with tempfile.NamedTemporaryFile(

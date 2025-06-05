@@ -8,18 +8,18 @@ management, shard routing, distributed operations, and failover mechanisms.
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, Mock, patch, call
+from unittest.mock import MagicMock, Mock, call, patch
 
-import pytest
 import psycopg2
+import pytest
 from psycopg2.pool import SimpleConnectionPool
 
 from leadfactory.storage.sharded_postgres_storage import ShardedPostgresStorage
 from leadfactory.storage.sharding_strategy import (
-    ShardingStrategy,
     ShardConfig,
     ShardingConfig,
-    ShardRouter
+    ShardingStrategy,
+    ShardRouter,
 )
 
 
@@ -59,10 +59,10 @@ class TestShardedPostgresStorage:
 
     def teardown_method(self):
         """Clean up after tests."""
-        if hasattr(self, 'storage'):
+        if hasattr(self, "storage"):
             self.storage.close_all_pools()
 
-    @patch('psycopg2.pool.SimpleConnectionPool')
+    @patch("psycopg2.pool.SimpleConnectionPool")
     def test_initialize_pools(self, mock_pool_class):
         """Test connection pool initialization."""
         mock_pool_instance = MagicMock()
@@ -78,13 +78,13 @@ class TestShardedPostgresStorage:
         calls = mock_pool_class.call_args_list
         for call in calls:
             kwargs = call[1]
-            assert kwargs['minconn'] == 1
-            assert kwargs['maxconn'] == 10
-            assert 'host' in kwargs
-            assert 'port' in kwargs
-            assert 'database' in kwargs
+            assert kwargs["minconn"] == 1
+            assert kwargs["maxconn"] == 10
+            assert "host" in kwargs
+            assert "port" in kwargs
+            assert "database" in kwargs
 
-    @patch('psycopg2.pool.SimpleConnectionPool')
+    @patch("psycopg2.pool.SimpleConnectionPool")
     def test_create_pool_for_shard(self, mock_pool_class):
         """Test creating connection pool for a specific shard."""
         mock_pool = MagicMock()
@@ -118,7 +118,7 @@ class TestShardedPostgresStorage:
         mock_pool2.closeall.assert_called_once()
         assert len(self.storage._pools) == 0
 
-    @patch.object(ShardedPostgresStorage, '_get_pool_for_shard')
+    @patch.object(ShardedPostgresStorage, "_get_pool_for_shard")
     def test_execute_on_shard(self, mock_get_pool):
         """Test executing query on a specific shard."""
         mock_pool = MagicMock()
@@ -140,7 +140,7 @@ class TestShardedPostgresStorage:
         )
         mock_pool.putconn.assert_called_once_with(mock_conn)
 
-    @patch.object(ShardedPostgresStorage, '_get_pool_for_shard')
+    @patch.object(ShardedPostgresStorage, "_get_pool_for_shard")
     def test_execute_on_shard_error_handling(self, mock_get_pool):
         """Test error handling in execute_on_shard."""
         mock_pool = MagicMock()
@@ -158,7 +158,7 @@ class TestShardedPostgresStorage:
         # Connection should still be returned to pool
         mock_pool.putconn.assert_called_once_with(mock_conn)
 
-    @patch.object(ShardedPostgresStorage, 'execute_on_shard')
+    @patch.object(ShardedPostgresStorage, "execute_on_shard")
     def test_execute_on_multiple_shards(self, mock_execute):
         """Test executing query on multiple shards."""
         mock_execute.side_effect = [
@@ -177,8 +177,8 @@ class TestShardedPostgresStorage:
         # Verify both shards were queried
         assert mock_execute.call_count == 2
 
-    @patch.object(ShardRouter, 'get_shard')
-    @patch.object(ShardedPostgresStorage, 'execute_on_shard')
+    @patch.object(ShardRouter, "get_shard")
+    @patch.object(ShardedPostgresStorage, "execute_on_shard")
     def test_insert_business(self, mock_execute, mock_get_shard):
         """Test inserting business with shard routing."""
         mock_get_shard.return_value = self.shard1_config
@@ -196,8 +196,8 @@ class TestShardedPostgresStorage:
         mock_get_shard.assert_called_once_with(business_data)
         mock_execute.assert_called_once()
 
-    @patch.object(ShardRouter, 'get_shard')
-    @patch.object(ShardedPostgresStorage, 'execute_on_shard')
+    @patch.object(ShardRouter, "get_shard")
+    @patch.object(ShardedPostgresStorage, "execute_on_shard")
     def test_get_business_by_id_with_hint(self, mock_execute, mock_get_shard):
         """Test getting business by ID with shard hint."""
         mock_get_shard.return_value = self.shard1_config
@@ -208,7 +208,7 @@ class TestShardedPostgresStorage:
         assert result["id"] == 1
         mock_get_shard.assert_called_once_with({"source": "yelp"})
 
-    @patch.object(ShardedPostgresStorage, 'execute_on_multiple_shards')
+    @patch.object(ShardedPostgresStorage, "execute_on_multiple_shards")
     def test_get_business_by_id_without_hint(self, mock_execute_multiple):
         """Test getting business by ID without shard hint (searches all shards)."""
         mock_execute_multiple.return_value = [{"id": 1, "name": "Test Business"}]
@@ -221,8 +221,8 @@ class TestShardedPostgresStorage:
         args = mock_execute_multiple.call_args[0]
         assert len(args[0]) == 2  # Both shards
 
-    @patch.object(ShardRouter, 'get_shards_for_query')
-    @patch.object(ShardedPostgresStorage, 'execute_on_multiple_shards')
+    @patch.object(ShardRouter, "get_shards_for_query")
+    @patch.object(ShardedPostgresStorage, "execute_on_multiple_shards")
     def test_search_businesses(self, mock_execute_multiple, mock_get_shards):
         """Test searching businesses across shards."""
         mock_get_shards.return_value = [self.shard1_config, self.shard2_config]
@@ -237,8 +237,8 @@ class TestShardedPostgresStorage:
         assert len(result) == 2
         mock_get_shards.assert_called_once_with(criteria)
 
-    @patch.object(ShardRouter, 'get_shard')
-    @patch.object(ShardedPostgresStorage, 'execute_on_shard')
+    @patch.object(ShardRouter, "get_shard")
+    @patch.object(ShardedPostgresStorage, "execute_on_shard")
     def test_update_business(self, mock_execute, mock_get_shard):
         """Test updating business on correct shard."""
         mock_get_shard.return_value = self.shard1_config
@@ -251,7 +251,7 @@ class TestShardedPostgresStorage:
         assert result is True
         mock_get_shard.assert_called_once_with({"source": "yelp"})
 
-    @patch.object(ShardedPostgresStorage, 'execute_on_multiple_shards')
+    @patch.object(ShardedPostgresStorage, "execute_on_multiple_shards")
     def test_get_statistics(self, mock_execute_multiple):
         """Test aggregating statistics across shards."""
         mock_execute_multiple.return_value = [
@@ -265,8 +265,8 @@ class TestShardedPostgresStorage:
         assert result["active_businesses"] == 1200
         assert result["shards_queried"] == 2
 
-    @patch.object(ShardedPostgresStorage, '_create_pool_for_shard')
-    @patch.object(ShardedPostgresStorage, 'execute_on_shard')
+    @patch.object(ShardedPostgresStorage, "_create_pool_for_shard")
+    @patch.object(ShardedPostgresStorage, "execute_on_shard")
     def test_health_check(self, mock_execute, mock_create_pool):
         """Test health check functionality."""
         # Set up existing pools
@@ -287,7 +287,7 @@ class TestShardedPostgresStorage:
         assert result["healthy_shards"] == 2
         assert len(result["shard_status"]) == 2
 
-    @patch.object(ShardedPostgresStorage, 'execute_on_shard')
+    @patch.object(ShardedPostgresStorage, "execute_on_shard")
     def test_health_check_with_failures(self, mock_execute):
         """Test health check with shard failures."""
         # Set up existing pools
@@ -307,8 +307,8 @@ class TestShardedPostgresStorage:
         assert result["shard_status"][1]["status"] == "healthy"
         assert result["shard_status"][2]["status"] == "unhealthy"
 
-    @patch.object(ShardRouter, 'get_read_shard')
-    @patch.object(ShardedPostgresStorage, '_get_pool_for_shard')
+    @patch.object(ShardRouter, "get_read_shard")
+    @patch.object(ShardedPostgresStorage, "_get_pool_for_shard")
     def test_read_replica_usage(self, mock_get_pool, mock_get_read_shard):
         """Test that read operations use read replicas."""
         # Mock read replica configuration
@@ -345,7 +345,7 @@ class TestShardedPostgresStorage:
         with pytest.raises(psycopg2.pool.PoolError):
             self.storage.execute_on_shard(1, "SELECT 1", ())
 
-    @patch.object(ShardedPostgresStorage, 'execute_on_shard')
+    @patch.object(ShardedPostgresStorage, "execute_on_shard")
     def test_distributed_transaction(self, mock_execute):
         """Test distributed transaction across shards."""
         # This is a simplified test - real distributed transactions are complex
@@ -374,7 +374,7 @@ class TestShardedPostgresStorage:
             key = self.storage._extract_shard_key(business_data)
             assert key == expected_key
 
-    @patch('psycopg2.pool.SimpleConnectionPool')
+    @patch("psycopg2.pool.SimpleConnectionPool")
     def test_connection_pool_configuration(self, mock_pool_class):
         """Test connection pool configuration options."""
         custom_config = ShardingConfig(

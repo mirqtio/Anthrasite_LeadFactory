@@ -76,9 +76,9 @@ class AlertMessage:
     budget_limit: Optional[float] = None
     utilization_percentage: Optional[float] = None
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert alert message to dictionary."""
         data = asdict(self)
         data["timestamp"] = self.timestamp.isoformat()
@@ -97,7 +97,7 @@ class NotificationConfig:
     email_username: Optional[str] = None
     email_password: Optional[str] = None
     email_from: Optional[str] = None
-    email_to: List[str] = field(default_factory=list)
+    email_to: list[str] = field(default_factory=list)
 
     slack_enabled: bool = False
     slack_webhook_url: Optional[str] = None
@@ -105,7 +105,7 @@ class NotificationConfig:
     slack_username: str = "BudgetGuard"
 
     webhook_enabled: bool = False
-    webhook_urls: List[str] = field(default_factory=list)
+    webhook_urls: list[str] = field(default_factory=list)
     webhook_timeout: int = 10
 
     log_enabled: bool = True
@@ -126,7 +126,7 @@ class AlertRateLimiter:
     def __init__(self, window_minutes: int = 15, max_alerts: int = 10):
         self.window_minutes = window_minutes
         self.max_alerts = max_alerts
-        self.alert_history: Dict[str, List[datetime]] = {}
+        self.alert_history: dict[str, list[datetime]] = {}
         self.lock = Lock()
 
     def should_send_alert(self, alert_key: str) -> bool:
@@ -163,10 +163,10 @@ class AlertAggregator:
 
     def __init__(self, window_minutes: int = 5):
         self.window_minutes = window_minutes
-        self.pending_alerts: Dict[str, List[AlertMessage]] = {}
+        self.pending_alerts: dict[str, list[AlertMessage]] = {}
         self.lock = Lock()
 
-    def add_alert(self, alert: AlertMessage) -> Optional[List[AlertMessage]]:
+    def add_alert(self, alert: AlertMessage) -> Optional[list[AlertMessage]]:
         """Add alert to aggregation. Returns alerts to send if window expired."""
         with self.lock:
             # Create aggregation key
@@ -188,7 +188,7 @@ class AlertAggregator:
 
             return None
 
-    def flush_all(self) -> Dict[str, List[AlertMessage]]:
+    def flush_all(self) -> dict[str, list[AlertMessage]]:
         """Flush all pending alerts."""
         with self.lock:
             result = self.pending_alerts.copy()
@@ -200,7 +200,7 @@ class MessageTemplates:
     """Templates for alert messages."""
 
     @staticmethod
-    def threshold_warning(alert: AlertMessage) -> Dict[str, str]:
+    def threshold_warning(alert: AlertMessage) -> dict[str, str]:
         """Template for threshold warning alerts."""
         utilization = alert.utilization_percentage or 0
         return {
@@ -234,7 +234,7 @@ Please monitor your usage to avoid service disruption.
         }
 
     @staticmethod
-    def budget_exceeded(alert: AlertMessage) -> Dict[str, str]:
+    def budget_exceeded(alert: AlertMessage) -> dict[str, str]:
         """Template for budget exceeded alerts."""
         utilization = alert.utilization_percentage or 0
         return {
@@ -270,7 +270,7 @@ Services may be throttled or blocked to prevent further overage.
         }
 
     @staticmethod
-    def throttling_activated(alert: AlertMessage) -> Dict[str, str]:
+    def throttling_activated(alert: AlertMessage) -> dict[str, str]:
         """Template for throttling activation alerts."""
         return {
             "subject": f"Throttling Activated: {alert.service}",
@@ -403,7 +403,7 @@ class BudgetNotificationService:
 
         return success
 
-    def _send_aggregated_alerts(self, alerts: List[AlertMessage]) -> bool:
+    def _send_aggregated_alerts(self, alerts: list[AlertMessage]) -> bool:
         """Send aggregated alerts."""
         if not alerts:
             return True
@@ -647,7 +647,7 @@ def send_budget_alert(
     current_cost: Optional[float] = None,
     budget_limit: Optional[float] = None,
     utilization_percentage: Optional[float] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: Optional[dict[str, Any]] = None,
 ) -> bool:
     """Convenience function to send a budget alert."""
     alert = AlertMessage(
@@ -678,7 +678,7 @@ async def send_budget_alert_async(
     current_cost: Optional[float] = None,
     budget_limit: Optional[float] = None,
     utilization_percentage: Optional[float] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: Optional[dict[str, Any]] = None,
 ) -> bool:
     """Convenience function to send a budget alert asynchronously."""
     alert = AlertMessage(

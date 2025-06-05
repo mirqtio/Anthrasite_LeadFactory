@@ -69,11 +69,9 @@ def test_gpu_enums():
         assert gpu_module.GPUInstanceType.HETZNER_RTX3080.value == "hetzner.rtx3080"
         assert gpu_module.GPUInstanceType.AWS_G4DN_XLARGE.value == "g4dn.xlarge"
 
-        print("✓ GPU instance types work correctly")
         return True
 
-    except Exception as e:
-        print(f"✗ GPU enum test failed: {e}")
+    except Exception:
         return False
 
 
@@ -138,11 +136,9 @@ def test_hetzner_client():
 
         client.delete_server("123")  # Should not throw
 
-        print("✓ Hetzner API client works correctly")
         return True
 
-    except Exception as e:
-        print(f"✗ Hetzner client test failed: {e}")
+    except Exception:
         return False
 
 
@@ -199,11 +195,9 @@ def test_data_classes():
         assert instance.instance_id == "test-123"
         assert instance.status == "running"
 
-        print("✓ GPU data classes work correctly")
         return True
 
-    except Exception as e:
-        print(f"✗ Data classes test failed: {e}")
+    except Exception:
         return False
 
 
@@ -220,11 +214,9 @@ def test_sql_migration():
         assert "task_type TEXT NOT NULL" in sql_content
         assert "CREATE INDEX" in sql_content
 
-        print("✓ SQL migration is valid")
         return True
 
-    except Exception as e:
-        print(f"✗ SQL migration test failed: {e}")
+    except Exception:
         return False
 
 
@@ -251,17 +243,14 @@ def test_config_files():
         assert "hetzner_rtx3080" in config["instances"]
         assert "hetzner_rtx4090" in config["instances"]
 
-        print("✓ GPU configuration is valid")
         return True
 
-    except Exception as e:
-        print(f"✗ Configuration test failed: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run all simple tests."""
-    print("Running simple GPU system tests...\n")
 
     tests = [
         test_gpu_enums,
@@ -280,18 +269,12 @@ def main():
                 passed += 1
             else:
                 failed += 1
-        except Exception as e:
-            print(f"✗ Test {test.__name__} crashed: {e}")
+        except Exception:
             failed += 1
-        print()
-
-    print(f"Results: {passed} passed, {failed} failed")
 
     if failed == 0:
-        print("🎉 All simple tests passed! GPU system components are working.")
         return 0
     else:
-        print("❌ Some tests failed. Check the issues above.")
         return 1
 
 

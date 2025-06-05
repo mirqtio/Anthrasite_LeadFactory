@@ -360,11 +360,11 @@ def process_yelp_business(business: dict, category: str) -> Optional[int]:
     try:
         # Extract location information
         location = business.get("location", {})
-        
+
         # Task 42: Extract city and state separately
         city = location.get("city", "")
         state = location.get("state", "")
-        
+
         # Build address without city/state for the address field
         address_parts = []
         if location.get("address1"):
@@ -372,7 +372,7 @@ def process_yelp_business(business: dict, category: str) -> Optional[int]:
         if location.get("address2"):
             address_parts.append(location.get("address2"))
         address = ", ".join(address_parts) if address_parts else ""
-        
+
         # Extract other information
         name = business.get("name", "")
         zip_code = location.get("zip_code", "")
@@ -428,7 +428,7 @@ def process_google_place(
         formatted_address = details.get("formatted_address", "")
         website = details.get("website", "")
         phone = details.get("formatted_phone_number", "")
-        
+
         # Task 42: Parse city, state, and zip from formatted address
         # Google provides address_components which we can use
         address_components = details.get("address_components", [])
@@ -437,7 +437,7 @@ def process_google_place(
         city = ""
         state = ""
         zip_code = ""
-        
+
         for component in address_components:
             types = component.get("types", [])
             if "street_number" in types:
@@ -450,7 +450,7 @@ def process_google_place(
                 state = component.get("short_name", "")
             elif "postal_code" in types:
                 zip_code = component.get("long_name", "")
-        
+
         # Build street address
         address_parts = []
         if street_number:
@@ -458,7 +458,7 @@ def process_google_place(
         if route:
             address_parts.append(route)
         address = " ".join(address_parts) if address_parts else formatted_address
-        
+
         # Extract email (in a real implementation, this would involve scraping the website)
         email = extract_email_from_website(website)
         # Save business to database

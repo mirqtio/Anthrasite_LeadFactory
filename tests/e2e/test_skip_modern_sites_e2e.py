@@ -2,15 +2,16 @@
 
 import json
 import subprocess
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
 
 from leadfactory.utils.e2e_db_connector import db_connection, execute_query
 
 
 class TestSkipModernSitesE2E:
     """End-to-end tests for skipping modern sites functionality."""
-    
+
     @pytest.fixture
     def setup_e2e_businesses(self):
         """Set up test businesses for E2E testing."""
@@ -25,11 +26,11 @@ class TestSkipModernSitesE2E:
             cursor.execute("DELETE FROM features WHERE business_id IN (SELECT id FROM businesses WHERE name LIKE 'E2E Modern Test%')")
             cursor.execute("DELETE FROM businesses WHERE name LIKE 'E2E Modern Test%'")
             conn.commit()
-            
+
             # Insert test businesses with various performance profiles
             cursor.execute("""
                 INSERT INTO businesses (name, website, email, address, status, vertical)
-                VALUES 
+                VALUES
                     ('E2E Modern Test - High Performer', 'https://vercel.com', 'test1@example.com', '123 Modern Ave', 'pending', 'Tech'),
                     ('E2E Modern Test - Low Performer', 'http://old-site-example.com', 'test2@example.com', '456 Legacy Rd', 'pending', 'Retail'),
                     ('E2E Modern Test - Medium Performer', 'https://medium-site.com', 'test3@example.com', '789 Average St', 'pending', 'Services')
@@ -37,9 +38,9 @@ class TestSkipModernSitesE2E:
             """)
             ids = [(row[0],) for row in cursor.fetchall()]
             conn.commit()
-            
+
             yield [id[0] for id in ids]
-            
+
             # Cleanup
             cursor.execute("""
                 DELETE FROM emails WHERE business_id IN %s
@@ -48,14 +49,14 @@ class TestSkipModernSitesE2E:
             cursor.execute("DELETE FROM businesses WHERE id IN %s", (tuple([id[0] for id in ids]),))
             conn.commit()
 
-    @patch('bin.enrich.PageSpeedAnalyzer')
-    @patch('bin.enrich.TechStackAnalyzer')
+    @patch("bin.enrich.PageSpeedAnalyzer")
+    @patch("bin.enrich.TechStackAnalyzer")
     def test_full_pipeline_with_modern_site_filtering(
         self, mock_tech_analyzer_class, mock_pagespeed_class, setup_e2e_businesses
     ):
         """Test the complete pipeline flow with modern site filtering."""
         business_ids = setup_e2e_businesses
-        
+
         # Mock analyzers with different scores for each site
         mock_tech_analyzer = Mock()
         mock_tech_analyzer.analyze_website.side_effect = [
@@ -64,7 +65,7 @@ class TestSkipModernSitesE2E:
             ({"technologies": ["React", "Express"]}, None),            # Medium
         ]
         mock_tech_analyzer_class.return_value = mock_tech_analyzer
-        
+
         mock_pagespeed = Mock()
         mock_pagespeed.analyze_website.side_effect = [
             # High performer - should be skipped
@@ -90,23 +91,23 @@ class TestSkipModernSitesE2E:
             }, None),
         ]
         mock_pagespeed_class.return_value = mock_pagespeed
-        
+
         # Run enrichment for test businesses
         businesses = execute_query("""
-            SELECT * FROM businesses 
+            SELECT * FROM businesses
             WHERE id IN %s
             ORDER BY id
         """, (tuple(business_ids),))
-        
+
         for business in businesses:
             from bin.enrich import enrich_business
             result = enrich_business(business)
             assert result is True
-        
+
         # Verify results
         with db_connection() as conn:
             cursor = conn.cursor()
-            
+
             # Check high performer (should be skipped)
             cursor.execute("""
                 SELECT b.id, b.name, b.status, f.page_speed, f.tech_stack
@@ -114,13 +115,13 @@ class TestSkipModernSitesE2E:
                 LEFT JOIN features f ON b.id = f.business_id
                 WHERE b.id = %s
             """, (business_ids[0],))
-            
+
             high_perf = cursor.fetchone()
             assert high_perf[2] == "skipped_modern_site"
             assert high_perf[3] == 90  # Threshold score
             tech_stack = json.loads(high_perf[4])
             assert tech_stack.get("skip_reason") == "modern_site"
-            
+
             # Check low performer (should be processed normally)
             cursor.execute("""
                 SELECT b.id, b.name, b.status, f.page_speed, f.tech_stack
@@ -128,13 +129,13 @@ class TestSkipModernSitesE2E:
                 LEFT JOIN features f ON b.id = f.business_id
                 WHERE b.id = %s
             """, (business_ids[1],))
-            
+
             low_perf = cursor.fetchone()
             assert low_perf[2] == "pending"  # Not skipped
             assert low_perf[3] == 35  # Actual score
             tech_stack = json.loads(low_perf[4])
             assert "PHP" in tech_stack.get("technologies", [])
-            
+
             # Check medium performer (should be processed)
             cursor.execute("""
                 SELECT b.id, b.name, b.status, f.page_speed, f.tech_stack
@@ -142,7 +143,7 @@ class TestSkipModernSitesE2E:
                 LEFT JOIN features f ON b.id = f.business_id
                 WHERE b.id = %s
             """, (business_ids[2],))
-            
+
             medium_perf = cursor.fetchone()
             assert medium_perf[2] == "pending"  # Not skipped
             assert medium_perf[3] == 75  # Actual score
@@ -150,29 +151,29 @@ class TestSkipModernSitesE2E:
     def test_skipped_sites_excluded_from_email_queue(self, setup_e2e_businesses):
         """Test that skipped modern sites don't get queued for emails."""
         business_ids = setup_e2e_businesses
-        
+
         # Manually set up one site as skipped
         with db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                UPDATE businesses 
-                SET status = 'skipped_modern_site' 
+                UPDATE businesses
+                SET status = 'skipped_modern_site'
                 WHERE id = %s
             """, (business_ids[0],))
             cursor.execute("""
                 INSERT INTO features (business_id, tech_stack, page_speed)
                 VALUES (%s, %s, %s)
             """, (business_ids[0], json.dumps({"skip_reason": "modern_site"}), 95))
-            
+
             # Set up other sites as enriched but not skipped
             for business_id in business_ids[1:]:
                 cursor.execute("""
                     INSERT INTO features (business_id, tech_stack, page_speed)
                     VALUES (%s, %s, %s)
                 """, (business_id, json.dumps({"technologies": ["PHP"]}), 45))
-            
+
             conn.commit()
-        
+
         # Query for businesses that should receive emails
         # This simulates what the email queue would do
         email_candidates = execute_query("""
@@ -183,10 +184,10 @@ class TestSkipModernSitesE2E:
             AND b.status != 'skipped_modern_site'
             AND b.email IS NOT NULL
         """, (tuple(business_ids),))
-        
+
         # Should only have 2 businesses (not the skipped one)
         assert len(email_candidates) == 2
-        candidate_ids = [c['id'] for c in email_candidates]
+        candidate_ids = [c["id"] for c in email_candidates]
         assert business_ids[0] not in candidate_ids
         assert business_ids[1] in candidate_ids
         assert business_ids[2] in candidate_ids
@@ -204,35 +205,35 @@ class TestSkipModernSitesE2E:
     ):
         """Test various threshold edge cases."""
         business_id = setup_e2e_businesses[0]
-        
-        with patch('bin.enrich.PageSpeedAnalyzer') as mock_pagespeed_class:
-            with patch('bin.enrich.TechStackAnalyzer') as mock_tech_class:
+
+        with patch("bin.enrich.PageSpeedAnalyzer") as mock_pagespeed_class:
+            with patch("bin.enrich.TechStackAnalyzer") as mock_tech_class:
                 # Mock analyzers
                 mock_tech = Mock()
                 mock_tech.analyze_website.return_value = ({"technologies": ["React"]}, None)
                 mock_tech_class.return_value = mock_tech
-                
+
                 mock_pagespeed = Mock()
                 mock_pagespeed.analyze_website.return_value = ({
                     "performance_score": performance_score,
                     "accessibility_score": accessibility_score,
                 }, None)
                 mock_pagespeed_class.return_value = mock_pagespeed
-                
+
                 # Get and enrich business
                 business = execute_query(
                     "SELECT * FROM businesses WHERE id = %s",
                     (business_id,)
                 )[0]
-                
+
                 from bin.enrich import enrich_business
                 result = enrich_business(business)
                 assert result is True
-                
+
                 # Check resulting status
                 status = execute_query(
                     "SELECT status FROM businesses WHERE id = %s",
                     (business_id,)
-                )[0]['status']
-                
+                )[0]["status"]
+
                 assert status == expected_status

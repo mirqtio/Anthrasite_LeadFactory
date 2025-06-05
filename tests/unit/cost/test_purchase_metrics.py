@@ -2,6 +2,7 @@
 Unit tests for purchase metrics tracking functionality.
 """
 
+import contextlib
 import json
 import tempfile
 from datetime import datetime, timedelta
@@ -37,10 +38,8 @@ class TestPurchaseMetricsTracker:
         """Clean up test fixtures."""
         import os
 
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.unlink(self.temp_db.name)
-        except FileNotFoundError:
-            pass
 
     def test_record_purchase_basic(self):
         """Test basic purchase recording functionality."""
@@ -261,7 +260,7 @@ class TestPurchaseMetricsTracker:
     def test_update_aggregated_metrics(self):
         """Test aggregated metrics updating."""
         # Mock daily summary
-        today = datetime.now().strftime("%Y-%m-%d")
+        datetime.now().strftime("%Y-%m-%d")
         mock_daily_summary = {
             "total_revenue_cents": 5998,
         }

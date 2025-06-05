@@ -8,6 +8,7 @@ It serves as the main interface for real-time purchase monitoring and analytics.
 """
 
 import asyncio
+import contextlib
 import json
 import sqlite3
 from dataclasses import dataclass
@@ -57,12 +58,12 @@ class DashboardData:
 
     timestamp: datetime
     period: MonitoringPeriod
-    kpis: List[PurchaseKPI]
-    revenue_breakdown: Dict[str, Any]
-    conversion_metrics: Dict[str, Any]
-    alert_summary: Dict[str, Any]
-    recent_transactions: List[Dict[str, Any]]
-    performance_trends: Dict[str, List[Dict[str, Any]]]
+    kpis: list[PurchaseKPI]
+    revenue_breakdown: dict[str, Any]
+    conversion_metrics: dict[str, Any]
+    alert_summary: dict[str, Any]
+    recent_transactions: list[dict[str, Any]]
+    performance_trends: dict[str, list[dict[str, Any]]]
 
 
 class PurchaseMonitor:
@@ -119,10 +120,8 @@ class PurchaseMonitor:
 
         if self._monitoring_task:
             self._monitoring_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._monitoring_task
-            except asyncio.CancelledError:
-                pass
 
         self.logger.info("Purchase monitoring stopped")
 
@@ -236,7 +235,7 @@ class PurchaseMonitor:
 
     def _calculate_kpis(
         self, period: AggregationPeriod, lookback_days: int
-    ) -> List[PurchaseKPI]:
+    ) -> list[PurchaseKPI]:
         """Calculate key performance indicators."""
         kpis = []
 
@@ -365,7 +364,7 @@ class PurchaseMonitor:
 
         return kpis
 
-    def _get_revenue_breakdown(self, period: AggregationPeriod) -> Dict[str, Any]:
+    def _get_revenue_breakdown(self, period: AggregationPeriod) -> dict[str, Any]:
         """Get revenue breakdown by audit type and other dimensions."""
         try:
             metrics = self.metrics_aggregator.get_aggregated_metrics(period, limit=30)
@@ -406,7 +405,7 @@ class PurchaseMonitor:
             self.logger.error(f"Failed to get revenue breakdown: {e}")
             return {}
 
-    def _get_conversion_metrics(self) -> Dict[str, Any]:
+    def _get_conversion_metrics(self) -> dict[str, Any]:
         """Get conversion funnel metrics."""
         try:
             # Get conversion metrics from purchase tracker
@@ -421,7 +420,7 @@ class PurchaseMonitor:
             self.logger.error(f"Failed to get conversion metrics: {e}")
             return {}
 
-    def _get_recent_transactions(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def _get_recent_transactions(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent transactions for display."""
         try:
             # Get recent transactions from financial tracker
@@ -437,7 +436,7 @@ class PurchaseMonitor:
 
     def _get_performance_trends(
         self, period: AggregationPeriod, lookback_days: int
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    ) -> dict[str, list[dict[str, Any]]]:
         """Get performance trends over time."""
         try:
             metrics = self.metrics_aggregator.get_aggregated_metrics(
@@ -479,7 +478,7 @@ class PurchaseMonitor:
             self.logger.error(f"Failed to get performance trends: {e}")
             return {}
 
-    def get_monitoring_status(self) -> Dict[str, Any]:
+    def get_monitoring_status(self) -> dict[str, Any]:
         """Get current monitoring system status.
 
         Returns:

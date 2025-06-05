@@ -40,7 +40,7 @@ class SecureLinkData(BaseModel):
     purchase_id: str = Field(..., description="Purchase transaction identifier")
     expires_at: int = Field(..., description="Expiration timestamp")
     access_type: str = Field(default="view", description="Type of access granted")
-    metadata: Dict = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict = Field(default_factory=dict, description="Additional metadata")
 
 
 class SecureLinkGenerator:
@@ -65,7 +65,7 @@ class SecureLinkGenerator:
         base_url: str,
         expiry_days: Optional[int] = None,
         access_type: str = "view",
-        metadata: Optional[Dict] = None,
+        metadata: Optional[dict] = None,
     ) -> str:
         """
         Generate a secure link for report access.

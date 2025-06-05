@@ -106,8 +106,8 @@ class BudgetConfiguration:
         self.db_path = db_path or os.getenv("BUDGET_DB_PATH", "budget_config.db")
 
         self._lock = threading.RLock()
-        self._budget_limits: Dict[str, BudgetLimit] = {}
-        self._alert_thresholds: Dict[AlertLevel, AlertThreshold] = {}
+        self._budget_limits: dict[str, BudgetLimit] = {}
+        self._alert_thresholds: dict[AlertLevel, AlertThreshold] = {}
         self._global_enabled = True
 
         # Initialize default alert thresholds
@@ -463,7 +463,7 @@ class BudgetConfiguration:
 
         return None
 
-    def get_all_budget_limits(self) -> Dict[str, BudgetLimit]:
+    def get_all_budget_limits(self) -> dict[str, BudgetLimit]:
         """Get all configured budget limits."""
         with self._lock:
             return self._budget_limits.copy()
@@ -550,7 +550,7 @@ class BudgetConfiguration:
         """Get alert threshold for specific level."""
         return self._alert_thresholds.get(level)
 
-    def get_all_alert_thresholds(self) -> Dict[AlertLevel, AlertThreshold]:
+    def get_all_alert_thresholds(self) -> dict[AlertLevel, AlertThreshold]:
         """Get all alert thresholds."""
         return self._alert_thresholds.copy()
 
@@ -588,7 +588,7 @@ class BudgetConfiguration:
 
         logger.info(f"Budget system {'enabled' if enabled else 'disabled'}")
 
-    def validate_configuration(self) -> List[str]:
+    def validate_configuration(self) -> list[str]:
         """
         Validate current configuration and return list of issues.
 
@@ -636,7 +636,7 @@ class BudgetConfiguration:
 
         return issues
 
-    def export_configuration(self) -> Dict[str, Any]:
+    def export_configuration(self) -> dict[str, Any]:
         """
         Export current configuration to dictionary.
 
@@ -656,7 +656,7 @@ class BudgetConfiguration:
                 "exported_at": datetime.now().isoformat(),
             }
 
-    def import_configuration(self, config_data: Dict[str, Any], persist: bool = True):
+    def import_configuration(self, config_data: dict[str, Any], persist: bool = True):
         """
         Import configuration from dictionary.
 

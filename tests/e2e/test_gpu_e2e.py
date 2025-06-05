@@ -52,7 +52,7 @@ class TestGPUAutoScalingE2E:
             patch("leadfactory.services.gpu_manager.SECURITY_AVAILABLE", True),
             patch("leadfactory.services.gpu_manager.credential_manager") as mock_creds,
             patch("leadfactory.services.gpu_manager.network_security") as mock_network,
-            patch("leadfactory.services.gpu_manager.audit_logger") as mock_audit,
+            patch("leadfactory.services.gpu_manager.audit_logger"),
             patch("leadfactory.services.gpu_manager.rate_limiter") as mock_rate,
         ):
             # Setup mocks
@@ -125,9 +125,6 @@ class TestGPUAutoScalingE2E:
             ]
 
             for i, queue_state in enumerate(queue_progression):
-                print(
-                    f"\n--- E2E Test Step {i + 1}: Queue state {queue_state['pending']} pending ---"
-                )
 
                 # Update queue metrics
                 mock_metrics.return_value = queue_state
@@ -185,9 +182,6 @@ class TestGPUAutoScalingE2E:
                 # Simulate time passage
                 await asyncio.sleep(0.1)
 
-            print(
-                f"\n--- E2E Test Complete: Final instances: {len(gpu_manager.active_instances)} ---"
-            )
 
     @pytest.mark.asyncio
     async def test_pipeline_integration_e2e(self):
@@ -443,10 +437,7 @@ class TestGPUAutoScalingE2E:
 
                     # Verify cost-optimized instance type was selected
                     if len(gpu_manager.active_instances) > 0:
-                        instance = list(gpu_manager.active_instances.values())[0]
-                        print(
-                            f"Queue size {queue_size} -> Instance type {instance.instance_type}"
-                        )
+                        list(gpu_manager.active_instances.values())[0]
 
                         # For this test, we verify the scaling logic would select appropriate type
                         # The actual selection happens in _scale_up method
@@ -541,7 +532,6 @@ class TestGPUPerformanceE2E:
                 f"Processing took {processing_time:.2f}s, should be < 5s"
             )
 
-            print(f"Processed 10 queue updates in {processing_time:.2f} seconds")
 
 
 if __name__ == "__main__":

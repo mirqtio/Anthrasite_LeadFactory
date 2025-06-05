@@ -426,7 +426,7 @@ class TestSendGridThrottlingIntegration(unittest.TestCase):
 
         # Batch should be removed after max attempts
         with self.throttler._get_db_connection() as conn:
-            row = conn.execute(
+            conn.execute(
                 "SELECT * FROM email_batches WHERE batch_id = ?", ("error-batch",)
             ).fetchone()
             # Should be None after max attempts exceeded

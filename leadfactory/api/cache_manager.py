@@ -32,7 +32,7 @@ class CacheConfig:
     key_prefix: str = "leadfactory"
 
     # TTL configurations for different data types
-    ttl_configs: Dict[str, int] = None
+    ttl_configs: dict[str, int] = None
 
     def __post_init__(self):
         if self.ttl_configs is None:
@@ -213,9 +213,7 @@ class CacheManager:
         count = 0
 
         # Clear from memory cache
-        keys_to_delete = [
-            k for k in self._memory_cache.keys() if k.startswith(pattern[:-1])
-        ]
+        keys_to_delete = [k for k in self._memory_cache if k.startswith(pattern[:-1])]
         for key in keys_to_delete:
             del self._memory_cache[key]
             count += 1
@@ -240,7 +238,7 @@ class CacheManager:
         logger.info(f"Cleared {count} keys from namespace {namespace}")
         return count
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         total_requests = self._cache_stats["hits"] + self._cache_stats["misses"]
         hit_rate = (
@@ -354,12 +352,10 @@ if __name__ == "__main__":
     # Basic usage
     cache.set("test_key", {"data": "test"}, ttl=60)
     value = cache.get("test_key")
-    print(f"Retrieved: {value}")
 
     # Using decorator
     @cache_api_response(ttl=30)
     def expensive_api_call(param1: str, param2: int) -> dict:
-        print(f"Executing expensive call with {param1}, {param2}")
         time.sleep(1)  # Simulate expensive operation
         return {
             "result": f"{param1}_{param2}",
@@ -368,12 +364,9 @@ if __name__ == "__main__":
 
     # First call - will execute function
     result1 = expensive_api_call("test", 123)
-    print(f"First call: {result1}")
 
     # Second call - will use cache
     result2 = expensive_api_call("test", 123)
-    print(f"Second call (cached): {result2}")
 
     # Get cache stats
     stats = cache.get_stats()
-    print(f"Cache stats: {stats}")

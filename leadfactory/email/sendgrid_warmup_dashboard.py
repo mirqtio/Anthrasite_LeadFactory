@@ -81,7 +81,7 @@ class SendGridWarmupDashboard:
         self.integration_service = integration_service
         logger.info("SendGrid warmup dashboard initialized")
 
-    def get_warmup_metrics(self) -> Dict[str, Any]:
+    def get_warmup_metrics(self) -> dict[str, Any]:
         """Collect comprehensive warmup metrics for all IPs."""
         try:
             if not self.warmup_scheduler:
@@ -405,7 +405,7 @@ class SendGridWarmupDashboard:
         except Exception as e:
             logger.error(f"Error updating Prometheus metrics: {e}")
 
-    def get_alert_conditions(self) -> List[Dict[str, Any]]:
+    def get_alert_conditions(self) -> list[dict[str, Any]]:
         """Check for alert conditions in warmup system."""
         alerts = []
 

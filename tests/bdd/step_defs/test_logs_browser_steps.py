@@ -672,7 +672,7 @@ def logs_filtered_by_all_criteria(browser):
     """Verify logs are filtered by all applied criteria."""
     time.sleep(1)  # Wait for filters to apply
     logs_table = browser.find_element(By.CLASS_NAME, "logs-table")
-    rows = logs_table.find_elements(By.TAG_NAME, "tr")[1:]
+    logs_table.find_elements(By.TAG_NAME, "tr")[1:]
 
     # Verify table is present and filters were applied
     assert logs_table.is_displayed()

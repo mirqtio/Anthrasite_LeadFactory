@@ -55,7 +55,7 @@ class E2EPreflightChecker:
         if not self.env_file.exists():
             return
 
-        with open(self.env_file, "r") as f:
+        with open(self.env_file) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:

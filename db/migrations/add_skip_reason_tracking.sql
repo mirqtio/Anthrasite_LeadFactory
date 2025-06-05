@@ -2,12 +2,12 @@
 -- This helps track why businesses were skipped in the pipeline
 
 -- Add skip_reason column to processing_status table
-ALTER TABLE processing_status 
+ALTER TABLE processing_status
 ADD COLUMN IF NOT EXISTS skip_reason TEXT;
 
 -- Create index for finding skipped businesses
-CREATE INDEX IF NOT EXISTS idx_processing_status_skip_reason 
-ON processing_status(stage, status) 
+CREATE INDEX IF NOT EXISTS idx_processing_status_skip_reason
+ON processing_status(stage, status)
 WHERE skip_reason IS NOT NULL;
 
 -- Add audit_score column to businesses table for quick filtering
@@ -15,8 +15,8 @@ ALTER TABLE businesses
 ADD COLUMN IF NOT EXISTS audit_score INTEGER DEFAULT NULL;
 
 -- Create index for score-based queries
-CREATE INDEX IF NOT EXISTS idx_businesses_audit_score 
-ON businesses(audit_score) 
+CREATE INDEX IF NOT EXISTS idx_businesses_audit_score
+ON businesses(audit_score)
 WHERE audit_score IS NOT NULL;
 
 -- Update function to sync scores from stage_results to businesses table
@@ -25,7 +25,7 @@ BEGIN
     UPDATE businesses b
     SET audit_score = (sr.results->>'score')::int
     FROM stage_results sr
-    WHERE b.id = sr.business_id 
+    WHERE b.id = sr.business_id
     AND sr.stage = 'score'
     AND sr.results ? 'score';
 END;
@@ -35,7 +35,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_audit_score_trigger() RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.stage = 'score' AND NEW.results ? 'score' THEN
-        UPDATE businesses 
+        UPDATE businesses
         SET audit_score = (NEW.results->>'score')::int
         WHERE id = NEW.business_id;
     END IF;

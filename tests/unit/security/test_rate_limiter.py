@@ -94,7 +94,7 @@ class TestRateLimiter:
         config = self.rate_limiter.configs[operation]
 
         # Make requests up to the limit
-        for i in range(config.per_minute):
+        for _i in range(config.per_minute):
             result = self.rate_limiter.check_rate_limit(user_id, operation)
             assert result.allowed is True
 
@@ -113,7 +113,7 @@ class TestRateLimiter:
         # Make requests up to limit + burst allowance
         total_allowed = config.per_minute + config.burst_allowance
 
-        for i in range(total_allowed):
+        for _i in range(total_allowed):
             result = self.rate_limiter.check_rate_limit(user_id, operation)
             assert result.allowed is True
 
@@ -128,7 +128,7 @@ class TestRateLimiter:
         config = self.rate_limiter.configs[operation]
 
         # Exceed the rate limit to trigger cooldown
-        for i in range(config.per_minute + config.burst_allowance + 1):
+        for _i in range(config.per_minute + config.burst_allowance + 1):
             self.rate_limiter.check_rate_limit(user_id, operation)
 
         # User should be in cooldown
@@ -144,7 +144,7 @@ class TestRateLimiter:
         config = self.rate_limiter.configs[operation]
 
         # Exhaust rate limit for user1
-        for i in range(config.per_minute + config.burst_allowance):
+        for _i in range(config.per_minute + config.burst_allowance):
             result = self.rate_limiter.check_rate_limit(user1, operation)
             assert result.allowed is True
 
@@ -162,7 +162,7 @@ class TestRateLimiter:
 
         # Exhaust PDF generation limit
         config_gen = self.rate_limiter.configs[RateLimitType.PDF_GENERATION]
-        for i in range(config_gen.per_minute + config_gen.burst_allowance):
+        for _i in range(config_gen.per_minute + config_gen.burst_allowance):
             result = self.rate_limiter.check_rate_limit(
                 user_id, RateLimitType.PDF_GENERATION
             )
@@ -184,7 +184,7 @@ class TestRateLimiter:
         operation = RateLimitType.PDF_ACCESS
 
         # Make some requests
-        for i in range(3):
+        for _i in range(3):
             self.rate_limiter.check_rate_limit(user_id, operation)
 
         stats = self.rate_limiter.get_user_stats(user_id)
@@ -226,7 +226,7 @@ class TestRateLimiter:
         config = self.rate_limiter.configs[operation]
 
         # Exceed rate limit
-        for i in range(config.per_minute + config.burst_allowance + 1):
+        for _i in range(config.per_minute + config.burst_allowance + 1):
             self.rate_limiter.check_rate_limit(user_id, operation)
 
         # Verify that violation was logged
@@ -239,7 +239,7 @@ class TestRateLimiter:
         config = self.rate_limiter.configs[operation]
 
         # Make requests up to the limit
-        for i in range(config.per_minute):
+        for _i in range(config.per_minute):
             result = self.rate_limiter.check_rate_limit(user_id, operation)
             assert result.allowed is True
 
@@ -266,7 +266,7 @@ class TestRateLimiter:
         config = self.rate_limiter.configs[operation]
 
         # Exceed rate limit
-        for i in range(config.per_minute + config.burst_allowance + 1):
+        for _i in range(config.per_minute + config.burst_allowance + 1):
             result = self.rate_limiter.check_rate_limit(user_id, operation)
 
         # Last result should have violation details

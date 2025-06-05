@@ -43,7 +43,7 @@ class TestGPTUsageTracker:
 
     def test_init_creates_database(self, temp_db):
         """Test that initialization creates the database and tables."""
-        tracker = GPTUsageTracker(db_path=temp_db)
+        GPTUsageTracker(db_path=temp_db)
 
         # Check that database file exists
         assert os.path.exists(temp_db)

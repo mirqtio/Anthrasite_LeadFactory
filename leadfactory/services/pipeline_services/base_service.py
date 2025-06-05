@@ -50,8 +50,8 @@ class HealthResponse(BaseModel):
     service: str
     version: str
     uptime_seconds: float
-    dependencies: Dict[str, str]
-    metrics: Dict[str, Any]
+    dependencies: dict[str, str]
+    metrics: dict[str, Any]
 
 
 class TaskRequest(BaseModel):
@@ -59,7 +59,7 @@ class TaskRequest(BaseModel):
 
     task_id: str
     priority: int = 5
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[dict[str, Any]] = None
     timeout_seconds: Optional[int] = 300
 
 
@@ -68,7 +68,7 @@ class TaskResponse(BaseModel):
 
     task_id: str
     status: str  # success, error, processing
-    result: Optional[Dict[str, Any]] = None
+    result: Optional[dict[str, Any]] = None
     error: Optional[str] = None
     processing_time_ms: float
     timestamp: datetime
@@ -205,7 +205,7 @@ class BasePipelineService(ABC):
                 },
             }
 
-    async def _check_dependencies(self) -> Dict[str, str]:
+    async def _check_dependencies(self) -> dict[str, str]:
         """Check the health of service dependencies."""
         dependencies = {
             "database": "ok",  # Implement actual health checks
@@ -217,7 +217,7 @@ class BasePipelineService(ABC):
         return dependencies
 
     @abstractmethod
-    async def _process_task(self, request: TaskRequest) -> Dict[str, Any]:
+    async def _process_task(self, request: TaskRequest) -> dict[str, Any]:
         """
         Process a task through this pipeline stage.
 
@@ -266,11 +266,11 @@ class ServiceRegistry:
         }
         logger.info(f"Registered service {service_name} at {host}:{port}")
 
-    def get_service(self, service_name: str) -> Optional[Dict[str, Any]]:
+    def get_service(self, service_name: str) -> Optional[dict[str, Any]]:
         """Get service information by name."""
         return self.services.get(service_name)
 
-    def list_services(self) -> Dict[str, Dict[str, Any]]:
+    def list_services(self) -> dict[str, dict[str, Any]]:
         """List all registered services."""
         return self.services.copy()
 

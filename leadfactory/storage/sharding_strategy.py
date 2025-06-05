@@ -34,7 +34,7 @@ class ShardConfig:
     username: str
     password: str
     max_connections: int = 20
-    read_replicas: List[Dict[str, Any]] = None
+    read_replicas: list[dict[str, Any]] = None
 
     def __post_init__(self):
         if self.read_replicas is None:
@@ -46,7 +46,7 @@ class ShardingConfig:
     """Overall sharding configuration."""
 
     strategy: ShardingStrategy
-    shards: List[ShardConfig]
+    shards: list[ShardConfig]
     default_shard: str
     replication_factor: int = 2
 
@@ -73,7 +73,7 @@ class ShardRouter:
             f"Initialized shard router with {len(config.shards)} shards using {config.strategy.value} strategy"
         )
 
-    def get_shard_for_business(self, business_data: Dict[str, Any]) -> str:
+    def get_shard_for_business(self, business_data: dict[str, Any]) -> str:
         """Determine which shard should store a business record."""
         if self.strategy == ShardingStrategy.GEOGRAPHIC:
             return self._get_geographic_shard(business_data)
@@ -86,7 +86,7 @@ class ShardRouter:
         else:
             return self.config.default_shard
 
-    def get_shards_for_query(self, query_params: Dict[str, Any]) -> List[str]:
+    def get_shards_for_query(self, query_params: dict[str, Any]) -> list[str]:
         """Determine which shards need to be queried for a given query."""
         if self.strategy == ShardingStrategy.GEOGRAPHIC:
             return self._get_geographic_shards_for_query(query_params)
@@ -102,7 +102,7 @@ class ShardRouter:
 
     def get_read_shard(
         self, shard_id: str, prefer_replica: bool = True
-    ) -> Tuple[str, int, str]:
+    ) -> tuple[str, int, str]:
         """Get read endpoint for a shard (replica if available and preferred)."""
         shard = self.config.get_shard(shard_id)
         if not shard:
@@ -116,7 +116,7 @@ class ShardRouter:
         # Fall back to primary
         return shard.host, shard.port, shard.database
 
-    def _get_geographic_shard(self, business_data: Dict[str, Any]) -> str:
+    def _get_geographic_shard(self, business_data: dict[str, Any]) -> str:
         """Get shard based on geographic location."""
         # Extract location information
         zip_code = business_data.get("zip", "")
@@ -137,12 +137,12 @@ class ShardRouter:
 
         return self.config.default_shard
 
-    def _get_source_based_shard(self, business_data: Dict[str, Any]) -> str:
+    def _get_source_based_shard(self, business_data: dict[str, Any]) -> str:
         """Get shard based on data source."""
         source = business_data.get("source", "").lower()
         return self._source_map.get(source, self.config.default_shard)
 
-    def _get_hash_based_shard(self, business_data: Dict[str, Any]) -> str:
+    def _get_hash_based_shard(self, business_data: dict[str, Any]) -> str:
         """Get shard based on hash of business ID."""
         business_id = str(business_data.get("id", business_data.get("source_id", "")))
         if not business_id:
@@ -155,7 +155,7 @@ class ShardRouter:
         shard_index = int(hash_value[:8], 16) % len(self.config.shards)
         return self.config.shards[shard_index].shard_id
 
-    def _get_hybrid_shard(self, business_data: Dict[str, Any]) -> str:
+    def _get_hybrid_shard(self, business_data: dict[str, Any]) -> str:
         """Get shard using hybrid strategy (geographic + hash)."""
         # First try geographic
         geo_shard = self._get_geographic_shard(business_data)
@@ -168,8 +168,8 @@ class ShardRouter:
         return self._get_hash_based_shard(business_data)
 
     def _get_geographic_shards_for_query(
-        self, query_params: Dict[str, Any]
-    ) -> List[str]:
+        self, query_params: dict[str, Any]
+    ) -> list[str]:
         """Get shards for geographic query."""
         zip_codes = query_params.get("zip_codes", [])
         states = query_params.get("states", [])
@@ -198,7 +198,7 @@ class ShardRouter:
 
         return list(shards)
 
-    def _get_source_shards_for_query(self, query_params: Dict[str, Any]) -> List[str]:
+    def _get_source_shards_for_query(self, query_params: dict[str, Any]) -> list[str]:
         """Get shards for source-based query."""
         sources = query_params.get("sources", [])
 
@@ -212,7 +212,7 @@ class ShardRouter:
 
         return list(shards)
 
-    def _get_hybrid_shards_for_query(self, query_params: Dict[str, Any]) -> List[str]:
+    def _get_hybrid_shards_for_query(self, query_params: dict[str, Any]) -> list[str]:
         """Get shards for hybrid query."""
         geo_shards = self._get_geographic_shards_for_query(query_params)
         source_shards = self._get_source_shards_for_query(query_params)
@@ -229,7 +229,7 @@ class ShardRouter:
 
         return source_shards
 
-    def _build_geographic_map(self) -> Dict[str, str]:
+    def _build_geographic_map(self) -> dict[str, str]:
         """Build mapping from geographic identifiers to shard IDs."""
         # This is a simplified mapping - in production, this would be more comprehensive
         geographic_map = {
@@ -264,7 +264,7 @@ class ShardRouter:
 
         return geographic_map
 
-    def _build_source_map(self) -> Dict[str, str]:
+    def _build_source_map(self) -> dict[str, str]:
         """Build mapping from data sources to shard IDs."""
         source_map = {
             "yelp": "shard_yelp",

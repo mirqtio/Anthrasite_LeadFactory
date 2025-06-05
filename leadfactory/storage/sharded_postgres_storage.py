@@ -41,7 +41,7 @@ class ShardedPostgresStorage(StorageInterface):
         """
         self.shard_router = shard_router or get_shard_router()
         self.pool_size = pool_size
-        self._connection_pools: Dict[str, psycopg2.pool.ThreadedConnectionPool] = {}
+        self._connection_pools: dict[str, psycopg2.pool.ThreadedConnectionPool] = {}
         self._pool_lock = threading.Lock()
 
         # Initialize connection pools for all shards
@@ -130,10 +130,10 @@ class ShardedPostgresStorage(StorageInterface):
         self,
         shard_id: str,
         query: str,
-        params: Optional[Tuple] = None,
+        params: Optional[tuple] = None,
         fetch: bool = True,
         read_only: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Execute query on a specific shard."""
         with self.get_connection(shard_id, read_only=read_only) as conn:
             with conn.cursor() as cursor:
@@ -148,13 +148,13 @@ class ShardedPostgresStorage(StorageInterface):
 
     def execute_on_multiple_shards(
         self,
-        shard_ids: List[str],
+        shard_ids: list[str],
         query: str,
-        params: Optional[Tuple] = None,
+        params: Optional[tuple] = None,
         fetch: bool = True,
         read_only: bool = False,
         max_workers: int = 10,
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    ) -> dict[str, list[dict[str, Any]]]:
         """Execute query on multiple shards in parallel."""
         results = {}
 
@@ -178,7 +178,7 @@ class ShardedPostgresStorage(StorageInterface):
 
         return results
 
-    def insert_business(self, business_data: Dict[str, Any]) -> int:
+    def insert_business(self, business_data: dict[str, Any]) -> int:
         """Insert business data into appropriate shard."""
         # Determine target shard
         shard_id = self.shard_router.get_shard_for_business(business_data)
@@ -205,8 +205,8 @@ class ShardedPostgresStorage(StorageInterface):
             raise ValueError("Failed to insert business")
 
     def get_business_by_id(
-        self, business_id: int, hint_data: Optional[Dict[str, Any]] = None
-    ) -> Optional[Dict[str, Any]]:
+        self, business_id: int, hint_data: Optional[dict[str, Any]] = None
+    ) -> Optional[dict[str, Any]]:
         """Get business by ID, optionally using hint data for shard routing."""
         if hint_data:
             # Use hint to route to specific shard
@@ -231,8 +231,8 @@ class ShardedPostgresStorage(StorageInterface):
         return None
 
     def search_businesses(
-        self, search_params: Dict[str, Any], limit: int = 100
-    ) -> List[Dict[str, Any]]:
+        self, search_params: dict[str, Any], limit: int = 100
+    ) -> list[dict[str, Any]]:
         """Search businesses across appropriate shards."""
         # Determine which shards to query
         shard_ids = self.shard_router.get_shards_for_query(search_params)
@@ -279,8 +279,8 @@ class ShardedPostgresStorage(StorageInterface):
     def update_business(
         self,
         business_id: int,
-        updates: Dict[str, Any],
-        hint_data: Optional[Dict[str, Any]] = None,
+        updates: dict[str, Any],
+        hint_data: Optional[dict[str, Any]] = None,
     ) -> bool:
         """Update business data."""
         if hint_data:
@@ -310,7 +310,7 @@ class ShardedPostgresStorage(StorageInterface):
 
         return False
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get database statistics across all shards."""
         query = """
             SELECT
@@ -331,7 +331,7 @@ class ShardedPostgresStorage(StorageInterface):
         today_count = 0
         week_count = 0
 
-        for shard_id, shard_results in results.items():
+        for _shard_id, shard_results in results.items():
             if shard_results:
                 stats = shard_results[0]
                 total_businesses += stats.get("total_businesses", 0)
@@ -346,7 +346,7 @@ class ShardedPostgresStorage(StorageInterface):
             "total_shards": len(all_shard_ids),
         }
 
-    def health_check(self) -> Dict[str, Any]:
+    def health_check(self) -> dict[str, Any]:
         """Check health of all shards."""
         health_status = {}
 

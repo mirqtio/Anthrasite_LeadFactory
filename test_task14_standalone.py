@@ -15,7 +15,6 @@ from pathlib import Path
 
 def test_file_structure():
     """Test that all Task 14 files are implemented."""
-    print("Testing Task 14 file structure...")
 
     required_files = {
         "leadfactory/monitoring/test_monitoring.py": "Advanced Monitoring Dashboard",
@@ -31,17 +30,11 @@ def test_file_structure():
         if not os.path.exists(file_path):
             missing_files.append(f"{file_path} ({description})")
 
-    if missing_files:
-        print(f"❌ Missing required files: {missing_files}")
-        return False
-
-    print("✅ All Task 14 implementation files present")
-    return True
+    return not missing_files
 
 
 def test_monitoring_dashboard_code():
     """Test the monitoring dashboard implementation."""
-    print("Testing monitoring dashboard code structure...")
 
     file_path = "leadfactory/monitoring/test_monitoring.py"
 
@@ -70,30 +63,21 @@ def test_monitoring_dashboard_code():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"❌ Missing monitoring components: {missing_components}")
             return False
 
         # Check for database initialization
         if "CREATE TABLE IF NOT EXISTS test_executions" not in content:
-            print("❌ Missing database schema initialization")
             return False
 
         # Check for metrics calculations
-        if "pass_rate" not in content or "flakiness_score" not in content:
-            print("❌ Missing core metrics calculations")
-            return False
+        return not ("pass_rate" not in content or "flakiness_score" not in content)
 
-        print("✅ Monitoring dashboard implementation complete")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error reading monitoring dashboard: {e}")
+    except Exception:
         return False
 
 
 def test_alerting_system_code():
     """Test the alerting system implementation."""
-    print("Testing alerting system code structure...")
 
     file_path = "leadfactory/monitoring/test_alerting.py"
 
@@ -121,25 +105,17 @@ def test_alerting_system_code():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"❌ Missing alerting components: {missing_components}")
             return False
 
         # Check for alert rules setup
-        if "default_rules" not in content.lower():
-            print("❌ Missing default alert rules setup")
-            return False
+        return "default_rules" in content.lower()
 
-        print("✅ Alerting system implementation complete")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error reading alerting system: {e}")
+    except Exception:
         return False
 
 
 def test_governance_framework_code():
     """Test the governance framework implementation."""
-    print("Testing governance framework code structure...")
 
     file_path = "leadfactory/monitoring/test_governance.py"
 
@@ -167,25 +143,19 @@ def test_governance_framework_code():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"❌ Missing governance components: {missing_components}")
             return False
 
         # Check for review guidelines
-        if "review_guidelines" not in content or "automated_review" not in content:
-            print("❌ Missing automated review capabilities")
-            return False
+        return not (
+            "review_guidelines" not in content or "automated_review" not in content
+        )
 
-        print("✅ Governance framework implementation complete")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error reading governance framework: {e}")
+    except Exception:
         return False
 
 
 def test_analytics_system_code():
     """Test the analytics system implementation."""
-    print("Testing analytics system code structure...")
 
     file_path = "leadfactory/monitoring/test_analytics.py"
 
@@ -213,25 +183,17 @@ def test_analytics_system_code():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"❌ Missing analytics components: {missing_components}")
             return False
 
         # Check for ML/statistical components
-        if "sklearn" not in content or "prediction" not in content.lower():
-            print("❌ Missing machine learning capabilities")
-            return False
+        return not ("sklearn" not in content or "prediction" not in content.lower())
 
-        print("✅ Analytics system implementation complete")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error reading analytics system: {e}")
+    except Exception:
         return False
 
 
 def test_workflow_integration_code():
     """Test the workflow integration implementation."""
-    print("Testing workflow integration code structure...")
 
     file_path = "leadfactory/monitoring/workflow_integration.py"
 
@@ -258,25 +220,17 @@ def test_workflow_integration_code():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"❌ Missing workflow integration components: {missing_components}")
             return False
 
         # Check for GitHub API integration
-        if "api.github.com" not in content:
-            print("❌ Missing GitHub API integration")
-            return False
+        return "api.github.com" in content
 
-        print("✅ Workflow integration implementation complete")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error reading workflow integration: {e}")
+    except Exception:
         return False
 
 
 def test_web_dashboard_code():
     """Test the web dashboard implementation."""
-    print("Testing web dashboard code structure...")
 
     file_path = "leadfactory/monitoring/test_dashboard.py"
 
@@ -302,25 +256,17 @@ def test_web_dashboard_code():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"❌ Missing web dashboard components: {missing_components}")
             return False
 
         # Check for HTML template
-        if "<!DOCTYPE html>" not in content:
-            print("❌ Missing HTML dashboard template")
-            return False
+        return "<!DOCTYPE html>" in content
 
-        print("✅ Web dashboard implementation complete")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error reading web dashboard: {e}")
+    except Exception:
         return False
 
 
 def test_module_integration():
     """Test module integration and __init__.py updates."""
-    print("Testing module integration...")
 
     init_file = "leadfactory/monitoring/__init__.py"
 
@@ -343,28 +289,23 @@ def test_module_integration():
                 missing_imports.append(import_name)
 
         if missing_imports:
-            print(
-                f"⚠️  Some test monitoring imports not found in __init__.py: {missing_imports}"
-            )
+            pass
             # This is a warning, not a failure
 
         # Check for TEST_MONITORING_AVAILABLE flag
         if "TEST_MONITORING_AVAILABLE" in content:
-            print("✅ Module integration with feature flag implemented")
+            pass
         else:
-            print("⚠️  Feature flag for test monitoring not found")
+            pass
 
-        print("✅ Module integration structure present")
         return True
 
-    except Exception as e:
-        print(f"❌ Error reading module integration: {e}")
+    except Exception:
         return False
 
 
 def test_task_requirements_coverage():
     """Test that all Task 14 requirements are covered."""
-    print("Testing Task 14 requirements coverage...")
 
     # Task 14 requirements from TaskMaster
     requirements = {
@@ -394,7 +335,7 @@ def test_task_requirements_coverage():
     coverage_score = 0
     total_requirements = len(requirements)
 
-    for requirement, components in requirements.items():
+    for _requirement, components in requirements.items():
         requirement_met = True
 
         for component in components:
@@ -421,26 +362,20 @@ def test_task_requirements_coverage():
                     break
 
         if requirement_met:
-            print(f"✅ {requirement}")
             coverage_score += 1
         else:
-            print(f"❌ {requirement}")
+            pass
 
-    coverage_percentage = (coverage_score / total_requirements) * 100
+    (coverage_score / total_requirements) * 100
 
     if coverage_score == total_requirements:
-        print("✅ All Task 14 requirements covered (100%)")
         return True
     else:
-        print(
-            f"⚠️  Task 14 requirements coverage: {coverage_percentage:.1f}% ({coverage_score}/{total_requirements})"
-        )
         return coverage_score >= 4  # At least 80% coverage
 
 
 def test_documentation_and_comments():
     """Test that code is well documented."""
-    print("Testing documentation and comments...")
 
     files_to_check = [
         "leadfactory/monitoring/test_monitoring.py",
@@ -467,20 +402,11 @@ def test_documentation_and_comments():
 
     documentation_percentage = (documented_files / total_files) * 100
 
-    if documentation_percentage >= 80:
-        print(f"✅ Good documentation coverage: {documentation_percentage:.1f}%")
-        return True
-    else:
-        print(f"⚠️  Documentation coverage: {documentation_percentage:.1f}%")
-        return False
+    return documentation_percentage >= 80
 
 
 def main():
     """Run all standalone Task 14 tests."""
-    print(
-        "🔄 Task 14: CI Pipeline Test Monitoring and Governance Framework - Standalone Test"
-    )
-    print("=" * 80)
 
     tests = [
         test_file_structure,
@@ -504,59 +430,14 @@ def main():
                 passed += 1
             else:
                 failed += 1
-        except Exception as e:
-            print(f"❌ Test {test.__name__} crashed: {e}")
+        except Exception:
             failed += 1
-        print()
-
-    print("=" * 80)
-    print(f"Results: {passed} passed, {failed} failed")
 
     success_rate = (passed / len(tests)) * 100
 
-    if failed == 0:
-        print(
-            "🎉 Task 14: CI Pipeline Test Monitoring and Governance Framework COMPLETE!"
-        )
-        print("✅ All 5 subtasks implemented successfully:")
-        print("  1. ✅ Advanced Monitoring Dashboard")
-        print("  2. ✅ Alerting and Notification System")
-        print("  3. ✅ Test Governance Framework")
-        print("  4. ✅ Long-term Analytics and Prediction System")
-        print("  5. ✅ Development Workflow Integration")
-        print()
-        print("📊 Implementation includes:")
-        print("  • Comprehensive test metrics collection and analysis")
-        print("  • Interactive web dashboard with real-time visualizations")
-        print("  • Intelligent alerting with configurable thresholds")
-        print("  • Test ownership tracking and governance workflows")
-        print("  • Machine learning-based instability prediction")
-        print("  • GitHub integration for automated issue creation")
-        print("  • IDE integration for real-time test health feedback")
-        print("  • Pull request health checks and status reporting")
-        print("  • Weekly analytics reports with actionable insights")
-        print("  • SLA tracking and compliance monitoring")
-        print()
-        print("🔧 Technical Features:")
-        print("  • SQLite database with optimized schemas")
-        print("  • Flask web application with REST API")
-        print("  • Scikit-learn integration for ML predictions")
-        print("  • GitHub API integration for workflow automation")
-        print("  • Configurable alert rules and notification channels")
-        print("  • Automated code review guidelines enforcement")
-        print("  • Test ownership assignment and SLA tracking")
-        print("  • Trend analysis and anomaly detection")
-        return 0
-    elif success_rate >= 80:
-        print(
-            f"✅ Task 14 implementation {success_rate:.1f}% complete - Core functionality implemented"
-        )
-        print(f"⚠️  {failed} components need minor attention")
+    if failed == 0 or success_rate >= 80:
         return 0
     else:
-        print(
-            f"⚠️  Task 14 implementation {success_rate:.1f}% complete - Some components need attention"
-        )
         return 1
 
 

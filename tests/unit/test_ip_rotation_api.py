@@ -414,7 +414,7 @@ class TestIPRotationAPI:
         """Test that dependency injection works correctly."""
         # This test verifies that the dependency injection system
         # correctly provides the mocked services
-        response = self.client.get("/status")
+        self.client.get("/status")
 
         # The fact that our mocked methods are called proves
         # dependency injection is working

@@ -68,18 +68,15 @@ class IPSubuserPool:
     total_sent: int = 0
     total_bounced: int = 0
     performance_score: float = 1.0  # 0.0 to 1.0, higher is better
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_available(self) -> bool:
         """Check if this IP/subuser is available for use."""
         if self.status != IPSubuserStatus.ACTIVE:
             return False
 
-        if self.cooldown_until and datetime.now() < self.cooldown_until:
-            return False
-
-        return True
+        return not (self.cooldown_until and datetime.now() < self.cooldown_until)
 
     def calculate_performance_score(self) -> float:
         """Calculate performance score based on bounce rate and other factors."""
@@ -113,7 +110,7 @@ class RotationEvent:
     to_subuser: str
     reason: RotationReason
     timestamp: datetime = field(default_factory=datetime.now)
-    breach_details: Optional[Dict[str, Any]] = None
+    breach_details: Optional[dict[str, Any]] = None
     success: bool = False
     error_message: Optional[str] = None
     event_id: str = field(default_factory=lambda: f"rotation_{int(time.time())}")
@@ -160,12 +157,12 @@ class IPRotationService:
         self.config = config
         self.bounce_monitor = bounce_monitor
         self.threshold_detector = threshold_detector
-        self.ip_pool: List[IPSubuserPool] = []
-        self.rotation_history: List[RotationEvent] = []
-        self.active_rotations: Dict[Tuple[str, str], datetime] = (
+        self.ip_pool: list[IPSubuserPool] = []
+        self.rotation_history: list[RotationEvent] = []
+        self.active_rotations: dict[tuple[str, str], datetime] = (
             {}
         )  # Track ongoing rotations
-        self.consecutive_failures: Dict[Tuple[str, str], int] = {}
+        self.consecutive_failures: dict[tuple[str, str], int] = {}
         self.alerting_service = alerting_service
 
         logger.info("IP rotation service initialized")
@@ -175,8 +172,8 @@ class IPRotationService:
         ip_address: str,
         subuser: str,
         priority: int = 1,
-        tags: List[str] = None,
-        metadata: Dict[str, Any] = None,
+        tags: list[str] = None,
+        metadata: dict[str, Any] = None,
     ) -> None:
         """
         Add an IP/subuser combination to the rotation pool.
@@ -268,7 +265,7 @@ class IPRotationService:
         exclude_ip: str = None,
         exclude_subuser: str = None,
         min_performance_score: float = 0.0,
-    ) -> List[IPSubuserPool]:
+    ) -> list[IPSubuserPool]:
         """
         Get available IP/subuser alternatives for rotation.
 
@@ -368,7 +365,7 @@ class IPRotationService:
         to_ip: str,
         to_subuser: str,
         reason: RotationReason,
-        breach_details: Dict[str, Any] = None,
+        breach_details: dict[str, Any] = None,
     ) -> RotationEvent:
         """
         Execute a rotation from one IP/subuser to another.
@@ -651,14 +648,14 @@ class IPRotationService:
 
         return len(recent_rotations) < self.config.max_rotations_per_hour
 
-    def get_rotation_history(self, hours_back: int = 24) -> List[RotationEvent]:
+    def get_rotation_history(self, hours_back: int = 24) -> list[RotationEvent]:
         """Get rotation history for the specified time period."""
         cutoff_time = datetime.now() - timedelta(hours=hours_back)
         return [
             event for event in self.rotation_history if event.timestamp > cutoff_time
         ]
 
-    def get_pool_status(self) -> Dict[str, Any]:
+    def get_pool_status(self) -> dict[str, Any]:
         """Get current status of the IP/subuser pool."""
         total_count = len(self.ip_pool)
         active_count = len(
@@ -685,10 +682,11 @@ class IPRotationService:
 
     def get_all_pools(self):
         """Get all pools (compatibility method for monitoring)."""
+
         class PoolWrapper:
             def __init__(self, pool_list):
                 self.pool = pool_list
-        
+
         return [PoolWrapper(self.ip_pool)]
 
     def cleanup_old_history(self, days_to_keep: int = 7) -> int:

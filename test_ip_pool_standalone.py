@@ -12,7 +12,6 @@ sys.path.insert(0, "/Users/charlieirwin/Documents/GitHub/Anthrasite_LeadFactory"
 
 def test_ip_pool_files_exist():
     """Test that IP pool implementation files exist."""
-    print("Testing IP pool implementation files...")
 
     required_files = [
         "leadfactory/services/ip_pool_manager.py",
@@ -25,17 +24,11 @@ def test_ip_pool_files_exist():
         if not os.path.exists(file_path):
             missing_files.append(file_path)
 
-    if missing_files:
-        print(f"❌ Missing required files: {missing_files}")
-        return False
-
-    print("✅ All IP pool implementation files exist")
-    return True
+    return not missing_files
 
 
 def test_ip_pool_implementation():
     """Test IP pool manager implementation."""
-    print("Testing IP pool manager implementation...")
 
     ip_pool_file = "leadfactory/services/ip_pool_manager.py"
 
@@ -63,7 +56,6 @@ def test_ip_pool_implementation():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"❌ Missing implementation components: {missing_components}")
             return False
 
         # Check for Task 21 specific requirements
@@ -80,19 +72,16 @@ def test_ip_pool_implementation():
                 missing_requirements.append(req)
 
         if missing_requirements:
-            print(f"⚠️  Missing Task 21 requirements: {missing_requirements}")
+            pass
 
-        print("✅ IP pool manager implementation verified")
         return True
 
-    except Exception as e:
-        print(f"❌ Error reading IP pool implementation: {e}")
+    except Exception:
         return False
 
 
 def test_bounce_threshold_configuration():
     """Test bounce threshold configuration."""
-    print("Testing bounce threshold configuration...")
 
     try:
         with open("leadfactory/services/ip_pool_manager.py") as f:
@@ -100,30 +89,21 @@ def test_bounce_threshold_configuration():
 
         # Check for 2% bounce rate warning threshold (Task 21 requirement)
         if '"bounce_rate_warning": 0.02' not in content:
-            print("❌ 2% bounce rate warning threshold not found")
             return False
 
         # Check for critical threshold (5%)
         if '"bounce_rate_critical": 0.05' not in content:
-            print("❌ 5% bounce rate critical threshold not found")
             return False
 
         # Check for quarantine period
-        if '"quarantine_hours": 24' not in content:
-            print("❌ 24-hour quarantine period not found")
-            return False
+        return '"quarantine_hours": 24' in content
 
-        print("✅ Bounce threshold configuration correct")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error checking thresholds: {e}")
+    except Exception:
         return False
 
 
 def test_switching_logic():
     """Test pool switching logic implementation."""
-    print("Testing pool switching logic...")
 
     try:
         with open("leadfactory/services/ip_pool_manager.py") as f:
@@ -144,21 +124,14 @@ def test_switching_logic():
             if logic not in content:
                 missing_logic.append(logic)
 
-        if missing_logic:
-            print(f"❌ Missing switching logic: {missing_logic}")
-            return False
+        return not missing_logic
 
-        print("✅ Pool switching logic implemented")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error checking switching logic: {e}")
+    except Exception:
         return False
 
 
 def test_monitoring_capabilities():
     """Test monitoring and alerting capabilities."""
-    print("Testing monitoring and alerting capabilities...")
 
     try:
         with open("leadfactory/services/ip_pool_manager.py") as f:
@@ -179,21 +152,14 @@ def test_monitoring_capabilities():
             if method not in content:
                 missing_methods.append(method)
 
-        if missing_methods:
-            print(f"❌ Missing monitoring methods: {missing_methods}")
-            return False
+        return not missing_methods
 
-        print("✅ Monitoring and alerting capabilities implemented")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error checking monitoring: {e}")
+    except Exception:
         return False
 
 
 def test_sendgrid_integration():
     """Test SendGrid integration components."""
-    print("Testing SendGrid integration...")
 
     try:
         with open("leadfactory/services/ip_pool_manager.py") as f:
@@ -214,20 +180,18 @@ def test_sendgrid_integration():
                 missing_components.append(component)
 
         if missing_components:
-            print(f"⚠️  Some SendGrid components missing: {missing_components}")
+            pass
         else:
-            print("✅ SendGrid integration components found")
+            pass
 
         return True
 
-    except Exception as e:
-        print(f"❌ Error checking SendGrid integration: {e}")
+    except Exception:
         return False
 
 
 def test_data_structures():
     """Test data structures implementation."""
-    print("Testing data structures...")
 
     try:
         with open("leadfactory/services/ip_pool_manager.py") as f:
@@ -249,22 +213,14 @@ def test_data_structures():
             if structure not in content:
                 missing_structures.append(structure)
 
-        if missing_structures:
-            print(f"❌ Missing data structures: {missing_structures}")
-            return False
+        return not missing_structures
 
-        print("✅ Data structures implemented")
-        return True
-
-    except Exception as e:
-        print(f"❌ Error checking data structures: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run all standalone IP pool tests."""
-    print("🔄 Task 21: Automatic IP Pool Switching - Standalone Test")
-    print("=" * 70)
 
     tests = [
         test_ip_pool_files_exist,
@@ -285,27 +241,12 @@ def main():
                 passed += 1
             else:
                 failed += 1
-        except Exception as e:
-            print(f"❌ Test {test.__name__} crashed: {e}")
+        except Exception:
             failed += 1
-        print()
-
-    print("=" * 70)
-    print(f"Results: {passed} passed, {failed} failed")
 
     if failed == 0:
-        print("🎉 Task 21: Automatic IP Pool Switching Implementation COMPLETE!")
-        print("✅ 2% bounce threshold monitoring implemented")
-        print("✅ Automatic pool switching logic working")
-        print("✅ SendGrid integration components present")
-        print("✅ Alert system for critical events implemented")
-        print("✅ Pool quarantine and restoration working")
-        print("✅ Comprehensive monitoring and status reporting")
         return 0
     else:
-        print(
-            f"⚠️  {failed} components need attention, but core implementation is complete"
-        )
         return 1
 
 

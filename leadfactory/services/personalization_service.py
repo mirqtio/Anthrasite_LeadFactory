@@ -42,8 +42,8 @@ class PersonalizationTask:
 
     task_id: str
     task_type: str
-    business_data: Dict[str, Any]
-    requirements: Dict[str, Any]
+    business_data: dict[str, Any]
+    requirements: dict[str, Any]
     priority: int = 5
     created_at: datetime = None
 
@@ -58,7 +58,7 @@ class PersonalizationResult:
 
     task_id: str
     success: bool
-    result_data: Dict[str, Any]
+    result_data: dict[str, Any]
     processing_time: float
     gpu_utilized: bool
     error_message: Optional[str] = None
@@ -77,8 +77,8 @@ class GPUPersonalizationEngine:
         self.device = self._initialize_gpu()
         self.models = {}
         self.processing_queue = asyncio.Queue()
-        self.active_tasks: Dict[str, PersonalizationTask] = {}
-        self.completed_tasks: Dict[str, PersonalizationResult] = {}
+        self.active_tasks: dict[str, PersonalizationTask] = {}
+        self.completed_tasks: dict[str, PersonalizationResult] = {}
         self.stats = {
             "tasks_processed": 0,
             "gpu_tasks": 0,
@@ -201,7 +201,7 @@ class GPUPersonalizationEngine:
 
     async def _generate_website_mockup(
         self, task: PersonalizationTask
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate website mockup using GPU acceleration."""
         business_data = task.business_data
 
@@ -237,7 +237,7 @@ class GPUPersonalizationEngine:
 
     async def _generate_personalized_content(
         self, task: PersonalizationTask
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate personalized content using AI."""
         business_data = task.business_data
 
@@ -275,7 +275,7 @@ class GPUPersonalizationEngine:
             "content_quality": "high" if OPENAI_AVAILABLE else "standard",
         }
 
-    async def _optimize_images(self, task: PersonalizationTask) -> Dict[str, Any]:
+    async def _optimize_images(self, task: PersonalizationTask) -> dict[str, Any]:
         """Optimize images using GPU acceleration."""
         image_urls = task.business_data.get("images", [])
 
@@ -325,7 +325,7 @@ class GPUPersonalizationEngine:
             ),
         }
 
-    async def _render_video(self, task: PersonalizationTask) -> Dict[str, Any]:
+    async def _render_video(self, task: PersonalizationTask) -> dict[str, Any]:
         """Render personalized video content."""
         business_data = task.business_data
 
@@ -354,7 +354,7 @@ class GPUPersonalizationEngine:
             "personalization_elements": ["logo", "colors", "contact_info", "services"],
         }
 
-    def _generate_color_scheme(self, business_data: Dict[str, Any]) -> Dict[str, str]:
+    def _generate_color_scheme(self, business_data: dict[str, Any]) -> dict[str, str]:
         """Generate color scheme based on business vertical."""
         vertical = business_data.get("vertical", "general")
 
@@ -384,7 +384,7 @@ class GPUPersonalizationEngine:
 
         return color_schemes.get(vertical, color_schemes["general"])
 
-    def _select_layout(self, business_data: Dict[str, Any]) -> str:
+    def _select_layout(self, business_data: dict[str, Any]) -> str:
         """Select layout based on business characteristics."""
         employee_count = business_data.get("employee_count", 5)
 
@@ -396,10 +396,10 @@ class GPUPersonalizationEngine:
             return "small_business"
 
     async def _generate_ai_content(
-        self, business_data: Dict[str, Any], content_type: str
+        self, business_data: dict[str, Any], content_type: str
     ) -> str:
         """Generate AI content using GPT."""
-        prompts = {
+        {
             "headline": f"Create a compelling headline for {business_data.get('name', 'a business')} in {business_data.get('vertical', 'general')} industry",
             "description": f"Write a brief description for {business_data.get('name', 'a business')} that provides {business_data.get('services', 'various services')}",
             "call_to_action": f"Create a strong call-to-action for {business_data.get('name', 'a business')} to encourage customer contact",
@@ -413,7 +413,7 @@ class GPUPersonalizationEngine:
         return self._generate_template_content(business_data, content_type)
 
     def _generate_template_content(
-        self, business_data: Dict[str, Any], content_type: str
+        self, business_data: dict[str, Any], content_type: str
     ) -> str:
         """Generate template-based content."""
         business_name = business_data.get("name", "Your Business")
@@ -430,7 +430,7 @@ class GPUPersonalizationEngine:
             content_type, f"Quality {vertical} services from {business_name}"
         )
 
-    def _calculate_personalization_score(self, business_data: Dict[str, Any]) -> float:
+    def _calculate_personalization_score(self, business_data: dict[str, Any]) -> float:
         """Calculate personalization score based on available data."""
         score = 0.0
 
@@ -462,7 +462,7 @@ class GPUPersonalizationEngine:
         else:
             self.stats["cpu_tasks"] += 1
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get processing statistics."""
         return {
             **self.stats,
@@ -548,8 +548,8 @@ class PersonalizationService:
     async def submit_task(
         self,
         task_type: str,
-        business_data: Dict[str, Any],
-        requirements: Dict[str, Any] = None,
+        business_data: dict[str, Any],
+        requirements: dict[str, Any] = None,
         priority: int = 5,
     ) -> str:
         """Submit a personalization task."""
@@ -572,7 +572,7 @@ class PersonalizationService:
         """Get current queue size."""
         return self.task_queue.qsize()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get service statistics."""
         return {
             "running": self.running,
@@ -615,8 +615,7 @@ async def main():
         await asyncio.sleep(10)
 
         # Print stats
-        stats = personalization_service.get_stats()
-        print(f"Service stats: {json.dumps(stats, indent=2)}")
+        personalization_service.get_stats()
 
     finally:
         await personalization_service.stop()

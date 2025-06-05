@@ -40,7 +40,7 @@ class ScraperService(BasePipelineService):
         self.scraper_client = ScraperClient()
         self.kafka_connected = False
 
-    async def _process_task(self, request) -> Dict[str, Any]:
+    async def _process_task(self, request) -> dict[str, Any]:
         """Process a scraping task."""
         task_id = request.task_id
 

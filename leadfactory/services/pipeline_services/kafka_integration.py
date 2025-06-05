@@ -31,7 +31,7 @@ class PipelineMessage:
 
     message_id: str
     task_type: str  # scrape, enrich, dedupe, score, mockup, email
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     priority: int = 5
     retry_count: int = 0
     max_retries: int = 3
@@ -122,7 +122,7 @@ class KafkaManager:
     async def publish_task(
         self,
         task_type: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         priority: int = 5,
         max_retries: int = 3,
     ) -> str:
@@ -170,7 +170,7 @@ class KafkaManager:
 
     async def subscribe_to_tasks(
         self,
-        task_types: List[str],
+        task_types: list[str],
         handler: Callable[[PipelineMessage], Any],
         consumer_group: str = "pipeline_workers",
     ):
@@ -264,7 +264,7 @@ class KafkaManager:
 
         logger.error(f"Message {message.message_id} failed permanently: {error}")
 
-    async def publish_event(self, event_type: str, data: Dict[str, Any]):
+    async def publish_event(self, event_type: str, data: dict[str, Any]):
         """Publish a pipeline event for monitoring/analytics."""
         event_data = {
             "event_type": event_type,
@@ -293,7 +293,7 @@ class WorkflowManager:
         self.active_workflows = {}
 
     async def start_workflow(
-        self, workflow_id: str, input_data: Dict[str, Any], stages: List[str] = None
+        self, workflow_id: str, input_data: dict[str, Any], stages: list[str] = None
     ) -> str:
         """
         Start an async workflow execution.
@@ -362,7 +362,7 @@ class WorkflowManager:
         }
 
         # Publish task
-        message_id = await self.kafka.publish_task(
+        await self.kafka.publish_task(
             stage_name,
             task_payload,
             priority=3,  # Workflow tasks get higher priority
@@ -371,7 +371,7 @@ class WorkflowManager:
         logger.info(f"Started stage {stage_name} for workflow {execution_id}")
 
     async def handle_stage_completion(
-        self, message: PipelineMessage, result: Dict[str, Any]
+        self, message: PipelineMessage, result: dict[str, Any]
     ):
         """Handle completion of a workflow stage."""
         payload = message.payload
@@ -463,13 +463,11 @@ async def main():
         )
 
         # Start a workflow
-        execution_id = await workflow_manager.start_workflow(
+        await workflow_manager.start_workflow(
             "demo_workflow",
             {"zip_codes": ["10002"], "verticals": ["hvac"]},
             ["scrape", "enrich"],
         )
-
-        print(f"Started workflow: {execution_id}")
 
         # Wait a bit for demonstration
         await asyncio.sleep(5)
