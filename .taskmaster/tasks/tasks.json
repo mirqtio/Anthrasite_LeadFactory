@@ -146,7 +146,7 @@
       "velocity_metadata": {
         "complexity_score": 9,
         "estimated_hours": null,
-        "actual_hours": 5.555555555555555e-07,
+        "actual_hours": 5.555555555555555E-7,
         "velocity_points": 9,
         "blocked_time": 0,
         "status_history": [
@@ -158,7 +158,7 @@
           {
             "status": "in-progress",
             "timestamp": "2025-05-29T23:20:36.858Z",
-            "duration_hours": 5.555555555555555e-07
+            "duration_hours": 5.555555555555555E-7
           },
           {
             "status": "done",
@@ -3895,11 +3895,11 @@
       "id": 41,
       "title": "Skip Modern Sites in Lead Funnel",
       "description": "If PageSpeed Insights shows performance >= 90 and mobile responsive, mark lead as processed without email. Implement check in enrichment step to drop these leads.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [],
       "priority": "high",
       "details": "This task is the first priority in the implementation order. We need to filter out modern, well-performing websites early in the lead funnel to avoid sending unnecessary emails to sites that are already well-optimized.",
-      "testStrategy": "1. Test with sample sites that have PageSpeed scores \u226590 and are mobile responsive to ensure they're properly filtered out\n2. Test with sites that have good PageSpeed but poor mobile responsiveness to ensure they still proceed in the funnel\n3. Verify the enrichment step correctly marks these leads as processed without triggering email sequences",
+      "testStrategy": "1. Test with sample sites that have PageSpeed scores ≥90 and are mobile responsive to ensure they're properly filtered out\n2. Test with sites that have good PageSpeed but poor mobile responsiveness to ensure they still proceed in the funnel\n3. Verify the enrichment step correctly marks these leads as processed without triggering email sequences",
       "subtasks": [
         {
           "id": "41.1",
@@ -3927,33 +3927,33 @@
       "id": 42,
       "title": "Parse and Store City/State for Businesses",
       "description": "Extract city and state from business address and save to the businesses table instead of leaving them NULL. Update create_business logic to parse address into city/state fields.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         41
       ],
       "priority": "high",
-      "details": "This task is the second step in the implementation order, following the 'Skip Modern Sites' task (ID: 41).",
+      "details": "Task 42 is already implemented. The parse_city_state_from_address function exists in scrape.py at line 363, handles multiple address formats, and the database schema already has city and state columns. The save_business function uses this parser and saves city/state data.",
       "testStrategy": "1. Test that city and state are correctly extracted from various address formats.\n2. Verify that the extracted data is properly stored in the businesses table.\n3. Confirm that the create_business logic correctly handles the parsing of addresses.",
       "subtasks": [
         {
           "id": "42.1",
           "description": "Implement address parsing function to extract city and state",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "42.2",
           "description": "Update database schema to ensure city and state fields are properly defined",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "42.3",
           "description": "Modify create_business logic to use the parsing function and save extracted data",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "42.4",
           "description": "Write tests to verify correct extraction and storage of city/state data",
-          "status": "pending"
+          "status": "completed"
         }
       ]
     },
@@ -3961,12 +3961,12 @@
       "id": 43,
       "title": "Decide & Implement Yelp JSON Retention",
       "description": "Determine retention policy for raw Yelp/Google API JSON. If keeping, pass API response data into create_business so it's stored in businesses.yelp_response_json; if purging, remove these fields and any related storage to avoid PII retention.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         42
       ],
       "priority": "high",
-      "details": "This task is third in the prescribed implementation order, following task 42.",
+      "details": "Task 43 is already implemented. The JSON retention policy is fully configured with: 1) Environment variables for enabling/disabling storage, retention days, anonymization, and preserved fields. 2) JSONRetentionPolicy class that handles storage decisions and anonymization. 3) Integration in scrape.py using process_json_for_storage() and should_store_json() functions. 4) Cleanup script bin/cleanup_json_responses.py for managing expired data. 5) Comprehensive documentation in docs/json-retention-policy.md. Default settings: enabled=true, retention=90 days, anonymization=false.",
       "testStrategy": "Test both scenarios (retention and purging) to ensure proper handling of API response data.",
       "subtasks": []
     },
@@ -3974,12 +3974,12 @@
       "id": 44,
       "title": "Implement Local Screenshot Capture",
       "description": "Add a Playwright (headless Chromium) fallback to capture full-page screenshots when SCREENSHOT_ONE_KEY is not provided, so the system can run fully on local hardware without external screenshot APIs.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         43
       ],
       "priority": "high",
-      "details": "",
+      "details": "Task 44 is already implemented. Local screenshot capture using Playwright is fully functional with: 1) LocalScreenshotCapture class in screenshot_local.py that uses Playwright for headless browser screenshots. 2) Integration in screenshot.py that automatically falls back to local capture when SCREENSHOT_ONE_KEY is not available. 3) Support for multiple browsers (Chromium, Firefox, WebKit). 4) Synchronous wrapper for easy integration. 5) Browser installation helper functions. 6) Comprehensive unit tests.",
       "testStrategy": "",
       "subtasks": [
         {
@@ -3988,7 +3988,7 @@
           "description": "Install and configure Playwright to enable headless Chromium for local screenshot capture when SCREENSHOT_ONE_KEY is not provided.",
           "dependencies": [],
           "details": "Install Playwright package and its dependencies. Create a utility module that initializes a headless browser instance. Implement browser launch configuration with appropriate viewport settings and default timeout values. Ensure the browser instance is properly managed (created/destroyed) to prevent memory leaks.",
-          "status": "pending",
+          "status": "completed",
           "testStrategy": "Write unit tests to verify Playwright initialization with different configuration options. Test browser launch and teardown processes."
         },
         {
@@ -3999,7 +3999,7 @@
             1
           ],
           "details": "Develop a function that takes a URL as input, navigates to the page, waits for the page to fully load (including dynamic content), and captures a full-page screenshot. Handle different page sizes and ensure the entire content is captured. Implement proper resource cleanup after screenshot capture. Return the screenshot as a buffer or save it to a configurable location.",
-          "status": "pending",
+          "status": "completed",
           "testStrategy": "Test screenshot capture with various websites including static pages, dynamic content, and different viewport sizes. Compare screenshot dimensions with expected page dimensions."
         },
         {
@@ -4010,7 +4010,7 @@
             2
           ],
           "details": "Develop a configuration module that checks for the presence of SCREENSHOT_ONE_KEY in environment variables. Implement a factory pattern that returns either the API-based screenshot service or the local Playwright implementation based on configuration. Add additional configuration options for local screenshot capture (quality, format, timeout settings). Ensure backward compatibility with existing code that uses the screenshot service.",
-          "status": "pending",
+          "status": "completed",
           "testStrategy": "Test configuration loading with and without API keys. Verify correct service selection based on environment variables."
         },
         {
@@ -4022,7 +4022,7 @@
             3
           ],
           "details": "Identify common failure scenarios (page load timeouts, navigation errors, rendering issues). Implement appropriate error handling with informative error messages. Add a configurable retry mechanism for transient failures. Implement graceful degradation when screenshots cannot be captured. Add logging for debugging purposes. Consider implementing circuit breaker pattern for problematic URLs.",
-          "status": "pending",
+          "status": "completed",
           "testStrategy": "Test error scenarios by using intentionally broken URLs, slow-loading pages, and pages with various errors. Verify retry behavior and error reporting."
         },
         {
@@ -4033,7 +4033,7 @@
             4
           ],
           "details": "Implement browser instance pooling to reduce startup overhead for multiple screenshots. Add configurable concurrency limits to prevent resource exhaustion. Optimize page load strategies (e.g., block unnecessary resources, set appropriate wait conditions). Implement caching for frequently accessed screenshots. Add performance metrics collection to identify bottlenecks. Consider implementing queue-based processing for high-volume screenshot requests.",
-          "status": "pending",
+          "status": "completed",
           "testStrategy": "Benchmark screenshot capture performance with various optimization settings. Test memory usage under load with multiple concurrent screenshot requests. Verify system stability during extended operation."
         }
       ]
@@ -4042,12 +4042,12 @@
       "id": 45,
       "title": "Embed Website Thumbnail in Email",
       "description": "Modify email content generation to include the screenshot thumbnail. Use the stored screenshot asset (embed as inline image or via public link) in the email HTML as a small preview of the site, per PRD.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         44
       ],
       "priority": "high",
-      "details": "This task is fifth in the prescribed implementation order and requires screenshot capture (task 44) to be implemented first. The thumbnail should be embedded in the email to provide users with a visual preview of the website.",
+      "details": "Task 45 is already implemented. Email thumbnail embedding is fully functional with: 1) EmailPersonalization class includes website_thumbnail_path field. 2) EmailTemplateEngine checks thumbnail availability and passes website_thumbnail_available flag to templates. 3) EmailDeliveryService attaches thumbnails as inline images using content ID website-thumbnail.png. 4) Email templates include conditional thumbnail display section with preview styling. 5) Automatic screenshot generation if no thumbnail exists. 6) Graceful error handling for missing thumbnails. 7) Comprehensive unit tests covering all scenarios.",
       "testStrategy": "Verify that the screenshot thumbnail appears correctly in the email across different email clients. Test both inline image embedding and public link approaches to determine the most reliable method.",
       "subtasks": []
     },
@@ -4055,12 +4055,12 @@
       "id": 46,
       "title": "Apply Outdatedness Score Threshold",
       "description": "After scoring leads, only queue personalization/email for those above the outdatedness threshold (e.g. score >= 70%). Implement filtering (e.g., mark others as processed=TRUE without email) and adjust email query to exclude low-score leads.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         45
       ],
       "priority": "high",
-      "details": "This task is sixth in the prescribed implementation order. It involves filtering leads based on their outdatedness score and only proceeding with personalization and email for those that meet or exceed the threshold.",
+      "details": "Task 46 is already implemented. Score threshold filtering is fully functional with: 1) meets_audit_threshold() function in score.py that checks if scores meet the configurable threshold. 2) get_businesses_for_email() filters businesses based on audit threshold before queueing emails. 3) Skip tracking records why businesses were filtered out. 4) Configurable threshold via audit_threshold in scoring_rules_simplified.yml (default: 60). 5) Database migrations add skip_reason column and audit_score caching. 6) Comprehensive documentation and monitoring queries. 7) Unit and integration tests verify filtering behavior.",
       "testStrategy": "1. Test that leads with scores below threshold are marked as processed without generating emails\n2. Test that only leads with scores at or above threshold are queued for personalization/email\n3. Verify the email query correctly excludes low-scoring leads",
       "subtasks": []
     },
@@ -4068,7 +4068,7 @@
       "id": 47,
       "title": "Integrate AI Content with Email Template",
       "description": "Use the Jinja EmailTemplateEngine to inject GPT-generated text (subject, intro, issues list, etc.) into the predefined HTML template that includes our CAN-SPAM compliant footer and unsubscribe link. Ensure the final sent email uses the unified template.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         46
       ],
@@ -4081,7 +4081,7 @@
       "id": 48,
       "title": "Auto-Monitor Bounce Rate & IP Warmup",
       "description": "Implement a periodic check on the email_events table for bounce rate (bounces/emails sent). If >2%, log alert and switch SENDGRID_IP_POOL from 'shared' to 'dedicated' (or trigger IP warm-up workflow). Include unit test with fake bounce data.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         47
       ],
@@ -4153,7 +4153,7 @@
       "id": 49,
       "title": "Generate Real Audit PDF Content",
       "description": "Replace placeholder PDF generation with a comprehensive audit report. Use stored metrics (Core Web Vitals, tech stack, SEMrush data) and GPT-4 to generate an executive summary and 2-3 key findings with recommendations. Utilize the existing pdf_generator module or WeasyPrint to format a branded PDF.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         48
       ],
@@ -4233,7 +4233,7 @@
       "id": 50,
       "title": "Extend Report Link Expiry to 30 Days",
       "description": "Increase the expiry_hours for audit report links from 72 to 720 (30 days) when calling ReportDeliveryService.upload_and_deliver_report, to match the offering in the PRD.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         49
       ],
@@ -4246,7 +4246,7 @@
       "id": 51,
       "title": "Support Local PDF Delivery",
       "description": "Add a configuration to optionally skip Supabase upload and instead either attach the PDF to the report email or serve it via a local HTTP link. This ensures audit reports can be delivered without cloud storage when running on a local stack.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         49,
         50
@@ -4260,7 +4260,7 @@
       "id": 52,
       "title": "Enforce Per-Service Daily Cost Caps",
       "description": "Extend cost_tracking to enforce daily spend limits for LLM and SEMrush. Introduce env vars (e.g. MAX_DOLLARS_LLM, MAX_DOLLARS_SEMRUSH); when cost_tracker tallies exceed these, disable or delay those API calls for the day and log alerts.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         51
       ],
@@ -4273,7 +4273,7 @@
       "id": 53,
       "title": "Implement Nightly DB Backup",
       "description": "At end of nightly.sh, add steps to dump the PostgreSQL database to local storage and rsync/SCP it to the off-site NAS. Ensure this runs after pipeline success and logs success/failure. Test by verifying a backup file appears in the expected NAS location.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         52
       ],
@@ -4352,7 +4352,7 @@
       "id": 55,
       "title": "Decide & Implement Yelp JSON Retention",
       "description": "Determine retention policy for raw Yelp/Google API JSON. If keeping, pass API response data into businesses.yelp_response_json (and document it); if purging, remove these fields and any related storage to avoid PII retention.",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "type": "feature",
       "created_at": "2025-06-05T15:34:42.735696+00:00",

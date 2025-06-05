@@ -1,26 +1,201 @@
+Below is a **fully-specified Product-Requirements Document (PRD)** for **Anthrasite Lead Factory v1.0** that reflects the *audit-first* pivot, local-stack launch constraints, and the most recent funnel / cost assumptions.
+After the PRD you’ll find a **“Deep-Research” analysis prompt** you can paste into GPT-4o (or any code-aware model) to compare these requirements against the repo at `mirqtio/Anthrasite_LeadFactory` and surface implementation gaps.
 
-| **City/State not saved** – Business address is stored as one string, with `city`/`state` fields left empty instead of parsed.                                                      | `leadfactory/pipeline/scrape.py`                                              | The Yelp scraping logic only joins the `display_address` into one string and captures ZIP; it never extracts city or state (both passed as blank to DB).                                                                                                                                                                       | **S**      | `json\n{\n "title": "Parse and Store City/State for Businesses",\n "description": "Extract city and state from business address and save to the `businesses`table instead of leaving them NULL. Update`create\_business` logic to parse address into city/state fields.",\n "tags": ["data", "parsing"],\n "estimate": "2 hours"\n}`                                                                                                                    |
-| **Raw Yelp JSON retention decision** – No toggle or policy implemented for keeping vs. purging full API JSON responses (open issue in PRD).                                        | `leadfactory/pipeline/scrape.py`<br>`leadfactory/storage/postgres_storage.py` | The system currently always stores the raw Yelp/Google API JSON in the `businesses` record (passed into `create_business`), and no config or job purges it after use (privacy decision #1 from PRD remains unaddressed).                                                                                                       | **M**      | `json\n{\n "title": "Decide & Implement Yelp JSON Retention",\n "description": "Determine retention policy for raw Yelp/Google API JSON. If keeping, pass API response data into `businesses.yelp\_response\_json` (and document it); if purging, remove these fields and any related storage to avoid PII retention.",\n "tags": ["data", "privacy"],\n "estimate": "6 hours"\n}`                                                                      |
-| **Screenshot generation (local)** – No local headless browser fallback for thumbnails; external API required.                                                                      | `leadfactory/pipeline/enrich.py`                                              | The code uses the ScreenshotOne API exclusively and only captures a screenshot if `SCREENSHOT_ONE_KEY` is set. There is no Playwright/Chromium usage for local captures, conflicting with the local-stack requirement (Mac Mini) in v1.0.                                                                                      | **M**      | `json\n{\n "title": "Implement Local Screenshot Capture",\n "description": "Add a Playwright (headless Chromium) fallback to capture full-page screenshots when `SCREENSHOT\_ONE\_KEY` is not provided, so the system can run fully on local hardware without external screenshot APIs.",\n "tags": ["screenshot", "headless", "local"],\n "estimate": "8 hours"\n}`                                                                                    |
-| **Email thumbnail missing** – Outreach emails do not actually embed the website screenshot thumbnail as specified.                                                                 | `leadfactory/pipeline/email_queue.py`<br>`etc/email_template.html`            | The generated HTML for emails contains no `<img>` tag or content ID for a website thumbnail (the template had a `.mockup-container` placeholder not populated). Attachments for screenshot are prepared, but the email content never references the inline thumbnail, so recipients don’t see their current site preview.      | **M**      | `json\n{\n "title": "Embed Website Thumbnail in Email",\n "description": "Modify email content generation to include the screenshot thumbnail. Use the stored screenshot asset (embed as inline image with content-ID or via a public link) in the email HTML as a small preview of the site, per PRD.",\n "tags": ["email", "thumbnail", "HTML"],\n "estimate": "4 hours"\n}`                                                                          |
-| **AI content vs. template** – GPT-generated email copy isn’t fully integrated into the standard template (CAN-SPAM footer, unsubscribe link).                                      | `leadfactory/pipeline/unified_gpt4o.py`<br>`leadfactory/email/templates.py`   | The Unified GPT-4o pipeline was constructing its own HTML body (subject line, intro, issues list, etc.) in code, bypassing the Jinja email template that includes our address and unsubscribe link. Although an AI personalization module exists, the final assembly still risks skipping the official template in some flows. | **M**      | `json\n{\n "title": "Integrate AI Content with Email Template",\n "description": "Use the Jinja EmailTemplateEngine to inject GPT-generated text (subject, intro, issues list, etc.) into the predefined HTML template that includes our CAN-SPAM footer and unsubscribe link. Ensure the final sent email consistently uses the unified template.",\n "tags": ["email", "template", "compliance"],\n "estimate": "8 hours"\n}`                         |
-| **Bounce rate handling** – No automation to monitor hard bounce >2% or to warm up a new IP pool.                                                                                   | *SendGrid integration code*<br>`leadfactory/pipeline/email_queue.py`          | The system checks bounce rate on startup and aborts sending if the current pool’s rate exceeds 2%, but it doesn’t initiate any IP pool switch or warming workflow. The PRD task (#21) for automatically swapping to a dedicated pool and warming it up is not implemented.                                                     | **M**      | `json\n{\n "title": "Auto-Monitor Bounce Rate & IP Warmup",\n "description": "Implement periodic or pre-send checks on bounce rate (bounces/total emails). If >2%, log an alert and automatically switch the SendGrid IP pool from 'shared' to 'dedicated' (or trigger a warm-up sequence for a new IP). Include unit tests with fake bounce data to validate pool switching.",\n "tags": ["deliverability", "monitoring"],\n "estimate": "6 hours"\n}` |
-| **Per-service cost caps** – Budget gating is not granular by API service (LLM vs. SEMrush daily spend).                                                                            | `leadfactory/config/settings.py`<br>`.env.example`                            | The config implements a global daily/monthly budget limit, but there are no environment vars for e.g. `MAX_DOLLARS_LLM` or `MAX_DOLLARS_SEMRUSH`. This means the system won’t halt or alert if one service (GPT-4 or SEMrush) exceeds its intended daily cost in isolation.                                                    | **M**      | `json\n{\n "title": "Enforce Per-Service Daily Cost Caps",\n "description": "Extend cost tracking to enforce daily spend limits for LLM and SEMrush usage. Introduce env vars (e.g. MAX_DOLLARS_LLM, MAX_DOLLARS_SEMRUSH); when usage exceeds these, disable or queue those API calls until next day and log alerts. Update docs and tests for budget enforcement.",\n "tags": ["cost", "monitoring"],\n "estimate": "6 hours"\n}`                      |
-| **Nightly DB backup** – *No gap: implemented.* (The nightly process now includes `backup_postgres.sh` with pg\_dump and optional rsync to NAS, satisfying the backup requirement.) |                                                                               |
+---
 
+# Product Requirements Document
 
-**Proposed Tasks:**
+### Anthrasite Lead Factory v1.0 (Local-stack)
 
-1. **Parse and Store City/State for Businesses** – Extract city and state from addresses before calling `create_business`, and persist them in the `businesses` table (currently left NULL). *(Estimate: 2 hours)*
+| Field                 | Detail                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Status**            | Draft 1.0 – updated after audit-first pivot                                                                         |
+| **Doc owner**         | CEO / Founder                                                                                                       |
+| **Stakeholders**      | COO (ops & finance) · CPO (growth & UX) · CTO (infra & code)                                                        |
+| **Target release**    | **T + 6 weeks** from doc sign-off (see timeline §10)                                                                |
+| **Success criterion** | ≥ 0.25 % paid-audit conversion on 40 k emails/day while variable cost ≤ \$0.016 / email and inbox placement ≥ 90 %. |
 
-2. **Decide & Implement Yelp JSON Retention** – Determine the policy for raw API JSON (Yelp/Google). If retaining, store the JSON in `businesses.yelp_response_json` (as done now) and document it; if not, remove those fields and avoid saving PII. *(Estimate: 6 hours)*
+---
 
-3. **Implement Local Screenshot Capture** – Add a Playwright (headless Chrome) fallback for screenshot generation when no `SCREENSHOT_ONE_KEY` is set, so the pipeline can capture site images on the Mac Mini without an external API. *(Estimate: 8 hours)*
+## 1 Overview
 
-4. **Embed Website Thumbnail in Email** – Modify the email assembly to embed the website screenshot thumbnail image. Ensure the HTML template includes an `<img>` tag (or content-ID reference) for the thumbnail so recipients see a preview of their current site in the outreach email. *(Estimate: 4 hours)*
+Lead Factory is an automated pipeline that **discovers SMB websites, diagnoses “outdatedness”, generates personalised audit offers, processes payment, and delivers a branded PDF report**—all without human intervention.
+Phase-one runs entirely on a single Mac mini (M4, 24 GB) to keep burn under \$10 k until traction is proven; cloud migration gates on cash-flow milestones.
 
-5. **Integrate AI Content with Email Template** – Ensure GPT/AI-generated email content is inserted into the standard HTML template that contains our branding, physical address, and unsubscribe link. Use the existing Jinja EmailTemplateEngine to merge AI text into the template instead of constructing raw HTML in code. *(Estimate: 8 hours)*
+> **Why now?**
+> *Claude Opus 4* and *Gemini 2.5 Pro* can draft on-brand copy + redesign suggestions in one shot, letting us “show value before we charge”. 60 % + of US SMB sites fail Core Web Vitals and are largely invisible outside major metros.
 
-6. **Auto-Monitor Bounce Rate & IP Warmup** – Implement an automated deliverability monitor: if the 7-day bounce rate exceeds 2%, log an alert and switch sending to a “warm-up” IP pool or sub-user with lower volume until reputation recovers. This task includes updating configuration for multiple IP pools and writing a cron or pre-send check to trigger pool swapping. *(Estimate: 6 hours)*
+---
 
-7. **Enforce Per-Service Daily Cost Caps** – Extend the budget gating system to cap individual service usage. Add env settings like `MAX_DOLLARS_LLM` and `MAX_DOLLARS_SEMRUSH` and update the cost tracker to halt or pause calls to OpenAI or SEMrush APIs when their daily spend would exceed those limits. *(Estimate: 6 hours)*
+## 2 User personas & value
+
+| Persona                                            | Pain today                                               | Value we deliver                                                                         |
+| -------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **SMB Owner** (Main-Street plumber, florist, etc.) | Outdated site; no idea what to fix; hates sales calls.   | One-page email with thumbnail, *3 actionable fixes*, \$100 deep-dive PDF, no commitment. |
+| **Agency AE** (future phase)                       | Churny lead lists; time wasted on unqualified prospects. | Lead has already paid \$100 and *asks* for help; audit PDF ≤7 days old.                  |
+
+---
+
+## 3 Goals & success metrics
+
+| Goal             | Metric                               |                                 Target |
+| ---------------- | ------------------------------------ | -------------------------------------: |
+| Grow paid audits | Audit purchases / emails sent        | **0.25 %** (bleak) → 0.40 % (moderate) |
+| Keep CAC low     | Variable cost / email                |                          **≤ \$0.016** |
+| Deliver reliably | Inbox placement                      |            ≥ 90 % (GlockApps seed-box) |
+| Prove cash-flow  | EBITDA positive                      |   By end of Month 1 at 20 k emails/day |
+| Validate roadmap | Agency-lead opt-in from audit buyers |                        15 % by Month 4 |
+
+---
+
+## 4 Functional requirements
+
+### 4.1 Data acquisition
+
+1. **Scrape SMB URLs**
+
+   * Call Yelp Fusion API (`/businesses/search`) at ≤4 500 calls/day.
+   * Harvest ≤50 listings per call ⇒ up to 225 k SMB URLs/day.
+   * Persist to `businesses(url, name, city, state, yelp_id, scraped_at)`.
+
+2. **Rule-out obviously modern sites**
+
+   * For each URL run Google PageSpeed Insights (mobile) – free tier.
+   * Filter out `lighthouse_performance ≥ 90` **and** `is_responsive = true`.
+
+3. **SEO / tech-stack check**
+
+   * Batch 50 URLs → SEMrush ‘Bulk Metrics’ (Guru).
+   * Flag `old_CMS`, `missing_schema`, `DA < 20`.
+
+4. **Local HTML fetch**
+
+   * Headless Chromium (Playwright) renders page; Core Web Vitals JS.
+   * Save critical CSS/JS signals to `technology_score`.
+
+5. **Screenshot generation**
+
+   * Local Chrome full-height PNG (≈400 kB).
+   * Path stored in `screenshots/`.
+
+### 4.2 Scoring & personalisation
+
+1. **Scoring engine** (already implemented YAML rule system).
+2. **Threshold to personalise** – `score_outdated ≥ 7/10` triggers GPT.
+3. **GPT-4o multimodal call**
+
+   * Input: screenshot + 5 meta-features + vertical keyword.
+   * Output JSON:
+
+     ```json
+     { "subject": "...", "intro": "...", "three_issues": ["..."], "impact": "...", "thumbnail": "<base64>" }
+     ```
+4. **Email assembly**
+
+   * HTML template with embedded thumbnail.
+   * CAN-SPAM footer + one-click unsubscribe.
+
+### 4.3 Email delivery
+
+* SendGrid **Essentials** shared IP for <40 k/day.
+* Track events → `sendgrid_events` table (opens, clicks, bounces, spam).
+* Hard bounce > 2 % triggers IP warm-up pool task (#21).
+
+### 4.4 Payment & report
+
+1. Stripe **Checkout** link (Product: “Website Audit”, \$100, one-time).
+
+2. Webhook `payment_intent.succeeded`
+
+   * Marks row as `paid_at`.
+   * Queues `report_task`.
+
+3. **Report generation**
+
+   * GPT-4o generates header & narrative using saved metrics.
+   * WeasyPrint HTML→PDF (`reports/{business_id}.pdf`).
+   * Email with download link + 30-day hosted URL.
+
+### 4.5 Back-office & ops
+
+* Daily cost cap enforcement (`MAX_DOLLARS_LLM`, `MAX_DOLLARS_SEMRUSH`).
+* Prometheus metrics & Grafana alarms (CPU > 90 %, 429 errors, GPT spend).
+* Nightly `pg_dump` to attached SSD and rsync to off-site NAS.
+
+---
+
+## 5 Non-functional
+
+| Attribute       | Requirement                                                                              |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| **Perf**        | End-to-end (scrape→email) ≤ 4 h for 20 k URLs on Mac mini.                               |
+| **Reliability** | MTTR ≤ 5 min (watchdog restarts); no single log-file loss.                               |
+| **Scalability** | Code container-ready; config toggle to move scraper & DAG to AWS Fargate at 10 × volume. |
+| **Security**    | API keys in 1Password; Stripe keys rotated 90 d; macOS FW on.                            |
+| **Compliance**  | CAN-SPAM footer, unsubscribe DB, privacy policy link.                                    |
+
+---
+
+## 6 Out-of-scope for v1.0
+
+* Agency referral flow (still spec-ed, but disabled by feature flag).
+* GPU auto-provision (Task 22).
+* Advanced analytics dashboard (Task 12).
+* Dedicated SendGrid IP pool (won’t be bought until bounce >2 %).
+
+---
+
+## 7 Open issues / decisions
+
+| # | Issue                                             | Owner       | Deadline              |
+| - | ------------------------------------------------- | ----------- | --------------------- |
+| 1 | Keep/Purge raw Yelp JSON after metrics extracted? | COO + Legal | End of sprint-1       |
+| 2 | Refund guarantee wording (double money-back?)     | CPO         | Before first send     |
+| 3 | Local vs S3 bucket for PDF hosting                | CTO         | When first audit sold |
+| 4 | What counts as “reasonable salary” for founder?   | CFO advisor | Pre-tax filing        |
+
+---
+
+## 8 Metrics & instrumentation
+
+* **event\_email\_sent**, **event\_email\_open**, **event\_audit\_paid**, **event\_refund**, tagged with `variant_id` for A/B.
+* Grafana panels: cost-per-email (last 24 h), cumulative profit, GPT token usage, Yelp 429 count.
+
+---
+
+## 9 Risks & mitigations
+
+| Risk                                 | Likelihood | Impact               | Mitigation                                           |
+| ------------------------------------ | ---------- | -------------------- | ---------------------------------------------------- |
+| Yelp throttles below 4 500 calls/day | Med        | starves funnel       | Exponential back-off + Google Places paid tier ready |
+| Shared IP hits spam traps            | Med        | kills deliverability | GlockApps testing; quick-swap to dedicated pool      |
+| Stripe disputes >1 %                 | Low        | account review       | Clear refund link; friendly email tone               |
+| Mac mini hardware failure            | Low        | full stop            | Weekly bootable clone + cheap cold spare on shelf    |
+
+---
+
+## 10 Timeline (assuming code base ≈90 % complete)
+
+| Week  | Milestone                                                  |
+| ----- | ---------------------------------------------------------- |
+| **0** | Tag `pre-launch` branch; PRD sign-off.                     |
+| 1     | Deploy services on Mac; domain & email auth live.          |
+| 2     | Smoke-test 1 000 emails; Stripe live mode.                 |
+| 3     | Batch 5 000 emails; cut KPI baseline.                      |
+| 4     | Raise to 20 k emails/day; cost monitoring green.           |
+| 6     | Evidence gate met → turn on SEMrush Guru + tier-1 scaling. |
+
+---
+
+# Deep-Research Prompt for GPT Code Audit
+
+> **System**: “You are a code-analysis assistant with deep knowledge of Python, SQL, Docker, and CI. Read the following PRD and compare it to the repository `mirqtio/Anthrasite_LeadFactory` (assume `main` branch). Identify every requirement that is **missing, partially implemented, or stale**. For each gap give:
+>
+> * path(s) you checked,
+> * evidence of non-compliance (lines, functions, TODOs),
+> * effort estimate (S/M/L),
+> * suggested task-master task JSON snippet.
+>
+> Return Markdown with a table of gaps followed by an ordered list of tasks.
+
+*(Paste the PRD above as the “context” block, then run the prompt in GPT-4o or Claude Opus from the repo root with a tool like [Code Interpreter](https://github.com/features/copilot). The model will traverse the tree, diff vs spec, and spit back a ready-to-import task list.)*

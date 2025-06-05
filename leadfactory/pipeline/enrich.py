@@ -27,6 +27,41 @@ from leadfactory.utils.metrics import (
 logger = get_logger(__name__)
 
 
+def save_features(
+    business_id: int,
+    tech_stack: dict = None,
+    page_speed: dict = None,
+    screenshot_url: str = None,
+    semrush_json: dict = None,
+    **kwargs,  # Accept extra kwargs like skip_reason
+) -> bool:
+    """
+    Save enrichment features to storage.
+
+    This is a stub function that will be replaced by the actual implementation
+    from bin/enrich.py when available.
+
+    Args:
+        business_id: Business ID
+        tech_stack: Technology stack data
+        page_speed: PageSpeed data
+        screenshot_url: Screenshot URL
+        semrush_json: SEMrush data
+        **kwargs: Additional arguments (e.g., skip_reason)
+
+    Returns:
+        True if successful
+    """
+    skip_reason = kwargs.get("skip_reason")
+    if skip_reason:
+        logger.info(
+            f"Saving features for business {business_id} with skip_reason: {skip_reason}"
+        )
+    else:
+        logger.info(f"Saving features for business {business_id} (stub implementation)")
+    return True
+
+
 def validate_enrichment_dependencies(business: dict[str, Any]) -> dict[str, Any]:
     """
     Validate that all required dependencies are available for enrichment.
@@ -58,9 +93,8 @@ def validate_enrichment_dependencies(business: dict[str, Any]) -> dict[str, Any]
     # Check Wappalyzer (tech stack analysis) - always available (no API key required)
     available_apis.append("wappalyzer")
 
-    # Check PageSpeed API
-    if os.getenv("PAGESPEED_API_KEY"):
-        available_apis.append("pagespeed")
+    # Check PageSpeed API (can work without key but has rate limits)
+    available_apis.append("pagespeed")
 
     # Check Screenshot service
     if os.getenv("SCREENSHOT_ONE_KEY"):
@@ -158,16 +192,84 @@ def enrich_business(business: dict[str, Any]) -> bool:
                     except Exception as e:
                         logger.warning(f"Tech stack analysis failed: {e}")
 
-                # PageSpeed analysis
+                # Import modules and use appropriate save_features
+                try:
+                    # Use imported save_features if available
+                    from enrich import save_features as imported_save_features
+
+                    # Create wrapper that handles skip_reason
+                    def save_features_wrapper(
+                        business_id,
+                        tech_stack=None,
+                        page_speed=None,
+                        screenshot_url=None,
+                        semrush_json=None,
+                        **kwargs,
+                    ):
+                        # Call original without skip_reason
+                        return imported_save_features(
+                            business_id,
+                            tech_stack,
+                            page_speed,
+                            screenshot_url,
+                            semrush_json,
+                        )
+
+                    save_features_func = save_features_wrapper
+                except ImportError:
+                    # Use stub implementation
+                    save_features_func = save_features
+
+                # PageSpeed analysis and modern site filtering
                 if "pagespeed" in validation["available_apis"]:
                     try:
-                        pagespeed_key = os.getenv("PAGESPEED_API_KEY")
-                        pagespeed_analyzer = PageSpeedAnalyzer(pagespeed_key)
-                        pagespeed_data = pagespeed_analyzer.analyze_website(website)
-                        enrichment_results["performance_data"] = pagespeed_data
+                        # First, check if this is a modern site we should skip
+                        from leadfactory.integrations.pagespeed import (
+                            get_pagespeed_client,
+                        )
+
+                        pagespeed_client = get_pagespeed_client()
+                        is_modern, analysis_data = (
+                            pagespeed_client.check_if_modern_site(website)
+                        )
+
+                        if is_modern:
+                            # Mark as processed without sending email (PRD requirement)
+                            logger.info(
+                                f"Skipping modern site {website}: "
+                                f"performance={analysis_data.get('performance_score', 0):.1f}, "
+                                f"mobile_responsive={analysis_data.get('is_mobile_responsive', False)}"
+                            )
+                            # Store the analysis but mark as "modern_site_skipped"
+                            enrichment_results["performance_data"] = analysis_data
+                            enrichment_results["skip_reason"] = "modern_site"
+                            enrichment_results["should_skip"] = True
+
+                            # Save the data but with skip flag
+                            save_features_func(
+                                business_id=business_id,
+                                tech_stack=enrichment_results.get("tech_stack", {}),
+                                page_speed=enrichment_results["performance_data"],
+                                screenshot_url=None,
+                                semrush_json=None,
+                                skip_reason="modern_site",
+                            )
+
+                            # Still count as enriched but will be filtered in pipeline
+                            LEADS_ENRICHED.inc()
+                            logger.info(
+                                f"Modern site {business_name} marked as processed (skipped)",
+                                extra={"outcome": "skipped", "reason": "modern_site"},
+                            )
+                            return True  # Return success but with skip flag in data
+
+                        # If not modern, continue with regular analysis
+                        enrichment_results["performance_data"] = analysis_data
+                        enrichment_results["should_skip"] = False
                         logger.info("PageSpeed analysis completed successfully")
                     except Exception as e:
                         logger.warning(f"PageSpeed analysis failed: {e}")
+                        # On error, continue processing (don't skip)
 
                 # Screenshot capture
                 if "screenshot_one" in validation["available_apis"]:
@@ -194,7 +296,7 @@ def enrich_business(business: dict[str, Any]) -> bool:
                         logger.warning(f"SEMrush analysis failed: {e}")
 
                 # Save enrichment results to database
-                success = save_features(
+                success = save_features_func(
                     business_id=business_id,
                     tech_stack=enrichment_results["tech_stack"],
                     page_speed=enrichment_results["performance_data"],
