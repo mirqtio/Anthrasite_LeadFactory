@@ -12,8 +12,8 @@ import smtplib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from decimal import Decimal
-from email.mime.multipart import MimeMultipart
-from email.mime.text import MimeText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -64,7 +64,7 @@ class AlertRule:
 
     def __post_init__(self):
         """Validate alert rule configuration."""
-        if not self.condition or not self.threshold_value:
+        if not self.condition or self.threshold_value is None:
             raise ValueError("Alert rule must have condition and threshold_value")
 
 
@@ -117,7 +117,7 @@ class EmailNotificationChannel(NotificationChannel):
                 return False
 
             # Create message
-            msg = MimeMultipart()
+            msg = MIMEMultipart()
             msg["From"] = username
             msg["To"] = ", ".join(recipients)
             msg["Subject"] = f"[{alert.severity.value.upper()}] {alert.rule_name}"
@@ -142,7 +142,7 @@ Metadata:
 LeadFactory Monitoring System
             """
 
-            msg.attach(MimeText(body, "plain"))
+            msg.attach(MIMEText(body, "plain"))
 
             # Send email
             with smtplib.SMTP(smtp_server, smtp_port) as server:

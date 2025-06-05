@@ -23,6 +23,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,  # 30 second timeout to prevent hangs
         )
         assert result.returncode == 0
         assert "Anthrasite Lead Factory CLI" in result.stdout
@@ -37,6 +38,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
 
@@ -47,6 +49,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
         assert "Pipeline operations" in result.stdout
@@ -62,6 +65,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
         assert "Administrative operations" in result.stdout
@@ -73,6 +77,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
         assert "Development and testing operations" in result.stdout
@@ -84,6 +89,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -97,6 +103,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -110,6 +117,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -122,6 +130,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
         assert "--limit" in result.stdout
@@ -135,6 +144,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
 
@@ -145,6 +155,7 @@ class TestCLIFunctionality:
             cwd=self.project_root,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         assert result.returncode == 0
 
