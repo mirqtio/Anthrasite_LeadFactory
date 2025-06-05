@@ -550,11 +550,10 @@ def validate_environment_configuration() -> Dict[str, Union[bool, List[str]]]:
         audit_caps = get_capabilities_by_tier(
             CapabilityTier.HIGH_VALUE, NodeType.ENRICH
         )
-        enabled_audit_caps = [
-            cap
-            for cap in audit_caps
-            if is_capability_enabled_for_environment(cap, environment)
-        ]
+        enabled_caps = get_enabled_capabilities(
+            NodeType.ENRICH, environment=environment
+        )
+        enabled_audit_caps = [cap for cap in audit_caps if cap in enabled_caps]
 
         if not enabled_audit_caps:
             warnings.append(
