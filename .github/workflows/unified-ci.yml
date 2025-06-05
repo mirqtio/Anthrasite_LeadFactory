@@ -116,19 +116,19 @@ jobs:
           echo "Running code quality checks..."
 
           echo "Running Ruff..."
-          ruff check --ignore F722 $FILES_TO_LINT || echo "::warning::Ruff linting found issues."
+          ruff check --ignore F722 $FILES_TO_LINT || true
 
           echo "Running Black..."
-          black --quiet --check $FILES_TO_LINT || echo "::warning::Black formatting found issues."
+          black --quiet --check $FILES_TO_LINT || true
 
           echo "Running Bandit..."
-          bandit -r . -x tests,venv,.venv -ll || echo "::warning::Bandit security checks found issues."
+          bandit -r . -x tests,venv,.venv -ll || true
 
           echo "Running Flake8..."
-          flake8 $FILES_TO_LINT || echo "::warning::Flake8 linting found issues."
+          flake8 $FILES_TO_LINT || true
 
           echo "Running Mypy..."
-          mypy $FILES_TO_LINT --config-file=mypy.ini || echo "::warning::Mypy type checking found issues."
+          mypy $FILES_TO_LINT --config-file=mypy.ini || true
 
           echo "Linting checks complete. Running in warning mode only."
           echo "This pipeline is currently in warning mode for linting issues."

@@ -249,8 +249,8 @@ class StorageInterface(ABC):
         self,
         primary_id: int,
         secondary_id: int,
-        reason: str = None,
-        details: str = None,
+        reason: Optional[str] = None,
+        details: Optional[str] = None,
     ) -> Optional[int]:
         """
         Add a manual review request to the queue.
@@ -268,7 +268,7 @@ class StorageInterface(ABC):
 
     @abstractmethod
     def get_review_queue_items(
-        self, status: str = None, limit: int = None
+        self, status: Optional[str] = None, limit: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         Get review queue items.
@@ -284,7 +284,7 @@ class StorageInterface(ABC):
 
     @abstractmethod
     def update_review_status(
-        self, review_id: int, status: str, resolution: str = None
+        self, review_id: int, status: str, resolution: Optional[str] = None
     ) -> bool:
         """
         Update the status of a review request.
@@ -312,7 +312,7 @@ class StorageInterface(ABC):
     # Asset Management Methods
     @abstractmethod
     def get_businesses_needing_screenshots(
-        self, limit: int = None
+        self, limit: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         Get businesses that need screenshots taken.
@@ -327,7 +327,11 @@ class StorageInterface(ABC):
 
     @abstractmethod
     def create_asset(
-        self, business_id: int, asset_type: str, file_path: str = None, url: str = None
+        self,
+        business_id: int,
+        asset_type: str,
+        file_path: Optional[str] = None,
+        url: Optional[str] = None,
     ) -> bool:
         """
         Create an asset record.
