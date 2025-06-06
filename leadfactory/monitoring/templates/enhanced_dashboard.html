@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Cost Dashboard - LeadFactory</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-excellent { color: #27ae60; }
+        .status-good { color: #3498db; }
+        .status-warning { color: #f39c12; }
+        .status-critical { color: #e74c3c; }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .recommendations {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .recommendation {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .recommendation.high {
+            background: #fdf2f2;
+            border-color: #e74c3c;
+        }
+
+        .recommendation.medium {
+            background: #fef9e7;
+            border-color: #f39c12;
+        }
+
+        .recommendation.low {
+            background: #f0f9ff;
+            border-color: #3498db;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .controls select, .controls button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .controls button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #2980b9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .auto-refresh {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Enhanced Cost Dashboard</h1>
+        <p>Real-time cost analytics and optimization insights for LeadFactory</p>
+    </div>
+
+    <div class="auto-refresh">
+        <span class="status-indicator" id="refreshStatus"></span>
+        Auto-refresh: <span id="refreshTimer">30s</span>
+    </div>
+
+    <div class="container">
+        <!-- Controls -->
+        <div class="controls">
+            <label>
+                Days Back:
+                <select id="daysBack">
+                    <option value="7">7 Days</option>
+                    <option value="30" selected>30 Days</option>
+                    <option value="90">90 Days</option>
+                </select>
+            </label>
+
+            <label>
+                Service Type:
+                <select id="serviceType">
+                    <option value="">All Services</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="semrush">Semrush</option>
+                    <option value="gpu">GPU</option>
+                    <option value="storage">Storage</option>
+                </select>
+            </label>
+
+            <label>
+                Group By:
+                <select id="groupBy">
+                    <option value="service">Service</option>
+                    <option value="daily">Daily</option>
+                    <option value="operation">Operation</option>
+                </select>
+            </label>
+
+            <button onclick="refreshDashboard()">Refresh Now</button>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Real-time Summary -->
+            <div class="card metric-card">
+                <h3>Today's Costs</h3>
+                <div class="metric-value" id="todayCost">$0.00</div>
+                <div class="metric-label">Current Total</div>
+                <div id="dailyChange" class="metric-label" style="margin-top: 0.5rem;"></div>
+            </div>
+
+            <!-- Budget Status -->
+            <div class="card metric-card">
+                <h3>Budget Status</h3>
+                <div class="metric-value" id="budgetUtilization">0%</div>
+                <div class="metric-label">Monthly Utilization</div>
+                <div id="budgetStatus" class="metric-label" style="margin-top: 0.5rem;"></div>
+            </div>
+
+            <!-- Optimization Score -->
+            <div class="card metric-card">
+                <h3>Optimization Score</h3>
+                <div class="metric-value" id="optimizationScore">100</div>
+                <div class="metric-label">Cost Efficiency</div>
+                <div id="potentialSavings" class="metric-label" style="margin-top: 0.5rem;"></div>
+            </div>
+
+            <!-- Cost Trends Chart -->
+            <div class="card">
+                <h3>Cost Trends</h3>
+                <div class="chart-container">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Service Breakdown Chart -->
+            <div class="card">
+                <h3>Service Breakdown</h3>
+                <div class="chart-container">
+                    <canvas id="breakdownChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Optimization Recommendations -->
+            <div class="card">
+                <h3>Optimization Recommendations</h3>
+                <div class="recommendations" id="recommendations">
+                    <div class="loading">Loading recommendations...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let trendsChart, breakdownChart;
+        let refreshInterval;
+        let refreshTimer = 30;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            refreshDashboard();
+            startAutoRefresh();
+        });
+
+        function initializeCharts() {
+            // Initialize Trends Chart
+            const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+            trendsChart = new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Daily Costs',
+                        data: [],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Initialize Breakdown Chart
+            const breakdownCtx = document.getElementById('breakdownChart').getContext('2d');
+            breakdownChart = new Chart(breakdownCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#3498db',
+                            '#e74c3c',
+                            '#f39c12',
+                            '#27ae60',
+                            '#9b59b6',
+                            '#1abc9c'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        async function refreshDashboard() {
+            try {
+                // Update refresh status
+                const statusIndicator = document.getElementById('refreshStatus');
+                statusIndicator.style.backgroundColor = '#f39c12';
+
+                // Get filter values
+                const daysBack = document.getElementById('daysBack').value;
+                const serviceType = document.getElementById('serviceType').value;
+                const groupBy = document.getElementById('groupBy').value;
+
+                // Fetch all data in parallel
+                const [realtimeData, trendsData, insightsData, budgetData] = await Promise.all([
+                    fetch('/api/cost/realtime-summary').then(r => r.json()),
+                    fetch(`/api/cost/trends?days_back=${daysBack}&service_type=${serviceType}`).then(r => r.json()),
+                    fetch('/api/cost/optimization-insights').then(r => r.json()),
+                    fetch('/api/cost/budget-status').then(r => r.json())
+                ]);
+
+                // Update real-time summary
+                updateRealtimeSummary(realtimeData.data);
+
+                // Update budget status
+                updateBudgetStatus(budgetData.data);
+
+                // Update optimization insights
+                updateOptimizationInsights(insightsData.data);
+
+                // Update trends chart
+                updateTrendsChart(trendsData.data);
+
+                // Update breakdown chart
+                updateBreakdownChart(realtimeData.data);
+
+                // Update refresh status
+                statusIndicator.style.backgroundColor = '#27ae60';
+
+            } catch (error) {
+                console.error('Error refreshing dashboard:', error);
+                document.getElementById('refreshStatus').style.backgroundColor = '#e74c3c';
+            }
+        }
+
+        function updateRealtimeSummary(data) {
+            document.getElementById('todayCost').textContent = '$' + data.today_total.toFixed(2);
+
+            const changeElement = document.getElementById('dailyChange');
+            const changePercent = data.daily_change_percent;
+            const changeText = changePercent >= 0 ?
+                `+${changePercent.toFixed(1)}% vs yesterday` :
+                `${changePercent.toFixed(1)}% vs yesterday`;
+
+            changeElement.textContent = changeText;
+            changeElement.className = 'metric-label ' + (changePercent >= 0 ? 'status-warning' : 'status-good');
+        }
+
+        function updateBudgetStatus(data) {
+            document.getElementById('budgetUtilization').textContent = data.utilization_percent.toFixed(1) + '%';
+
+            const statusElement = document.getElementById('budgetStatus');
+            statusElement.textContent = `$${data.monthly_remaining.toFixed(2)} remaining`;
+            statusElement.className = 'metric-label status-' + data.status;
+        }
+
+        function updateOptimizationInsights(data) {
+            document.getElementById('optimizationScore').textContent = Math.round(data.optimization_score);
+            document.getElementById('potentialSavings').textContent =
+                `$${data.potential_monthly_savings.toFixed(2)} potential savings`;
+
+            // Update recommendations
+            const recommendationsContainer = document.getElementById('recommendations');
+            recommendationsContainer.innerHTML = '';
+
+            if (data.recommendations.length === 0) {
+                recommendationsContainer.innerHTML = '<div class="loading">No recommendations at this time.</div>';
+                return;
+            }
+
+            data.recommendations.forEach(rec => {
+                const recElement = document.createElement('div');
+                recElement.className = `recommendation ${rec.priority}`;
+                recElement.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 0.5rem;">${rec.service.toUpperCase()}</div>
+                    <div>${rec.message}</div>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                        Potential savings: $${rec.potential_savings.toFixed(2)}
+                    </div>
+                `;
+                recommendationsContainer.appendChild(recElement);
+            });
+        }
+
+        function updateTrendsChart(data) {
+            if (!data.daily_costs) return;
+
+            const labels = data.daily_costs.map(item => new Date(item.date).toLocaleDateString());
+            const costs = data.daily_costs.map(item => item.cost);
+
+            trendsChart.data.labels = labels;
+            trendsChart.data.datasets[0].data = costs;
+            trendsChart.update('none');
+        }
+
+        function updateBreakdownChart(data) {
+            if (!data.service_breakdown) return;
+
+            const services = Object.keys(data.service_breakdown);
+            const costs = Object.values(data.service_breakdown);
+
+            breakdownChart.data.labels = services;
+            breakdownChart.data.datasets[0].data = costs;
+            breakdownChart.update('none');
+        }
+
+        function startAutoRefresh() {
+            // Auto-refresh every 30 seconds
+            refreshInterval = setInterval(refreshDashboard, 30000);
+
+            // Update timer display
+            setInterval(() => {
+                refreshTimer--;
+                if (refreshTimer <= 0) {
+                    refreshTimer = 30;
+                }
+                document.getElementById('refreshTimer').textContent = refreshTimer + 's';
+            }, 1000);
+        }
+
+        // Event listeners
+        document.getElementById('daysBack').addEventListener('change', refreshDashboard);
+        document.getElementById('serviceType').addEventListener('change', refreshDashboard);
+        document.getElementById('groupBy').addEventListener('change', refreshDashboard);
+    </script>
+</body>
+</html>

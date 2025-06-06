@@ -1,0 +1,412 @@
+{
+  "A/B Testing Framework": {
+    "success": true,
+    "duration": 8.0108642578125e-05,
+    "details": {
+      "success": true,
+      "checks": [
+        [
+          "A/B test created",
+          true
+        ],
+        [
+          "Businesses assigned",
+          true
+        ],
+        [
+          "Results recorded",
+          true
+        ],
+        [
+          "Traffic split balanced",
+          true
+        ],
+        [
+          "Variant A has results",
+          true
+        ],
+        [
+          "Variant B has results",
+          true
+        ]
+      ],
+      "test_id": 1,
+      "assignments": 5,
+      "results_count": 4,
+      "traffic_split": {
+        "A": 3,
+        "B": 2
+      },
+      "summary": "A/B Testing Framework validation completed"
+    },
+    "timestamp": 1749210237.11753
+  },
+  "Enhanced Cost Dashboard": {
+    "success": true,
+    "duration": 0.000125885009765625,
+    "details": {
+      "success": true,
+      "checks": [
+        [
+          "Costs recorded",
+          true
+        ],
+        [
+          "Total cost calculated",
+          true
+        ],
+        [
+          "Service breakdown available",
+          true
+        ],
+        [
+          "Daily tracking works",
+          true
+        ],
+        [
+          "Budget settings loaded",
+          true
+        ],
+        [
+          "Budget utilization calculated",
+          true
+        ],
+        [
+          "Optimization data available",
+          true
+        ]
+      ],
+      "total_cost": 0.111,
+      "cost_breakdown": [
+        {
+          "service": "openai",
+          "total_cost": 0.1,
+          "operation_count": 3
+        },
+        {
+          "service": "screenshotone",
+          "total_cost": 0.01,
+          "operation_count": 1
+        },
+        {
+          "service": "sendgrid",
+          "total_cost": 0.001,
+          "operation_count": 1
+        }
+      ],
+      "daily_costs": [
+        {
+          "date": "2025-06-06",
+          "daily_cost": 0.111
+        }
+      ],
+      "budget_utilization": 0.000111,
+      "warning_triggered": false,
+      "optimization_data": [
+        {
+          "service": "openai",
+          "operation": "completion",
+          "avg_cost": 0.04,
+          "frequency": 2
+        },
+        {
+          "service": "openai",
+          "operation": "embedding",
+          "avg_cost": 0.02,
+          "frequency": 1
+        },
+        {
+          "service": "screenshotone",
+          "operation": "capture",
+          "avg_cost": 0.01,
+          "frequency": 1
+        },
+        {
+          "service": "sendgrid",
+          "operation": "email",
+          "avg_cost": 0.001,
+          "frequency": 1
+        }
+      ],
+      "summary": "Enhanced Cost Dashboard validation completed"
+    },
+    "timestamp": 1749210237.117725
+  },
+  "Fallback & Retry Mechanisms": {
+    "success": true,
+    "duration": 5.602836608886719e-05,
+    "details": {
+      "success": true,
+      "checks": [
+        [
+          "Error scenarios recorded",
+          true
+        ],
+        [
+          "Retry mechanisms tested",
+          true
+        ],
+        [
+          "Some retries successful",
+          true
+        ],
+        [
+          "Fallback mechanisms tested",
+          true
+        ],
+        [
+          "Error analysis available",
+          true
+        ],
+        [
+          "Recovery rate calculated",
+          true
+        ],
+        [
+          "High recovery rate",
+          true
+        ]
+      ],
+      "retry_tests": [
+        {
+          "component": "api_gateway",
+          "error_type": "timeout",
+          "retry_count": 2,
+          "success": true,
+          "max_retries": 3
+        },
+        {
+          "component": "email_service",
+          "error_type": "rate_limit",
+          "retry_count": 3,
+          "success": true,
+          "max_retries": 3
+        },
+        {
+          "component": "database",
+          "error_type": "connection",
+          "retry_count": 3,
+          "success": true,
+          "max_retries": 3
+        },
+        {
+          "component": "screenshot",
+          "error_type": "service_down",
+          "retry_count": 3,
+          "success": true,
+          "max_retries": 3
+        }
+      ],
+      "fallback_tests": [
+        {
+          "service": "screenshot_primary",
+          "fallback": "screenshot_local",
+          "success": true,
+          "fallback_used": true
+        },
+        {
+          "service": "email_primary",
+          "fallback": "email_backup",
+          "success": true,
+          "fallback_used": false
+        },
+        {
+          "service": "api_primary",
+          "fallback": "api_cached",
+          "success": true,
+          "fallback_used": true
+        }
+      ],
+      "error_analysis": [
+        {
+          "component": "api_gateway",
+          "error_type": "timeout",
+          "error_count": 1,
+          "resolved_count": 1
+        },
+        {
+          "component": "database",
+          "error_type": "connection",
+          "error_count": 1,
+          "resolved_count": 1
+        },
+        {
+          "component": "email_service",
+          "error_type": "rate_limit",
+          "error_count": 1,
+          "resolved_count": 1
+        },
+        {
+          "component": "screenshot",
+          "error_type": "service_down",
+          "error_count": 1,
+          "resolved_count": 1
+        }
+      ],
+      "recovery_rate": 1.0,
+      "total_errors": 4,
+      "resolved_errors": 4,
+      "summary": "Fallback & Retry mechanisms validation completed"
+    },
+    "timestamp": 1749210237.117843
+  },
+  "Bulk Qualification UI": {
+    "success": true,
+    "duration": 7.390975952148438e-05,
+    "details": {
+      "success": true,
+      "checks": [
+        [
+          "Businesses available for qualification",
+          true
+        ],
+        [
+          "Bulk selection works",
+          true
+        ],
+        [
+          "Qualification criteria applied",
+          true
+        ],
+        [
+          "Bulk operation completed",
+          true
+        ],
+        [
+          "Handoff queue created",
+          true
+        ],
+        [
+          "Qualified businesses queued",
+          true
+        ],
+        [
+          "Operation history recorded",
+          true
+        ]
+      ],
+      "pending_businesses": 5,
+      "selected_businesses": 3,
+      "qualified_count": 3,
+      "qualification_criteria": {
+        "min_score": 60,
+        "has_email": true,
+        "has_website": true,
+        "category_filter": null
+      },
+      "queue_stats": [
+        {
+          "queue_type": "sales",
+          "count": 3,
+          "avg_priority": 3.0
+        }
+      ],
+      "bulk_operation": {
+        "operation_id": "bulk_qual_1749210237",
+        "selected_count": 3,
+        "qualified_count": 3,
+        "criteria": {
+          "min_score": 60,
+          "has_email": true,
+          "has_website": true,
+          "category_filter": null
+        },
+        "timestamp": 1749210237.11797
+      },
+      "summary": "Bulk Qualification UI validation completed"
+    },
+    "timestamp": 1749210237.117974
+  },
+  "Webhook Failure Handling": {
+    "success": false,
+    "duration": 0.00012803077697753906,
+    "details": {
+      "success": false,
+      "checks": [
+        [
+          "Webhook events received",
+          true
+        ],
+        [
+          "Events processed",
+          true
+        ],
+        [
+          "Failure handling works",
+          false
+        ],
+        [
+          "Dead letter queue created",
+          true
+        ],
+        [
+          "Failed events queued",
+          false
+        ],
+        [
+          "Health monitoring available",
+          true
+        ],
+        [
+          "Event analysis available",
+          true
+        ],
+        [
+          "Success rate calculated",
+          true
+        ]
+      ],
+      "total_events": 5,
+      "processed_count": 4,
+      "failed_count": 0,
+      "success_rate": 0.8,
+      "health_stats": [
+        {
+          "status": "pending",
+          "count": 1,
+          "avg_retries": 1.0
+        },
+        {
+          "status": "processed",
+          "count": 4,
+          "avg_retries": 0.0
+        }
+      ],
+      "event_analysis": [
+        {
+          "event_type": "email.bounced",
+          "total_count": 1,
+          "success_count": 1,
+          "failure_count": 0
+        },
+        {
+          "event_type": "email.clicked",
+          "total_count": 1,
+          "success_count": 1,
+          "failure_count": 0
+        },
+        {
+          "event_type": "email.delivered",
+          "total_count": 1,
+          "success_count": 1,
+          "failure_count": 0
+        },
+        {
+          "event_type": "email.opened",
+          "total_count": 1,
+          "success_count": 1,
+          "failure_count": 0
+        },
+        {
+          "event_type": "invalid.event",
+          "total_count": 1,
+          "success_count": 0,
+          "failure_count": 0
+        }
+      ],
+      "dead_letter_queue_count": 0,
+      "summary": "Webhook Failure Handling validation completed"
+    },
+    "timestamp": 1749210237.118161
+  }
+}

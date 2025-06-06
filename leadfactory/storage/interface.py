@@ -812,3 +812,126 @@ class StorageInterface(ABC):
             List of business dictionaries
         """
         pass
+
+    # Webhook Management Methods
+    @abstractmethod
+    def store_webhook_event(self, event_data: dict[str, Any]) -> bool:
+        """
+        Store a webhook event.
+
+        Args:
+            event_data: Webhook event data dictionary
+
+        Returns:
+            True if successful, False otherwise
+        """
+        pass
+
+    @abstractmethod
+    def get_webhook_event(self, event_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get a webhook event by ID.
+
+        Args:
+            event_id: Webhook event ID
+
+        Returns:
+            Webhook event data or None if not found
+        """
+        pass
+
+    @abstractmethod
+    def update_webhook_event(self, event_id: str, event_data: dict[str, Any]) -> bool:
+        """
+        Update a webhook event.
+
+        Args:
+            event_id: Webhook event ID
+            event_data: Updated webhook event data
+
+        Returns:
+            True if successful, False otherwise
+        """
+        pass
+
+    @abstractmethod
+    def store_webhook_retry_item(self, retry_data: dict[str, Any]) -> bool:
+        """
+        Store a webhook retry item.
+
+        Args:
+            retry_data: Retry item data dictionary
+
+        Returns:
+            True if successful, False otherwise
+        """
+        pass
+
+    @abstractmethod
+    def get_pending_webhook_retries(
+        self, limit: Optional[int] = None
+    ) -> list[dict[str, Any]]:
+        """
+        Get pending webhook retry items.
+
+        Args:
+            limit: Maximum number of items to return
+
+        Returns:
+            List of retry item dictionaries
+        """
+        pass
+
+    @abstractmethod
+    def remove_webhook_retry_item(self, event_id: str) -> bool:
+        """
+        Remove a webhook retry item.
+
+        Args:
+            event_id: Event ID of the retry item
+
+        Returns:
+            True if successful, False otherwise
+        """
+        pass
+
+    @abstractmethod
+    def store_dead_letter_event(self, event_data: dict[str, Any]) -> bool:
+        """
+        Store an event in the dead letter queue.
+
+        Args:
+            event_data: Dead letter event data
+
+        Returns:
+            True if successful, False otherwise
+        """
+        pass
+
+    @abstractmethod
+    def get_dead_letter_events(
+        self, limit: Optional[int] = None
+    ) -> list[dict[str, Any]]:
+        """
+        Get events from the dead letter queue.
+
+        Args:
+            limit: Maximum number of events to return
+
+        Returns:
+            List of dead letter event dictionaries
+        """
+        pass
+
+    @abstractmethod
+    def get_webhook_stats(self, webhook_name: Optional[str] = None) -> dict[str, Any]:
+        """
+        Get webhook processing statistics.
+
+        Args:
+            webhook_name: Optional webhook name to filter by
+
+        Returns:
+            Statistics dictionary
+        """
+        pass

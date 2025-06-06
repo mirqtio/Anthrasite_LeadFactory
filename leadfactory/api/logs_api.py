@@ -955,6 +955,11 @@ def create_logs_app() -> Flask:
 
     app.register_blueprint(mockup_qa)
 
+    # Register error management API
+    from leadfactory.api.error_management_api import error_management
+
+    app.register_blueprint(error_management)
+
     @app.route("/api/health")
     def health_check() -> Response:
         """Health check endpoint."""
@@ -976,6 +981,10 @@ def create_logs_app() -> Flask:
                     "/api/logs/stats",
                     "/api/logs/types",
                     "/api/businesses",
+                    "/api/errors/bulk-dismiss",
+                    "/api/errors/bulk-fix",
+                    "/api/errors/bulk-categorize",
+                    "/api/errors/dashboard-data",
                 ],
             }
         )

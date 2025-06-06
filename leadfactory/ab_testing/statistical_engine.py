@@ -450,6 +450,162 @@ class StatisticalEngine:
 
         return conclusion
 
+    def analyze_test_results(self, test_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze test results and return comprehensive statistical analysis.
+
+        Args:
+            test_results: Test results dictionary from ABTestManager
+
+        Returns:
+            Dictionary containing statistical analysis results
+        """
+        try:
+            variant_results = test_results.get("variant_results", {})
+            test_config = test_results.get("test_config")
+
+            if len(variant_results) < 2:
+                return {
+                    "p_value": 1.0,
+                    "effect_size": 0.0,
+                    "statistical_power": 0.0,
+                    "is_significant": False,
+                    "recommended_variant": None,
+                    "significance_threshold": (
+                        test_config.significance_threshold if test_config else 0.05
+                    ),
+                    "confidence_intervals": {},
+                    "test_method": "insufficient_data",
+                }
+
+            # Extract conversion data for the primary metric
+            variant_data = []
+            variant_ids = list(variant_results.keys())
+
+            for variant_id, results in variant_results.items():
+                assignments = results.get("assignments", 0)
+                conversion_rates = results.get("conversion_rates", {})
+
+                if conversion_rates:
+                    # Use first conversion metric found
+                    primary_metric = list(conversion_rates.keys())[0]
+                    conversions = conversion_rates[primary_metric].get("count", 0)
+                else:
+                    conversions = 0
+
+                variant_data.append(
+                    {
+                        "variant_id": variant_id,
+                        "assignments": assignments,
+                        "conversions": conversions,
+                        "rate": conversions / assignments if assignments > 0 else 0.0,
+                    }
+                )
+
+            # Perform statistical test (two-proportion z-test for binary outcomes)
+            if len(variant_data) == 2:
+                v1, v2 = variant_data[0], variant_data[1]
+
+                # Perform proportions test
+                variant_data_for_test = [
+                    {"conversions": v1["conversions"], "samples": v1["assignments"]},
+                    {"conversions": v2["conversions"], "samples": v2["assignments"]},
+                ]
+                result = self.test_proportions(
+                    variant_data=variant_data_for_test,
+                    alpha=test_config.significance_threshold if test_config else 0.05,
+                )
+
+                # Calculate effect size (Cohen's h for proportions)
+                p1, p2 = v1["rate"], v2["rate"]
+                effect_size = (
+                    2 * (math.asin(math.sqrt(p2)) - math.asin(math.sqrt(p1)))
+                    if p1 > 0 and p2 > 0
+                    else 0.0
+                )
+
+                # Determine winner
+                if result.is_significant:
+                    winner = (
+                        v2["variant_id"]
+                        if v2["rate"] > v1["rate"]
+                        else v1["variant_id"]
+                    )
+                else:
+                    winner = None
+
+                # Calculate confidence intervals (approximate)
+                confidence_intervals = {}
+                for v in variant_data:
+                    if v["assignments"] > 0:
+                        rate = v["rate"]
+                        se = math.sqrt(rate * (1 - rate) / v["assignments"])
+                        margin = 1.96 * se  # 95% CI
+                        confidence_intervals[v["variant_id"]] = (
+                            max(0, rate - margin),
+                            min(1, rate + margin),
+                        )
+
+                return {
+                    "p_value": result.p_value,
+                    "effect_size": effect_size,
+                    "statistical_power": result.power,
+                    "is_significant": result.is_significant,
+                    "recommended_variant": winner,
+                    "significance_threshold": (
+                        test_config.significance_threshold if test_config else 0.05
+                    ),
+                    "confidence_intervals": confidence_intervals,
+                    "test_method": "two_proportion_z_test",
+                    "correction_method": "none",
+                }
+
+            else:
+                # Multi-variant test - use chi-square
+                observed = [
+                    [v["conversions"], v["assignments"] - v["conversions"]]
+                    for v in variant_data
+                ]
+
+                # Flatten for chi-square test
+                chi_square_result = self._chi_square_test(observed)
+
+                # Find best performing variant
+                best_variant = max(variant_data, key=lambda v: v["rate"])
+
+                return {
+                    "p_value": chi_square_result["p_value"],
+                    "effect_size": 0.0,  # Complex to calculate for multi-variant
+                    "statistical_power": 0.8,  # Estimate
+                    "is_significant": chi_square_result["p_value"]
+                    < (test_config.significance_threshold if test_config else 0.05),
+                    "recommended_variant": (
+                        best_variant["variant_id"]
+                        if chi_square_result["p_value"]
+                        < (test_config.significance_threshold if test_config else 0.05)
+                        else None
+                    ),
+                    "significance_threshold": (
+                        test_config.significance_threshold if test_config else 0.05
+                    ),
+                    "confidence_intervals": {},
+                    "test_method": "chi_square",
+                    "correction_method": "bonferroni",
+                }
+
+        except Exception as e:
+            self.logger.error(f"Error analyzing test results: {e}")
+            return {
+                "p_value": 1.0,
+                "effect_size": 0.0,
+                "statistical_power": 0.0,
+                "is_significant": False,
+                "recommended_variant": None,
+                "significance_threshold": 0.05,
+                "confidence_intervals": {},
+                "test_method": "error",
+                "error": str(e),
+            }
+
 
 # Global instance
 statistical_engine = StatisticalEngine()

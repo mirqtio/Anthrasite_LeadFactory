@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Lead Qualification - LeadFactory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.2rem;
+        }
+
+        .controls-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #2f855a;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
+        }
+
+        .businesses-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .businesses-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .businesses-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .businesses-table th,
+        .businesses-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .businesses-table th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .businesses-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .checkbox-cell {
+            width: 50px;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .score-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .score-high {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .score-medium {
+            background: #fef2c7;
+            color: #744210;
+        }
+
+        .score-low {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #bee3f8;
+            color: #2a4365;
+        }
+
+        .status-qualified {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-rejected {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f7fafc;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: #3182ce;
+            color: white;
+            border-color: #3182ce;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3182ce;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .alert-info {
+            background: #bee3f8;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+
+        .selected-count {
+            background: #3182ce;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            min-width: 400px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .close-modal:hover {
+            color: #2d3748;
+        }
+
+        .operation-status {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .operation-status.in-progress {
+            background: #bee3f8;
+            color: #2a4365;
+        }
+
+        .operation-status.completed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .operation-status.failed {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3182ce;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .businesses-filters {
+                flex-direction: column;
+            }
+
+            .filter-input {
+                min-width: 100%;
+            }
+
+            .businesses-table {
+                font-size: 14px;
+            }
+
+            .businesses-table th,
+            .businesses-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bulk Lead Qualification</h1>
+            <p>Select and qualify multiple leads for handoff to sales team</p>
+        </div>
+
+        <div class="controls-section">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="qualificationCriteria">Qualification Criteria</label>
+                    <select id="qualificationCriteria">
+                        <option value="">Select criteria...</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="businessFilter">Filter Businesses</label>
+                    <select id="businessFilter">
+                        <option value="">All businesses</option>
+                        <option value="pending">Pending only</option>
+                        <option value="high_score">High score (80+)</option>
+                        <option value="medium_score">Medium score (50-79)</option>
+                        <option value="has_website">Has website</option>
+                        <option value="has_email">Has email</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="minScore">Minimum Score</label>
+                    <input type="number" id="minScore" placeholder="e.g., 50" min="0" max="100">
+                </div>
+                <div class="control-group">
+                    <label for="sortBy">Sort By</label>
+                    <select id="sortBy">
+                        <option value="score_desc">Score (High to Low)</option>
+                        <option value="score_asc">Score (Low to High)</option>
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="created_desc">Recently Added</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <div class="selected-count" id="selectedCount">0 selected</div>
+                <button class="btn btn-primary" id="qualifySelectedBtn" disabled>
+                    Qualify Selected
+                </button>
+                <button class="btn btn-secondary" id="selectAllBtn">
+                    Select All Visible
+                </button>
+                <button class="btn btn-secondary" id="clearSelectionBtn">
+                    Clear Selection
+                </button>
+                <button class="btn btn-secondary" id="refreshBtn">
+                    Refresh
+                </button>
+                <a href="/static/handoff_queue.html" class="btn btn-success">
+                    View Handoff Queue
+                </a>
+            </div>
+        </div>
+
+        <div class="businesses-section">
+            <div class="section-header">
+                <h2 class="section-title">Businesses</h2>
+            </div>
+
+            <div class="businesses-filters">
+                <input type="text" id="searchInput" class="filter-input" placeholder="Search by name, email, or website...">
+                <input type="text" id="categoryFilter" class="filter-input" placeholder="Filter by category...">
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div id="loadingContainer" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Loading businesses...</p>
+            </div>
+
+            <div id="businessesContainer">
+                <table class="businesses-table" id="businessesTable">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell">
+                                <input type="checkbox" id="selectAllCheckbox">
+                            </th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Website</th>
+                            <th>Category</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="businessesTableBody">
+                    </tbody>
+                </table>
+
+                <div class="pagination" id="pagination">
+                    <button id="prevPageBtn">Previous</button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button id="nextPageBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Qualification Modal -->
+    <div id="qualificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Bulk Qualification</h3>
+                <button class="close-modal" onclick="closeQualificationModal()">&times;</button>
+            </div>
+
+            <div id="qualificationContent">
+                <p>Qualifying <span id="qualificationCount">0</span> businesses with criteria: <strong id="qualificationCriteriaName"></strong></p>
+
+                <div class="operation-status in-progress" id="qualificationStatus">
+                    <div>Operation in progress...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="qualificationProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="qualificationResults" style="display: none;">
+                    <h4>Results:</h4>
+                    <ul id="qualificationResultsList"></ul>
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeQualificationModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let businesses = [];
+        let selectedBusinessIds = new Set();
+        let qualificationCriteria = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        let pageSize = 20;
+        let currentFilters = {};
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            loadQualificationCriteria();
+            loadBusinesses();
+        });
+
+        function initializeEventListeners() {
+            // Filter and sort controls
+            document.getElementById('businessFilter').addEventListener('change', applyFilters);
+            document.getElementById('minScore').addEventListener('input', debounce(applyFilters, 500));
+            document.getElementById('sortBy').addEventListener('change', applyFilters);
+            document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 500));
+            document.getElementById('categoryFilter').addEventListener('input', debounce(applyFilters, 500));
+
+            // Action buttons
+            document.getElementById('qualifySelectedBtn').addEventListener('click', qualifySelected);
+            document.getElementById('selectAllBtn').addEventListener('click', selectAllVisible);
+            document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+            document.getElementById('refreshBtn').addEventListener('click', loadBusinesses);
+
+            // Selection controls
+            document.getElementById('selectAllCheckbox').addEventListener('change', toggleSelectAll);
+
+            // Pagination
+            document.getElementById('prevPageBtn').addEventListener('click', () => changePage(currentPage - 1));
+            document.getElementById('nextPageBtn').addEventListener('click', () => changePage(currentPage + 1));
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        async function loadQualificationCriteria() {
+            try {
+                const response = await fetch('/api/handoff/criteria');
+                const data = await response.json();
+
+                if (response.ok) {
+                    qualificationCriteria = data.criteria;
+                    populateCriteriaSelect();
+                } else {
+                    showAlert('Error loading qualification criteria: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading qualification criteria: ' + error.message, 'error');
+            }
+        }
+
+        function populateCriteriaSelect() {
+            const select = document.getElementById('qualificationCriteria');
+            select.innerHTML = '<option value="">Select criteria...</option>';
+
+            qualificationCriteria.forEach(criteria => {
+                const option = document.createElement('option');
+                option.value = criteria.id;
+                option.textContent = `${criteria.name} (min score: ${criteria.min_score})`;
+                select.appendChild(option);
+            });
+        }
+
+        async function loadBusinesses() {
+            showLoading(true);
+
+            try {
+                // Build query parameters
+                const params = new URLSearchParams({
+                    limit: pageSize,
+                    offset: (currentPage - 1) * pageSize,
+                    include_archived: false
+                });
+
+                if (currentFilters.search) {
+                    params.append('search', currentFilters.search);
+                }
+
+                const response = await fetch(`/api/businesses?${params}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    businesses = data.businesses || [];
+                    totalPages = Math.ceil(data.total_count / pageSize);
+
+                    // Apply client-side filters
+                    const filteredBusinesses = applyClientSideFilters(businesses);
+
+                    renderBusinessesTable(filteredBusinesses);
+                    updatePagination();
+                } else {
+                    showAlert('Error loading businesses: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading businesses: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function applyClientSideFilters(businessList) {
+            let filtered = [...businessList];
+
+            // Filter by type
+            const businessFilter = document.getElementById('businessFilter').value;
+            if (businessFilter) {
+                filtered = filtered.filter(business => {
+                    switch (businessFilter) {
+                        case 'pending':
+                            return business.status === 'pending';
+                        case 'high_score':
+                            return (business.score || 0) >= 80;
+                        case 'medium_score':
+                            return (business.score || 0) >= 50 && (business.score || 0) < 80;
+                        case 'has_website':
+                            return business.website && business.website.trim() !== '';
+                        case 'has_email':
+                            return business.email && business.email.trim() !== '';
+                        default:
+                            return true;
+                    }
+                });
+            }
+
+            // Filter by minimum score
+            const minScore = parseInt(document.getElementById('minScore').value);
+            if (!isNaN(minScore)) {
+                filtered = filtered.filter(business => (business.score || 0) >= minScore);
+            }
+
+            // Filter by search
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            if (search) {
+                filtered = filtered.filter(business =>
+                    (business.name || '').toLowerCase().includes(search) ||
+                    (business.email || '').toLowerCase().includes(search) ||
+                    (business.website || '').toLowerCase().includes(search)
+                );
+            }
+
+            // Filter by category
+            const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
+            if (categoryFilter) {
+                filtered = filtered.filter(business =>
+                    (business.category || '').toLowerCase().includes(categoryFilter)
+                );
+            }
+
+            // Sort
+            const sortBy = document.getElementById('sortBy').value;
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'score_desc':
+                        return (b.score || 0) - (a.score || 0);
+                    case 'score_asc':
+                        return (a.score || 0) - (b.score || 0);
+                    case 'name_asc':
+                        return (a.name || '').localeCompare(b.name || '');
+                    case 'created_desc':
+                        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                    default:
+                        return 0;
+                }
+            });
+
+            return filtered;
+        }
+
+        function renderBusinessesTable(businessList) {
+            const tbody = document.getElementById('businessesTableBody');
+            tbody.innerHTML = '';
+
+            if (businessList.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="8" style="text-align: center; padding: 40px; color: #718096;">No businesses found</td>';
+                tbody.appendChild(row);
+                return;
+            }
+
+            businessList.forEach(business => {
+                const row = document.createElement('tr');
+                const isSelected = selectedBusinessIds.has(business.id);
+
+                if (isSelected) {
+                    row.style.backgroundColor = '#e6f3ff';
+                }
+
+                row.innerHTML = `
+                    <td class="checkbox-cell">
+                        <input type="checkbox" ${isSelected ? 'checked' : ''}
+                               onchange="toggleBusinessSelection(${business.id}, this.checked)">
+                    </td>
+                    <td>${escapeHtml(business.name || 'N/A')}</td>
+                    <td>${escapeHtml(business.email || 'N/A')}</td>
+                    <td>${business.website ? `<a href="${escapeHtml(business.website)}" target="_blank">${escapeHtml(business.website)}</a>` : 'N/A'}</td>
+                    <td>${escapeHtml(business.category || 'N/A')}</td>
+                    <td><span class="score-badge ${getScoreClass(business.score || 0)}">${business.score || 0}</span></td>
+                    <td><span class="status-badge status-${business.status || 'pending'}">${business.status || 'pending'}</span></td>
+                    <td>${formatDate(business.created_at)}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function getScoreClass(score) {
+            if (score >= 80) return 'score-high';
+            if (score >= 50) return 'score-medium';
+            return 'score-low';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleBusinessSelection(businessId, isSelected) {
+            if (isSelected) {
+                selectedBusinessIds.add(businessId);
+            } else {
+                selectedBusinessIds.delete(businessId);
+            }
+            updateSelectedCount();
+            updateQualifyButton();
+            updateSelectAllCheckbox();
+        }
+
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('selectAllCheckbox').checked;
+            const visibleBusinesses = getVisibleBusinesses();
+
+            visibleBusinesses.forEach(business => {
+                if (isChecked) {
+                    selectedBusinessIds.add(business.id);
+                } else {
+                    selectedBusinessIds.delete(business.id);
+                }
+            });
+
+            updateSelectedCount();
+            updateQualifyButton();
+            renderBusinessesTable(visibleBusinesses); // Re-render to update checkboxes
+        }
+
+        function selectAllVisible() {
+            const visibleBusinesses = getVisibleBusinesses();
+            visibleBusinesses.forEach(business => {
+                selectedBusinessIds.add(business.id);
+            });
+            updateSelectedCount();
+            updateQualifyButton();
+            updateSelectAllCheckbox();
+            renderBusinessesTable(visibleBusinesses);
+        }
+
+        function clearSelection() {
+            selectedBusinessIds.clear();
+            updateSelectedCount();
+            updateQualifyButton();
+            updateSelectAllCheckbox();
+            renderBusinessesTable(getVisibleBusinesses());
+        }
+
+        function getVisibleBusinesses() {
+            return applyClientSideFilters(businesses);
+        }
+
+        function updateSelectedCount() {
+            const count = selectedBusinessIds.size;
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+        }
+
+        function updateQualifyButton() {
+            const btn = document.getElementById('qualifySelectedBtn');
+            const criteriaSelected = document.getElementById('qualificationCriteria').value;
+            btn.disabled = selectedBusinessIds.size === 0 || !criteriaSelected;
+        }
+
+        function updateSelectAllCheckbox() {
+            const checkbox = document.getElementById('selectAllCheckbox');
+            const visibleBusinesses = getVisibleBusinesses();
+            const visibleSelected = visibleBusinesses.filter(b => selectedBusinessIds.has(b.id));
+
+            if (visibleSelected.length === 0) {
+                checkbox.checked = false;
+                checkbox.indeterminate = false;
+            } else if (visibleSelected.length === visibleBusinesses.length) {
+                checkbox.checked = true;
+                checkbox.indeterminate = false;
+            } else {
+                checkbox.checked = false;
+                checkbox.indeterminate = true;
+            }
+        }
+
+        function applyFilters() {
+            currentPage = 1;
+            currentFilters.search = document.getElementById('searchInput').value;
+            renderBusinessesTable(getVisibleBusinesses());
+            updatePagination();
+            updateSelectAllCheckbox();
+        }
+
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadBusinesses();
+        }
+
+        function updatePagination() {
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+        }
+
+        async function qualifySelected() {
+            const criteriaId = document.getElementById('qualificationCriteria').value;
+            if (!criteriaId || selectedBusinessIds.size === 0) return;
+
+            const selectedCriteria = qualificationCriteria.find(c => c.id == criteriaId);
+            if (!selectedCriteria) return;
+
+            // Show qualification modal
+            document.getElementById('qualificationCount').textContent = selectedBusinessIds.size;
+            document.getElementById('qualificationCriteriaName').textContent = selectedCriteria.name;
+            document.getElementById('qualificationModal').style.display = 'block';
+
+            try {
+                const response = await fetch('/api/handoff/qualify-bulk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        business_ids: Array.from(selectedBusinessIds),
+                        criteria_id: parseInt(criteriaId),
+                        performed_by: 'bulk_qualification_ui'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Poll for operation status
+                    pollOperationStatus(data.operation_id);
+                } else {
+                    showQualificationError('Error starting qualification: ' + data.error);
+                }
+            } catch (error) {
+                showQualificationError('Error starting qualification: ' + error.message);
+            }
+        }
+
+        async function pollOperationStatus(operationId) {
+            const maxPolls = 60; // 5 minutes max
+            let pollCount = 0;
+
+            const poll = async () => {
+                try {
+                    const response = await fetch(`/api/handoff/operations/${operationId}`);
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        updateQualificationProgress(data);
+
+                        if (data.status === 'completed') {
+                            showQualificationComplete(data);
+                            clearSelection();
+                            loadBusinesses(); // Refresh the business list
+                        } else if (data.status === 'failed') {
+                            showQualificationError('Qualification failed: ' + (data.operation_details?.error || 'Unknown error'));
+                        } else if (pollCount < maxPolls) {
+                            setTimeout(poll, 5000); // Poll every 5 seconds
+                        } else {
+                            showQualificationError('Qualification timed out');
+                        }
+                    } else {
+                        showQualificationError('Error checking operation status: ' + data.error);
+                    }
+                } catch (error) {
+                    showQualificationError('Error checking operation status: ' + error.message);
+                }
+
+                pollCount++;
+            };
+
+            poll();
+        }
+
+        function updateQualificationProgress(operation) {
+            const progress = operation.total_count > 0
+                ? ((operation.success_count + operation.failure_count) / operation.total_count) * 100
+                : 0;
+
+            document.getElementById('qualificationProgress').style.width = progress + '%';
+
+            const statusEl = document.getElementById('qualificationStatus');
+            statusEl.innerHTML = `
+                <div>Processing... (${operation.success_count + operation.failure_count}/${operation.total_count})</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+            `;
+        }
+
+        function showQualificationComplete(operation) {
+            const statusEl = document.getElementById('qualificationStatus');
+            statusEl.className = 'operation-status completed';
+            statusEl.innerHTML = `
+                <div>Qualification completed!</div>
+                <div>Processed: ${operation.total_count}</div>
+                <div>Successful: ${operation.success_count}</div>
+                <div>Failed: ${operation.failure_count}</div>
+            `;
+
+            if (operation.operation_details) {
+                const resultsEl = document.getElementById('qualificationResults');
+                const listEl = document.getElementById('qualificationResultsList');
+
+                listEl.innerHTML = `
+                    <li>Qualified for handoff: ${operation.operation_details.qualified_count || 0}</li>
+                    <li>Rejected: ${operation.operation_details.rejected_count || 0}</li>
+                    <li>Insufficient data: ${operation.operation_details.insufficient_data_count || 0}</li>
+                `;
+
+                resultsEl.style.display = 'block';
+            }
+
+            showAlert(
+                `Qualification completed! ${operation.operation_details?.qualified_count || 0} businesses qualified for handoff.`,
+                'success'
+            );
+        }
+
+        function showQualificationError(message) {
+            const statusEl = document.getElementById('qualificationStatus');
+            statusEl.className = 'operation-status failed';
+            statusEl.innerHTML = `<div>Error: ${message}</div>`;
+
+            showAlert('Qualification failed: ' + message, 'error');
+        }
+
+        function closeQualificationModal() {
+            document.getElementById('qualificationModal').style.display = 'none';
+
+            // Reset modal content
+            document.getElementById('qualificationStatus').className = 'operation-status in-progress';
+            document.getElementById('qualificationStatus').innerHTML = `
+                <div>Operation in progress...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            `;
+            document.getElementById('qualificationResults').style.display = 'none';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingContainer').style.display = show ? 'block' : 'none';
+            document.getElementById('businessesContainer').style.display = show ? 'none' : 'block';
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+
+            container.appendChild(alert);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+
+        // Listen for criteria selection changes
+        document.getElementById('qualificationCriteria').addEventListener('change', updateQualifyButton);
+    </script>
+</body>
+</html>

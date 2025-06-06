@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handoff Queue Dashboard - LeadFactory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3182ce;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .controls-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #2f855a;
+        }
+
+        .btn-warning {
+            background: #d69e2e;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #b7791f;
+        }
+
+        .queue-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .queue-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .queue-table th,
+        .queue-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .queue-table th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .queue-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .checkbox-cell {
+            width: 50px;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .priority-medium {
+            background: #fef2c7;
+            color: #744210;
+        }
+
+        .priority-low {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-qualified {
+            background: #bee3f8;
+            color: #2a4365;
+        }
+
+        .status-assigned {
+            background: #fef2c7;
+            color: #744210;
+        }
+
+        .status-contacted {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .status-closed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-rejected {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .score-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .score-high {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .score-medium {
+            background: #fef2c7;
+            color: #744210;
+        }
+
+        .score-low {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f7fafc;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3182ce;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .alert-info {
+            background: #bee3f8;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+
+        .selected-count {
+            background: #3182ce;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            min-width: 400px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .close-modal:hover {
+            color: #2d3748;
+        }
+
+        .business-details {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .business-details h4 {
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .detail-value {
+            color: #2d3748;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .queue-table {
+                font-size: 14px;
+            }
+
+            .queue-table th,
+            .queue-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Handoff Queue Dashboard</h1>
+            <p>Manage qualified leads ready for sales team handoff</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalQueueStat">-</div>
+                <div class="stat-label">Total in Queue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="unassignedStat">-</div>
+                <div class="stat-label">Unassigned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="assignedStat">-</div>
+                <div class="stat-label">Assigned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="contactedStat">-</div>
+                <div class="stat-label">Contacted</div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="statusFilter">Status Filter</label>
+                    <select id="statusFilter">
+                        <option value="">All statuses</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="assigned">Assigned</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="closed">Closed</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="assigneeFilter">Assignee Filter</label>
+                    <select id="assigneeFilter">
+                        <option value="">All assignees</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="minPriority">Minimum Priority</label>
+                    <input type="number" id="minPriority" placeholder="e.g., 70" min="1" max="100">
+                </div>
+                <div class="control-group">
+                    <label for="salesMemberSelect">Assign To</label>
+                    <select id="salesMemberSelect">
+                        <option value="">Select sales member...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <div class="selected-count" id="selectedCount">0 selected</div>
+                <button class="btn btn-primary" id="assignSelectedBtn" disabled>
+                    Assign Selected
+                </button>
+                <button class="btn btn-secondary" id="selectAllBtn">
+                    Select All Visible
+                </button>
+                <button class="btn btn-secondary" id="clearSelectionBtn">
+                    Clear Selection
+                </button>
+                <button class="btn btn-secondary" id="refreshBtn">
+                    Refresh
+                </button>
+                <a href="/static/bulk_qualification.html" class="btn btn-success">
+                    Bulk Qualification
+                </a>
+            </div>
+        </div>
+
+        <div class="queue-section">
+            <div class="section-header">
+                <h2 class="section-title">Queue Entries</h2>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div id="loadingContainer" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Loading queue entries...</p>
+            </div>
+
+            <div id="queueContainer">
+                <table class="queue-table" id="queueTable">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell">
+                                <input type="checkbox" id="selectAllCheckbox">
+                            </th>
+                            <th>Business</th>
+                            <th>Email</th>
+                            <th>Score</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Assigned To</th>
+                            <th>Qualified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queueTableBody">
+                    </tbody>
+                </table>
+
+                <div class="pagination" id="pagination">
+                    <button id="prevPageBtn">Previous</button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button id="nextPageBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Modal -->
+    <div id="assignmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Bulk Assignment</h3>
+                <button class="close-modal" onclick="closeAssignmentModal()">&times;</button>
+            </div>
+
+            <div id="assignmentContent">
+                <p>Assigning <span id="assignmentCount">0</span> queue entries to: <strong id="assigneeName"></strong></p>
+
+                <div id="assignmentStatus" class="alert alert-info">
+                    <div>Processing assignment...</div>
+                </div>
+
+                <div id="assignmentResults" style="display: none;">
+                    <h4>Results:</h4>
+                    <ul id="assignmentResultsList"></ul>
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeAssignmentModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry Details Modal -->
+    <div id="entryDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Queue Entry Details</h3>
+                <button class="close-modal" onclick="closeEntryDetailsModal()">&times;</button>
+            </div>
+
+            <div id="entryDetailsContent">
+                <!-- Content will be populated dynamically -->
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeEntryDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let queueEntries = [];
+        let selectedEntryIds = new Set();
+        let salesTeamMembers = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        let pageSize = 20;
+        let currentFilters = {};
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            loadSalesTeamMembers();
+            loadQueueEntries();
+            loadAnalyticsSummary();
+        });
+
+        function initializeEventListeners() {
+            // Filter controls
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('assigneeFilter').addEventListener('change', applyFilters);
+            document.getElementById('minPriority').addEventListener('input', debounce(applyFilters, 500));
+
+            // Action buttons
+            document.getElementById('assignSelectedBtn').addEventListener('click', assignSelected);
+            document.getElementById('selectAllBtn').addEventListener('click', selectAllVisible);
+            document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+            document.getElementById('refreshBtn').addEventListener('click', refreshAll);
+
+            // Selection controls
+            document.getElementById('selectAllCheckbox').addEventListener('change', toggleSelectAll);
+
+            // Pagination
+            document.getElementById('prevPageBtn').addEventListener('click', () => changePage(currentPage - 1));
+            document.getElementById('nextPageBtn').addEventListener('click', () => changePage(currentPage + 1));
+
+            // Sales member selection
+            document.getElementById('salesMemberSelect').addEventListener('change', updateAssignButton);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        async function loadSalesTeamMembers() {
+            try {
+                const response = await fetch('/api/handoff/sales-team');
+                const data = await response.json();
+
+                if (response.ok) {
+                    salesTeamMembers = data.members;
+                    populateSalesTeamSelects();
+                } else {
+                    showAlert('Error loading sales team: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading sales team: ' + error.message, 'error');
+            }
+        }
+
+        function populateSalesTeamSelects() {
+            const assignSelect = document.getElementById('salesMemberSelect');
+            const filterSelect = document.getElementById('assigneeFilter');
+
+            // Populate assignment select
+            assignSelect.innerHTML = '<option value="">Select sales member...</option>';
+            filterSelect.innerHTML = '<option value="">All assignees</option>';
+
+            salesTeamMembers.forEach(member => {
+                const assignOption = document.createElement('option');
+                assignOption.value = member.user_id;
+                assignOption.textContent = `${member.name} (${member.current_capacity}/${member.max_capacity})`;
+                assignOption.disabled = member.current_capacity >= member.max_capacity || !member.is_active;
+                assignSelect.appendChild(assignOption);
+
+                if (member.current_capacity > 0) {
+                    const filterOption = document.createElement('option');
+                    filterOption.value = member.user_id;
+                    filterOption.textContent = member.name;
+                    filterSelect.appendChild(filterOption);
+                }
+            });
+        }
+
+        async function loadQueueEntries() {
+            showLoading(true);
+
+            try {
+                // Build query parameters
+                const params = new URLSearchParams({
+                    limit: pageSize,
+                    offset: (currentPage - 1) * pageSize
+                });
+
+                if (currentFilters.status) {
+                    params.append('status', currentFilters.status);
+                }
+                if (currentFilters.assigned_to) {
+                    params.append('assigned_to', currentFilters.assigned_to);
+                }
+                if (currentFilters.min_priority) {
+                    params.append('min_priority', currentFilters.min_priority);
+                }
+
+                const response = await fetch(`/api/handoff/queue?${params}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    queueEntries = data.entries || [];
+                    totalPages = Math.ceil(data.total_count / pageSize);
+
+                    renderQueueTable();
+                    updatePagination();
+                } else {
+                    showAlert('Error loading queue entries: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading queue entries: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadAnalyticsSummary() {
+            try {
+                const response = await fetch('/api/handoff/analytics/summary');
+                const data = await response.json();
+
+                if (response.ok) {
+                    updateStatsDisplay(data);
+                } else {
+                    console.error('Error loading analytics summary:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading analytics summary:', error.message);
+            }
+        }
+
+        function updateStatsDisplay(analytics) {
+            const summary = analytics.summary || {};
+            const statusBreakdown = analytics.status_breakdown || [];
+
+            document.getElementById('totalQueueStat').textContent = summary.total_queue_entries || 0;
+            document.getElementById('unassignedStat').textContent = summary.unassigned_count || 0;
+
+            // Calculate assigned and contacted from status breakdown
+            let assignedCount = 0;
+            let contactedCount = 0;
+
+            statusBreakdown.forEach(status => {
+                if (status.status === 'assigned') {
+                    assignedCount = status.count;
+                } else if (status.status === 'contacted') {
+                    contactedCount = status.count;
+                }
+            });
+
+            document.getElementById('assignedStat').textContent = assignedCount;
+            document.getElementById('contactedStat').textContent = contactedCount;
+        }
+
+        function renderQueueTable() {
+            const tbody = document.getElementById('queueTableBody');
+            tbody.innerHTML = '';
+
+            if (queueEntries.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="9" style="text-align: center; padding: 40px; color: #718096;">No queue entries found</td>';
+                tbody.appendChild(row);
+                return;
+            }
+
+            queueEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                const isSelected = selectedEntryIds.has(entry.id);
+
+                if (isSelected) {
+                    row.style.backgroundColor = '#e6f3ff';
+                }
+
+                const business = entry.business || {};
+                const assignee = entry.assignee || {};
+
+                row.innerHTML = `
+                    <td class="checkbox-cell">
+                        <input type="checkbox" ${isSelected ? 'checked' : ''}
+                               onchange="toggleEntrySelection(${entry.id}, this.checked)">
+                    </td>
+                    <td>${escapeHtml(business.name || 'N/A')}</td>
+                    <td>${escapeHtml(business.email || 'N/A')}</td>
+                    <td><span class="score-badge ${getScoreClass(entry.qualification_score || 0)}">${entry.qualification_score || 0}</span></td>
+                    <td><span class="priority-badge ${getPriorityClass(entry.priority || 0)}">${entry.priority || 0}</span></td>
+                    <td><span class="status-badge status-${entry.status}">${entry.status}</span></td>
+                    <td>${assignee.name || 'Unassigned'}</td>
+                    <td>${formatDate(entry.created_at)}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="viewEntryDetails(${entry.id})" style="padding: 6px 12px; font-size: 12px;">
+                            View
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function getScoreClass(score) {
+            if (score >= 80) return 'score-high';
+            if (score >= 50) return 'score-medium';
+            return 'score-low';
+        }
+
+        function getPriorityClass(priority) {
+            if (priority >= 80) return 'priority-high';
+            if (priority >= 50) return 'priority-medium';
+            return 'priority-low';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleEntrySelection(entryId, isSelected) {
+            if (isSelected) {
+                selectedEntryIds.add(entryId);
+            } else {
+                selectedEntryIds.delete(entryId);
+            }
+            updateSelectedCount();
+            updateAssignButton();
+            updateSelectAllCheckbox();
+        }
+
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('selectAllCheckbox').checked;
+
+            queueEntries.forEach(entry => {
+                if (isChecked) {
+                    selectedEntryIds.add(entry.id);
+                } else {
+                    selectedEntryIds.delete(entry.id);
+                }
+            });
+
+            updateSelectedCount();
+            updateAssignButton();
+            renderQueueTable(); // Re-render to update checkboxes
+        }
+
+        function selectAllVisible() {
+            queueEntries.forEach(entry => {
+                selectedEntryIds.add(entry.id);
+            });
+            updateSelectedCount();
+            updateAssignButton();
+            updateSelectAllCheckbox();
+            renderQueueTable();
+        }
+
+        function clearSelection() {
+            selectedEntryIds.clear();
+            updateSelectedCount();
+            updateAssignButton();
+            updateSelectAllCheckbox();
+            renderQueueTable();
+        }
+
+        function updateSelectedCount() {
+            const count = selectedEntryIds.size;
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+        }
+
+        function updateAssignButton() {
+            const btn = document.getElementById('assignSelectedBtn');
+            const memberSelected = document.getElementById('salesMemberSelect').value;
+            btn.disabled = selectedEntryIds.size === 0 || !memberSelected;
+        }
+
+        function updateSelectAllCheckbox() {
+            const checkbox = document.getElementById('selectAllCheckbox');
+            const visibleSelected = queueEntries.filter(e => selectedEntryIds.has(e.id));
+
+            if (visibleSelected.length === 0) {
+                checkbox.checked = false;
+                checkbox.indeterminate = false;
+            } else if (visibleSelected.length === queueEntries.length) {
+                checkbox.checked = true;
+                checkbox.indeterminate = false;
+            } else {
+                checkbox.checked = false;
+                checkbox.indeterminate = true;
+            }
+        }
+
+        function applyFilters() {
+            currentPage = 1;
+            currentFilters = {
+                status: document.getElementById('statusFilter').value,
+                assigned_to: document.getElementById('assigneeFilter').value,
+                min_priority: document.getElementById('minPriority').value
+            };
+            loadQueueEntries();
+        }
+
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadQueueEntries();
+        }
+
+        function updatePagination() {
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+        }
+
+        async function assignSelected() {
+            const assigneeUserId = document.getElementById('salesMemberSelect').value;
+            if (!assigneeUserId || selectedEntryIds.size === 0) return;
+
+            const selectedMember = salesTeamMembers.find(m => m.user_id === assigneeUserId);
+            if (!selectedMember) return;
+
+            // Show assignment modal
+            document.getElementById('assignmentCount').textContent = selectedEntryIds.size;
+            document.getElementById('assigneeName').textContent = selectedMember.name;
+            document.getElementById('assignmentModal').style.display = 'block';
+
+            try {
+                const response = await fetch('/api/handoff/assign-bulk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        queue_entry_ids: Array.from(selectedEntryIds),
+                        assignee_user_id: assigneeUserId,
+                        performed_by: 'handoff_queue_ui'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Poll for operation status
+                    pollAssignmentStatus(data.operation_id);
+                } else {
+                    showAssignmentError('Error starting assignment: ' + data.error);
+                }
+            } catch (error) {
+                showAssignmentError('Error starting assignment: ' + error.message);
+            }
+        }
+
+        async function pollAssignmentStatus(operationId) {
+            const maxPolls = 24; // 2 minutes max
+            let pollCount = 0;
+
+            const poll = async () => {
+                try {
+                    const response = await fetch(`/api/handoff/operations/${operationId}`);
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        if (data.status === 'completed') {
+                            showAssignmentComplete(data);
+                            clearSelection();
+                            refreshAll();
+                        } else if (data.status === 'failed') {
+                            showAssignmentError('Assignment failed: ' + (data.operation_details?.error || 'Unknown error'));
+                        } else if (pollCount < maxPolls) {
+                            setTimeout(poll, 5000); // Poll every 5 seconds
+                        } else {
+                            showAssignmentError('Assignment timed out');
+                        }
+                    } else {
+                        showAssignmentError('Error checking operation status: ' + data.error);
+                    }
+                } catch (error) {
+                    showAssignmentError('Error checking operation status: ' + error.message);
+                }
+
+                pollCount++;
+            };
+
+            poll();
+        }
+
+        function showAssignmentComplete(operation) {
+            const statusEl = document.getElementById('assignmentStatus');
+            statusEl.className = 'alert alert-success';
+            statusEl.innerHTML = `
+                <div>Assignment completed!</div>
+                <div>Processed: ${operation.total_count}</div>
+                <div>Successful: ${operation.success_count}</div>
+                <div>Failed: ${operation.failure_count}</div>
+            `;
+
+            showAlert(
+                `Assignment completed! ${operation.success_count} entries assigned successfully.`,
+                'success'
+            );
+        }
+
+        function showAssignmentError(message) {
+            const statusEl = document.getElementById('assignmentStatus');
+            statusEl.className = 'alert alert-error';
+            statusEl.innerHTML = `<div>Error: ${message}</div>`;
+
+            showAlert('Assignment failed: ' + message, 'error');
+        }
+
+        function closeAssignmentModal() {
+            document.getElementById('assignmentModal').style.display = 'none';
+
+            // Reset modal content
+            document.getElementById('assignmentStatus').className = 'alert alert-info';
+            document.getElementById('assignmentStatus').innerHTML = '<div>Processing assignment...</div>';
+        }
+
+        async function viewEntryDetails(entryId) {
+            try {
+                const response = await fetch(`/api/handoff/queue/${entryId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    showEntryDetailsModal(data);
+                } else {
+                    showAlert('Error loading entry details: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading entry details: ' + error.message, 'error');
+            }
+        }
+
+        function showEntryDetailsModal(entry) {
+            const content = document.getElementById('entryDetailsContent');
+            const business = entry.business || {};
+            const criteria = entry.criteria || {};
+            const assignee = entry.assignee || {};
+
+            content.innerHTML = `
+                <div class="business-details">
+                    <h4>Business Information</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Name:</span>
+                        <span class="detail-value">${escapeHtml(business.name || 'N/A')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">${escapeHtml(business.email || 'N/A')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Website:</span>
+                        <span class="detail-value">${business.website ? `<a href="${escapeHtml(business.website)}" target="_blank">${escapeHtml(business.website)}</a>` : 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Category:</span>
+                        <span class="detail-value">${escapeHtml(business.category || 'N/A')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Business Score:</span>
+                        <span class="detail-value">${business.score || 0}</span>
+                    </div>
+                </div>
+
+                <div class="business-details">
+                    <h4>Qualification Information</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Criteria:</span>
+                        <span class="detail-value">${escapeHtml(criteria.name || 'N/A')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Qualification Score:</span>
+                        <span class="detail-value">${entry.qualification_score || 0}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Priority:</span>
+                        <span class="detail-value">${entry.priority || 0}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value"><span class="status-badge status-${entry.status}">${entry.status}</span></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Qualified At:</span>
+                        <span class="detail-value">${formatDate(entry.created_at)}</span>
+                    </div>
+                </div>
+
+                ${entry.assigned_to ? `
+                <div class="business-details">
+                    <h4>Assignment Information</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Assigned To:</span>
+                        <span class="detail-value">${escapeHtml(assignee.name || 'N/A')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Role:</span>
+                        <span class="detail-value">${escapeHtml(assignee.role || 'N/A')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">${escapeHtml(assignee.email || 'N/A')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Assigned At:</span>
+                        <span class="detail-value">${formatDate(entry.assigned_at)}</span>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${entry.notes ? `
+                <div class="business-details">
+                    <h4>Notes</h4>
+                    <p>${escapeHtml(entry.notes)}</p>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('entryDetailsModal').style.display = 'block';
+        }
+
+        function closeEntryDetailsModal() {
+            document.getElementById('entryDetailsModal').style.display = 'none';
+        }
+
+        function refreshAll() {
+            loadQueueEntries();
+            loadAnalyticsSummary();
+            loadSalesTeamMembers();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingContainer').style.display = show ? 'block' : 'none';
+            document.getElementById('queueContainer').style.display = show ? 'none' : 'block';
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+
+            container.appendChild(alert);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

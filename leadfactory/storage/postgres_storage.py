@@ -3568,3 +3568,651 @@ class PostgresStorage(StorageInterface):
         except Exception as e:
             logger.error(f"Error getting active sessions: {e}")
             return []
+
+    # Additional engagement tracking methods for handoff queue integration
+    def store_engagement_event(self, event_data: Dict[str, Any]) -> bool:
+        """Store an engagement event."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO engagement_events
+                    (event_id, user_id, session_id, event_type, timestamp, properties,
+                     page_url, referrer, user_agent, ip_address, campaign_id, ab_test_variant)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (event_id) DO NOTHING
+                    """,
+                    (
+                        event_data.get("event_id"),
+                        event_data.get("user_id"),
+                        event_data.get("session_id"),
+                        event_data.get("event_type"),
+                        event_data.get("timestamp"),
+                        json.dumps(event_data.get("properties", {})),
+                        event_data.get("page_url"),
+                        event_data.get("referrer"),
+                        event_data.get("user_agent"),
+                        event_data.get("ip_address"),
+                        event_data.get("campaign_id"),
+                        event_data.get("ab_test_variant"),
+                    ),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error storing engagement event: {e}")
+            return False
+
+    def get_user_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Get user session data."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    "SELECT * FROM user_sessions WHERE session_id = %s", (session_id,)
+                )
+
+                row = cursor.fetchone()
+                if row:
+                    columns = [desc[0] for desc in cursor.description]
+                    return dict(zip(columns, row))
+                return None
+        except Exception as e:
+            logger.error(f"Error getting user session {session_id}: {e}")
+            return None
+
+    def update_user_session(self, session_data: Dict[str, Any]) -> bool:
+        """Update user session data."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO user_sessions
+                    (session_id, user_id, start_time, end_time, total_events, page_views,
+                     unique_pages, bounce_rate, time_on_site, conversion_events,
+                     traffic_source, campaign_id, device_type)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (session_id) DO UPDATE SET
+                        end_time = EXCLUDED.end_time,
+                        total_events = EXCLUDED.total_events,
+                        page_views = EXCLUDED.page_views,
+                        unique_pages = EXCLUDED.unique_pages,
+                        bounce_rate = EXCLUDED.bounce_rate,
+                        time_on_site = EXCLUDED.time_on_site,
+                        conversion_events = EXCLUDED.conversion_events,
+                        updated_at = CURRENT_TIMESTAMP
+                    """,
+                    (
+                        session_data.get("session_id"),
+                        session_data.get("user_id"),
+                        session_data.get("start_time"),
+                        session_data.get("end_time"),
+                        session_data.get("total_events"),
+                        session_data.get("page_views"),
+                        session_data.get("unique_pages"),
+                        session_data.get("bounce_rate"),
+                        session_data.get("time_on_site"),
+                        json.dumps(session_data.get("conversion_events", [])),
+                        session_data.get("traffic_source"),
+                        session_data.get("campaign_id"),
+                        session_data.get("device_type"),
+                    ),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error updating user session: {e}")
+            return False
+
+    def get_session_unique_pages(self, session_id: str) -> List[str]:
+        """Get unique pages for a session."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT DISTINCT page_url FROM engagement_events
+                    WHERE session_id = %s AND page_url IS NOT NULL
+                    """,
+                    (session_id,),
+                )
+
+                rows = cursor.fetchall()
+                return [row[0] for row in rows if row[0]]
+        except Exception as e:
+            logger.error(f"Error getting session unique pages: {e}")
+            return []
+
+    def get_active_conversion_funnels(self) -> List[Dict[str, Any]]:
+        """Get active conversion funnels."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    "SELECT * FROM conversion_funnels WHERE is_active = TRUE"
+                )
+
+                rows = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+                return [dict(zip(columns, row)) for row in rows]
+        except Exception as e:
+            logger.error(f"Error getting active conversion funnels: {e}")
+            return []
+
+    def update_funnel_progress(
+        self,
+        funnel_id: str,
+        user_id: str,
+        session_id: str,
+        step_index: int,
+        timestamp: datetime,
+    ) -> bool:
+        """Update funnel progress."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO funnel_progress
+                    (funnel_id, user_id, session_id, step_index, timestamp)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (funnel_id, user_id, step_index) DO UPDATE SET
+                        timestamp = EXCLUDED.timestamp
+                    """,
+                    (funnel_id, user_id, session_id, step_index, timestamp),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error updating funnel progress: {e}")
+            return False
+
+    def record_conversion(self, conversion_data: Dict[str, Any]) -> bool:
+        """Record a conversion."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO conversions
+                    (funnel_id, user_id, session_id, conversion_time, goal_type,
+                     event_id, campaign_id, ab_test_variant)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        conversion_data.get("funnel_id"),
+                        conversion_data.get("user_id"),
+                        conversion_data.get("session_id"),
+                        conversion_data.get("conversion_time"),
+                        conversion_data.get("goal_type"),
+                        conversion_data.get("event_id"),
+                        conversion_data.get("campaign_id"),
+                        conversion_data.get("ab_test_variant"),
+                    ),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error recording conversion: {e}")
+            return False
+
+    def get_user_events(
+        self, user_id: str, start_date: datetime, end_date: datetime
+    ) -> List[Dict[str, Any]]:
+        """Get user events in date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT * FROM engagement_events
+                    WHERE user_id = %s AND timestamp BETWEEN %s AND %s
+                    ORDER BY timestamp DESC
+                    """,
+                    (user_id, start_date, end_date),
+                )
+
+                rows = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+                return [dict(zip(columns, row)) for row in rows]
+        except Exception as e:
+            logger.error(f"Error getting user events: {e}")
+            return []
+
+    def get_user_sessions(
+        self, user_id: str, start_date: datetime, end_date: datetime
+    ) -> List[Dict[str, Any]]:
+        """Get user sessions in date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT * FROM user_sessions
+                    WHERE user_id = %s AND start_time BETWEEN %s AND %s
+                    ORDER BY start_time DESC
+                    """,
+                    (user_id, start_date, end_date),
+                )
+
+                rows = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+                return [dict(zip(columns, row)) for row in rows]
+        except Exception as e:
+            logger.error(f"Error getting user sessions: {e}")
+            return []
+
+    def get_user_conversions(
+        self, user_id: str, start_date: datetime, end_date: datetime
+    ) -> List[Dict[str, Any]]:
+        """Get user conversions in date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT * FROM conversions
+                    WHERE user_id = %s AND conversion_time BETWEEN %s AND %s
+                    ORDER BY conversion_time DESC
+                    """,
+                    (user_id, start_date, end_date),
+                )
+
+                rows = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+                return [dict(zip(columns, row)) for row in rows]
+        except Exception as e:
+            logger.error(f"Error getting user conversions: {e}")
+            return []
+
+    def update_business_score(self, business_id: int, score: int) -> bool:
+        """Update business score."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE businesses SET score = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                    (score, business_id),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error updating business score: {e}")
+            return False
+
+    # Webhook Management Methods
+    def store_webhook_event(self, event_data: dict[str, Any]) -> bool:
+        """Store a webhook event."""
+        try:
+            with self.cursor() as cursor:
+                # Ensure webhook_events table exists
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS webhook_events (
+                        id SERIAL PRIMARY KEY,
+                        event_id VARCHAR(255) UNIQUE NOT NULL,
+                        webhook_name VARCHAR(100) NOT NULL,
+                        event_type VARCHAR(100) NOT NULL,
+                        payload JSONB,
+                        headers JSONB,
+                        source_ip VARCHAR(45),
+                        user_agent TEXT,
+                        status VARCHAR(50) DEFAULT 'pending',
+                        retry_count INTEGER DEFAULT 0,
+                        last_error TEXT,
+                        signature_verified BOOLEAN DEFAULT FALSE,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        processed_at TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_webhook_events_event_id ON webhook_events(event_id);
+                    CREATE INDEX IF NOT EXISTS idx_webhook_events_webhook_name ON webhook_events(webhook_name);
+                    CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON webhook_events(status);
+                """
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO webhook_events (
+                        event_id, webhook_name, event_type, payload, headers,
+                        source_ip, user_agent, status, retry_count, last_error,
+                        signature_verified, processed_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (event_id) DO UPDATE SET
+                        status = EXCLUDED.status,
+                        retry_count = EXCLUDED.retry_count,
+                        last_error = EXCLUDED.last_error,
+                        processed_at = EXCLUDED.processed_at,
+                        updated_at = NOW()
+                """,
+                    (
+                        event_data["event_id"],
+                        event_data["webhook_name"],
+                        event_data["event_type"],
+                        json.dumps(event_data.get("payload", {})),
+                        json.dumps(event_data.get("headers", {})),
+                        event_data.get("source_ip"),
+                        event_data.get("user_agent"),
+                        event_data.get("status", "pending"),
+                        event_data.get("retry_count", 0),
+                        event_data.get("last_error"),
+                        event_data.get("signature_verified", False),
+                        event_data.get("processed_at"),
+                    ),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error storing webhook event: {e}")
+            return False
+
+    def get_webhook_event(self, event_id: str) -> Optional[dict[str, Any]]:
+        """Get a webhook event by ID."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT event_id, webhook_name, event_type, payload, headers,
+                           source_ip, user_agent, status, retry_count, last_error,
+                           signature_verified, created_at, processed_at
+                    FROM webhook_events WHERE event_id = %s
+                """,
+                    (event_id,),
+                )
+
+                row = cursor.fetchone()
+                if row:
+                    return {
+                        "event_id": row[0],
+                        "webhook_name": row[1],
+                        "event_type": row[2],
+                        "payload": json.loads(row[3]) if row[3] else {},
+                        "headers": json.loads(row[4]) if row[4] else {},
+                        "source_ip": row[5],
+                        "user_agent": row[6],
+                        "status": row[7],
+                        "retry_count": row[8],
+                        "last_error": row[9],
+                        "signature_verified": row[10],
+                        "timestamp": row[11].isoformat() if row[11] else None,
+                        "processed_at": row[12].isoformat() if row[12] else None,
+                    }
+                return None
+        except Exception as e:
+            logger.error(f"Error getting webhook event: {e}")
+            return None
+
+    def update_webhook_event(self, event_id: str, event_data: dict[str, Any]) -> bool:
+        """Update a webhook event."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE webhook_events SET
+                        status = %s,
+                        retry_count = %s,
+                        last_error = %s,
+                        processed_at = %s,
+                        updated_at = NOW()
+                    WHERE event_id = %s
+                """,
+                    (
+                        event_data.get("status"),
+                        event_data.get("retry_count"),
+                        event_data.get("last_error"),
+                        event_data.get("processed_at"),
+                        event_id,
+                    ),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error updating webhook event: {e}")
+            return False
+
+    def store_webhook_retry_item(self, retry_data: dict[str, Any]) -> bool:
+        """Store a webhook retry item."""
+        try:
+            with self.cursor() as cursor:
+                # Ensure webhook_retries table exists
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS webhook_retries (
+                        id SERIAL PRIMARY KEY,
+                        event_id VARCHAR(255) NOT NULL,
+                        webhook_name VARCHAR(100) NOT NULL,
+                        retry_attempt INTEGER NOT NULL,
+                        next_retry_time TIMESTAMP NOT NULL,
+                        priority VARCHAR(20) DEFAULT 'normal',
+                        error_count INTEGER DEFAULT 0,
+                        last_error TEXT,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_webhook_retries_event_id ON webhook_retries(event_id);
+                    CREATE INDEX IF NOT EXISTS idx_webhook_retries_next_retry ON webhook_retries(next_retry_time);
+                """
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO webhook_retries (
+                        event_id, webhook_name, retry_attempt, next_retry_time,
+                        priority, error_count, last_error
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        retry_data["event_id"],
+                        retry_data["webhook_name"],
+                        retry_data["retry_attempt"],
+                        retry_data["next_retry_time"],
+                        retry_data.get("priority", "normal"),
+                        retry_data.get("error_count", 0),
+                        retry_data.get("last_error"),
+                    ),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error storing webhook retry item: {e}")
+            return False
+
+    def get_pending_webhook_retries(
+        self, limit: Optional[int] = None
+    ) -> list[dict[str, Any]]:
+        """Get pending webhook retry items."""
+        try:
+            with self.cursor() as cursor:
+                query = """
+                    SELECT event_id, webhook_name, retry_attempt, next_retry_time,
+                           priority, error_count, last_error, created_at
+                    FROM webhook_retries
+                    WHERE next_retry_time <= NOW()
+                    ORDER BY priority DESC, next_retry_time ASC
+                """
+
+                params = []
+                if limit:
+                    query += " LIMIT %s"
+                    params.append(limit)
+
+                cursor.execute(query, params)
+
+                retries = []
+                for row in cursor.fetchall():
+                    retries.append(
+                        {
+                            "event_id": row[0],
+                            "webhook_name": row[1],
+                            "retry_attempt": row[2],
+                            "next_retry_time": row[3],
+                            "priority": row[4],
+                            "error_count": row[5],
+                            "last_error": row[6],
+                            "created_at": row[7],
+                        }
+                    )
+                return retries
+        except Exception as e:
+            logger.error(f"Error getting pending webhook retries: {e}")
+            return []
+
+    def remove_webhook_retry_item(self, event_id: str) -> bool:
+        """Remove a webhook retry item."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    "DELETE FROM webhook_retries WHERE event_id = %s", (event_id,)
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error removing webhook retry item: {e}")
+            return False
+
+    def store_dead_letter_event(self, event_data: dict[str, Any]) -> bool:
+        """Store an event in the dead letter queue."""
+        try:
+            with self.cursor() as cursor:
+                # Ensure dead_letter_events table exists
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS dead_letter_events (
+                        id SERIAL PRIMARY KEY,
+                        event_id VARCHAR(255) UNIQUE NOT NULL,
+                        webhook_name VARCHAR(100) NOT NULL,
+                        event_type VARCHAR(100) NOT NULL,
+                        payload JSONB,
+                        headers JSONB,
+                        original_timestamp TIMESTAMP,
+                        failure_reason TEXT,
+                        retry_count INTEGER DEFAULT 0,
+                        last_error TEXT,
+                        status VARCHAR(50) DEFAULT 'active',
+                        assigned_to VARCHAR(100),
+                        resolution_notes TEXT,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        resolved_at TIMESTAMP
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_dead_letter_event_id ON dead_letter_events(event_id);
+                    CREATE INDEX IF NOT EXISTS idx_dead_letter_webhook_name ON dead_letter_events(webhook_name);
+                    CREATE INDEX IF NOT EXISTS idx_dead_letter_status ON dead_letter_events(status);
+                """
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO dead_letter_events (
+                        event_id, webhook_name, event_type, payload, headers,
+                        original_timestamp, failure_reason, retry_count, last_error
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (event_id) DO UPDATE SET
+                        retry_count = EXCLUDED.retry_count,
+                        last_error = EXCLUDED.last_error,
+                        created_at = NOW()
+                """,
+                    (
+                        event_data["event_id"],
+                        event_data["webhook_name"],
+                        event_data["event_type"],
+                        json.dumps(event_data.get("payload", {})),
+                        json.dumps(event_data.get("headers", {})),
+                        event_data.get("timestamp"),
+                        event_data.get("reason", "Max retries exceeded"),
+                        event_data.get("retry_count", 0),
+                        event_data.get("last_error"),
+                    ),
+                )
+                return True
+        except Exception as e:
+            logger.error(f"Error storing dead letter event: {e}")
+            return False
+
+    def get_dead_letter_events(
+        self, limit: Optional[int] = None
+    ) -> list[dict[str, Any]]:
+        """Get events from the dead letter queue."""
+        try:
+            with self.cursor() as cursor:
+                query = """
+                    SELECT event_id, webhook_name, event_type, payload, headers,
+                           original_timestamp, failure_reason, retry_count, last_error,
+                           status, assigned_to, resolution_notes, created_at, resolved_at
+                    FROM dead_letter_events
+                    WHERE status = 'active'
+                    ORDER BY created_at DESC
+                """
+
+                params = []
+                if limit:
+                    query += " LIMIT %s"
+                    params.append(limit)
+
+                cursor.execute(query, params)
+
+                events = []
+                for row in cursor.fetchall():
+                    events.append(
+                        {
+                            "event_id": row[0],
+                            "webhook_name": row[1],
+                            "event_type": row[2],
+                            "payload": json.loads(row[3]) if row[3] else {},
+                            "headers": json.loads(row[4]) if row[4] else {},
+                            "original_timestamp": (
+                                row[5].isoformat() if row[5] else None
+                            ),
+                            "failure_reason": row[6],
+                            "retry_count": row[7],
+                            "last_error": row[8],
+                            "status": row[9],
+                            "assigned_to": row[10],
+                            "resolution_notes": row[11],
+                            "created_at": row[12].isoformat() if row[12] else None,
+                            "resolved_at": row[13].isoformat() if row[13] else None,
+                        }
+                    )
+                return events
+        except Exception as e:
+            logger.error(f"Error getting dead letter events: {e}")
+            return []
+
+    def get_webhook_stats(self, webhook_name: Optional[str] = None) -> dict[str, Any]:
+        """Get webhook processing statistics."""
+        try:
+            with self.cursor() as cursor:
+                # Base query conditions
+                where_clause = ""
+                params = []
+
+                if webhook_name:
+                    where_clause = "WHERE webhook_name = %s"
+                    params.append(webhook_name)
+
+                # Get basic stats
+                cursor.execute(
+                    f"""
+                    SELECT
+                        COUNT(*) as total_events,
+                        COUNT(CASE WHEN status = 'completed' THEN 1 END) as successful_events,
+                        COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_events,
+                        COUNT(CASE WHEN status = 'dead_letter' THEN 1 END) as dead_letter_events,
+                        AVG(retry_count) as avg_retry_count,
+                        MAX(retry_count) as max_retry_count
+                    FROM webhook_events
+                    {where_clause}
+                """,
+                    params,
+                )
+
+                row = cursor.fetchone()
+                stats = {
+                    "total_events": row[0] if row[0] else 0,
+                    "successful_events": row[1] if row[1] else 0,
+                    "failed_events": row[2] if row[2] else 0,
+                    "dead_letter_events": row[3] if row[3] else 0,
+                    "avg_retry_count": float(row[4]) if row[4] else 0.0,
+                    "max_retry_count": row[5] if row[5] else 0,
+                }
+
+                # Calculate success rate
+                if stats["total_events"] > 0:
+                    stats["success_rate"] = (
+                        stats["successful_events"] / stats["total_events"] * 100
+                    )
+                else:
+                    stats["success_rate"] = 0.0
+
+                return stats
+        except Exception as e:
+            logger.error(f"Error getting webhook stats: {e}")
+            return {
+                "total_events": 0,
+                "successful_events": 0,
+                "failed_events": 0,
+                "dead_letter_events": 0,
+                "success_rate": 0.0,
+                "avg_retry_count": 0.0,
+                "max_retry_count": 0,
+            }

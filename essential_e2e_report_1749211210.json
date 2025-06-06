@@ -1,0 +1,127 @@
+{
+  "overall_success": true,
+  "execution_time": 0.009941816329956055,
+  "summary": {
+    "total_suites": 5,
+    "passed_suites": 5,
+    "failed_suites": 0,
+    "success_rate": 100.0
+  },
+  "results": {
+    "Core Pipeline Flow": {
+      "success": true,
+      "duration": 0.0003230571746826172,
+      "details": {
+        "success": true,
+        "stages_completed": [
+          "ingestion",
+          "enrichment",
+          "scoring",
+          "email_generation",
+          "email_processing"
+        ],
+        "business_id": 1,
+        "email_id": 1,
+        "final_result": {
+          "name": "Test Company",
+          "score": 85,
+          "status": "qualified",
+          "email_status": "sent"
+        },
+        "summary": "Pipeline flow test passed"
+      },
+      "timestamp": 1749211210.2571461
+    },
+    "New Features Validation": {
+      "success": true,
+      "duration": 0.00011682510375976562,
+      "details": {
+        "success": true,
+        "features_tested": [
+          "A/B Testing Framework",
+          "Cost Dashboard",
+          "Error Handling"
+        ],
+        "feature_results": {
+          "ab_testing": true,
+          "cost_dashboard": true,
+          "error_handling": true
+        },
+        "success_rate": 100.0,
+        "summary": "New features test: 3/3 passed"
+      },
+      "timestamp": 1749211210.2573361
+    },
+    "Critical Integration Points": {
+      "success": true,
+      "duration": 0.0002300739288330078,
+      "details": {
+        "success": true,
+        "integrations_tested": [
+          "Database",
+          "File System",
+          "JSON Processing",
+          "Logging"
+        ],
+        "integration_results": {
+          "database": true,
+          "filesystem": true,
+          "json": true,
+          "logging": true
+        },
+        "success_rate": 100.0,
+        "summary": "Critical integrations: 4/4 passed"
+      },
+      "timestamp": 1749211210.257613
+    },
+    "Error Handling": {
+      "success": true,
+      "duration": 1.2874603271484375e-05,
+      "details": {
+        "success": true,
+        "error_scenarios": [
+          "Exception Handling",
+          "Retry Mechanism",
+          "Fallback Mechanism",
+          "Graceful Degradation"
+        ],
+        "recovery_results": {
+          "exception_handling": true,
+          "retry_mechanism": true,
+          "fallback_mechanism": true,
+          "graceful_degradation": true
+        },
+        "success_rate": 100.0,
+        "summary": "Error handling: 4/4 scenarios handled"
+      },
+      "timestamp": 1749211210.25767
+    },
+    "Performance Baseline": {
+      "success": true,
+      "duration": 0.00892496109008789,
+      "details": {
+        "success": true,
+        "performance_metrics": {
+          "db_operations": 0.0003650188446044922,
+          "json_processing": 0.005925893783569336,
+          "file_io": 0.0011491775512695312,
+          "loop_processing": 0.0014579296112060547
+        },
+        "performance_checks": {
+          "db_operations_fast": true,
+          "json_processing_fast": true,
+          "file_io_fast": true,
+          "loop_processing_fast": true
+        },
+        "success_rate": 100.0,
+        "summary": "Performance baseline: 4/4 checks passed"
+      },
+      "timestamp": 1749211210.266635
+    }
+  },
+  "recommendations": [
+    "\ud83c\udf89 All essential tests passed!",
+    "\u2705 System is ready for production deployment"
+  ],
+  "timestamp": 1749211210.266857
+}
