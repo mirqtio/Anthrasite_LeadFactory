@@ -7,11 +7,125 @@ import argparse
 import logging
 import os
 import tempfile
+import time
 from typing import Optional
 
 from leadfactory.storage import get_storage
 
 logger = logging.getLogger(__name__)
+
+
+def _capture_with_screenshotone_retry(
+    api_url: str, params: dict, screenshot_path: str, website: str, max_retries: int = 3
+) -> bool:
+    """Capture screenshot using ScreenshotOne API with retry logic and exponential backoff.
+
+    Args:
+        api_url: ScreenshotOne API endpoint URL
+        params: API parameters
+        screenshot_path: Local path to save screenshot
+        website: Website URL being captured (for logging)
+        max_retries: Maximum number of retry attempts
+
+    Returns:
+        True if screenshot was captured successfully, False otherwise
+    """
+    import requests
+
+    from leadfactory.cost.service_cost_decorators import enforce_service_cost_cap
+
+    for attempt in range(max_retries):
+        try:
+            # Calculate delay for exponential backoff (2^attempt seconds)
+            if attempt > 0:
+                delay = 2 ** (attempt - 1)
+                logger.info(
+                    f"Retrying ScreenshotOne API call in {delay} seconds (attempt {attempt + 1}/{max_retries})"
+                )
+                time.sleep(delay)
+
+            logger.info(
+                f"ScreenshotOne API attempt {attempt + 1}/{max_retries} for {website}"
+            )
+
+            # Apply cost cap for screenshot API call (estimated $0.001 per screenshot)
+            with enforce_service_cost_cap(
+                "screenshotone", "capture", estimated_cost=0.001
+            ):
+                response = requests.get(api_url, params=params, timeout=30)
+                response.raise_for_status()
+
+            # Validate response content
+            if len(response.content) < 1000:  # PNG should be at least 1KB
+                raise ValueError(
+                    f"Screenshot response too small: {len(response.content)} bytes"
+                )
+
+            # Check if content is actually an image (PNG starts with specific bytes)
+            if not response.content.startswith(b"\x89PNG"):
+                raise ValueError("Response does not appear to be a valid PNG image")
+
+            # Save the screenshot file
+            with open(screenshot_path, "wb") as f:
+                f.write(response.content)
+
+            logger.info(
+                f"Screenshot saved to {screenshot_path} ({len(response.content)} bytes) after {attempt + 1} attempts"
+            )
+            return True
+
+        except requests.exceptions.Timeout as e:
+            logger.warning(
+                f"ScreenshotOne API timeout for {website} (attempt {attempt + 1}/{max_retries}): {e}"
+            )
+            if attempt == max_retries - 1:
+                logger.error(
+                    f"ScreenshotOne API failed after {max_retries} timeout attempts for {website}"
+                )
+
+        except requests.exceptions.HTTPError as e:
+            # Don't retry on client errors (4xx), only server errors (5xx)
+            if e.response.status_code < 500:
+                logger.error(f"ScreenshotOne API client error for {website}: {e}")
+                break
+            else:
+                logger.warning(
+                    f"ScreenshotOne API server error for {website} (attempt {attempt + 1}/{max_retries}): {e}"
+                )
+                if attempt == max_retries - 1:
+                    logger.error(
+                        f"ScreenshotOne API failed after {max_retries} server error attempts for {website}"
+                    )
+
+        except requests.exceptions.RequestException as e:
+            logger.warning(
+                f"ScreenshotOne API request error for {website} (attempt {attempt + 1}/{max_retries}): {e}"
+            )
+            if attempt == max_retries - 1:
+                logger.error(
+                    f"ScreenshotOne API failed after {max_retries} request attempts for {website}"
+                )
+
+        except ValueError as e:
+            logger.warning(
+                f"ScreenshotOne API response validation error for {website} (attempt {attempt + 1}/{max_retries}): {e}"
+            )
+            if attempt == max_retries - 1:
+                logger.error(
+                    f"ScreenshotOne API failed after {max_retries} validation attempts for {website}"
+                )
+
+        except Exception as e:
+            logger.warning(
+                f"ScreenshotOne API unexpected error for {website} (attempt {attempt + 1}/{max_retries}): {e}"
+            )
+            if attempt == max_retries - 1:
+                logger.error(
+                    f"ScreenshotOne API failed after {max_retries} attempts for {website}: {e}"
+                )
+
+    logger.warning("Will try local screenshot capture as fallback")
+    return False
 
 
 def get_businesses_needing_screenshots(limit: Optional[int] = None) -> list[dict]:
@@ -96,26 +210,9 @@ def generate_business_screenshot(business: dict) -> bool:
 
         from leadfactory.cost.service_cost_decorators import enforce_service_cost_cap
 
-        try:
-            # Apply cost cap for screenshot API call (estimated $0.001 per screenshot)
-            with enforce_service_cost_cap(
-                "screenshotone", "capture", estimated_cost=0.001
-            ):
-                response = requests.get(api_url, params=params, timeout=30)
-                response.raise_for_status()
-
-            # Save the screenshot file
-            with open(screenshot_path, "wb") as f:
-                f.write(response.content)
-
-            logger.info(
-                f"Screenshot saved to {screenshot_path} ({len(response.content)} bytes)"
-            )
-            screenshot_success = True
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"ScreenshotOne API failed for {website}: {e}")
-            logger.warning("Will try local screenshot capture as fallback")
+        screenshot_success = _capture_with_screenshotone_retry(
+            api_url, params, screenshot_path, website
+        )
 
     # If API failed or no key provided, try local screenshot capture
     if not screenshot_success:

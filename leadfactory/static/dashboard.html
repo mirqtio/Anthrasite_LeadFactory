@@ -456,6 +456,72 @@
                 </div>
             </div>
         </div>
+
+        <!-- Business Management Section -->
+        <div class="dashboard-grid" style="margin-top: 40px;">
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3><span class="card-icon">🏢</span>Business Management</h3>
+
+                <!-- Controls -->
+                <div class="filter-row" style="margin-bottom: 20px;">
+                    <div class="filter-group">
+                        <label for="business-search">Search Businesses</label>
+                        <input type="text" id="business-search" class="filter-input" placeholder="Search by name or address...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="archived-filter">View</label>
+                        <select id="archived-filter" class="filter-input">
+                            <option value="false">Active Only</option>
+                            <option value="true">Archived Only</option>
+                            <option value="all">All Businesses</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button id="bulk-reject-btn" class="filter-button" style="background: #e53e3e; margin-top: 20px;" disabled>
+                            🗑️ Reject Selected
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Business Table -->
+                <div class="table-container">
+                    <table class="business-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="select-all-businesses">
+                                </th>
+                                <th>Name</th>
+                                <th>Address</th>
+                                <th>City</th>
+                                <th>State</th>
+                                <th>Website</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="business-list-table">
+                            <tr>
+                                <td colspan="9" class="loading">Loading businesses...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="filter-row" style="margin-top: 20px; justify-content: space-between;">
+                    <div>
+                        <span id="business-count">0 businesses</span>
+                    </div>
+                    <div>
+                        <button id="prev-page" class="filter-button" disabled>← Previous</button>
+                        <span style="margin: 0 15px;">Page <span id="current-page">1</span></span>
+                        <button id="next-page" class="filter-button" disabled>Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -466,7 +532,20 @@
             charts: {},
             timeRange: '7d',
             selectedBusiness: null,
-            loading: false
+            loading: false,
+            // Business management state
+            businesses: [],
+            businessPagination: {
+                currentPage: 1,
+                totalCount: 0,
+                limit: 20,
+                offset: 0
+            },
+            businessFilters: {
+                search: '',
+                includeArchived: false
+            },
+            selectedBusinessIds: new Set()
         };
 
         // API Base URL
@@ -497,6 +576,65 @@
 
             // Refresh button
             document.getElementById('refresh-button').addEventListener('click', loadDashboardData);
+
+            // Business Management Event Listeners
+            setupBusinessManagementListeners();
+        }
+
+        function setupBusinessManagementListeners() {
+            // Search input
+            document.getElementById('business-search').addEventListener('input', debounce(function() {
+                dashboardState.businessFilters.search = this.value;
+                dashboardState.businessPagination.currentPage = 1;
+                dashboardState.businessPagination.offset = 0;
+                loadBusinessManagement();
+            }, 300));
+
+            // Archive filter
+            document.getElementById('archived-filter').addEventListener('change', function() {
+                const value = this.value;
+                dashboardState.businessFilters.includeArchived = value === 'all' ? null : value === 'true';
+                dashboardState.businessPagination.currentPage = 1;
+                dashboardState.businessPagination.offset = 0;
+                loadBusinessManagement();
+            });
+
+            // Select all checkbox
+            document.getElementById('select-all-businesses').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.business-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                    if (this.checked) {
+                        dashboardState.selectedBusinessIds.add(parseInt(cb.value));
+                    } else {
+                        dashboardState.selectedBusinessIds.delete(parseInt(cb.value));
+                    }
+                });
+                updateBulkActionButtons();
+            });
+
+            // Bulk reject button
+            document.getElementById('bulk-reject-btn').addEventListener('click', bulkRejectBusinesses);
+
+            // Pagination buttons
+            document.getElementById('prev-page').addEventListener('click', function() {
+                if (dashboardState.businessPagination.currentPage > 1) {
+                    dashboardState.businessPagination.currentPage--;
+                    dashboardState.businessPagination.offset =
+                        (dashboardState.businessPagination.currentPage - 1) * dashboardState.businessPagination.limit;
+                    loadBusinessManagement();
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', function() {
+                const maxPage = Math.ceil(dashboardState.businessPagination.totalCount / dashboardState.businessPagination.limit);
+                if (dashboardState.businessPagination.currentPage < maxPage) {
+                    dashboardState.businessPagination.currentPage++;
+                    dashboardState.businessPagination.offset =
+                        (dashboardState.businessPagination.currentPage - 1) * dashboardState.businessPagination.limit;
+                    loadBusinessManagement();
+                }
+            });
         }
 
         async function loadDashboardData() {
@@ -509,7 +647,8 @@
                 await Promise.all([
                     loadStatistics(),
                     loadBusinesses(),
-                    loadBusinessActivity()
+                    loadBusinessActivity(),
+                    loadBusinessManagement()
                 ]);
 
                 updateOverviewStats();
@@ -807,6 +946,243 @@
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
             return Math.round(bytes / (1024 * 1024)) + ' MB';
+        }
+
+        // Business Management Functions
+        async function loadBusinessManagement() {
+            try {
+                const params = new URLSearchParams({
+                    limit: dashboardState.businessPagination.limit,
+                    offset: dashboardState.businessPagination.offset,
+                    search: dashboardState.businessFilters.search
+                });
+
+                if (dashboardState.businessFilters.includeArchived !== null) {
+                    params.append('include_archived', dashboardState.businessFilters.includeArchived);
+                }
+
+                const response = await fetch(`${API_BASE}/businesses?${params}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    dashboardState.businesses = data.businesses;
+                    dashboardState.businessPagination.totalCount = data.total_count;
+                    updateBusinessTable();
+                    updateBusinessPagination();
+                } else {
+                    console.error('Failed to load businesses');
+                    showBusinessError('Failed to load businesses');
+                }
+            } catch (error) {
+                console.error('Error loading businesses:', error);
+                showBusinessError('Error loading businesses');
+            }
+        }
+
+        function updateBusinessTable() {
+            const tbody = document.getElementById('business-list-table');
+
+            if (dashboardState.businesses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="loading">No businesses found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = dashboardState.businesses.map(business => {
+                const isSelected = dashboardState.selectedBusinessIds.has(business.id);
+                const status = business.archived ? 'Archived' : 'Active';
+                const statusColor = business.archived ? '#e53e3e' : '#48bb78';
+
+                return `
+                    <tr ${business.archived ? 'style="opacity: 0.6;"' : ''}>
+                        <td>
+                            <input type="checkbox" class="business-checkbox" value="${business.id}"
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="toggleBusinessSelection(${business.id}, this.checked)">
+                        </td>
+                        <td>${business.name || '-'}</td>
+                        <td>${business.address || '-'}</td>
+                        <td>${business.city || '-'}</td>
+                        <td>${business.state || '-'}</td>
+                        <td>
+                            ${business.website ?
+                                `<a href="${business.website}" target="_blank" style="color: #667eea;">${business.website}</a>` :
+                                '-'
+                            }
+                        </td>
+                        <td>${business.score || '-'}</td>
+                        <td>
+                            <span style="color: ${statusColor}; font-weight: 600;">${status}</span>
+                            ${business.archive_reason ? `<br><small>${business.archive_reason}</small>` : ''}
+                        </td>
+                        <td>
+                            ${business.archived ?
+                                `<button onclick="restoreBusiness(${business.id})" class="filter-button" style="background: #48bb78; padding: 5px 10px; font-size: 0.8rem;">Restore</button>` :
+                                `<button onclick="archiveBusiness(${business.id})" class="filter-button" style="background: #e53e3e; padding: 5px 10px; font-size: 0.8rem;">Archive</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update "Select All" checkbox state
+            updateSelectAllCheckbox();
+        }
+
+        function updateBusinessPagination() {
+            const totalPages = Math.ceil(dashboardState.businessPagination.totalCount / dashboardState.businessPagination.limit);
+            const currentPage = dashboardState.businessPagination.currentPage;
+
+            document.getElementById('business-count').textContent =
+                `${dashboardState.businessPagination.totalCount} businesses`;
+            document.getElementById('current-page').textContent = currentPage;
+
+            document.getElementById('prev-page').disabled = currentPage <= 1;
+            document.getElementById('next-page').disabled = currentPage >= totalPages;
+        }
+
+        function toggleBusinessSelection(businessId, isSelected) {
+            if (isSelected) {
+                dashboardState.selectedBusinessIds.add(businessId);
+            } else {
+                dashboardState.selectedBusinessIds.delete(businessId);
+            }
+            updateBulkActionButtons();
+            updateSelectAllCheckbox();
+        }
+
+        function updateSelectAllCheckbox() {
+            const checkboxes = document.querySelectorAll('.business-checkbox');
+            const selectAllCheckbox = document.getElementById('select-all-businesses');
+
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+
+            if (checkedCount === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedCount === checkboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        function updateBulkActionButtons() {
+            const selectedCount = dashboardState.selectedBusinessIds.size;
+            const bulkRejectBtn = document.getElementById('bulk-reject-btn');
+
+            bulkRejectBtn.disabled = selectedCount === 0;
+            bulkRejectBtn.textContent = selectedCount > 0 ?
+                `🗑️ Reject Selected (${selectedCount})` :
+                '🗑️ Reject Selected';
+        }
+
+        async function bulkRejectBusinesses() {
+            const selectedIds = Array.from(dashboardState.selectedBusinessIds);
+
+            if (selectedIds.length === 0) return;
+
+            if (!confirm(`Are you sure you want to reject ${selectedIds.length} selected businesses? This will archive them.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/businesses/bulk-reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        business_ids: selectedIds,
+                        reason: 'irrelevant'
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Successfully rejected ${result.archived_count} businesses`);
+
+                    // Clear selection and reload
+                    dashboardState.selectedBusinessIds.clear();
+                    await loadBusinessManagement();
+                    updateBulkActionButtons();
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error bulk rejecting businesses:', error);
+                alert('Error rejecting businesses');
+            }
+        }
+
+        async function archiveBusiness(businessId) {
+            if (!confirm('Are you sure you want to archive this business?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/businesses/bulk-reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        business_ids: [businessId],
+                        reason: 'manual_archive'
+                    })
+                });
+
+                if (response.ok) {
+                    await loadBusinessManagement();
+                } else {
+                    alert('Error archiving business');
+                }
+            } catch (error) {
+                console.error('Error archiving business:', error);
+                alert('Error archiving business');
+            }
+        }
+
+        async function restoreBusiness(businessId) {
+            if (!confirm('Are you sure you want to restore this business?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/businesses/restore`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        business_ids: [businessId]
+                    })
+                });
+
+                if (response.ok) {
+                    await loadBusinessManagement();
+                } else {
+                    alert('Error restoring business');
+                }
+            } catch (error) {
+                console.error('Error restoring business:', error);
+                alert('Error restoring business');
+            }
+        }
+
+        function showBusinessError(message) {
+            const tbody = document.getElementById('business-list-table');
+            tbody.innerHTML = `<tr><td colspan="9" class="error">${message}</td></tr>`;
+        }
+
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
     </script>
 </body>

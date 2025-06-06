@@ -22,6 +22,18 @@ def scrape(ctx, limit: int, zip_code: Optional[str], vertical: Optional[str]):
         click.echo("DRY RUN: Would execute scraping logic")
         return
 
+    # Validate API keys before proceeding
+    try:
+        from leadfactory.pipeline.scrape import validate_api_keys
+
+        is_valid, error_message = validate_api_keys()
+        if not is_valid:
+            click.echo(f"Error: {error_message}", err=True)
+            return
+
+    except ImportError:
+        click.echo("Warning: Cannot validate API keys - scraping module not found")
+
     # Import and execute scraping logic
     try:
         from leadfactory.pipeline.scrape import main as scrape_main

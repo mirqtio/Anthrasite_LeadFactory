@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup QA Interface - LeadFactory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .mockup-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+
+        .mockup-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .mockup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .mockup-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-approved {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-rejected {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-pending {
+            background: #fef5e7;
+            color: #7c2d12;
+        }
+
+        .status-ai-uncertain {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .qa-score {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .score-high {
+            color: #48bb78;
+        }
+
+        .score-medium {
+            color: #ed8936;
+        }
+
+        .score-low {
+            color: #e53e3e;
+        }
+
+        .mockup-content {
+            margin: 15px 0;
+        }
+
+        .layout-elements {
+            margin-bottom: 15px;
+        }
+
+        .layout-element {
+            background: #f7fafc;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .element-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .element-description {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 3px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-input {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 25px 30px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .modal-body {
+            padding: 25px 30px;
+        }
+
+        .modal-footer {
+            padding: 0 30px 25px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .score-input {
+            width: 80px;
+        }
+
+        .version-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .version-panel {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .version-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .diff-highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .diff-added {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .diff-removed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e53e3e;
+            background: #fed7d7;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .mockup-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .version-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎨 Mockup QA Interface</h1>
+            <p>Review and manage AI-generated mockups</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="status-filter">Status Filter</label>
+                    <select id="status-filter" class="filter-input">
+                        <option value="">All Statuses</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="pending">Pending</option>
+                        <option value="ai_uncertain">AI Uncertain</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="business-filter">Business</label>
+                    <select id="business-filter" class="filter-input">
+                        <option value="">All Businesses</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="version-filter">Version</label>
+                    <select id="version-filter" class="filter-input">
+                        <option value="">All Versions</option>
+                        <option value="latest">Latest Only</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button id="refresh-btn" class="btn btn-primary">🔄 Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mockup Grid -->
+        <div id="mockup-grid" class="mockup-grid">
+            <div class="loading">Loading mockups...</div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="filters">
+            <div class="filter-row" style="justify-content: space-between;">
+                <div>
+                    <span id="mockup-count">0 mockups</span>
+                </div>
+                <div>
+                    <button id="prev-page" class="btn btn-outline" disabled>← Previous</button>
+                    <span style="margin: 0 15px;">Page <span id="current-page">1</span></span>
+                    <button id="next-page" class="btn btn-outline" disabled>Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QA Override Modal -->
+    <div id="qa-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 class="modal-title">QA Override</h2>
+            </div>
+            <div class="modal-body">
+                <form id="qa-form">
+                    <input type="hidden" id="mockup-id">
+
+                    <div class="form-group">
+                        <label class="form-label" for="new-status">New Status</label>
+                        <select id="new-status" class="form-select" required>
+                            <option value="">Select Status</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="needs_revision">Needs Revision</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="qa-score">QA Score (1-10)</label>
+                        <input type="number" id="qa-score" class="form-input score-input" min="1" max="10" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="reviewer-notes">Reviewer Notes</label>
+                        <textarea id="reviewer-notes" class="form-textarea" placeholder="Optional notes about this review..."></textarea>
+                    </div>
+
+                    <div class="form-group" id="revised-prompt-group" style="display: none;">
+                        <label class="form-label" for="revised-prompt">Revised Prompt (for regeneration)</label>
+                        <textarea id="revised-prompt" class="form-textarea" placeholder="Enter revised prompt to regenerate the mockup..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeQAModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitQAOverride()">Apply Override</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version Comparison Modal -->
+    <div id="version-modal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <span class="close" onclick="closeVersionModal()">&times;</span>
+                <h2 class="modal-title">Version Comparison</h2>
+            </div>
+            <div class="modal-body">
+                <div id="version-comparison-content">
+                    <div class="loading">Loading comparison...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeVersionModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        const qaState = {
+            mockups: [],
+            pagination: {
+                currentPage: 1,
+                totalCount: 0,
+                limit: 12,
+                offset: 0
+            },
+            filters: {
+                status: '',
+                business_id: '',
+                version: ''
+            },
+            loading: false
+        };
+
+        // API Base URL
+        const API_BASE = '/api';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            loadMockups();
+            loadBusinesses();
+        });
+
+        function setupEventListeners() {
+            // Filter event listeners
+            document.getElementById('status-filter').addEventListener('change', function() {
+                qaState.filters.status = this.value;
+                qaState.pagination.currentPage = 1;
+                qaState.pagination.offset = 0;
+                loadMockups();
+            });
+
+            document.getElementById('business-filter').addEventListener('change', function() {
+                qaState.filters.business_id = this.value;
+                qaState.pagination.currentPage = 1;
+                qaState.pagination.offset = 0;
+                loadMockups();
+            });
+
+            document.getElementById('version-filter').addEventListener('change', function() {
+                qaState.filters.version = this.value;
+                qaState.pagination.currentPage = 1;
+                qaState.pagination.offset = 0;
+                loadMockups();
+            });
+
+            // Refresh button
+            document.getElementById('refresh-btn').addEventListener('click', loadMockups);
+
+            // Pagination
+            document.getElementById('prev-page').addEventListener('click', function() {
+                if (qaState.pagination.currentPage > 1) {
+                    qaState.pagination.currentPage--;
+                    qaState.pagination.offset = (qaState.pagination.currentPage - 1) * qaState.pagination.limit;
+                    loadMockups();
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', function() {
+                const maxPage = Math.ceil(qaState.pagination.totalCount / qaState.pagination.limit);
+                if (qaState.pagination.currentPage < maxPage) {
+                    qaState.pagination.currentPage++;
+                    qaState.pagination.offset = (qaState.pagination.currentPage - 1) * qaState.pagination.limit;
+                    loadMockups();
+                }
+            });
+
+            // QA Modal
+            document.getElementById('new-status').addEventListener('change', function() {
+                const revisedPromptGroup = document.getElementById('revised-prompt-group');
+                if (this.value === 'needs_revision') {
+                    revisedPromptGroup.style.display = 'block';
+                } else {
+                    revisedPromptGroup.style.display = 'none';
+                }
+            });
+
+            // Modal close handlers
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+
+            // Click outside modal to close
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
+        }
+
+        async function loadMockups() {
+            if (qaState.loading) return;
+
+            qaState.loading = true;
+            showMockupLoading();
+
+            try {
+                const params = new URLSearchParams({
+                    limit: qaState.pagination.limit,
+                    offset: qaState.pagination.offset
+                });
+
+                if (qaState.filters.status) params.append('status', qaState.filters.status);
+                if (qaState.filters.business_id) params.append('business_id', qaState.filters.business_id);
+                if (qaState.filters.version) params.append('version', qaState.filters.version);
+
+                const response = await fetch(`${API_BASE}/mockups?${params}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    qaState.mockups = data.mockups;
+                    qaState.pagination.totalCount = data.total_count;
+                    updateMockupGrid();
+                    updatePagination();
+                } else {
+                    showMockupError('Failed to load mockups');
+                }
+            } catch (error) {
+                console.error('Error loading mockups:', error);
+                showMockupError('Error loading mockups');
+            } finally {
+                qaState.loading = false;
+            }
+        }
+
+        async function loadBusinesses() {
+            try {
+                const response = await fetch(`${API_BASE}/businesses`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const select = document.getElementById('business-filter');
+
+                    // Clear existing options except "All Businesses"
+                    select.innerHTML = '<option value="">All Businesses</option>';
+
+                    // Add business options
+                    data.businesses.forEach(business => {
+                        const option = document.createElement('option');
+                        option.value = business.id;
+                        option.textContent = business.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading businesses:', error);
+            }
+        }
+
+        function updateMockupGrid() {
+            const grid = document.getElementById('mockup-grid');
+
+            if (qaState.mockups.length === 0) {
+                grid.innerHTML = '<div class="loading">No mockups found</div>';
+                return;
+            }
+
+            grid.innerHTML = qaState.mockups.map(mockup => {
+                const qaScore = mockup.qa_score || 0;
+                const scoreClass = qaScore >= 7 ? 'score-high' : qaScore >= 4 ? 'score-medium' : 'score-low';
+                const statusClass = `status-${mockup.status.replace('_', '-')}`;
+
+                const content = mockup.content.mockup || {};
+                const layoutElements = content.layout_elements || [];
+
+                return `
+                    <div class="mockup-card">
+                        <div class="mockup-header">
+                            <div class="mockup-title">${mockup.business_name || 'Unknown Business'}</div>
+                            <span class="status-badge ${statusClass}">${mockup.status}</span>
+                        </div>
+
+                        <div class="qa-score ${scoreClass}">${qaScore}/10</div>
+
+                        <div class="mockup-content">
+                            <div class="layout-elements">
+                                <strong>Layout Elements:</strong>
+                                ${layoutElements.slice(0, 3).map(element => `
+                                    <div class="layout-element">
+                                        <div class="element-name">${element.section_name}</div>
+                                        <div class="element-description">${element.description}</div>
+                                    </div>
+                                `).join('')}
+                                ${layoutElements.length > 3 ? `<div style="color: #718096; font-size: 0.9rem;">+${layoutElements.length - 3} more elements</div>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            ${qaScore < 5 ? `<button class="btn btn-primary" onclick="openQAModal(${mockup.id})">🔧 QA Override</button>` : ''}
+                            <button class="btn btn-outline" onclick="viewVersions(${mockup.id})">📊 Versions</button>
+                            ${mockup.status === 'pending' ? `
+                                <button class="btn btn-success" onclick="quickApprove(${mockup.id})">✅ Approve</button>
+                                <button class="btn btn-danger" onclick="quickReject(${mockup.id})">❌ Reject</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(qaState.pagination.totalCount / qaState.pagination.limit);
+            const currentPage = qaState.pagination.currentPage;
+
+            document.getElementById('mockup-count').textContent =
+                `${qaState.pagination.totalCount} mockups`;
+            document.getElementById('current-page').textContent = currentPage;
+
+            document.getElementById('prev-page').disabled = currentPage <= 1;
+            document.getElementById('next-page').disabled = currentPage >= totalPages;
+        }
+
+        function showMockupLoading() {
+            document.getElementById('mockup-grid').innerHTML = '<div class="loading">Loading mockups...</div>';
+        }
+
+        function showMockupError(message) {
+            document.getElementById('mockup-grid').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function openQAModal(mockupId) {
+            document.getElementById('mockup-id').value = mockupId;
+            document.getElementById('qa-modal').style.display = 'block';
+
+            // Reset form
+            document.getElementById('qa-form').reset();
+            document.getElementById('revised-prompt-group').style.display = 'none';
+        }
+
+        function closeQAModal() {
+            document.getElementById('qa-modal').style.display = 'none';
+        }
+
+        async function submitQAOverride() {
+            const mockupId = document.getElementById('mockup-id').value;
+            const newStatus = document.getElementById('new-status').value;
+            const qaScore = document.getElementById('qa-score').value;
+            const reviewerNotes = document.getElementById('reviewer-notes').value;
+            const revisedPrompt = document.getElementById('revised-prompt').value;
+
+            if (!newStatus) {
+                alert('Please select a status');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/mockups/${mockupId}/qa-override`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        new_status: newStatus,
+                        qa_score: qaScore ? parseFloat(qaScore) : null,
+                        reviewer_notes: reviewerNotes,
+                        revised_prompt: revisedPrompt
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`QA override applied successfully!${result.regeneration_triggered ? ' Regeneration triggered.' : ''}`);
+                    closeQAModal();
+                    loadMockups();
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error applying QA override:', error);
+                alert('Error applying QA override');
+            }
+        }
+
+        async function quickApprove(mockupId) {
+            if (!confirm('Are you sure you want to approve this mockup?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/mockups/${mockupId}/qa-override`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        new_status: 'approved',
+                        qa_score: 8
+                    })
+                });
+
+                if (response.ok) {
+                    loadMockups();
+                } else {
+                    alert('Error approving mockup');
+                }
+            } catch (error) {
+                console.error('Error approving mockup:', error);
+                alert('Error approving mockup');
+            }
+        }
+
+        async function quickReject(mockupId) {
+            if (!confirm('Are you sure you want to reject this mockup?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/mockups/${mockupId}/qa-override`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        new_status: 'rejected',
+                        qa_score: 2
+                    })
+                });
+
+                if (response.ok) {
+                    loadMockups();
+                } else {
+                    alert('Error rejecting mockup');
+                }
+            } catch (error) {
+                console.error('Error rejecting mockup:', error);
+                alert('Error rejecting mockup');
+            }
+        }
+
+        async function viewVersions(mockupId) {
+            try {
+                const response = await fetch(`${API_BASE}/mockups/${mockupId}/versions`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showVersionComparison(data.versions);
+                } else {
+                    alert('Error loading versions');
+                }
+            } catch (error) {
+                console.error('Error loading versions:', error);
+                alert('Error loading versions');
+            }
+        }
+
+        function showVersionComparison(versions) {
+            const modal = document.getElementById('version-modal');
+            const content = document.getElementById('version-comparison-content');
+
+            if (versions.length < 2) {
+                content.innerHTML = '<div class="loading">Only one version available</div>';
+            } else {
+                content.innerHTML = `
+                    <div class="version-comparison">
+                        <div class="version-panel">
+                            <div class="version-title">Version ${versions[1].version} (Previous)</div>
+                            <div><strong>Status:</strong> ${versions[1].status}</div>
+                            <div><strong>QA Score:</strong> ${versions[1].qa_score || 'N/A'}</div>
+                            <div><strong>Created:</strong> ${new Date(versions[1].created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="version-panel">
+                            <div class="version-title">Version ${versions[0].version} (Latest)</div>
+                            <div><strong>Status:</strong> ${versions[0].status}</div>
+                            <div><strong>QA Score:</strong> ${versions[0].qa_score || 'N/A'}</div>
+                            <div><strong>Created:</strong> ${new Date(versions[0].created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="compareVersions(${versions[1].id}, ${versions[0].id})">
+                            🔍 Show Detailed Diff
+                        </button>
+                    </div>
+                `;
+            }
+
+            modal.style.display = 'block';
+        }
+
+        async function compareVersions(version1Id, version2Id) {
+            try {
+                const response = await fetch(`${API_BASE}/mockups/versions/compare`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        version1_id: version1Id,
+                        version2_id: version2Id
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showDetailedDiff(data);
+                } else {
+                    alert('Error comparing versions');
+                }
+            } catch (error) {
+                console.error('Error comparing versions:', error);
+                alert('Error comparing versions');
+            }
+        }
+
+        function showDetailedDiff(comparisonData) {
+            const content = document.getElementById('version-comparison-content');
+            const diff = comparisonData.diff;
+
+            let diffHtml = '<h3>Detected Changes:</h3>';
+
+            if (!diff.has_changes) {
+                diffHtml += '<p>No changes detected between versions.</p>';
+            } else {
+                if (diff.layout_changes.length > 0) {
+                    diffHtml += '<h4>Layout Changes:</h4>';
+                    diff.layout_changes.forEach(change => {
+                        diffHtml += `<div class="diff-highlight">Element ${change.element_index + 1}: `;
+                        Object.keys(change.changes).forEach(key => {
+                            diffHtml += `<span class="diff-removed">${change.changes[key].old}</span> → <span class="diff-added">${change.changes[key].new}</span> `;
+                        });
+                        diffHtml += '</div>';
+                    });
+                }
+
+                if (diff.content_changes.length > 0) {
+                    diffHtml += '<h4>Content Changes:</h4>';
+                    diff.content_changes.forEach(change => {
+                        diffHtml += `<div class="diff-highlight">Recommendation ${change.recommendation_index + 1}: `;
+                        Object.keys(change.changes).forEach(key => {
+                            diffHtml += `<span class="diff-removed">${change.changes[key].old}</span> → <span class="diff-added">${change.changes[key].new}</span> `;
+                        });
+                        diffHtml += '</div>';
+                    });
+                }
+
+                if (Object.keys(diff.metadata_changes).length > 0) {
+                    diffHtml += '<h4>Metadata Changes:</h4>';
+                    Object.keys(diff.metadata_changes).forEach(key => {
+                        diffHtml += `<div class="diff-highlight">${key}: <span class="diff-removed">${diff.metadata_changes[key].old}</span> → <span class="diff-added">${diff.metadata_changes[key].new}</span></div>`;
+                    });
+                }
+            }
+
+            content.innerHTML = diffHtml;
+        }
+
+        function closeVersionModal() {
+            document.getElementById('version-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

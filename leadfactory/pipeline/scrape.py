@@ -1114,6 +1114,27 @@ def _resolve_field_conflict(
     return existing_value
 
 
+def validate_api_keys() -> tuple[bool, str]:
+    """Validate required API keys are present.
+    Returns:
+        tuple of (is_valid, error_message)
+    """
+    yelp_api_key = os.getenv("YELP_KEY")
+    google_api_key = os.getenv("GOOGLE_KEY")
+
+    missing_keys = []
+    if not yelp_api_key or not yelp_api_key.strip():
+        missing_keys.append("YELP_KEY")
+    if not google_api_key or not google_api_key.strip():
+        missing_keys.append("GOOGLE_KEY")
+
+    if missing_keys:
+        error_message = f"ENV001: Missing required API keys: {', '.join(missing_keys)}. Please set these environment variables or add them to your .env file before running the scraper."
+        return False, error_message
+
+    return True, ""
+
+
 def scrape_businesses(
     zip_code: str, vertical: dict, limit: int = 50
 ) -> tuple[int, int]:
@@ -1125,6 +1146,12 @@ def scrape_businesses(
     Returns:
         tuple of (yelp_count, google_count) - number of businesses scraped from each source.
     """
+    # Validate API keys before proceeding
+    is_valid, error_message = validate_api_keys()
+    if not is_valid:
+        logger.error(error_message)
+        raise ValueError(error_message)
+
     # Count how many businesses we've scraped
     yelp_count = 0
     google_count = 0
@@ -1145,7 +1172,7 @@ def scrape_businesses(
     yelp_api_key = os.getenv("YELP_KEY")
     google_api_key = os.getenv("GOOGLE_KEY")
 
-    # Check if we have API keys
+    # Keys are already validated above, so this is just for legacy compatibility
     if not yelp_api_key:
         logger.warning("No Yelp API key found in environment variables")
     if not google_api_key:

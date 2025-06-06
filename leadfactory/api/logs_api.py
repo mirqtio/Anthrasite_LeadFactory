@@ -945,6 +945,16 @@ def create_logs_app() -> Flask:
     # Initialize API
     LogsAPI(app)
 
+    # Register business management API
+    from leadfactory.api.business_management_api import business_management
+
+    app.register_blueprint(business_management)
+
+    # Register mockup QA API
+    from leadfactory.api.mockup_qa_api import mockup_qa
+
+    app.register_blueprint(mockup_qa)
+
     @app.route("/api/health")
     def health_check() -> Response:
         """Health check endpoint."""

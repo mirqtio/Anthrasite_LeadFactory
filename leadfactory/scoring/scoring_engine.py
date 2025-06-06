@@ -157,6 +157,33 @@ class ScoringEngine:
         Returns:
             Detailed scoring result.
         """
+        # Check for AI-Uncertain status from LLM processing
+        ai_status = business.get("ai_status")
+        ai_uncertain = ai_status == "AI-Uncertain"
+        score_weight = business.get("score_weight", 1.0)
+
+        if ai_uncertain:
+            self.logger.warning(
+                f"Business {business.get('id')} marked as AI-Uncertain, applying zero score weight"
+            )
+
+            return {
+                "score": 0,
+                "base_score": 0,
+                "adjustments": [],
+                "multipliers": [],
+                "final_multiplier": 0.0,
+                "ai_status": "AI-Uncertain",
+                "score_weight": 0.0,
+                "requires_manual_review": True,
+                "error_type": business.get("error_type", "unknown"),
+                "details": {
+                    "total_rules_evaluated": 0,
+                    "total_multipliers_evaluated": 0,
+                    "scoring_disabled_reason": "AI analysis uncertain",
+                },
+            }
+
         # Start with base score
         base_score = self.settings.base_score
         score = base_score
@@ -195,6 +222,14 @@ class ScoringEngine:
         if final_multiplier != 1.0:
             score = int(score * final_multiplier)
 
+        # Apply AI confidence score weight (1.0 for normal, 0.0 for AI-Uncertain)
+        if score_weight != 1.0:
+            original_score = score
+            score = int(score * score_weight)
+            self.logger.info(
+                f"Applied score weight {score_weight}: {original_score} -> {score}"
+            )
+
         # Ensure score is within bounds
         score = max(self.settings.min_score, min(score, self.settings.max_score))
 
@@ -204,6 +239,8 @@ class ScoringEngine:
             "adjustments": adjustments,
             "multipliers": applied_multipliers,
             "final_multiplier": final_multiplier,
+            "score_weight": score_weight,
+            "ai_status": ai_status or "verified",
             "is_high_score": score >= self.settings.high_score_threshold,
             "details": {
                 "rules_evaluated": len(self.rules),

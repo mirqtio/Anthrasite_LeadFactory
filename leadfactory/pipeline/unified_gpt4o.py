@@ -304,28 +304,13 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
 
             # Parse the JSON response
             content = response["choices"][0]["message"]["content"]
-            try:
-                parsed_content = json.loads(content)
-                logger.info(
-                    f"Successfully generated content using {response.get('provider', 'unknown')} provider"
-                )
 
-                return {
-                    "success": True,
-                    "content": parsed_content,
-                    "prompt_used": prompt,
-                    "validation_result": validation,
-                    "provider_used": response.get("provider"),
-                    "model_used": response.get("model"),
-                    "usage": response.get("usage", {}),
-                }
+            # Try to parse and validate JSON response
+            parsed_result = self._parse_and_validate_json_response(
+                content, business_data, prompt, validation, response
+            )
 
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON response: {e}")
-                logger.debug(f"Raw response content: {content[:500]}...")
-
-                # Fall back to mock response if JSON parsing fails
-                return self._generate_mock_response(business_data, prompt, validation)
+            return parsed_result
 
         except LLMError as e:
             logger.error(f"LLM request failed: {e}")
@@ -338,6 +323,174 @@ Ensure the output is valid JSON and both the mockup concept and email are highly
                 "error": f"Content generation failed: {str(e)}",
                 "validation_result": validation,
             }
+
+    def _parse_and_validate_json_response(
+        self,
+        content: str,
+        business_data: dict[str, Any],
+        prompt: str,
+        validation: dict[str, Any],
+        response: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Parse and validate JSON response from LLM with fallback handling.
+
+        Args:
+            content: Raw response content from LLM
+            business_data: Business data used for context
+            prompt: Original prompt sent to LLM
+            validation: Validation results
+            response: Full LLM response object
+
+        Returns:
+            Dictionary with parsed content or fallback response
+        """
+        try:
+            # Attempt to parse JSON
+            parsed_content = json.loads(content)
+
+            # Validate required structure
+            if not self._validate_json_structure(parsed_content):
+                raise ValueError("JSON response missing required fields")
+
+            logger.info(
+                f"Successfully generated and validated content using {response.get('provider', 'unknown')} provider"
+            )
+
+            return {
+                "success": True,
+                "content": parsed_content,
+                "prompt_used": prompt,
+                "validation_result": validation,
+                "provider_used": response.get("provider"),
+                "model_used": response.get("model"),
+                "usage": response.get("usage", {}),
+                "ai_status": "verified",  # AI response was valid
+            }
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON response: {e}")
+            logger.debug(f"Raw response content: {content[:500]}...")
+
+            # Mark as AI-Uncertain and use fallback scoring
+            return self._generate_ai_uncertain_response(
+                business_data, prompt, validation, "json_parse_error"
+            )
+
+        except ValueError as e:
+            logger.error(f"JSON validation failed: {e}")
+            logger.debug(f"Parsed but invalid JSON: {content[:500]}...")
+
+            # Mark as AI-Uncertain and use fallback scoring
+            return self._generate_ai_uncertain_response(
+                business_data, prompt, validation, "json_validation_error"
+            )
+
+        except Exception as e:
+            logger.error(f"Unexpected error during JSON processing: {e}")
+
+            # Mark as AI-Uncertain and use fallback scoring
+            return self._generate_ai_uncertain_response(
+                business_data, prompt, validation, "unexpected_error"
+            )
+
+    def _validate_json_structure(self, parsed_content: dict[str, Any]) -> bool:
+        """Validate that parsed JSON has required structure.
+
+        Args:
+            parsed_content: Parsed JSON content
+
+        Returns:
+            True if structure is valid, False otherwise
+        """
+        # Check for required top-level keys
+        required_keys = ["mockup", "email"]
+        for key in required_keys:
+            if key not in parsed_content:
+                logger.warning(f"Missing required key in JSON response: {key}")
+                return False
+
+        # Validate mockup structure
+        mockup = parsed_content.get("mockup", {})
+        mockup_required = ["layout_elements", "content_recommendations"]
+        for key in mockup_required:
+            if key not in mockup:
+                logger.warning(f"Missing required mockup key: {key}")
+                return False
+
+        # Validate email structure
+        email = parsed_content.get("email", {})
+        email_required = ["subject", "body"]
+        for key in email_required:
+            if key not in email:
+                logger.warning(f"Missing required email key: {key}")
+                return False
+
+        return True
+
+    def _generate_ai_uncertain_response(
+        self,
+        business_data: dict[str, Any],
+        prompt: str,
+        validation: dict[str, Any],
+        error_type: str,
+    ) -> dict[str, Any]:
+        """Generate response marked as AI-Uncertain with zero score weight.
+
+        Args:
+            business_data: Business data for context
+            prompt: Original prompt
+            validation: Validation results
+            error_type: Type of error that caused uncertainty
+
+        Returns:
+            Dictionary with AI-Uncertain status and fallback content
+        """
+        logger.warning(f"Generating AI-Uncertain response due to {error_type}")
+
+        # Create minimal fallback content that indicates AI uncertainty
+        fallback_content = {
+            "mockup": {
+                "layout_elements": [
+                    {
+                        "section_name": "AI Analysis Unavailable",
+                        "description": "Unable to analyze website layout due to AI response error",
+                        "priority": "low",
+                        "ai_confidence": 0.0,
+                    }
+                ],
+                "content_recommendations": [
+                    {
+                        "area": "General",
+                        "current_issue": "AI analysis failed",
+                        "improvement": "Manual review required",
+                        "ai_confidence": 0.0,
+                    }
+                ],
+                "ai_confidence_score": 0.0,
+                "requires_manual_review": True,
+            },
+            "email": {
+                "subject": f"Business Analysis Available for {business_data.get('name', 'Your Business')}",
+                "body": "We've prepared a business analysis for you, but our AI review encountered technical difficulties. Please contact us for a manual review.",
+                "personalization_score": 0.0,
+                "ai_confidence": 0.0,
+            },
+            "ai_status": "AI-Uncertain",
+            "error_type": error_type,
+            "score_weight": 0.0,  # Zero weight for uncertain AI responses
+            "requires_manual_review": True,
+        }
+
+        return {
+            "success": True,  # Still successful, but with uncertainty flag
+            "content": fallback_content,
+            "prompt_used": prompt,
+            "validation_result": validation,
+            "ai_status": "AI-Uncertain",
+            "error_type": error_type,
+            "score_weight": 0.0,
+            "requires_manual_review": True,
+        }
 
     def _generate_mock_response(
         self, business_data: dict[str, Any], prompt: str, validation: dict[str, Any]

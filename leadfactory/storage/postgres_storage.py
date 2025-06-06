@@ -1764,3 +1764,1807 @@ class PostgresStorage(StorageInterface):
         except Exception as e:
             logger.error(f"Error getting all businesses: {e}")
             return []
+
+    def archive_business(self, business_id: int, reason: str = "manual_reject") -> bool:
+        """Archive a business by setting archived flag and reason.
+
+        Args:
+            business_id: Business ID to archive
+            reason: Reason for archiving
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with self.cursor() as cursor:
+                # First check if archived column exists, if not add it
+                cursor.execute(
+                    """
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'businesses' AND column_name = 'archived'
+                """
+                )
+
+                if not cursor.fetchone():
+                    # Add archived columns
+                    cursor.execute(
+                        """
+                        ALTER TABLE businesses
+                        ADD COLUMN archived BOOLEAN DEFAULT FALSE,
+                        ADD COLUMN archive_reason TEXT,
+                        ADD COLUMN archived_at TIMESTAMP
+                    """
+                    )
+                    logger.info("Added archive columns to businesses table")
+
+                # Archive the business
+                cursor.execute(
+                    """
+                    UPDATE businesses
+                    SET archived = TRUE,
+                        archive_reason = %s,
+                        archived_at = NOW()
+                    WHERE id = %s
+                """,
+                    (reason, business_id),
+                )
+
+                success = cursor.rowcount > 0
+                if success:
+                    logger.info(
+                        f"Archived business {business_id} with reason: {reason}"
+                    )
+                else:
+                    logger.warning(
+                        f"No business found with ID {business_id} to archive"
+                    )
+
+                return success
+
+        except Exception as e:
+            logger.error(f"Error archiving business {business_id}: {e}")
+            return False
+
+    def restore_business(self, business_id: int) -> bool:
+        """Restore an archived business by clearing archived flag.
+
+        Args:
+            business_id: Business ID to restore
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE businesses
+                    SET archived = FALSE,
+                        archive_reason = NULL,
+                        archived_at = NULL
+                    WHERE id = %s
+                """,
+                    (business_id,),
+                )
+
+                success = cursor.rowcount > 0
+                if success:
+                    logger.info(f"Restored business {business_id}")
+                else:
+                    logger.warning(
+                        f"No business found with ID {business_id} to restore"
+                    )
+
+                return success
+
+        except Exception as e:
+            logger.error(f"Error restoring business {business_id}: {e}")
+            return False
+
+    def list_businesses(
+        self,
+        include_archived: bool = False,
+        limit: int = 50,
+        offset: int = 0,
+        search: str = "",
+    ) -> list[dict[str, Any]]:
+        """List businesses with optional filtering.
+
+        Args:
+            include_archived: Whether to include archived businesses
+            limit: Maximum number of results
+            offset: Pagination offset
+            search: Search term for name/address
+
+        Returns:
+            List of business dictionaries
+        """
+        try:
+            with self.cursor() as cursor:
+                # Build query conditions
+                conditions = []
+                params = []
+
+                if not include_archived:
+                    conditions.append("(archived IS NULL OR archived = FALSE)")
+
+                if search:
+                    conditions.append("(name ILIKE %s OR address ILIKE %s)")
+                    search_term = f"%{search}%"
+                    params.extend([search_term, search_term])
+
+                where_clause = ""
+                if conditions:
+                    where_clause = "WHERE " + " AND ".join(conditions)
+
+                # Add limit and offset
+                params.extend([limit, offset])
+
+                cursor.execute(
+                    f"""
+                    SELECT
+                        id, name, address, city, state, website, phone, email,
+                        archived, archive_reason, archived_at,
+                        created_at, score, vertical
+                    FROM businesses
+                    {where_clause}
+                    ORDER BY
+                        CASE WHEN archived THEN 1 ELSE 0 END,
+                        created_at DESC
+                    LIMIT %s OFFSET %s
+                """,
+                    params,
+                )
+
+                businesses = []
+                for row in cursor.fetchall():
+                    business = {
+                        "id": row[0],
+                        "name": row[1],
+                        "address": row[2],
+                        "city": row[3],
+                        "state": row[4],
+                        "website": row[5],
+                        "phone": row[6],
+                        "email": row[7],
+                        "archived": row[8] or False,
+                        "archive_reason": row[9],
+                        "archived_at": row[10],
+                        "created_at": row[11],
+                        "score": row[12],
+                        "vertical": row[13],
+                    }
+                    businesses.append(business)
+
+                return businesses
+
+        except Exception as e:
+            logger.error(f"Error listing businesses: {e}")
+            return []
+
+    def count_businesses(self, include_archived: bool = False, search: str = "") -> int:
+        """Count businesses with optional filtering.
+
+        Args:
+            include_archived: Whether to include archived businesses
+            search: Search term for name/address
+
+        Returns:
+            Total count of businesses matching criteria
+        """
+        try:
+            with self.cursor() as cursor:
+                # Build query conditions
+                conditions = []
+                params = []
+
+                if not include_archived:
+                    conditions.append("(archived IS NULL OR archived = FALSE)")
+
+                if search:
+                    conditions.append("(name ILIKE %s OR address ILIKE %s)")
+                    search_term = f"%{search}%"
+                    params.extend([search_term, search_term])
+
+                where_clause = ""
+                if conditions:
+                    where_clause = "WHERE " + " AND ".join(conditions)
+
+                cursor.execute(
+                    f"""
+                    SELECT COUNT(*) FROM businesses {where_clause}
+                """,
+                    params,
+                )
+
+                return cursor.fetchone()[0]
+
+        except Exception as e:
+            logger.error(f"Error counting businesses: {e}")
+            return 0
+
+    def list_mockups(
+        self,
+        business_id: Optional[int] = None,
+        status: Optional[str] = None,
+        limit: int = 20,
+        offset: int = 0,
+        version: Optional[str] = None,
+    ) -> list[dict[str, Any]]:
+        """List mockups with optional filtering.
+
+        Args:
+            business_id: Filter by business ID
+            status: Filter by QA status
+            limit: Maximum number of results
+            offset: Pagination offset
+            version: Show specific version or all versions
+
+        Returns:
+            List of mockup dictionaries
+        """
+        try:
+            with self.cursor() as cursor:
+                # First check if mockups table exists, if not create it
+                cursor.execute(
+                    """
+                    SELECT table_name FROM information_schema.tables
+                    WHERE table_name = 'mockups'
+                """
+                )
+
+                if not cursor.fetchone():
+                    # Create mockups table
+                    cursor.execute(
+                        """
+                        CREATE TABLE mockups (
+                            id SERIAL PRIMARY KEY,
+                            business_id INTEGER REFERENCES businesses(id),
+                            version INTEGER DEFAULT 1,
+                            content JSONB,
+                            status TEXT DEFAULT 'pending',
+                            qa_score DECIMAL(3,1),
+                            ai_confidence DECIMAL(3,2),
+                            reviewer_notes TEXT,
+                            revised_prompt TEXT,
+                            created_at TIMESTAMP DEFAULT NOW(),
+                            updated_at TIMESTAMP DEFAULT NOW()
+                        );
+
+                        CREATE INDEX idx_mockups_business_id ON mockups(business_id);
+                        CREATE INDEX idx_mockups_status ON mockups(status);
+                        CREATE INDEX idx_mockups_version ON mockups(business_id, version);
+                    """
+                    )
+                    logger.info("Created mockups table with indexes")
+
+                # Build query conditions
+                conditions = []
+                params = []
+
+                if business_id:
+                    conditions.append("business_id = %s")
+                    params.append(business_id)
+
+                if status:
+                    conditions.append("status = %s")
+                    params.append(status)
+
+                if version:
+                    if version == "latest":
+                        # Get only the latest version for each business
+                        conditions.append(
+                            """
+                            (business_id, version) IN (
+                                SELECT business_id, MAX(version)
+                                FROM mockups
+                                GROUP BY business_id
+                            )
+                        """
+                        )
+                    else:
+                        conditions.append("version = %s")
+                        params.append(int(version))
+
+                where_clause = ""
+                if conditions:
+                    where_clause = "WHERE " + " AND ".join(conditions)
+
+                # Add limit and offset
+                params.extend([limit, offset])
+
+                cursor.execute(
+                    f"""
+                    SELECT
+                        m.id, m.business_id, m.version, m.content, m.status,
+                        m.qa_score, m.ai_confidence, m.reviewer_notes,
+                        m.created_at, m.updated_at,
+                        b.name as business_name, b.website
+                    FROM mockups m
+                    LEFT JOIN businesses b ON m.business_id = b.id
+                    {where_clause}
+                    ORDER BY m.updated_at DESC
+                    LIMIT %s OFFSET %s
+                """,
+                    params,
+                )
+
+                mockups = []
+                for row in cursor.fetchall():
+                    mockup = {
+                        "id": row[0],
+                        "business_id": row[1],
+                        "version": row[2],
+                        "content": row[3] or {},
+                        "status": row[4],
+                        "qa_score": float(row[5]) if row[5] is not None else None,
+                        "ai_confidence": float(row[6]) if row[6] is not None else None,
+                        "reviewer_notes": row[7],
+                        "created_at": row[8],
+                        "updated_at": row[9],
+                        "business_name": row[10],
+                        "business_website": row[11],
+                    }
+                    mockups.append(mockup)
+
+                return mockups
+
+        except Exception as e:
+            logger.error(f"Error listing mockups: {e}")
+            return []
+
+    def count_mockups(
+        self,
+        business_id: Optional[int] = None,
+        status: Optional[str] = None,
+        version: Optional[str] = None,
+    ) -> int:
+        """Count mockups with optional filtering."""
+        try:
+            with self.cursor() as cursor:
+                # Build query conditions
+                conditions = []
+                params = []
+
+                if business_id:
+                    conditions.append("business_id = %s")
+                    params.append(business_id)
+
+                if status:
+                    conditions.append("status = %s")
+                    params.append(status)
+
+                if version and version != "latest":
+                    conditions.append("version = %s")
+                    params.append(int(version))
+
+                where_clause = ""
+                if conditions:
+                    where_clause = "WHERE " + " AND ".join(conditions)
+
+                if version == "latest":
+                    # Count only latest versions
+                    cursor.execute(
+                        f"""
+                        SELECT COUNT(*) FROM (
+                            SELECT DISTINCT business_id
+                            FROM mockups
+                            {where_clause}
+                        ) latest_mockups
+                    """,
+                        params,
+                    )
+                else:
+                    cursor.execute(
+                        f"""
+                        SELECT COUNT(*) FROM mockups {where_clause}
+                    """,
+                        params,
+                    )
+
+                return cursor.fetchone()[0]
+
+        except Exception as e:
+            logger.error(f"Error counting mockups: {e}")
+            return 0
+
+    def get_mockup_by_id(self, mockup_id: int) -> Optional[dict[str, Any]]:
+        """Get mockup by ID."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id, business_id, version, content, status,
+                        qa_score, ai_confidence, reviewer_notes, revised_prompt,
+                        created_at, updated_at
+                    FROM mockups
+                    WHERE id = %s
+                """,
+                    (mockup_id,),
+                )
+
+                row = cursor.fetchone()
+                if not row:
+                    return None
+
+                return {
+                    "id": row[0],
+                    "business_id": row[1],
+                    "version": row[2],
+                    "content": row[3] or {},
+                    "status": row[4],
+                    "qa_score": float(row[5]) if row[5] is not None else None,
+                    "ai_confidence": float(row[6]) if row[6] is not None else None,
+                    "reviewer_notes": row[7],
+                    "revised_prompt": row[8],
+                    "created_at": row[9],
+                    "updated_at": row[10],
+                }
+
+        except Exception as e:
+            logger.error(f"Error getting mockup {mockup_id}: {e}")
+            return None
+
+    def get_mockup_with_versions(self, mockup_id: int) -> Optional[dict[str, Any]]:
+        """Get mockup with all its versions."""
+        try:
+            # First get the main mockup
+            mockup = self.get_mockup_by_id(mockup_id)
+            if not mockup:
+                return None
+
+            # Get all versions for this business
+            versions = self.get_mockup_versions_by_business(mockup["business_id"])
+            mockup["versions"] = versions
+
+            return mockup
+
+        except Exception as e:
+            logger.error(f"Error getting mockup with versions {mockup_id}: {e}")
+            return None
+
+    def get_mockup_versions(self, mockup_id: int) -> list[dict[str, Any]]:
+        """Get all versions for a mockup's business."""
+        try:
+            # First get the business_id for this mockup
+            mockup = self.get_mockup_by_id(mockup_id)
+            if not mockup:
+                return []
+
+            return self.get_mockup_versions_by_business(mockup["business_id"])
+
+        except Exception as e:
+            logger.error(f"Error getting versions for mockup {mockup_id}: {e}")
+            return []
+
+    def get_mockup_versions_by_business(self, business_id: int) -> list[dict[str, Any]]:
+        """Get all mockup versions for a business."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id, business_id, version, content, status,
+                        qa_score, ai_confidence, reviewer_notes,
+                        created_at, updated_at
+                    FROM mockups
+                    WHERE business_id = %s
+                    ORDER BY version DESC
+                """,
+                    (business_id,),
+                )
+
+                versions = []
+                for row in cursor.fetchall():
+                    version = {
+                        "id": row[0],
+                        "business_id": row[1],
+                        "version": row[2],
+                        "content": row[3] or {},
+                        "status": row[4],
+                        "qa_score": float(row[5]) if row[5] is not None else None,
+                        "ai_confidence": float(row[6]) if row[6] is not None else None,
+                        "reviewer_notes": row[7],
+                        "created_at": row[8],
+                        "updated_at": row[9],
+                    }
+                    versions.append(version)
+
+                return versions
+
+        except Exception as e:
+            logger.error(f"Error getting versions for business {business_id}: {e}")
+            return []
+
+    def get_mockup_version_by_id(self, version_id: int) -> Optional[dict[str, Any]]:
+        """Get specific mockup version by ID."""
+        return self.get_mockup_by_id(version_id)  # Same as get_mockup_by_id
+
+    def apply_qa_override(
+        self,
+        mockup_id: int,
+        new_status: str,
+        qa_score: Optional[float] = None,
+        reviewer_notes: str = "",
+        revised_prompt: Optional[str] = None,
+    ) -> bool:
+        """Apply QA override to a mockup."""
+        try:
+            with self.cursor() as cursor:
+                # Build update query dynamically
+                updates = ["status = %s", "updated_at = NOW()"]
+                params = [new_status]
+
+                if qa_score is not None:
+                    updates.append("qa_score = %s")
+                    params.append(qa_score)
+
+                if reviewer_notes:
+                    updates.append("reviewer_notes = %s")
+                    params.append(reviewer_notes)
+
+                if revised_prompt:
+                    updates.append("revised_prompt = %s")
+                    params.append(revised_prompt)
+
+                params.append(mockup_id)
+
+                cursor.execute(
+                    f"""
+                    UPDATE mockups
+                    SET {', '.join(updates)}
+                    WHERE id = %s
+                """,
+                    params,
+                )
+
+                success = cursor.rowcount > 0
+                if success:
+                    logger.info(
+                        f"Applied QA override to mockup {mockup_id}: {new_status}"
+                    )
+                else:
+                    logger.warning(f"No mockup found with ID {mockup_id} to update")
+
+                return success
+
+        except Exception as e:
+            logger.error(f"Error applying QA override to mockup {mockup_id}: {e}")
+            return False
+
+    def update_mockup_status(self, mockup_id: int, new_status: str) -> bool:
+        """Update mockup status."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE mockups
+                    SET status = %s, updated_at = NOW()
+                    WHERE id = %s
+                """,
+                    (new_status, mockup_id),
+                )
+
+                success = cursor.rowcount > 0
+                if success:
+                    logger.info(f"Updated mockup {mockup_id} status to {new_status}")
+
+                return success
+
+        except Exception as e:
+            logger.error(f"Error updating mockup {mockup_id} status: {e}")
+            return False
+
+    def create_mockup(
+        self,
+        business_id: int,
+        content: dict[str, Any],
+        version: int = 1,
+        status: str = "pending",
+        qa_score: Optional[float] = None,
+        ai_confidence: Optional[float] = None,
+    ) -> Optional[int]:
+        """Create a new mockup."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO mockups (
+                        business_id, version, content, status, qa_score, ai_confidence
+                    ) VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """,
+                    (business_id, version, content, status, qa_score, ai_confidence),
+                )
+
+                mockup_id = cursor.fetchone()[0]
+                logger.info(f"Created mockup {mockup_id} for business {business_id}")
+                return mockup_id
+
+        except Exception as e:
+            logger.error(f"Error creating mockup for business {business_id}: {e}")
+            return None
+
+    # Follow-up Email Campaign Methods
+
+    def create_followup_campaign(self, campaign_data: dict[str, Any]) -> bool:
+        """Create a new follow-up campaign."""
+        try:
+            with self.cursor() as cursor:
+                # Create followup_campaigns table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS followup_campaigns (
+                        campaign_id VARCHAR(255) PRIMARY KEY,
+                        business_id INTEGER NOT NULL,
+                        initial_email_id VARCHAR(255),
+                        max_follow_ups INTEGER DEFAULT 3,
+                        respect_unsubscribe BOOLEAN DEFAULT TRUE,
+                        skip_if_engaged BOOLEAN DEFAULT TRUE,
+                        is_active BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW(),
+                        templates JSONB
+                    )
+                """
+                )
+
+                # Insert campaign
+                cursor.execute(
+                    """
+                    INSERT INTO followup_campaigns (
+                        campaign_id, business_id, initial_email_id, max_follow_ups,
+                        respect_unsubscribe, skip_if_engaged, is_active, templates,
+                        created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        campaign_data["campaign_id"],
+                        campaign_data["business_id"],
+                        campaign_data["initial_email_id"],
+                        campaign_data["max_follow_ups"],
+                        campaign_data["respect_unsubscribe"],
+                        campaign_data["skip_if_engaged"],
+                        campaign_data["is_active"],
+                        json.dumps(campaign_data["templates"]),
+                        campaign_data["created_at"],
+                    ),
+                )
+
+                logger.info(
+                    f"Created follow-up campaign {campaign_data['campaign_id']}"
+                )
+                return True
+
+        except Exception as e:
+            logger.error(f"Error creating follow-up campaign: {e}")
+            return False
+
+    def get_followup_campaign(self, campaign_id: str) -> Optional[dict[str, Any]]:
+        """Get follow-up campaign by ID."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT campaign_id, business_id, initial_email_id, max_follow_ups,
+                           respect_unsubscribe, skip_if_engaged, is_active, templates,
+                           created_at, updated_at
+                    FROM followup_campaigns
+                    WHERE campaign_id = %s
+                """,
+                    (campaign_id,),
+                )
+
+                result = cursor.fetchone()
+                if result:
+                    columns = [desc[0] for desc in cursor.description]
+                    campaign_data = dict(zip(columns, result))
+
+                    # Parse JSON templates
+                    if campaign_data["templates"]:
+                        campaign_data["templates"] = json.loads(
+                            campaign_data["templates"]
+                        )
+
+                    return campaign_data
+
+                return None
+
+        except Exception as e:
+            logger.error(f"Error getting follow-up campaign {campaign_id}: {e}")
+            return None
+
+    def create_scheduled_followup(self, followup_data: dict[str, Any]) -> bool:
+        """Create a scheduled follow-up email."""
+        try:
+            with self.cursor() as cursor:
+                # Create scheduled_followups table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS scheduled_followups (
+                        follow_up_id VARCHAR(255) PRIMARY KEY,
+                        campaign_id VARCHAR(255) NOT NULL,
+                        business_id INTEGER NOT NULL,
+                        recipient_email VARCHAR(255) NOT NULL,
+                        template_id VARCHAR(255) NOT NULL,
+                        scheduled_for TIMESTAMP NOT NULL,
+                        status VARCHAR(50) DEFAULT 'scheduled',
+                        attempt_count INTEGER DEFAULT 0,
+                        last_attempt TIMESTAMP,
+                        engagement_level VARCHAR(50) DEFAULT 'unknown',
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        error_message TEXT,
+                        notes TEXT
+                    )
+                """
+                )
+
+                # Insert scheduled follow-up
+                cursor.execute(
+                    """
+                    INSERT INTO scheduled_followups (
+                        follow_up_id, campaign_id, business_id, recipient_email,
+                        template_id, scheduled_for, status, engagement_level, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        followup_data["follow_up_id"],
+                        followup_data["campaign_id"],
+                        followup_data["business_id"],
+                        followup_data["recipient_email"],
+                        followup_data["template_id"],
+                        followup_data["scheduled_for"],
+                        followup_data["status"],
+                        followup_data["engagement_level"],
+                        followup_data["created_at"],
+                    ),
+                )
+
+                return True
+
+        except Exception as e:
+            logger.error(f"Error creating scheduled follow-up: {e}")
+            return False
+
+    def get_pending_followups(
+        self, due_before: datetime, limit: int = 100
+    ) -> List[dict[str, Any]]:
+        """Get pending follow-ups that are due to be sent."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT follow_up_id, campaign_id, business_id, recipient_email,
+                           template_id, scheduled_for, status, attempt_count,
+                           last_attempt, engagement_level, created_at
+                    FROM scheduled_followups
+                    WHERE status = 'scheduled'
+                      AND scheduled_for <= %s
+                    ORDER BY scheduled_for ASC
+                    LIMIT %s
+                """,
+                    (due_before, limit),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                return [dict(zip(columns, row)) for row in results]
+
+        except Exception as e:
+            logger.error(f"Error getting pending follow-ups: {e}")
+            return []
+
+    def update_followup_status(
+        self,
+        follow_up_id: str,
+        status: str,
+        notes: str = None,
+        error_message: str = None,
+    ) -> bool:
+        """Update follow-up status."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE scheduled_followups
+                    SET status = %s,
+                        last_attempt = NOW(),
+                        attempt_count = attempt_count + 1,
+                        notes = COALESCE(%s, notes),
+                        error_message = COALESCE(%s, error_message)
+                    WHERE follow_up_id = %s
+                """,
+                    (status, notes, error_message, follow_up_id),
+                )
+
+                return cursor.rowcount > 0
+
+        except Exception as e:
+            logger.error(f"Error updating follow-up status: {e}")
+            return False
+
+    def get_followup_template(self, template_id: str) -> Optional[dict[str, Any]]:
+        """Get follow-up template by ID."""
+        try:
+            with self.cursor() as cursor:
+                # Get template from campaign
+                cursor.execute(
+                    """
+                    SELECT templates
+                    FROM followup_campaigns
+                    WHERE templates::jsonb @> %s::jsonb
+                """,
+                    (json.dumps([{"template_id": template_id}]),),
+                )
+
+                result = cursor.fetchone()
+                if result and result[0]:
+                    templates = json.loads(result[0])
+                    for template in templates:
+                        if template.get("template_id") == template_id:
+                            return template
+
+                return None
+
+        except Exception as e:
+            logger.error(f"Error getting follow-up template {template_id}: {e}")
+            return None
+
+    def is_email_unsubscribed(self, email: str) -> bool:
+        """Check if email is unsubscribed."""
+        try:
+            with self.cursor() as cursor:
+                # Create unsubscribes table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS unsubscribes (
+                        id SERIAL PRIMARY KEY,
+                        email VARCHAR(255) UNIQUE NOT NULL,
+                        unsubscribed_at TIMESTAMP DEFAULT NOW(),
+                        reason VARCHAR(255),
+                        campaign_id VARCHAR(255)
+                    )
+                """
+                )
+
+                cursor.execute(
+                    """
+                    SELECT 1 FROM unsubscribes WHERE email = %s
+                """,
+                    (email,),
+                )
+
+                return cursor.fetchone() is not None
+
+        except Exception as e:
+            logger.error(f"Error checking unsubscribe status for {email}: {e}")
+            return False
+
+    def get_email_engagement(
+        self, campaign_id: str, email: str
+    ) -> Optional[dict[str, Any]]:
+        """Get email engagement data."""
+        try:
+            with self.cursor() as cursor:
+                # Create email_engagement table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS email_engagement (
+                        id SERIAL PRIMARY KEY,
+                        campaign_id VARCHAR(255) NOT NULL,
+                        email VARCHAR(255) NOT NULL,
+                        delivered BOOLEAN DEFAULT FALSE,
+                        opened BOOLEAN DEFAULT FALSE,
+                        clicked BOOLEAN DEFAULT FALSE,
+                        replied BOOLEAN DEFAULT FALSE,
+                        forwarded BOOLEAN DEFAULT FALSE,
+                        bounced BOOLEAN DEFAULT FALSE,
+                        first_opened_at TIMESTAMP,
+                        last_opened_at TIMESTAMP,
+                        click_count INTEGER DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW(),
+                        UNIQUE(campaign_id, email)
+                    )
+                """
+                )
+
+                cursor.execute(
+                    """
+                    SELECT delivered, opened, clicked, replied, forwarded, bounced,
+                           first_opened_at, last_opened_at, click_count
+                    FROM email_engagement
+                    WHERE campaign_id = %s AND email = %s
+                """,
+                    (campaign_id, email),
+                )
+
+                result = cursor.fetchone()
+                if result:
+                    columns = [
+                        "delivered",
+                        "opened",
+                        "clicked",
+                        "replied",
+                        "forwarded",
+                        "bounced",
+                        "first_opened_at",
+                        "last_opened_at",
+                        "click_count",
+                    ]
+                    return dict(zip(columns, result))
+
+                return None
+
+        except Exception as e:
+            logger.error(f"Error getting email engagement: {e}")
+            return None
+
+    def update_email_engagement(
+        self, campaign_id: str, email: str, engagement_type: str, timestamp: datetime
+    ) -> bool:
+        """Update email engagement tracking."""
+        try:
+            with self.cursor() as cursor:
+                # Insert or update engagement record
+                cursor.execute(
+                    """
+                    INSERT INTO email_engagement (campaign_id, email, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (campaign_id, email)
+                    DO UPDATE SET updated_at = %s
+                """,
+                    (campaign_id, email, timestamp, timestamp, timestamp),
+                )
+
+                # Update specific engagement type
+                if engagement_type == "delivered":
+                    cursor.execute(
+                        """
+                        UPDATE email_engagement
+                        SET delivered = TRUE
+                        WHERE campaign_id = %s AND email = %s
+                    """,
+                        (campaign_id, email),
+                    )
+                elif engagement_type == "opened":
+                    cursor.execute(
+                        """
+                        UPDATE email_engagement
+                        SET opened = TRUE,
+                            first_opened_at = COALESCE(first_opened_at, %s),
+                            last_opened_at = %s
+                        WHERE campaign_id = %s AND email = %s
+                    """,
+                        (timestamp, timestamp, campaign_id, email),
+                    )
+                elif engagement_type == "clicked":
+                    cursor.execute(
+                        """
+                        UPDATE email_engagement
+                        SET clicked = TRUE,
+                            click_count = click_count + 1
+                        WHERE campaign_id = %s AND email = %s
+                    """,
+                        (campaign_id, email),
+                    )
+                elif engagement_type == "replied":
+                    cursor.execute(
+                        """
+                        UPDATE email_engagement
+                        SET replied = TRUE
+                        WHERE campaign_id = %s AND email = %s
+                    """,
+                        (campaign_id, email),
+                    )
+                elif engagement_type == "forwarded":
+                    cursor.execute(
+                        """
+                        UPDATE email_engagement
+                        SET forwarded = TRUE
+                        WHERE campaign_id = %s AND email = %s
+                    """,
+                        (campaign_id, email),
+                    )
+                elif engagement_type == "bounced":
+                    cursor.execute(
+                        """
+                        UPDATE email_engagement
+                        SET bounced = TRUE
+                        WHERE campaign_id = %s AND email = %s
+                    """,
+                        (campaign_id, email),
+                    )
+
+                return True
+
+        except Exception as e:
+            logger.error(f"Error updating email engagement: {e}")
+            return False
+
+    def update_campaign_status(
+        self, campaign_id: str, is_active: bool, reason: str = None
+    ) -> bool:
+        """Update campaign active status."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE followup_campaigns
+                    SET is_active = %s, updated_at = NOW()
+                    WHERE campaign_id = %s
+                """,
+                    (is_active, campaign_id),
+                )
+
+                return cursor.rowcount > 0
+
+        except Exception as e:
+            logger.error(f"Error updating campaign status: {e}")
+            return False
+
+    def cancel_pending_followups(self, campaign_id: str, reason: str) -> int:
+        """Cancel all pending follow-ups for a campaign."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE scheduled_followups
+                    SET status = 'cancelled', notes = %s
+                    WHERE campaign_id = %s AND status = 'scheduled'
+                """,
+                    (reason, campaign_id),
+                )
+
+                return cursor.rowcount
+
+        except Exception as e:
+            logger.error(f"Error cancelling pending follow-ups: {e}")
+            return 0
+
+    def get_followup_campaign_stats(self, campaign_id: str) -> dict[str, Any]:
+        """Get statistics for a follow-up campaign."""
+        try:
+            with self.cursor() as cursor:
+                # Get campaign info
+                cursor.execute(
+                    """
+                    SELECT business_id, is_active, created_at
+                    FROM followup_campaigns
+                    WHERE campaign_id = %s
+                """,
+                    (campaign_id,),
+                )
+
+                campaign_info = cursor.fetchone()
+                if not campaign_info:
+                    return {}
+
+                # Get follow-up statistics
+                cursor.execute(
+                    """
+                    SELECT
+                        status,
+                        COUNT(*) as count
+                    FROM scheduled_followups
+                    WHERE campaign_id = %s
+                    GROUP BY status
+                """,
+                    (campaign_id,),
+                )
+
+                status_counts = {row[0]: row[1] for row in cursor.fetchall()}
+
+                # Get engagement statistics
+                cursor.execute(
+                    """
+                    SELECT
+                        SUM(CASE WHEN delivered THEN 1 ELSE 0 END) as delivered,
+                        SUM(CASE WHEN opened THEN 1 ELSE 0 END) as opened,
+                        SUM(CASE WHEN clicked THEN 1 ELSE 0 END) as clicked,
+                        SUM(CASE WHEN replied THEN 1 ELSE 0 END) as replied,
+                        COUNT(*) as total_tracked
+                    FROM email_engagement
+                    WHERE campaign_id = %s
+                """,
+                    (campaign_id,),
+                )
+
+                engagement_row = cursor.fetchone()
+                engagement_stats = {}
+                if engagement_row:
+                    engagement_stats = {
+                        "delivered": engagement_row[0] or 0,
+                        "opened": engagement_row[1] or 0,
+                        "clicked": engagement_row[2] or 0,
+                        "replied": engagement_row[3] or 0,
+                        "total_tracked": engagement_row[4] or 0,
+                    }
+
+                return {
+                    "campaign_id": campaign_id,
+                    "business_id": campaign_info[0],
+                    "is_active": campaign_info[1],
+                    "created_at": (
+                        campaign_info[2].isoformat() if campaign_info[2] else None
+                    ),
+                    "status_counts": status_counts,
+                    "engagement_stats": engagement_stats,
+                }
+
+        except Exception as e:
+            logger.error(f"Error getting campaign stats: {e}")
+            return {}
+
+    # Engagement Analytics Methods
+
+    def store_engagement_event(self, event_data: dict[str, Any]) -> bool:
+        """Store an engagement event."""
+        try:
+            with self.cursor() as cursor:
+                # Create engagement_events table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS engagement_events (
+                        event_id VARCHAR(255) PRIMARY KEY,
+                        user_id VARCHAR(255) NOT NULL,
+                        session_id VARCHAR(255) NOT NULL,
+                        event_type VARCHAR(100) NOT NULL,
+                        timestamp TIMESTAMP NOT NULL,
+                        properties JSONB,
+                        page_url TEXT,
+                        referrer TEXT,
+                        user_agent TEXT,
+                        ip_address INET,
+                        campaign_id VARCHAR(255),
+                        ab_test_variant VARCHAR(100),
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """
+                )
+
+                # Create indexes for better query performance
+                cursor.execute(
+                    """
+                    CREATE INDEX IF NOT EXISTS idx_engagement_events_user_id
+                    ON engagement_events(user_id)
+                """
+                )
+                cursor.execute(
+                    """
+                    CREATE INDEX IF NOT EXISTS idx_engagement_events_session_id
+                    ON engagement_events(session_id)
+                """
+                )
+                cursor.execute(
+                    """
+                    CREATE INDEX IF NOT EXISTS idx_engagement_events_timestamp
+                    ON engagement_events(timestamp)
+                """
+                )
+                cursor.execute(
+                    """
+                    CREATE INDEX IF NOT EXISTS idx_engagement_events_campaign_id
+                    ON engagement_events(campaign_id)
+                """
+                )
+
+                # Insert event
+                cursor.execute(
+                    """
+                    INSERT INTO engagement_events (
+                        event_id, user_id, session_id, event_type, timestamp,
+                        properties, page_url, referrer, user_agent, ip_address,
+                        campaign_id, ab_test_variant
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        event_data["event_id"],
+                        event_data["user_id"],
+                        event_data["session_id"],
+                        event_data["event_type"],
+                        event_data["timestamp"],
+                        json.dumps(event_data.get("properties", {})),
+                        event_data.get("page_url"),
+                        event_data.get("referrer"),
+                        event_data.get("user_agent"),
+                        event_data.get("ip_address"),
+                        event_data.get("campaign_id"),
+                        event_data.get("ab_test_variant"),
+                    ),
+                )
+
+                return True
+
+        except Exception as e:
+            logger.error(f"Error storing engagement event: {e}")
+            return False
+
+    def get_user_session(self, session_id: str) -> Optional[dict[str, Any]]:
+        """Get user session by ID."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT session_id, user_id, start_time, end_time, total_events,
+                           page_views, unique_pages, bounce_rate, time_on_site,
+                           conversion_events, traffic_source, campaign_id, device_type
+                    FROM user_sessions
+                    WHERE session_id = %s
+                """,
+                    (session_id,),
+                )
+
+                result = cursor.fetchone()
+                if result:
+                    columns = [desc[0] for desc in cursor.description]
+                    session_data = dict(zip(columns, result))
+
+                    # Parse JSON conversion_events
+                    if session_data["conversion_events"]:
+                        session_data["conversion_events"] = json.loads(
+                            session_data["conversion_events"]
+                        )
+
+                    return session_data
+
+                return None
+
+        except Exception as e:
+            logger.error(f"Error getting user session {session_id}: {e}")
+            return None
+
+    def update_user_session(self, session_data: dict[str, Any]) -> bool:
+        """Update or create user session."""
+        try:
+            with self.cursor() as cursor:
+                # Create user_sessions table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS user_sessions (
+                        session_id VARCHAR(255) PRIMARY KEY,
+                        user_id VARCHAR(255) NOT NULL,
+                        start_time TIMESTAMP NOT NULL,
+                        end_time TIMESTAMP,
+                        total_events INTEGER DEFAULT 0,
+                        page_views INTEGER DEFAULT 0,
+                        unique_pages INTEGER DEFAULT 0,
+                        bounce_rate FLOAT DEFAULT 0,
+                        time_on_site FLOAT DEFAULT 0,
+                        conversion_events JSONB,
+                        traffic_source TEXT,
+                        campaign_id VARCHAR(255),
+                        device_type VARCHAR(50),
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    )
+                """
+                )
+
+                # Upsert session data
+                cursor.execute(
+                    """
+                    INSERT INTO user_sessions (
+                        session_id, user_id, start_time, end_time, total_events,
+                        page_views, unique_pages, bounce_rate, time_on_site,
+                        conversion_events, traffic_source, campaign_id, device_type
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (session_id)
+                    DO UPDATE SET
+                        end_time = EXCLUDED.end_time,
+                        total_events = EXCLUDED.total_events,
+                        page_views = EXCLUDED.page_views,
+                        unique_pages = EXCLUDED.unique_pages,
+                        bounce_rate = EXCLUDED.bounce_rate,
+                        time_on_site = EXCLUDED.time_on_site,
+                        conversion_events = EXCLUDED.conversion_events,
+                        updated_at = NOW()
+                """,
+                    (
+                        session_data["session_id"],
+                        session_data["user_id"],
+                        session_data["start_time"],
+                        session_data.get("end_time"),
+                        session_data["total_events"],
+                        session_data["page_views"],
+                        session_data["unique_pages"],
+                        session_data["bounce_rate"],
+                        session_data["time_on_site"],
+                        json.dumps(session_data.get("conversion_events", [])),
+                        session_data.get("traffic_source"),
+                        session_data.get("campaign_id"),
+                        session_data.get("device_type"),
+                    ),
+                )
+
+                return True
+
+        except Exception as e:
+            logger.error(f"Error updating user session: {e}")
+            return False
+
+    def get_session_unique_pages(self, session_id: str) -> List[str]:
+        """Get unique pages visited in a session."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT DISTINCT page_url
+                    FROM engagement_events
+                    WHERE session_id = %s
+                      AND page_url IS NOT NULL
+                      AND event_type = 'page_view'
+                """,
+                    (session_id,),
+                )
+
+                results = cursor.fetchall()
+                return [row[0] for row in results]
+
+        except Exception as e:
+            logger.error(f"Error getting session unique pages: {e}")
+            return []
+
+    def get_active_conversion_funnels(self) -> List[dict[str, Any]]:
+        """Get all active conversion funnels."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT funnel_id, name, steps, goal_type, time_window_hours, is_active
+                    FROM conversion_funnels
+                    WHERE is_active = TRUE
+                """
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                funnels = []
+                for row in results:
+                    funnel_data = dict(zip(columns, row))
+                    if funnel_data["steps"]:
+                        funnel_data["steps"] = json.loads(funnel_data["steps"])
+                    funnels.append(funnel_data)
+
+                return funnels
+
+        except Exception as e:
+            logger.error(f"Error getting active conversion funnels: {e}")
+            return []
+
+    def update_funnel_progress(
+        self,
+        funnel_id: str,
+        user_id: str,
+        session_id: str,
+        step_index: int,
+        timestamp: datetime,
+    ) -> bool:
+        """Update funnel progress for a user."""
+        try:
+            with self.cursor() as cursor:
+                # Create funnel_progress table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS funnel_progress (
+                        id SERIAL PRIMARY KEY,
+                        funnel_id VARCHAR(255) NOT NULL,
+                        user_id VARCHAR(255) NOT NULL,
+                        session_id VARCHAR(255) NOT NULL,
+                        step_index INTEGER NOT NULL,
+                        timestamp TIMESTAMP NOT NULL,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO funnel_progress (funnel_id, user_id, session_id, step_index, timestamp)
+                    VALUES (%s, %s, %s, %s, %s)
+                """,
+                    (funnel_id, user_id, session_id, step_index, timestamp),
+                )
+
+                return True
+
+        except Exception as e:
+            logger.error(f"Error updating funnel progress: {e}")
+            return False
+
+    def record_conversion(self, conversion_data: dict[str, Any]) -> bool:
+        """Record a conversion event."""
+        try:
+            with self.cursor() as cursor:
+                # Create conversions table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS conversions (
+                        id SERIAL PRIMARY KEY,
+                        funnel_id VARCHAR(255) NOT NULL,
+                        user_id VARCHAR(255) NOT NULL,
+                        session_id VARCHAR(255) NOT NULL,
+                        conversion_time TIMESTAMP NOT NULL,
+                        goal_type VARCHAR(100) NOT NULL,
+                        event_id VARCHAR(255),
+                        campaign_id VARCHAR(255),
+                        ab_test_variant VARCHAR(100),
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO conversions (
+                        funnel_id, user_id, session_id, conversion_time,
+                        goal_type, event_id, campaign_id, ab_test_variant
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        conversion_data["funnel_id"],
+                        conversion_data["user_id"],
+                        conversion_data["session_id"],
+                        conversion_data["conversion_time"],
+                        conversion_data["goal_type"],
+                        conversion_data.get("event_id"),
+                        conversion_data.get("campaign_id"),
+                        conversion_data.get("ab_test_variant"),
+                    ),
+                )
+
+                return True
+
+        except Exception as e:
+            logger.error(f"Error recording conversion: {e}")
+            return False
+
+    def get_user_events(
+        self, user_id: str, start_date: datetime, end_date: datetime
+    ) -> List[dict[str, Any]]:
+        """Get events for a user within date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT event_id, user_id, session_id, event_type, timestamp,
+                           properties, page_url, referrer, campaign_id, ab_test_variant
+                    FROM engagement_events
+                    WHERE user_id = %s
+                      AND timestamp BETWEEN %s AND %s
+                    ORDER BY timestamp DESC
+                """,
+                    (user_id, start_date, end_date),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                events = []
+                for row in results:
+                    event_data = dict(zip(columns, row))
+                    if event_data["properties"]:
+                        event_data["properties"] = json.loads(event_data["properties"])
+                    events.append(event_data)
+
+                return events
+
+        except Exception as e:
+            logger.error(f"Error getting user events: {e}")
+            return []
+
+    def get_user_sessions(
+        self, user_id: str, start_date: datetime, end_date: datetime
+    ) -> List[dict[str, Any]]:
+        """Get sessions for a user within date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT session_id, user_id, start_time, end_time, total_events,
+                           page_views, unique_pages, bounce_rate, time_on_site,
+                           conversion_events, traffic_source, campaign_id, device_type
+                    FROM user_sessions
+                    WHERE user_id = %s
+                      AND start_time BETWEEN %s AND %s
+                    ORDER BY start_time DESC
+                """,
+                    (user_id, start_date, end_date),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                sessions = []
+                for row in results:
+                    session_data = dict(zip(columns, row))
+                    if session_data["conversion_events"]:
+                        session_data["conversion_events"] = json.loads(
+                            session_data["conversion_events"]
+                        )
+                    sessions.append(session_data)
+
+                return sessions
+
+        except Exception as e:
+            logger.error(f"Error getting user sessions: {e}")
+            return []
+
+    def get_user_conversions(
+        self, user_id: str, start_date: datetime, end_date: datetime
+    ) -> List[dict[str, Any]]:
+        """Get conversions for a user within date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT funnel_id, user_id, session_id, conversion_time,
+                           goal_type, event_id, campaign_id, ab_test_variant
+                    FROM conversions
+                    WHERE user_id = %s
+                      AND conversion_time BETWEEN %s AND %s
+                    ORDER BY conversion_time DESC
+                """,
+                    (user_id, start_date, end_date),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                return [dict(zip(columns, row)) for row in results]
+
+        except Exception as e:
+            logger.error(f"Error getting user conversions: {e}")
+            return []
+
+    def get_campaign_events(
+        self, campaign_id: str, start_date: datetime, end_date: datetime
+    ) -> List[dict[str, Any]]:
+        """Get events for a campaign within date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT event_id, user_id, session_id, event_type, timestamp,
+                           properties, page_url, referrer, campaign_id, ab_test_variant
+                    FROM engagement_events
+                    WHERE campaign_id = %s
+                      AND timestamp BETWEEN %s AND %s
+                    ORDER BY timestamp DESC
+                """,
+                    (campaign_id, start_date, end_date),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                events = []
+                for row in results:
+                    event_data = dict(zip(columns, row))
+                    if event_data["properties"]:
+                        event_data["properties"] = json.loads(event_data["properties"])
+                    events.append(event_data)
+
+                return events
+
+        except Exception as e:
+            logger.error(f"Error getting campaign events: {e}")
+            return []
+
+    def get_campaign_sessions(
+        self, campaign_id: str, start_date: datetime, end_date: datetime
+    ) -> List[dict[str, Any]]:
+        """Get sessions for a campaign within date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT session_id, user_id, start_time, end_time, total_events,
+                           page_views, unique_pages, bounce_rate, time_on_site,
+                           conversion_events, traffic_source, campaign_id, device_type
+                    FROM user_sessions
+                    WHERE campaign_id = %s
+                      AND start_time BETWEEN %s AND %s
+                    ORDER BY start_time DESC
+                """,
+                    (campaign_id, start_date, end_date),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                sessions = []
+                for row in results:
+                    session_data = dict(zip(columns, row))
+                    if session_data["conversion_events"]:
+                        session_data["conversion_events"] = json.loads(
+                            session_data["conversion_events"]
+                        )
+                    sessions.append(session_data)
+
+                return sessions
+
+        except Exception as e:
+            logger.error(f"Error getting campaign sessions: {e}")
+            return []
+
+    def get_campaign_conversions(
+        self, campaign_id: str, start_date: datetime, end_date: datetime
+    ) -> List[dict[str, Any]]:
+        """Get conversions for a campaign within date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT funnel_id, user_id, session_id, conversion_time,
+                           goal_type, event_id, campaign_id, ab_test_variant
+                    FROM conversions
+                    WHERE campaign_id = %s
+                      AND conversion_time BETWEEN %s AND %s
+                    ORDER BY conversion_time DESC
+                """,
+                    (campaign_id, start_date, end_date),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                return [dict(zip(columns, row)) for row in results]
+
+        except Exception as e:
+            logger.error(f"Error getting campaign conversions: {e}")
+            return []
+
+    def create_conversion_funnel(self, funnel_data: dict[str, Any]) -> bool:
+        """Create a conversion funnel."""
+        try:
+            with self.cursor() as cursor:
+                # Create conversion_funnels table if it doesn't exist
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS conversion_funnels (
+                        funnel_id VARCHAR(255) PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        steps JSONB NOT NULL,
+                        goal_type VARCHAR(100) NOT NULL,
+                        time_window_hours INTEGER DEFAULT 24,
+                        is_active BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    )
+                """
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO conversion_funnels (
+                        funnel_id, name, steps, goal_type, time_window_hours, is_active
+                    ) VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        funnel_data["funnel_id"],
+                        funnel_data["name"],
+                        json.dumps(funnel_data["steps"]),
+                        funnel_data["goal_type"],
+                        funnel_data["time_window_hours"],
+                        funnel_data["is_active"],
+                    ),
+                )
+
+                return True
+
+        except Exception as e:
+            logger.error(f"Error creating conversion funnel: {e}")
+            return False
+
+    def get_conversion_funnel(self, funnel_id: str) -> Optional[dict[str, Any]]:
+        """Get conversion funnel by ID."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT funnel_id, name, steps, goal_type, time_window_hours, is_active
+                    FROM conversion_funnels
+                    WHERE funnel_id = %s
+                """,
+                    (funnel_id,),
+                )
+
+                result = cursor.fetchone()
+                if result:
+                    columns = [desc[0] for desc in cursor.description]
+                    funnel_data = dict(zip(columns, result))
+                    if funnel_data["steps"]:
+                        funnel_data["steps"] = json.loads(funnel_data["steps"])
+                    return funnel_data
+
+                return None
+
+        except Exception as e:
+            logger.error(f"Error getting conversion funnel {funnel_id}: {e}")
+            return None
+
+    def get_funnel_progress(
+        self, funnel_id: str, start_date: datetime, end_date: datetime
+    ) -> List[dict[str, Any]]:
+        """Get funnel progress data within date range."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT funnel_id, user_id, session_id, step_index, timestamp
+                    FROM funnel_progress
+                    WHERE funnel_id = %s
+                      AND timestamp BETWEEN %s AND %s
+                    ORDER BY timestamp ASC
+                """,
+                    (funnel_id, start_date, end_date),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                return [dict(zip(columns, row)) for row in results]
+
+        except Exception as e:
+            logger.error(f"Error getting funnel progress: {e}")
+            return []
+
+    def get_events_in_timeframe(
+        self, start_time: datetime, end_time: datetime
+    ) -> List[dict[str, Any]]:
+        """Get all events within a timeframe."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT event_id, user_id, session_id, event_type, timestamp,
+                           properties, page_url, campaign_id
+                    FROM engagement_events
+                    WHERE timestamp BETWEEN %s AND %s
+                    ORDER BY timestamp DESC
+                """,
+                    (start_time, end_time),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                events = []
+                for row in results:
+                    event_data = dict(zip(columns, row))
+                    if event_data["properties"]:
+                        event_data["properties"] = json.loads(event_data["properties"])
+                    events.append(event_data)
+
+                return events
+
+        except Exception as e:
+            logger.error(f"Error getting events in timeframe: {e}")
+            return []
+
+    def get_active_sessions(self, since_time: datetime) -> List[dict[str, Any]]:
+        """Get sessions that have been active since a given time."""
+        try:
+            with self.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT session_id, user_id, start_time, end_time, total_events,
+                           page_views, device_type, campaign_id
+                    FROM user_sessions
+                    WHERE start_time >= %s OR end_time >= %s OR end_time IS NULL
+                    ORDER BY start_time DESC
+                """,
+                    (since_time, since_time),
+                )
+
+                results = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                return [dict(zip(columns, row)) for row in results]
+
+        except Exception as e:
+            logger.error(f"Error getting active sessions: {e}")
+            return []
